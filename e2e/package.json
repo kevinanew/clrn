@@ -1,0 +1,15 @@
+{
+  "name": "laiwan-deployed-sites-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "针对已部署来玩 H5 站点的独立 Playwright 测试",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test sites-availability.spec.ts",
+    "test:network-resilience": "playwright test network-resilience.spec.ts",
+    "report": "playwright show-report playwright-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1"
+  }
+}
