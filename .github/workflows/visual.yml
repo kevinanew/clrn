@@ -1,0 +1,96 @@
+name: H5 Visual Regression
+
+on:
+  push:
+    branches-ignore: [release]
+  schedule:
+    - cron: '12 22 * * *'
+  workflow_dispatch:
+    inputs:
+      full:
+        description: 'Run all locales and scenarios'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: h5-visual
+  cancel-in-progress: false
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        locale: ${{ fromJSON((github.event_name == 'schedule' || inputs.full) && '["zh-Hans","zh-Hant","en"]' || '["zh-Hans"]') }}
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.1-jammy
+    env:
+      CI: 'true'
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      VISUAL_SKIP_VISUAL_INSTALL: 'true'
+      VISUAL_APP_DIR: ../app
+      VISUAL_LOCALES: ${{ matrix.locale }}
+      VISUAL_SCOPE: ${{ (github.event_name == 'schedule' || inputs.full) && 'full' || 'core' }}
+      VISUAL_WORKERS: '1'
+      EXPO_PUBLIC_PERF_TEST_MODE: 'false'
+      EXPO_PUBLIC_VISUAL_TEST_MODE: 'true'
+      METRO_MAX_WORKERS: '2'
+      SKIP_JETIFIER: 'true'
+    steps:
+      - name: Check out visual tests
+        uses: actions/checkout@v4
+      - name: Check out Web app
+        uses: actions/checkout@v4
+        with:
+          repository: kevinanew/laiwan_react_native
+          ref: master
+          path: app
+          submodules: recursive
+          token: ${{ secrets.APP_REPO_TOKEN || github.token }}
+      - name: Install package managers
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.13.0 --activate
+          npm install -g yarn@1.22.22
+      - name: Install Web app dependencies
+        working-directory: app
+        run: ./bin/ci-yarn-install.sh
+      - name: Build visual Web app
+        working-directory: app
+        env:
+          EXPO_PUBLIC_FRESHCHAT_TOKEN_FOR_WEB: ${{ secrets.EXPO_PUBLIC_FRESHCHAT_TOKEN_FOR_WEB }}
+          EXPO_PUBLIC_FRESHCHAT_WIDGET_UUID_FOR_WEB: ${{ secrets.EXPO_PUBLIC_FRESHCHAT_WIDGET_UUID_FOR_WEB }}
+        run: |
+          export EXPO_PUBLIC_FRESHCHAT_TOKEN_FOR_WEB="${EXPO_PUBLIC_FRESHCHAT_TOKEN_FOR_WEB:-visual-placeholder-token}"
+          export EXPO_PUBLIC_FRESHCHAT_WIDGET_UUID_FOR_WEB="${EXPO_PUBLIC_FRESHCHAT_WIDGET_UUID_FOR_WEB:-visual-placeholder-uuid}"
+          export EXPO_PUBLIC_FRESHCHAT_SCRIPT_URL=https://appcookies.freshchat.com/js/widget.js
+          export EXPO_PUBLIC_FRESHCHAT_HOST_FOR_WEB=https://appcookies.freshchat.com
+          export SIZE_MATTERS_BASE_WIDTH=350
+          export SIZE_MATTERS_BASE_HEIGHT=680
+          yarn build:web
+      - name: Install visual dependencies
+        working-directory: visual
+        run: pnpm install --frozen-lockfile
+      - name: Check visual suite
+        working-directory: visual
+        run: |
+          pnpm run typecheck
+          pnpm run test:scenarios
+      - name: Compare screenshots
+        working-directory: visual
+        run: pnpm run test:ci
+      - name: Upload failure report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-${{ matrix.locale }}-failure-report
+          path: |
+            visual/playwright-report/
+            visual/test-results/
+          if-no-files-found: ignore

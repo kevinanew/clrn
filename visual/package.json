@@ -1,0 +1,32 @@
+{
+  "name": "clrn_visual",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Visual regression tests for LaiWan Web (Playwright toHaveScreenshot)",
+  "scripts": {
+    "test": "docker compose run --rm -e VISUAL_LOCALES=zh-Hans -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_TEST_SHARDS visual test",
+    "test:all": "docker compose run --rm -e VISUAL_LOCALES=all -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_TEST_SHARDS visual test",
+    "test:locales": "docker compose run --rm -e VISUAL_LOCALES=zh-Hant,en -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_TEST_SHARDS visual test",
+    "test:ci": "tsx run-visual.ts test",
+    "reference": "./reference-host.sh",
+    "reference:zh": "docker compose run --rm -e VISUAL_LOCALES=zh-Hans -e VISUAL_FILTER -e VISUAL_SCOPE visual reference",
+    "approve": "docker compose run --rm -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_TEST_SHARDS visual approve",
+    "report": "tsx open-report.ts",
+    "test:scenarios": "node --import tsx --test scenarios.test.ts run-visual-config.test.ts docker-env.test.ts src/support/runWithContext.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=11"
+  },
+  "packageManager": "pnpm@11.13.0",
+  "dependencies": {
+    "serve": "14.2.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1",
+    "@types/node": "22.15.30",
+    "tsx": "4.20.3",
+    "typescript": "5.9.3"
+  }
+}

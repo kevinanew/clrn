@@ -1,0 +1,6 @@
+# https://pnpm.io/settings
+# Playwright 视觉回归不需要 puppeteer Chromium，跳过其下载/构建。
+allowBuilds:
+  puppeteer: false
+  unrs-resolver: true
+  esbuild: true
