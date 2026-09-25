@@ -217,7 +217,7 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 [GitHub Actions workflow](../.github/workflows/visual.yml) 在非 `release` 分支 push 时运行简中核心范围（30 张）；每天定时对简中、繁中、英文分别运行完整矩阵，也可手动选 `full`。各语言串行执行，避免同一账号的登录 token 相互失效。Action 从应用仓库 `master` 检出源码，构建 visual 模式 Web 包，然后在固定的 Playwright Linux 容器中运行本仓库的测试和基准图。
 
-如果应用仓库是私有仓库，需要给本仓库配置能读取该仓库的 `APP_REPO_TOKEN` Secret。应用构建可选用 `EXPO_PUBLIC_FRESHCHAT_TOKEN_FOR_WEB` 和 `EXPO_PUBLIC_FRESHCHAT_WIDGET_UUID_FOR_WEB` Secrets；缺失时使用与原测试等效的占位值。失败时上传 HTML 报告与 trace。Action 检查的是运行当时应用仓库 `master` 的代码。
+应用仓库是私有仓库：在应用仓库安装只读 SSH deploy key，并将对应私钥配置为本仓库的 `APP_REPO_DEPLOY_KEY` Secret。应用构建可选用 `EXPO_PUBLIC_FRESHCHAT_TOKEN_FOR_WEB` 和 `EXPO_PUBLIC_FRESHCHAT_WIDGET_UUID_FOR_WEB` Secrets；缺失时使用与原测试等效的占位值。失败时上传 HTML 报告与 trace。Action 检查的是运行当时应用仓库 `master` 的代码。
 
 ## 工作原理
 

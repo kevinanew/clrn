@@ -52,7 +52,7 @@ jobs:
           ref: master
           path: app
           submodules: recursive
-          token: ${{ secrets.APP_REPO_TOKEN || github.token }}
+          ssh-key: ${{ secrets.APP_REPO_DEPLOY_KEY }}
       - name: Install package managers
         run: |
           corepack enable
