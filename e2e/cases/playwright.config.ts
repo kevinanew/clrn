@@ -3,6 +3,7 @@ import { environment } from '../helpers/environment';
 
 export default defineConfig({
   testDir: '.',
+  globalSetup: './_shared/account-run-setup.ts',
   testMatch: '**/test.spec.ts',
   // 共用测试账号的场景不能并发签发登录凭据；桌面和手机也顺序执行。
   fullyParallel: false,
