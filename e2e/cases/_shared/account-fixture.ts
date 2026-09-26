@@ -16,12 +16,16 @@ type SavedAccount = {
 
 function validate(saved: SavedAccount, origin: string): void {
   const api = new URL(saved.account.accountUrl);
-  if (saved.origin !== origin || saved.apiOrigin !== api.origin
-    || api.protocol !== 'https:' || api.username || api.password || api.search || api.hash
+  if (saved.origin !== origin || saved.apiOrigin !== api.origin) {
+    throw new Error('本轮账号缓存的 H5/API 来源发生变化');
+  }
+  if (api.protocol !== 'https:' || api.username || api.password || api.search || api.hash
     || !api.hostname.endsWith('.api.staging.laiwan.shafayouxi.com')
-    || api.pathname !== `/v11/user/${encodeURIComponent(saved.account.userId)}/account`
-    || saved.storageState.origins.some(entry => entry.origin !== origin)) {
-    throw new Error('本轮账号缓存必须来自相同 H5 staging 与合法 staging API');
+    || api.pathname !== `/v11/user/${encodeURIComponent(saved.account.userId)}/account`) {
+    throw new Error(`本轮账号缓存的 staging API 不合法（host=${api.hostname}）`);
+  }
+  if (saved.storageState.origins.length !== 1 || saved.storageState.origins[0].origin !== origin) {
+    throw new Error('本轮账号缓存必须仅包含目标 H5 的 localStorage');
   }
 }
 
@@ -81,9 +85,18 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
       } catch {
         throw new Error('本轮新账号注册失败；请检查 staging 注册限制，不会自动重试注册');
       }
+      const browserState = await context.storageState();
+      const host = new URL(origin).hostname;
       saved = {
         origin, apiOrigin: new URL(account.accountUrl).origin, account,
-        storageState: await context.storageState(),
+        // 登录页可能加载第三方 iframe；只复用目标 H5 状态，不保存第三方状态。
+        storageState: {
+          origins: browserState.origins.filter(entry => entry.origin === origin),
+          cookies: browserState.cookies.filter(cookie => {
+            const domain = cookie.domain.replace(/^\./, '');
+            return host === domain || host.endsWith(`.${domain}`);
+          }),
+        },
       };
       validate(saved, origin);
       await verify(page, account);
