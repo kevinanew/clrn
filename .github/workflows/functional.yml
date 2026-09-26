@@ -11,6 +11,7 @@ permissions:
 concurrency:
   group: h5-staging-test-account
   cancel-in-progress: false
+  queue: max
 
 jobs:
   functional:
@@ -18,7 +19,22 @@ jobs:
     timeout-minutes: 20
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-jammy
+    env:
+      E2E_STAGING_URL: ${{ vars.E2E_STAGING_URL }}
+      E2E_CREATION_USERNAME: ${{ secrets.E2E_CREATION_USERNAME }}
+      E2E_CREATION_PASSWORD: ${{ secrets.E2E_CREATION_PASSWORD }}
     steps:
+      - name: 检查创建专用账号配置
+        shell: sh
+        run: |
+          missing=0
+          for name in E2E_CREATION_USERNAME E2E_CREATION_PASSWORD; do
+            if ! printenv "$name" | grep -q .; then
+              echo "::error::缺少 Actions Secret: $name；请配置独立 staging 创建账号，完整创建组至少需要 210 钻。"
+              missing=1
+            fi
+          done
+          exit "$missing"
       - uses: actions/checkout@v4
       - name: 安装测试依赖
         working-directory: e2e

@@ -19,6 +19,7 @@ permissions:
 concurrency:
   group: h5-staging-test-account
   cancel-in-progress: false
+  queue: max
 
 jobs:
   visual:

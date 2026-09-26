@@ -63,6 +63,8 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 2026-09-26 实测不同设备再次登录后旧会话账户接口立即返回 401，新会话为 200。
 因此功能、弱网、视觉 CI 共用 `h5-staging-test-account` 并发组。不同工作流不能同时登录同一账号。
+三个工作流均设置 `queue: max`，允许最多 100 个运行排队；仅设置
+`cancel-in-progress: false` 仍会让新运行替换已有的等待任务。
 本机运行也应依次执行；GitHub 并发组不能锁住人工登录或其他仓库的运行。
 固定账号的认证回归在账号不存在时会阻止自动注册并失败。
 凭据可通过既有 `E2E_TEST_USERNAME` / `E2E_TEST_PASSWORD` 覆盖。
@@ -80,5 +82,11 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 2026-09-26 实测注册奖励为 50 钻，私人局需要 10 钻并在未开始时解散全额退款，
 创建俱乐部消耗 50 钻，俱乐部内建局另需 10 钻。完整双视口创建组至少准备 210 钻，
 其中 200 钻用于四次俱乐部创建，未开始牌局解散后退还其费用。
+
+功能 CI 从仓库 Actions Secrets 注入 `E2E_CREATION_USERNAME` 和
+`E2E_CREATION_PASSWORD`，从 Actions Variables 读取 `E2E_STAGING_URL`。
+运行前检查两个 Secret 是否齐全；缺失会直接失败并列出配置名，不跳过创建用例。
+在仓库 Settings → Secrets and variables → Actions 配置凭据，勿写入代码或报告。
+每轮完整测试会消耗 200 钻，后续运行仍需由环境维护者保证余额前置条件。
 
 完整功能线盘点及剩余限制见 [COVERAGE.md](cases/COVERAGE.md)。

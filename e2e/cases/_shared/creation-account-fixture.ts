@@ -11,10 +11,15 @@ type CreationAccount = Session & { username: string; diamondBalance: number };
 /** 创建专用账号由环境提供；本仓库不执行任何补钻操作。 */
 export const test = base.extend<{ newAccount: CreationAccount }>({
   newAccount: async ({ page, context }, use) => {
+    const stateFile = process.env.E2E_CREATION_STORAGE_STATE_FILE;
+    const configuredUsername = process.env.E2E_CREATION_USERNAME;
+    const password = process.env.E2E_CREATION_PASSWORD;
+    if (!stateFile && (!configuredUsername || !password)) {
+      throw new Error('缺少创建专用账号配置：请设置 E2E_CREATION_USERNAME 和 E2E_CREATION_PASSWORD，或 E2E_CREATION_STORAGE_STATE_FILE');
+    }
     let account: CreationAccount;
     try {
       await prepareContext(context);
-      const stateFile = process.env.E2E_CREATION_STORAGE_STATE_FILE;
       let session: Session;
       let username: string;
       if (stateFile) {
@@ -45,8 +50,6 @@ export const test = base.extend<{ newAccount: CreationAccount }>({
           authorization: `${auth.api_token.token_type} ${auth.api_token.access_token}`,
         };
       } else {
-        const configuredUsername = process.env.E2E_CREATION_USERNAME;
-        const password = process.env.E2E_CREATION_PASSWORD;
         if (!configuredUsername || !password) throw new Error('缺少创建专用账号环境变量');
         username = configuredUsername;
         await openHall(page);
