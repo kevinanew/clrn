@@ -5,23 +5,24 @@ import { accountStatus, signIn, type Session } from './auth';
 import { openHall, prepareContext } from './page';
 import { readDiamondBalance } from './provision';
 import { clickAfterSignInNotices } from './sign-in-notices';
+import { readTestApiToken, setCreationDiamondBalance } from './test-wallet';
 
 type CreationAccount = Session & { username: string; diamondBalance: number };
 
-/** 创建专用账号由环境提供；本仓库不执行任何补钻操作。 */
+/** 每个创建案例从 60 钻开始，业务扣费和退款仍由真实接口验证。 */
 export const test = base.extend<{ newAccount: CreationAccount }>({
   newAccount: async ({ page, context }, use) => {
+    const walletToken = await readTestApiToken();
     const stateFile = process.env.E2E_CREATION_STORAGE_STATE_FILE;
     const configuredUsername = process.env.E2E_CREATION_USERNAME;
     const password = process.env.E2E_CREATION_PASSWORD;
     if (!stateFile && (!configuredUsername || !password)) {
       throw new Error('缺少创建专用账号配置：请设置 E2E_CREATION_USERNAME 和 E2E_CREATION_PASSWORD，或 E2E_CREATION_STORAGE_STATE_FILE');
     }
-    let account: CreationAccount;
+    let session: Session;
+    let username: string;
     try {
       await prepareContext(context);
-      let session: Session;
-      let username: string;
       if (stateFile) {
         const state = JSON.parse(await readFile(stateFile, 'utf8')) as Awaited<ReturnType<BrowserContext['storageState']>>;
         const origin = new URL(environment.stagingUrl).origin;
@@ -57,12 +58,16 @@ export const test = base.extend<{ newAccount: CreationAccount }>({
       }
       expect(await accountStatus(page, session)).toBe(200);
       await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible();
-      account = { ...session, username, diamondBalance: await readDiamondBalance(page, session) };
       await clickAfterSignInNotices(page, 'hall-tab');
     } catch {
       await page.close().catch(() => undefined);
-      throw new Error('创建专用账号准备失败；请检查环境凭据、staging 会话及余额前置条件');
+      throw new Error('创建专用账号准备失败；请检查环境凭据及 staging 会话');
     }
+    await setCreationDiamondBalance(session, walletToken);
+    await expect.poll(() => readDiamondBalance(page, session), {
+      message: '创建用例开始前应有 60 钻',
+    }).toBe(60);
+    const account: CreationAccount = { ...session, username, diamondBalance: 60 };
     await use(account);
   },
 });

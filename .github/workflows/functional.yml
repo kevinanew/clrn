@@ -23,14 +23,15 @@ jobs:
       E2E_STAGING_URL: ${{ vars.E2E_STAGING_URL }}
       E2E_CREATION_USERNAME: ${{ secrets.E2E_CREATION_USERNAME }}
       E2E_CREATION_PASSWORD: ${{ secrets.E2E_CREATION_PASSWORD }}
+      TEST_API_TOKEN: ${{ secrets.TEST_API_TOKEN }}
     steps:
-      - name: 检查创建专用账号配置
+      - name: 检查创建专用账号及余额接口配置
         shell: sh
         run: |
           missing=0
-          for name in E2E_CREATION_USERNAME E2E_CREATION_PASSWORD; do
+          for name in E2E_CREATION_USERNAME E2E_CREATION_PASSWORD TEST_API_TOKEN; do
             if ! printenv "$name" | grep -q .; then
-              echo "::error::缺少 Actions Secret: $name；请配置独立 staging 创建账号，完整创建组至少需要 210 钻。"
+              echo "::error::缺少 Actions Secret: $name；请配置独立 staging 创建账号及共用测试接口 token。"
               missing=1
             fi
           done

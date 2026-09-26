@@ -17,7 +17,7 @@ export E2E_STAGING_URL='https://h5.page.shafayouxi.org/' # 默认值，可省略
 
 npm run test:smoke
 npm run test:network-resilience
-npm test # 冒烟与弱网测试
+npm test # 冒烟、弱网和测试余额 helper 回归
 npm run test:functional # cases/ 下的 TypeScript 用户场景
 npm run report
 ```
@@ -47,8 +47,9 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 ## 测试资产边界
 
-测试资产由授权人员在仓库外维护；本公开仓库和 CI 不保存或执行资产补充代码。
-创建案例只检查 staging 专用账号的余额前置条件。Production E2E 仅允许不会修改用户资产和业务数据的只读检查。
+创建案例在每例开始前调用 staging `POST /public/v1/wallet/<user_id>/set_balance`，
+将专用账号设为 60 钻，再通过真实钱包读取确认。仅初始化时设置余额，保留业务扣费和退款断言。
+Production E2E 仅允许不会修改用户资产和业务数据的只读检查。
 
 ## CI
 
@@ -78,15 +79,19 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 创建案例使用已准备好的独立 staging 账号，通过 `E2E_CREATION_USERNAME` /
 `E2E_CREATION_PASSWORD` 提供凭据；本机也可通过 `E2E_CREATION_STORAGE_STATE_FILE`
-指定仓库外的登录状态文件。账号缺失或余额不足会明确失败，不自动补充资产。
+指定仓库外的登录状态文件。账号缺失或设置余额失败会明确失败。
 2026-09-26 实测注册奖励为 50 钻，私人局需要 10 钻并在未开始时解散全额退款，
-创建俱乐部消耗 50 钻，俱乐部内建局另需 10 钻。完整双视口创建组至少准备 210 钻，
-其中 200 钻用于四次俱乐部创建，未开始牌局解散后退还其费用。
+创建俱乐部消耗 50 钻，俱乐部内建局另需 10 钻。每个创建用例（含桌面和手机）独立重设 60 钻，
+未开始牌局解散后退还其费用。
 
-功能 CI 从仓库 Actions Secrets 注入 `E2E_CREATION_USERNAME` 和
-`E2E_CREATION_PASSWORD`，从 Actions Variables 读取 `E2E_STAGING_URL`。
-运行前检查两个 Secret 是否齐全；缺失会直接失败并列出配置名，不跳过创建用例。
+功能 CI 从仓库 Actions Secrets 注入 `E2E_CREATION_USERNAME`、
+`E2E_CREATION_PASSWORD` 和 `TEST_API_TOKEN`，从 Actions Variables 读取 `E2E_STAGING_URL`。
+运行前检查三个 Secret 是否齐全；缺失会直接失败并列出配置名，不跳过创建用例。
 在仓库 Settings → Secrets and variables → Actions 配置凭据，勿写入代码或报告。
-每轮完整测试会消耗 200 钻，后续运行仍需由环境维护者保证余额前置条件。
+`TEST_API_TOKEN` 与 staging 部署的 `test-api-token` Secret 一致。
+本机优先读取环境变量；未设置且非 CI 时，从相邻
+`../goplay_staging_auto_stack/user_transaction_flask/deploy.yaml` 的 `stringData.token` 读取。
+不会将 token 写入代码、浏览器或报告；请求禁止重定向，并检查 HTTP 状态和业务响应。
+自动注册奖励与只读案例不使用此余额初始化。
 
 完整功能线盘点及剩余限制见 [COVERAGE.md](cases/COVERAGE.md)。
