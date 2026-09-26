@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: h5-visual
+  group: h5-staging-test-account
   cancel-in-progress: false
 
 jobs:

@@ -13,11 +13,12 @@ cd e2e
 npm ci
 npx playwright install chromium # 本机首次安装或升级 Playwright 时执行
 
-export E2E_STAGING_URL='https://staging.example.com/' # 替换为实际冒烟站点
+export E2E_STAGING_URL='https://h5.page.shafayouxi.org/' # 默认值，可省略
 
 npm run test:smoke
 npm run test:network-resilience
-npm test # 运行全部 E2E
+npm test # 冒烟与弱网测试
+npm run test:functional # cases/ 下的 TypeScript 用户场景
 npm run report
 ```
 
@@ -27,9 +28,9 @@ npm run report
 E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 ```
 
-必需环境变量：
+目标站点：
 
-- `E2E_STAGING_URL`：冒烟和弱网测试共同使用的 staging H5 地址。
+- `E2E_STAGING_URL`：默认 `https://h5.page.shafayouxi.org/`，也允许旧 staging 域名 `h5.shafayouxi.org`；拒绝本地环境和其他域名。
 
 可选环境变量：
 
@@ -50,6 +51,16 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 ## CI
 
-先在 GitHub 仓库 Settings → Secrets and variables → Actions → Variables 中设置 `E2E_STAGING_URL`。`.github/workflows/e2e.yml` 在 `master` push 或手动触发时，将这个仓库变量传给测试，并使用 Playwright `v1.59.1-jammy` 镜像执行 `npm ci` 和 `npm test`。变量缺失或不是 HTTPS URL 时会直接报错。失败时上传 trace 与 HTML 报告。镜像版本与本目录 `package-lock.json` 锁定的 Playwright `1.59.1` 一致。测试访问已部署站点，push 触发的结果反映当时站点状态，不代表当前提交已经部署。可在部署后手动运行工作流，并用 `E2E_EXPECT_BUILD_SHA` 本地验证指定版本。
+先在 GitHub 仓库 Settings → Secrets and variables → Actions → Variables 中设置 `E2E_STAGING_URL`。`.github/workflows/e2e.yml` 在 `master` push 或手动触发时，将这个仓库变量传给测试，并使用 Playwright `v1.59.1-jammy` 镜像执行 `npm ci` 和 `npm test`。变量缺失时使用默认线上 staging；非 HTTPS 或非 staging 域名会直接报错。失败时上传 trace 与 HTML 报告。镜像版本与本目录 `package-lock.json` 锁定的 Playwright `1.59.1` 一致。测试访问已部署站点，push 触发的结果反映当时站点状态，不代表当前提交已经部署。可在部署后手动运行工作流，并用 `E2E_EXPECT_BUILD_SHA` 本地验证指定版本。
 
 部署说明见 [应用仓库的 Web 文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/web/README.md)。
+
+## 功能案例与账号互斥
+
+新增用户场景按 [cases/README.md](cases/README.md) 的约定添加，全用 TypeScript。
+每个场景有说明及测试，桌面与手机串行执行，认证用例关闭 trace 和截图。
+
+2026-09-26 实测不同设备再次登录后旧会话账户接口立即返回 401，新会话为 200。
+因此功能、弱网、视觉 CI 共用 `h5-staging-test-account` 并发组。不同工作流不能同时登录同一账号。
+本机运行也应依次执行；GitHub 并发组不能锁住人工登录或其他仓库的运行。
+账号不存在时功能测试会阻止自动注册并失败。凭据可通过既有 `E2E_TEST_USERNAME` / `E2E_TEST_PASSWORD` 覆盖。

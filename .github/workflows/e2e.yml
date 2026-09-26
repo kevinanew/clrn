@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: h5-staging-test-account
+  cancel-in-progress: false
+
 jobs:
   e2e:
     runs-on: ubuntu-latest

@@ -22,6 +22,9 @@ function readStagingUrl(): string {
   if (url.protocol !== 'https:') {
     throw new Error(`${name} 必须是 HTTPS URL`);
   }
+  if (!['h5.page.shafayouxi.org', 'h5.shafayouxi.org'].includes(url.hostname)) {
+    throw new Error(`${name} 必须指向已部署的来玩 staging 域名，禁止本地环境及 production 登录`);
+  }
   return url.href;
 }
 
