@@ -21,8 +21,8 @@ test('AUTH-002：不同设备再次登录后旧会话失效', async ({ page, con
     });
     const second = await signIn(secondPage);
     await test.step('新会话有效，旧会话被服务器拒绝', async () => {
-      // 账户 URL 包含用户 ID，确保两次登录确实属于同一账号。
-      expect(second.accountUrl).toBe(first.accountUrl);
+      // 代理节点由每个浏览器独立选址，使用用户 ID 验证同一账号。
+      expect(second.userId).toBe(first.userId);
       expect(await accountStatus(secondPage, second), 'B 应有效').toBe(200);
       await expect.poll(() => accountStatus(page, first), { timeout: 10_000 }).toBe(401);
       expect(await accountStatus(secondPage, second), '拒绝旧会话后 B 仍有效').toBe(200);

@@ -17,7 +17,7 @@ test('AUTH-003：相同设备标识再次登录的认证行为', async ({ page, 
     const otherPage = await otherContext.newPage();
     await openHall(otherPage);
     const second = await signIn(otherPage);
-    expect(second.accountUrl).toBe(first.accountUrl);
+    expect(second.userId).toBe(first.userId);
     expect(await accountStatus(otherPage, second)).toBe(200);
     await test.step('相同 deviceId 也不能保留两份有效登录凭据', async () => {
       await expect.poll(() => accountStatus(page, first), { timeout: 10_000 }).toBe(401);

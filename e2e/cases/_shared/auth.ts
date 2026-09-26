@@ -2,7 +2,7 @@ import { expect, type Page } from '@playwright/test';
 import { environment } from '../../helpers/environment';
 import { openLoginForm, unique } from './page';
 
-export type Session = { accountUrl: string; authorization: string };
+export type Session = { userId: string; accountUrl: string; authorization: string };
 
 export async function signIn(page: Page): Promise<Session> {
   // 登录表单会自动注册不存在的用户名；测试账号缺失必须失败，禁止创建新账号。
@@ -27,6 +27,7 @@ export async function signIn(page: Page): Promise<Session> {
     return { userId: String(auth.user_id), authorization: `${auth.api_token.token_type} ${auth.api_token.access_token}` };
   });
   return {
+    userId: session.userId,
     accountUrl: `${new URL(response.url()).origin}/v11/user/${encodeURIComponent(session.userId)}/account`,
     authorization: session.authorization,
   };
