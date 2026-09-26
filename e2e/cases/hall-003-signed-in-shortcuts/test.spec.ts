@@ -10,10 +10,21 @@ test('HALL-003：大厅搜索同时查询俱乐部和私人房间并返回', asy
   await test.step('提交不存在的九位号码并验证联合查询空结果', async () => {
     const input = await unique(page, 'club-search-input');
     await input.fill('999999999');
-    const clubSearch = page.waitForResponse(response => new URL(response.url()).pathname === '/v10/club/search');
-    const roomSearch = page.waitForResponse(response => new URL(response.url()).pathname === '/v10/house/number/999999999');
+    const clubSearch = page.waitForResponse(response => {
+      const url = new URL(response.url());
+      return response.request().method() === 'GET' && url.pathname === '/v10/club/search'
+        && url.searchParams.get('keyword') === '999999999';
+    });
+    // 房号读取接口按线上契约使用 PUT；不能套用俱乐部搜索的 GET。
+    const roomSearch = page.waitForResponse(response =>
+      new URL(response.url()).pathname === '/v10/house/number/999999999');
     await input.press('Enter');
-    await Promise.all([clubSearch, roomSearch]);
+    const [clubs, room] = await Promise.all([clubSearch, roomSearch]);
+    expect(room.request().method()).toBe('PUT');
+    expect(clubs.ok(), '俱乐部联合搜索 HTTP 应成功，不能把接口故障当作空结果').toBe(true);
+    const result = await clubs.json();
+    expect(result.ok, '俱乐部搜索业务响应应成功').toBe(true);
+    expect(result.result).toEqual([]);
     // 线上联合搜索空态没有 data-testid，使用精确中文文案并检查唯一性。
     const empty = page.getByText('没有找到相关俱乐部或个人房间', { exact: true });
     await expect(empty).toHaveCount(1);

@@ -3,7 +3,7 @@ import { unique } from '../_shared/page';
 import { clickWithBackgroundClubNotice } from '../_shared/navigation';
 import { readDiamondBalance } from '../_shared/provision';
 
-test('真实创建俱乐部并核实详情、归属和服务端持久化', async ({ page, newAccount }) => {
+test('真实创建俱乐部并核实详情、归属和服务端持久化', { tag: '@creates-data' }, async ({ page, newAccount }) => {
   const name = `E2E俱乐部${Date.now().toString(36)}`;
   const region = 'E2E测试地区';
   const before = await readDiamondBalance(page, newAccount);

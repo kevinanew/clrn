@@ -4,7 +4,7 @@ import { test as base, expect, type BrowserContext, type Page } from '@playwrigh
 import { environment } from '../../helpers/environment';
 import { accountStatus } from './auth';
 import { openHall } from './page';
-import { readDiamondBalance, registerAccount, type ProvisionedAccount } from './provision';
+import { readDiamondBalance, registerAccount, RegistrationRejectedError, type ProvisionedAccount } from './provision';
 
 type StorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
 type SavedAccount = {
@@ -82,7 +82,8 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
       let account: ProvisionedAccount;
       try {
         account = await registerAccount(page);
-      } catch {
+      } catch (error) {
+        if (error instanceof RegistrationRejectedError) throw error;
         throw new Error('本轮新账号注册失败；请检查 staging 注册限制，不会自动重试注册');
       }
       const browserState = await context.storageState();

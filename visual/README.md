@@ -8,6 +8,13 @@
 
 | 页面 | 说明 | 登录态 | 固定填充 |
 | --- | --- | --- | --- |
+| 游客消息／我的 | 消息登录引导、游客资产提示 | 未登录 | |
+| 登录语言选择 | 登录首页 → 切换语言 | 未登录 | |
+| 手机号密码登录 | 手机号表单 → 密码登录模式 | 未登录 | |
+| 大厅联合搜索 | 大厅 → 搜索首屏 | 测试账号 | |
+| 每日奖励 | 大厅 → 七日签到与救济说明，不领取 | 测试账号 | 签到规则与当前状态 |
+| 免费抽奖面板 | 大厅 → 免费抽奖，不点击抽奖 | 测试账号 | |
+| 三种玩法高级设置 | 经典德州／拼三张／短牌 → 展开高级设置 | 测试账号 | 余额、房间名 |
 | 大厅（未登录） | `/`，等待 `[data-testid="hall-sign-in-button"]` | 未登录 | |
 | 大厅牌局登录提示 | 未登录大厅点击德州游客场，等待登录确认弹窗 | 未登录 | 房间列表 |
 | 私人局 tab（未登录） | 底部 `private-room-tab`（等待 `guest-private-room-empty-state`） | 未登录 | |
@@ -80,9 +87,9 @@
 手机号登录/选区号/用户协议/隐私政策）只保留 mobile 视口**，
 其余页面覆盖双视口（`scenarios.ts` 的 `viewports` 字段控制）。
 
-- 全量（`VISUAL_LOCALES=all`）= (mobile 65 页 + desktop 23 页) × 3 语言 = **264 张**
-- 默认仅简中 = **88 张**
-- 核心范围（`VISUAL_SCOPE=core`）= 核心 13 页 × 2 视口 = **26 张**
+- 全量（`VISUAL_LOCALES=all`）= (mobile 75 页 + desktop 27 页) × 3 语言 = **306 张**
+- 默认仅简中 = **102 张**
+- 核心范围（`VISUAL_SCOPE=core`）= mobile 23 页 + desktop 17 页 = **40 张**
   （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、游客牌局登录提示、搜索登录提示、登录后大厅/消息/私人局/俱乐部/我的/商城）
 
 ### 易变内容固定填充（不用隐藏遮罩）
@@ -144,8 +151,8 @@
 
 ```bash
 cd visual
-pnpm run test          # 简中 88 张
-pnpm run test:all      # 全部语言 264 张
+pnpm run test          # 简中 102 张
+pnpm run test:all      # 全部语言 306 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
@@ -188,27 +195,27 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 | 值 | 用途 |
 | --- | --- |
-| `zh-Hans`（默认） | 日常线上（88 张）；push CI 再叠加 `VISUAL_SCOPE=core`（26 张） |
+| `zh-Hans`（默认） | 日常线上（102 张）；push CI 再叠加 `VISUAL_SCOPE=core`（40 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 264 张（GitHub Actions 定时任务） |
+| `all` | 全量 306 张（GitHub Actions 定时任务） |
 
 环境变量 `VISUAL_SCOPE`：
 
 | 值 | 用途 |
 | --- | --- |
 | `full`（默认） | 运行完整页面集合；未设置时也使用此范围 |
-| `core` | 仅运行核心 13 页；简中双视口共 26 张 |
+| `core` | 核心页面及本轮新增页面；简中共 40 张 |
 
 ## CI
 
 [视觉工作流](../.github/workflows/visual.yml) 在非 `release` 分支的视觉代码或工作流变更后，
-访问线上并检查简中核心 26 张截图；每日及手动 `full` 运行三种语言的完整场景。
+访问线上并检查简中核心 40 张截图；每日及手动 `full` 运行三种语言的完整场景。
 各语言顺序运行，不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 结果反映运行时已部署版本，不代表测试仓库提交已部署到应用。
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
 原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
-因此已从执行清单移除。历史图片保留，不计入当前 264 张有效场景。
+因此已从执行清单移除。历史图片保留，不计入当前 306 张有效场景。
 不通过点击真实牌局来替代这些 fixture，避免改变线上游戏状态。
 
 ## 工作原理
@@ -249,3 +256,21 @@ visual 专用的认证校验、mock、等待、重试、稳定化及截图判定
 | `src/captureAuthState.ts` | 运行开头的一次性登录态采集 |
 | `run-visual.ts` | Docker/CI 入口（test / reference / approve） |
 | `snapshots/` | 基准图（提交到 Git） |
+
+## 页面截图索引
+
+完成 Linux `reference` 后，在本机运行：
+
+```bash
+cd visual
+npm run gallery
+```
+
+打开 [snapshots/index.html](snapshots/index.html) 可按页面、语言、视口筛选图片。
+[manifest.json](snapshots/manifest.json) 记录当前场景的入口、就绪定位、固定内容、尺寸和
+PNG 的 SHA-256。索引与测试共用 `buildScenarios()`，排除历史废弃图片；缺少基准图时命令失败，
+不会将不完整覆盖报告为成功。生成索引不更新或批准图片，也不表示本次已重新测试历史基准。
+默认索引为简中全量，可用 `VISUAL_LOCALES=all npm run gallery` 汇总三语言。
+
+功能回归与截图采集共用默认账号，必须串行运行；功能测试用
+`cd e2e && npm run test:functional:existing` 可排除所有注册和创建场景。

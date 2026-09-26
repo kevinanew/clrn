@@ -10,7 +10,10 @@ export async function unique(page: Page, testId: string): Promise<Locator> {
 
 export async function prepareContext(context: BrowserContext, deviceId = randomUUID()): Promise<void> {
   await context.addInitScript((device) => {
-    localStorage.setItem('app.language.code.key', 'zh-Hans');
+    // 仅初始化新上下文；刷新时不能覆盖用户刚选择的语言，否则会掩盖持久化回归。
+    if (!localStorage.getItem('app.language.code.key')) {
+      localStorage.setItem('app.language.code.key', 'zh-Hans');
+    }
     localStorage.setItem('deviceId', device);
     for (const key of [
       'hall.screen.tutorial.complete.key',

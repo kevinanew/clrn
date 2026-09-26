@@ -9,6 +9,9 @@ export type ProvisionedAccount = Session & {
   registrationDiamondBalance: number;
 };
 
+/** 仅携带固定、无凭据的诊断，允许 fixture 原样报告已确认的注册限制。 */
+export class RegistrationRejectedError extends Error {}
+
 export async function readDiamondBalance(page: Page, account: Session): Promise<number> {
   const response = await page.request.put(
     `${new URL(account.accountUrl).origin}/v10/wallet/${encodeURIComponent(account.userId)}`,
@@ -70,10 +73,15 @@ async function registerOnStaging(page: Page): Promise<ProvisionedAccount> {
     ]);
     const body = await registered.json();
     if (!registered.ok() || body.ok !== true) {
-      const message = await page.getByTestId('confirm-button').isVisible()
-        ? '注册被 staging 拒绝，请检查注册限额及页面提示'
-        : '注册被 staging 拒绝，请检查注册限额';
-      throw new Error(`${message}（HTTP ${registered.status()}）`);
+      const limit = page.getByTestId('alert-message-text').filter({
+        hasText: '此网络已达注册上限，请稍后再试', visible: true,
+      });
+      // 响应先于 alert 渲染；只报告已核实的固定文案，不打印服务端响应或凭据。
+      const rateLimited = await limit.waitFor({ state: 'visible', timeout: 3_000 })
+        .then(() => true, () => false);
+      throw new RegistrationRejectedError(rateLimited
+        ? 'staging 注册受限：此网络已达注册上限，请稍后再试；本轮不会再次注册'
+        : `staging 拒绝注册（HTTP ${registered.status()}）；本轮不会再次注册`);
     }
     signedIn = await login;
     expect(signedIn, '注册成功后应收到自动登录响应').not.toBeNull();

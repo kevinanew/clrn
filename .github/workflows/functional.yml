@@ -4,6 +4,12 @@ on:
   push:
     paths: ['e2e/**', '.github/workflows/functional.yml']
   workflow_dispatch:
+    inputs:
+      scope:
+        description: 'existing 不创建数据；all 包含注册、俱乐部和牌局创建'
+        type: choice
+        options: [existing, all]
+        default: existing
 
 permissions:
   contents: read
@@ -26,6 +32,7 @@ jobs:
       TEST_API_TOKEN: ${{ secrets.TEST_API_TOKEN }}
     steps:
       - name: 检查创建专用账号及余额接口配置
+        if: github.event_name == 'workflow_dispatch' && inputs.scope == 'all'
         shell: sh
         run: |
           missing=0
@@ -42,7 +49,14 @@ jobs:
         run: npm ci
       - name: 运行线上 TypeScript 案例
         working-directory: e2e
-        run: npm run test:functional
+        env:
+          FUNCTIONAL_SCOPE: ${{ inputs.scope || 'existing' }}
+        run: |
+          if [ "$FUNCTIONAL_SCOPE" = all ]; then
+            npm run test:functional
+          else
+            npm run test:functional:existing
+          fi
       - name: 上传失败报告
         if: failure()
         uses: actions/upload-artifact@v4

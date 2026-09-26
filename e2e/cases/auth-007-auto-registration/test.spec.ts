@@ -5,7 +5,7 @@ import { clickAfterSignInNotices } from '../_shared/sign-in-notices';
 
 test.use({ screenshot: 'off', trace: 'off' });
 
-test('AUTH-007：独立新账号自动注册登录并获得测试钻石', async ({ page, newAccount }) => {
+test('AUTH-007：独立新账号自动注册登录并获得测试钻石', { tag: '@creates-data' }, async ({ page, newAccount }) => {
   const account = newAccount;
   await test.step('通过真实注册界面创建本轮独立账号', async () => {
     expect(await accountStatus(page, account)).toBe(200);

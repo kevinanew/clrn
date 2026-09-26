@@ -11,16 +11,26 @@ npm ci
 npx playwright install chromium
 npm run test:functional
 npm run test:functional -- auth-001-login-form
+npm run test:functional:existing
 ```
 
 默认站点为 https://h5.page.shafayouxi.org/，可用 `E2E_STAGING_URL` 指定已部署的 staging。
 桌面与手机使用独立浏览器上下文，统一串行执行，不共享浏览器登录状态。
+
+`test:functional:existing` 明确排除标记为 `@creates-data` 的 AUTH-007、CLUB-001、
+CLUB-002、PRIVATE-001，适用于已有账号浏览、认证和表单回归，不需要创建专用账号或
+TEST_API_TOKEN。被排除流程不计为通过。默认 `test:functional` 仍执行全部案例。
+功能 CI 的 push 和默认手动运行也使用 existing；具备专用账号后手动选择 `scope=all`
+才运行创建流程及其凭据预检。
+
+不要同时运行功能登录测试和视觉截图：默认使用同一已有账号，新登录会使另一轮凭据失效。
 
 ## 新增案例
 
 1. 创建 `<功能>-<三位编号>-<场景>/`，编号不重复使用。
 2. 用中文说明目的、前置条件、步骤与预期、定位契约和关联问题。
 3. 在 `test.spec.ts` 中按准备、操作、断言编写 `test.step()`。
+   会创建账号、俱乐部或牌局的案例必须标记 `{ tag: '@creates-data' }`，保持 existing 范围不创建数据。
 4. 使用 `getByTestId()`，当前可见页面内的唯一目标先断言数量；缺少定位时明确失败。
 5. 仅在真实重复时把共用准备流程提取到 `_shared/`，业务断言留在案例内。
 6. 普通登录场景使用已存在的 staging 测试账号，禁止因账号缺失意外注册。

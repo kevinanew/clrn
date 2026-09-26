@@ -70,33 +70,59 @@ describe('visual scenarios', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     process.env.VISUAL_SCOPE = 'core';
     const scenarios = buildScenarios();
-    assert.equal(scenarios.length, 26);
-    assert.equal(expectedScenarioCount(), 26);
-    assert.equal(scenarios.length, CORE_PAGE_LABELS.size * VIEWPORTS.length);
+    assert.equal(scenarios.length, 40);
+    assert.equal(expectedScenarioCount(), 40);
+    assert.equal(scenarios.filter(s => s.viewport.label === 'mobile').length, 23);
+    assert.equal(scenarios.filter(s => s.viewport.label === 'desktop').length, 17);
     scenarios.forEach((scenario) => {
       assert.ok(CORE_PAGE_LABELS.has(scenario.pageLabel));
     });
   });
 
-  test('VISUAL_SCOPE=full 在简中生成全部 88 个场景', () => {
+  test('VISUAL_SCOPE=full 在简中生成全部 102 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 88);
-    assert.equal(expectedScenarioCount(), 88);
+    assert.equal(buildScenarios().length, 102);
+    assert.equal(expectedScenarioCount(), 102);
   });
 
-  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 88 个场景', () => {
+  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 102 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     delete process.env.VISUAL_SCOPE;
-    assert.equal(buildScenarios().length, 88);
-    assert.equal(expectedScenarioCount(), 88);
+    assert.equal(buildScenarios().length, 102);
+    assert.equal(expectedScenarioCount(), 102);
   });
 
-  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 264 个场景', () => {
+  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 306 个场景', () => {
     process.env.VISUAL_LOCALES = 'all';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 264);
-    assert.equal(expectedScenarioCount(), 264);
+    assert.equal(buildScenarios().length, 306);
+    assert.equal(expectedScenarioCount(), 306);
+  });
+
+  test('新增业务页面有对应导航与就绪定位，签到日期固定且不提交业务', () => {
+    process.env.VISUAL_LOCALES = 'all';
+    const scenarios = buildScenarios();
+    for (const locale of LOCALES) {
+      for (const label of ['guest_message', 'guest_me', 'login_language', 'login_phone_password',
+        'signed_in_slot', 'signed_in_daily_bonus', 'signed_in_hall_search',
+        'signed_in_create_room_advanced_texas', 'signed_in_create_room_advanced_zhajinhua',
+        'signed_in_create_room_advanced_six_plus']) {
+        const scenario = scenarios.find(s => s.locale === locale.code && s.viewport.label === 'mobile'
+          && s.pageLabel === label);
+        assert.ok(scenario, `${locale.code}/${label} 应纳入截图清单`);
+        assert.ok(scenario.visualReadySelector);
+        assert.equal(scenario.signIn, label.startsWith('signed_in_'));
+        assert.ok(!scenario.navClickTestIds.includes('spin-button'), '截图不能发起抽奖');
+        assert.ok(!scenario.navClickTestIds.includes('daily-bonus-check-in'), '截图不能领取奖励');
+      }
+    }
+    const bonus = SIGNED_IN_PAGES.find(page => page.label === 'signed_in_daily_bonus');
+    assert.deepEqual(bonus?.fixedTexts, [{
+      selector: '[data-testid="CheckInDateListItem.checkInDetailDate"]', text: '01/01',
+    }]);
+    assert.equal(new Set(scenarios.map(s => s.label.replace(/_/g, '-'))).size, scenarios.length,
+      'Playwright 清洗后的截图文件名也必须唯一');
   });
 
   test('静态子页仅覆盖 mobile 视口', () => {
@@ -136,7 +162,9 @@ describe('visual scenarios', () => {
     assert.equal(zhDesktop[5]?.label, 'zh-Hans_desktop_guest_club');
     assert.equal(zhDesktop[6]?.label, 'zh-Hans_desktop_search_sign_in_prompt');
     // 忘记密码相关页仅 mobile，desktop 随后进入登录后页面
-    assert.equal(zhDesktop[7]?.label, 'zh-Hans_desktop_signed_in_hall');
+    assert.equal(zhDesktop[7]?.label, 'zh-Hans_desktop_guest_message');
+    assert.equal(zhDesktop[8]?.label, 'zh-Hans_desktop_guest_me');
+    assert.ok(zhDesktop.some(scenario => scenario.pageLabel === 'signed_in_hall'));
   });
 
   test('每个场景都包含语言标识与就绪条件，label 为 locale_viewport_page', () => {

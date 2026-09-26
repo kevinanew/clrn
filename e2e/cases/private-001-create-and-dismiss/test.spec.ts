@@ -3,7 +3,7 @@ import { unique } from '../_shared/page';
 import { clickWithBackgroundClubNotice } from '../_shared/navigation';
 import { readDiamondBalance } from '../_shared/provision';
 
-test('私人德州牌局真实创建、退出、解散并退回钻石', async ({ page, newAccount }) => {
+test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '@creates-data' }, async ({ page, newAccount }) => {
   let createdRoomId: string | undefined;
   let cleanupUrl: string | undefined;
   let removed = false;

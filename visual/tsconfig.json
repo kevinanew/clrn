@@ -17,6 +17,7 @@
     "run-visual-config.ts",
     "run-visual-config.test.ts",
     "open-report.ts",
+    "snapshot-gallery.ts",
     "playwright.config.ts",
     "scenarios.ts",
     "scenarios.test.ts",

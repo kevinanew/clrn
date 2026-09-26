@@ -33,3 +33,13 @@ export async function clickWithBackgroundClubNotice(page: Page, testId: string, 
 export async function goBack(page: Page): Promise<void> {
   await clickWithBackgroundClubNotice(page, 'navigation-bar-back-image');
 }
+
+/** 设置列表使用虚拟化；先通过滚动挂载折线下的入口，再检查唯一性。 */
+export async function openSettingsItem(page: Page, id: string): Promise<void> {
+  await (await unique(page, 'settings-list')).hover();
+  for (let n = 0; n < 12 && !(await page.getByTestId(id).count()); n++) {
+    await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(150);
+  }
+  await (await unique(page, id)).click();
+}

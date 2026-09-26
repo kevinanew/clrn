@@ -9,6 +9,7 @@ visual/auth-state.json
 visual/test-results/
 visual/playwright-report/
 visual/.visual-reference.lock/
+.pnpm-store/
 
 # ttyctl local runtime data (agent-writable)
 .ttyctl/

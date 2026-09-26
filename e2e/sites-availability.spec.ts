@@ -1,4 +1,4 @@
-import { expect, type HTTPResponse, type Page, test } from '@playwright/test';
+import { expect, type Response, type Page, test } from '@playwright/test';
 import { expectBuildVersion, expectSiteReady } from './helpers/assertions';
 import { environment } from './helpers/environment';
 import { gotoDeployedSite } from './helpers/page';
@@ -55,7 +55,7 @@ test('站点导航在退避后重试可恢复的网络错误', async () => {
           'Navigation to "https://h5.laiwanpai.com/" is interrupted by another navigation to "chrome-error://chromewebdata/"',
         );
       }
-      return { ok: () => true } as HTTPResponse;
+      return { ok: () => true } as Response;
     },
   } as unknown as Page;
 

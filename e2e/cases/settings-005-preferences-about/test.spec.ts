@@ -1,16 +1,6 @@
-import type { Page } from '@playwright/test';
 import { expect, test } from '../_shared/read-account-fixture';
 import { unique } from '../_shared/page';
-import { goBack } from '../_shared/navigation';
-
-async function openSetting(page: Page, id: string) {
-  await (await unique(page, 'settings-list')).hover();
-  for (let n = 0; n < 12 && !(await page.getByTestId(id).count()); n++) {
-    await page.mouse.wheel(0, 400);
-    await page.waitForTimeout(150);
-  }
-  await (await unique(page, id)).click();
-}
+import { goBack, openSettingsItem as openSetting } from '../_shared/navigation';
 
 test('SETTINGS-005：语言偏好、关于、官网与分享入口浏览', async ({ page, signedInAccount }) => {
   test.setTimeout(180_000);

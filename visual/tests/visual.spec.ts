@@ -41,6 +41,9 @@ for (const scenario of scenarios) {
       // preparePage 内的稳定化步骤可能耗时较长。截图前再次断言就绪元素仍可见，
       // 避免「更多」菜单等短暂出现后又消失时，被空白页面静默写入视觉基准图。
       await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
+      if (scenario.pageLabel === 'signed_in_daily_bonus') {
+        await expect(page.getByTestId('CheckInDateListItem.checkInDetailDate')).toHaveText('01/01');
+      }
       if (scenario.pageLabel === 'signed_in_application_management') {
         const visibleBackButton = page
           .locator('[data-testid="navigation-bar-back-image"]:visible')

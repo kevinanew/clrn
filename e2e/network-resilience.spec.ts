@@ -14,7 +14,7 @@ test.describe('H5 弱网行为', () => {
     await initializePage(context);
   });
 
-  test('大厅首屏接口长延迟超时后显示重试提示', async ({ page }) => {
+  test('大厅首屏超时显示提示，重试后恢复真实牌局列表', async ({ page }) => {
     let interceptedRequests = 0;
     await page.route('**/public/v1/hall_matching/available.json', async (route) => {
       interceptedRequests += 1;
@@ -35,6 +35,16 @@ test.describe('H5 弱网行为', () => {
     await expect(page.locator('[data-testid="hall-api-retry-button"]')).toBeVisible();
     await expect(page.locator('[data-testid="hall-screen"]')).toBeVisible();
     expect(interceptedRequests).toBeGreaterThan(0);
+
+    // 不只验证有“重试”按钮：解除故障后按真实入口重试，并等待真实列表恢复。
+    await page.unroute('**/public/v1/hall_matching/available.json');
+    const recovered = page.waitForResponse(response =>
+      new URL(response.url()).pathname === '/public/v1/hall_matching/available.json');
+    await page.getByTestId('hall-api-retry-button').click();
+    expect((await recovered).ok(), '重试应重新请求并取得大厅配置').toBe(true);
+    await expect(page.getByTestId('hall-api-error-alert')).not.toBeVisible();
+    const room = page.getByTestId('match-game-item-texas_holdem-tourists');
+    await expect(room.getByTestId('match-game-bet-info')).toHaveText(/^\d+\s*\/\s*\d+$/);
   });
 
   test('用户名登录接口失败后退出 loading 并显示错误提示', async ({ page }) => {

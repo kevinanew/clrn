@@ -1,11 +1,11 @@
-import { type BrowserContext, expect, type HTTPResponse, type Page } from '@playwright/test';
+import { type BrowserContext, expect, type Response, type Page } from '@playwright/test';
 import { environment } from './environment';
 
 const RETRYABLE_NAVIGATION_ERRORS =
   /(?:page\.goto: Timeout \d+ms exceeded|net::ERR_(?:CONNECTION_(?:ABORTED|CLOSED|RESET)|NETWORK_CHANGED|TIMED_OUT)|is interrupted by another navigation to "chrome-error:\/\/chromewebdata\/")/;
 const RETRY_DELAY_MS = 1_000;
 
-export async function gotoDeployedSite(page: Page, url: string): Promise<HTTPResponse | null> {
+export async function gotoDeployedSite(page: Page, url: string): Promise<Response | null> {
   // 一次原始请求加两次重试：短暂断连可以恢复，持续故障仍会在同一用例中失败。
   const maximumAttempts = 3;
   for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {

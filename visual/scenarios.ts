@@ -280,6 +280,17 @@ export type SignedInPageDef = {
 
 /** push CI 核心范围（VISUAL_SCOPE=core）：核心页面，全量矩阵由 cron 覆盖 */
 export const CORE_PAGE_LABELS = new Set([
+  // 新增覆盖同步纳入 push CI，避免只有 reference 而未持续对比。
+  'guest_message',
+  'guest_me',
+  'login_language',
+  'login_phone_password',
+  'signed_in_slot',
+  'signed_in_daily_bonus',
+  'signed_in_hall_search',
+  'signed_in_create_room_advanced_texas',
+  'signed_in_create_room_advanced_zhajinhua',
+  'signed_in_create_room_advanced_six_plus',
   'hall',
   'search_sign_in_prompt',
   'guest_private_room',
@@ -296,6 +307,40 @@ export const CORE_PAGE_LABELS = new Set([
 ]);
 
 export const SIGNED_IN_PAGES: SignedInPageDef[] = [
+  {
+    label: 'signed_in_slot',
+    tabTestId: 'hall-tab',
+    navClickTestIds: ['slot-banner'],
+    visualReadySelector: '[data-testid="slot-machine-view"]',
+  },
+  {
+    label: 'signed_in_daily_bonus',
+    viewports: ['mobile'],
+    tabTestId: 'hall-tab',
+    navClickTestIds: ['daily-bonus-button'],
+    visualReadySelector: '[data-testid="CheckInDateList"]',
+    // mock 使用“今天”保持已签到状态；显示日期单独固定，避免基准每天变化。
+    fixedTexts: [{ selector: '[data-testid="CheckInDateListItem.checkInDetailDate"]', text: '01/01' }],
+  },
+  {
+    label: 'signed_in_hall_search',
+    tabTestId: 'hall-tab',
+    navClickTestIds: ['hall-search-button'],
+    visualReadySelector: '[data-testid="club-search-input"]',
+  },
+  ...[
+    ['texas', 'texas_react_native'],
+    ['zhajinhua', 'zhajinhua'],
+    ['six_plus', 'texas_six_plus'],
+  ].map(([label, game]): SignedInPageDef => ({
+    label: `signed_in_create_room_advanced_${label}`,
+    viewports: ['mobile'],
+    tabTestId: 'private-room-tab',
+    navClickTestIds: ['create-game-button', `game-type-button-${game}`, 'advanced-options-button'],
+    visualReadySelector: '[data-testid="operation-duration-title-text"]',
+    visualGoneSelector: '[data-testid="select-game-category-text"]',
+    fixedTexts: [BALANCE_FIXED_TEXT, ROOM_NAME_FIXED_TEXT],
+  })),
   {
     label: 'signed_in_hall',
     tabTestId: 'hall-tab',
@@ -854,6 +899,16 @@ function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef):
       LOGIN_PICK_COUNTRY_CODE_SCENARIO,
       LOGIN_USER_AGREEMENT_SCENARIO,
       LOGIN_USER_PRIVACY_SCENARIO,
+      {
+        labelSuffix: 'login_language',
+        navClickTestIds: ['hall-sign-in-button', 'switch-language-button'],
+        visualReadySelector: '[data-testid="switch-language-container"]',
+      },
+      {
+        labelSuffix: 'login_phone_password',
+        navClickTestIds: [...LOGIN_PHONE_SCENARIO.navClickTestIds, 'password-sign-in-button'],
+        visualReadySelector: '[data-testid="password-input"] input',
+      },
     ];
     for (const sideScenario of mobileLoginSideScenarios) {
       scenarios.push(
@@ -866,6 +921,19 @@ function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef):
         }),
       );
     }
+  }
+
+  for (const [pageLabel, tabTestId, readyId] of [
+    ['guest_message', 'message-tab', 'not-sign-in-container'],
+    ['guest_me', 'settings-tab', 'after-sign-in-see-asset-text'],
+  ]) {
+    scenarios.push(buildScenario(hallPage, locale, viewport, {
+      label: scenarioLabel(locale, viewport, pageLabel),
+      pageLabel,
+      tabTestId,
+      visualReadySelector: `[data-testid="${readyId}"]`,
+      readyText: undefined,
+    }));
   }
 
   for (const signedInPage of SIGNED_IN_PAGES) {
@@ -907,8 +975,8 @@ export function buildScenarios(env: NodeJS.ProcessEnv = process.env): VisualScen
 
 /** 指定视口下的页面数（登录支线与部分静态子页仅 mobile） */
 export function pageCountForViewport(viewportLabel: ViewportLabel): number {
-  // 未登录页：大厅、游客牌局登录提示、私人房、登录首页、用户名登录页、俱乐部、搜索登录提示 + 登录支线 7 页（仅 mobile）
-  const unauthenticated = viewportLabel === 'mobile' ? 14 : 7;
+  // 游客主页面 9 页；登录支线 9 页仅 mobile。
+  const unauthenticated = viewportLabel === 'mobile' ? 18 : 9;
   const signedIn = SIGNED_IN_PAGES.filter(
     (page) => !page.viewports || page.viewports.includes(viewportLabel),
   ).length;

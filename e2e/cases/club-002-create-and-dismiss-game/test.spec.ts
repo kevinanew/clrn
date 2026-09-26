@@ -3,7 +3,7 @@ import { unique } from '../_shared/page';
 import { clickWithBackgroundClubNotice } from '../_shared/navigation';
 import { readDiamondBalance } from '../_shared/provision';
 
-test('真实创建俱乐部德州牌局、验证归属并通过API清理退款', async ({ page, newAccount }) => {
+test('真实创建俱乐部德州牌局、验证归属并通过API清理退款', { tag: '@creates-data' }, async ({ page, newAccount }) => {
   const suffix = Date.now().toString(36);
   const clubName = `E2E牌局${suffix}`;
   const roomName = `E2E德州${suffix}`;
