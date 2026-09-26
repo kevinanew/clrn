@@ -47,7 +47,8 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 ## 测试资产边界
 
-需要调整测试账号资产时，只允许操作 staging：减少资产使用 `POST /v11/wallet/<user_id>/withdraw`，增加资产使用 `POST /service/v11/wallet/<user_id>/deposit`。`currency_name` 仅使用 `coin` 或 `diamond`，`amount` 为非负数，每次使用新的 UUID `transaction_id`。Production E2E 仅允许不会修改用户资产和业务数据的只读检查。
+测试资产由授权人员在仓库外维护；本公开仓库和 CI 不保存或执行资产补充代码。
+创建案例只检查 staging 专用账号的余额前置条件。Production E2E 仅允许不会修改用户资产和业务数据的只读检查。
 
 ## CI
 
@@ -66,10 +67,18 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 固定账号的认证回归在账号不存在时会阻止自动注册并失败。
 凭据可通过既有 `E2E_TEST_USERNAME` / `E2E_TEST_PASSWORD` 覆盖。
 
-需要独立测试数据的案例显式使用 `newAccount` fixture：每轮运行最多通过真实 UI
-注册一个 staging 账号，后续测试恢复同一会话的独立浏览器上下文，不再次登录。
-注册失败不会重试或退回固定账号。2026-09-26 实测新账号赠送 50 钻石；
-创建案例仍须检查各自的余额前置条件，不能假定一笔奖励足够所有创建操作。
-会话暂存在系统临时目录（目录 0700，文件 0600），正常结束包括测试失败时自动删除，
-不进入 Git 或测试报告；强制杀进程时可能需要手动清理临时目录。
-详情见 [自动注册案例](cases/auth-007-auto-registration/README.md)。
+只读浏览案例使用 `signedInAccount` fixture，每例登录已有测试账号，禁止自动注册。
+
+[自动注册案例](cases/auth-007-auto-registration/README.md) 单独验证真实注册与奖励：
+每轮最多注册一个 staging 账号，桌面和手机恢复该会话，不重复注册。
+注册失败不会重试或退回旧账号。其会话暂存在系统临时目录（目录 0700，文件 0600），
+正常结束包括测试失败时自动删除，不进入 Git 或报告；强制杀进程时可能需手动清理。
+
+创建案例使用已准备好的独立 staging 账号，通过 `E2E_CREATION_USERNAME` /
+`E2E_CREATION_PASSWORD` 提供凭据；本机也可通过 `E2E_CREATION_STORAGE_STATE_FILE`
+指定仓库外的登录状态文件。账号缺失或余额不足会明确失败，不自动补充资产。
+2026-09-26 实测注册奖励为 50 钻，私人局需要 10 钻并在未开始时解散全额退款，
+创建俱乐部消耗 50 钻，俱乐部内建局另需 10 钻。完整双视口创建组至少准备 210 钻，
+其中 200 钻用于四次俱乐部创建，未开始牌局解散后退还其费用。
+
+完整功能线盘点及剩余限制见 [COVERAGE.md](cases/COVERAGE.md)。

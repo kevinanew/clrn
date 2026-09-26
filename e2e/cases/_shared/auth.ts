@@ -4,12 +4,15 @@ import { openLoginForm, unique } from './page';
 
 export type Session = { userId: string; accountUrl: string; authorization: string };
 
-export async function signIn(page: Page): Promise<Session> {
+export async function signIn(page: Page, credentials = {
+  username: environment.testUsername,
+  password: environment.testPassword,
+}): Promise<Session> {
   // 登录表单会自动注册不存在的用户名；测试账号缺失必须失败，禁止创建新账号。
   await page.route('**/public/v11/user/register/**', (route) => route.abort('blockedbyclient'));
   await openLoginForm(page);
-  await (await unique(page, 'username-input')).fill(environment.testUsername);
-  await (await unique(page, 'password-input')).fill(environment.testPassword);
+  await (await unique(page, 'username-input')).fill(credentials.username);
+  await (await unique(page, 'password-input')).fill(credentials.password);
   const loginResponse = page.waitForResponse(
     (response) => new URL(response.url()).pathname === '/public/v10/user/login/username/password',
     { timeout: 60_000 },
