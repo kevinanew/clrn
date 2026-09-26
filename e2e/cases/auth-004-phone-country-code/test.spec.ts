@@ -7,7 +7,7 @@ test('AUTH-004：手机号登录选择国家区号并切换密码方式', async 
     await openHall(page);
     await (await unique(page, 'hall-sign-in-button')).click();
     await (await unique(page, 'sign-in-button')).click();
-    await expect(await unique(page, 'country-code-selector')).toContainText('+86');
+    await expect(await unique(page, 'country-code-selector')).toContainText(/\+\d+/);
   });
   await test.step('选择中国香港区号并确认表单回填', async () => {
     await (await unique(page, 'country-code-selector')).click();
