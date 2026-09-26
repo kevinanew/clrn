@@ -31,7 +31,7 @@ export default defineConfig({
     // 必须设置：Playwright 动作默认不限时，卡住的动作（如对「误判不可见」
     // 元素的 scrollIntoViewIfNeeded）会一直挂到整个测试超时
     actionTimeout: 15000,
-    // 失败时保留 trace，playwright show-report 里可逐步回放排查
+    // 登录场景涉及真实凭据，仅保存截图差异报告，不采集网络 trace。
     trace: 'off',
     launchOptions: {
       args: [

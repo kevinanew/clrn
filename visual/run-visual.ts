@@ -78,14 +78,14 @@ function runPnpm(args: string[], cwd = VISUAL_DIR): void {
   });
 
   if (result.status !== 0) {
-    process.exit(result.status ?? 1);
+    throw new Error(`测试命令失败：pnpm ${args.join(' ')}（退出码 ${result.status ?? 1}）`);
   }
 }
 
 /**
  * 登录并保存登录态（auth-state.json），之后当前 shard 的登录场景由 pageSetup
  * 直接注入，免去逐场景 UI 登录。每个含登录场景的短 shard 开始前都会重新采集，
- * 避免约一分钟有效的 staging token 在过滤、冒烟或 approve 长轮次中途过期。
+ * 减少 staging 登录凭据在长轮次中失效对后续场景的影响。
  * 采集器内部会重试 staging 瞬时失败；仍失败则中止本轮。
  * 并行场景不能各自回退 UI 登录，否则同一账号重复登录会互相作废 token。
  */

@@ -49,23 +49,6 @@ for (const scenario of scenarios) {
         const accessibilityLabel = await visibleBackButton.getAttribute('aria-label');
         expect(accessibilityLabel).toBe(backAccessibilityLabels[scenario.locale]);
       }
-      if (scenario.pageLabel === 'texas_holdem_flop' && scenario.viewport.label === 'mobile') {
-        const nickname = page
-          .locator('[data-testid="adaptable-text-web"]:visible', { hasText: '小雨' })
-          .first();
-        const action = page.locator('[data-testid="texas-holdem-player-action-raise"]:visible');
-        await expect(nickname).toBeVisible();
-        await expect(action).toBeVisible();
-
-        const [nicknameBox, actionBox] = await Promise.all([
-          nickname.boundingBox(),
-          action.boundingBox(),
-        ]);
-        if (!nicknameBox || !actionBox) {
-          throw new Error('移动端翻牌圈玩家昵称或动作提示缺少可见布局区域');
-        }
-        expect(actionBox.y).toBeGreaterThanOrEqual(nicknameBox.y + nicknameBox.height);
-      }
       await expect(page).toHaveScreenshot(`${scenario.label}.png`);
     } finally {
       await context.close();

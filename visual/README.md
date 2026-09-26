@@ -1,14 +1,8 @@
 # 视觉回归测试（Web）
 
-当前入口已切换为已部署的 `https://h5.page.shafayouxi.org/`，不再检出或构建应用源码。
-使用 `VISUAL_BASE_URL` 指定已部署 staging；桌面、手机与各语言串行运行。
-旧固定牌桌入口不在正常线上构建中，已移出执行清单；当前为每语言 88 张、核心 26 张。
-下面的旧本地构建说明将在下一批文档迁移中移除。
-
-测试账号与登录方法记录在 [应用仓库的测试账号文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/testing/accounts.md)。
-
-基于 **Playwright `toHaveScreenshot`**，对应用仓库带 `EXPO_PUBLIC_VISUAL_TEST_MODE=true` 的 `yarn build:web` 产物做整页截图对比。  
-源码为 **TypeScript**；截图对比**必须在 Docker 中运行**，与 CI 一致。
+测试访问已部署的 `https://h5.page.shafayouxi.org/`，不检出应用源码、不构建 Web 包、不启动应用服务器。
+用例与辅助代码使用 TypeScript；截图对比在 Docker/Linux 中运行以保持字体和渲染环境一致。
+测试账号见 [应用仓库账号文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/testing/accounts.md)。
 
 ## 场景
 
@@ -18,8 +12,6 @@
 | 大厅牌局登录提示 | 未登录大厅点击德州游客场，等待登录确认弹窗 | 未登录 | 房间列表 |
 | 私人局 tab（未登录） | 底部 `private-room-tab`（等待 `guest-private-room-empty-state`） | 未登录 | |
 | 俱乐部 tab（未登录） | 底部 `club-tab`，校验游客登录引导与导航栏 | 未登录 | |
-| 德州经典桌-等待开局 | 固定 9 座（4 名玩家、5 个空座），无底牌/公共牌，底池 0 | 无 | 玩家昵称、头像、余额、盲注/D 标记与底池 |
-| 德州经典桌-翻牌圈 | 固定 9 座（5 名玩家），展示底牌、翻牌、主/边池、玩家动作与操作区 | 无 | 玩家、牌面、底池、下注额与操作项 |
 | 登录首页 | 点击大厅「登录」后截图 | 未登录 | |
 | 用户名登录页 | 登录首页 →「用户名或邮箱登录」表单 | 未登录 | |
 | 忘记密码页 | 用户名登录页 →「忘记密码」方式选择 | 未登录 | |
@@ -88,10 +80,10 @@
 手机号登录/选区号/用户协议/隐私政策）只保留 mobile 视口**，
 其余页面覆盖双视口（`scenarios.ts` 的 `viewports` 字段控制）。
 
-- 全量（`VISUAL_LOCALES=all`）= (mobile 67 页 + desktop 25 页) × 3 语言 = **276 张**
-- 默认仅简中 = **92 张**
-- 核心范围（`VISUAL_SCOPE=core`）= 核心 15 页 × 2 视口 = **30 张**
-  （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、德州等待开局、德州翻牌圈、登录后大厅/消息/私人局/俱乐部/我的/商城）
+- 全量（`VISUAL_LOCALES=all`）= (mobile 65 页 + desktop 23 页) × 3 语言 = **264 张**
+- 默认仅简中 = **88 张**
+- 核心范围（`VISUAL_SCOPE=core`）= 核心 13 页 × 2 视口 = **26 张**
+  （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、游客牌局登录提示、搜索登录提示、登录后大厅/消息/私人局/俱乐部/我的/商城）
 
 ### 易变内容固定填充（不用隐藏遮罩）
 
@@ -101,8 +93,6 @@
 - 建房表单默认房间名（`[data-testid="room-name-input"]`）→ `TestRoom`
 - 版本号（关于页、购买记录列表头）→ `0.0.0`
 - 关于页服务器编号（测速选出的最快节点，每次运行可能不同）→ `0`
-- 经典德州等待开局桌：座位、昵称、SVG 头像、余额、D/SB/BB 标记及底池均由本地 fixture 固定；不连接房间、WebSocket 或用户资料接口
-- 经典德州翻牌圈桌：玩家、底牌/公共牌、下注与动作、主/边池和操作项均由本地 fixture 固定；同样不连接房间、WebSocket 或用户资料接口
 - 编辑昵称/签名输入框预填值（随测试账号资料变化）→ `TestNickname` / `TestBio`
 
 在 `scenarios.ts` 对应页面的 `fixedTexts` 配置。仅「出现与否本身不定」的元素
@@ -148,24 +138,23 @@
   并写入 `localStorage['app.user.country.code.key']`；否则 Docker/CI 出口 IP
   不同会导致手机号登录等页默认区号漂移（如本地日本 `+81`、CI 中国 `+86`）
 
-## 本地运行
+## 从本机运行线上测试
 
-应用源码默认放在本仓库的 `app/`（该目录已忽略）；也可设置 `VISUAL_APP_PATH` 指向已有的应用仓库。先在应用仓库安装依赖，并以 `EXPO_PUBLIC_PERF_TEST_MODE=false EXPO_PUBLIC_VISUAL_TEST_MODE=true yarn build:web` 生成 `build/`。构建时须配置应用要求的 Freshchat 环境变量；CI 使用占位值或仓库 Secrets。
+只需要 Docker，无需下载或构建应用：
 
 ```bash
-git clone https://github.com/kevinanew/laiwan_react_native app
-cd app && yarn install --frozen-lockfile
-EXPO_PUBLIC_FRESHCHAT_TOKEN_FOR_WEB=visual-placeholder-token EXPO_PUBLIC_FRESHCHAT_WIDGET_UUID_FOR_WEB=visual-placeholder-uuid SIZE_MATTERS_BASE_WIDTH=350 SIZE_MATTERS_BASE_HEIGHT=680 EXPO_PUBLIC_PERF_TEST_MODE=false EXPO_PUBLIC_VISUAL_TEST_MODE=true yarn build:web
-cd ../visual
-pnpm run test          # 简中 92 张
-pnpm run test:all      # 全部 276 张
+cd visual
+pnpm run test          # 简中 88 张
+pnpm run test:all      # 全部语言 264 张
 pnpm run test:locales  # 繁中与英文
-pnpm run reference     # 重建基准图
-pnpm run approve       # 审核失败截图后才更新基准图
-pnpm run report        # 查看报告
+pnpm run reference    # 在 Linux 重建线上基准，需审核差异
+pnpm run approve      # 审核失败截图后更新基准
+pnpm run report       # 查看报告
 ```
 
-Docker Compose 会把应用目录挂到 `/repo/app`。使用现有的相邻仓库时，从 `visual/` 目录运行 `VISUAL_APP_PATH=../../laiwan_react_native pnpm run test`。`VISUAL_APP_PATH` 的相对路径以 `visual/docker-compose.yml` 为基准。测试依赖通过容器安装；本机运行 `pnpm run report` 需要在 `visual/` 执行一次 `pnpm install --frozen-lockfile`。
+Docker 只挂载测试仓库。`VISUAL_BASE_URL` 默认为线上地址，仅允许已部署的来玩 staging 域名。
+`VISUAL_USERNAME` / `VISUAL_PASSWORD` 可覆盖已有测试账号，不要与其他正在运行的测试共用账号。
+本机查看报告前执行 `pnpm install --frozen-lockfile`；`serve` 依赖仅供报告预览使用。
 
 ### 只跑部分场景
 
@@ -180,26 +169,18 @@ cd visual && VISUAL_FILTER='zh-Hans_.*_hall$' pnpm run test  # 只跑简中大�
 cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌面端
 ```
 
-### 并行与重试
+### 串行、分片与重试
 
-- `VISUAL_WORKERS`：并行 worker 数，日常对比默认 2；reference 固定为 1，避免多个
-  禁用 GPU 的 Chromium 页面争抢软件栅格化资源，造成 page crash 与像素漂移
-- test/reference/approve（包括 `VISUAL_FILTER` 与 `VISUAL_SCOPE=core`）都会按语言
-  分成短 Playwright shard，默认每批最多 3 个场景（92 张全量为 31 批，30 张
-  push 核心范围为 10 批；可分别用 `VISUAL_TEST_SHARDS` / `VISUAL_REFERENCE_SHARDS`
-  调整为 1–80，approve 使用前者）。每批使用新的 worker/browser；只要本轮筛选
-  包含登录场景，就在每个 shard 紧邻启动前重新采集登录态并重启静态服务器。
-  reference 还会为 `zh-Hans` / `zh-Hant` / `en` 分别创建独立 Docker 容器。这样可及时回收
-  Chromium，避免 2GiB 开发环境发生 OOM 和 `ERR_CONNECTION_REFUSED`
-  级联失败。容器同时禁用 core dump，避免浏览器崩溃时在工作区留下数百 MB
-  的 `visual/core`
-- 诊断长轮次时可用 `VISUAL_REFERENCE_START_SHARD` 从指定分片续跑（默认 1，
-  必须不大于 `VISUAL_REFERENCE_SHARDS`）；常规 `pnpm run reference` 始终全量运行
-- 每个 shard 开始前会重启静态资源服务器，截图前也会校验同源图片均已真实
-  加载；服务器退化时场景会明确失败，不会把缺图的半成品页面写进基准图
-- `reference-host.sh` 使用进程锁禁止两轮 reference 并发争抢同一个 Docker
-  虚拟机；上轮进程异常退出时会自动识别并清理失效锁
-- `VISUAL_RETRIES`：失败自动重试次数，默认 1（吸收 staging 偶发波动）
+- 每次运行固定一个 worker，桌面、手机和各语言顺序执行。
+- 同一账号再次登录会作废旧凭据，即使 deviceId 相同也如此。功能、弱网、视觉 CI
+  共用 `h5-staging-test-account` 并发组；本机测试也应避免与 CI 或人工登录重叠。
+- test/reference/approve 均按语言分片，每批默认最多 3 个场景；简中全量为 30 批，
+  核心为 9 批。分片之间重新采集登录态，场景只注入已有缓存，不自行回退登录。
+- `VISUAL_TEST_SHARDS` / `VISUAL_REFERENCE_SHARDS` 可调整批数（1–80）；
+  `VISUAL_REFERENCE_START_SHARD` 可从指定分片恢复 reference。
+- 每批使用新的浏览器进程释放资源；无需重启任何应用服务器。
+- 截图前校验图片已加载，缺图会明确失败。`VISUAL_RETRIES` 默认为 1。
+- `reference-host.sh` 的锁阻止本机两轮 reference 同时运行；它不替代跨机器的账号协调。
 
 ## 语言过滤
 
@@ -207,41 +188,48 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 | 值 | 用途 |
 | --- | --- |
-| `zh-Hans`（默认） | 日常本地（92 张）；push CI 再叠加 `VISUAL_SCOPE=core`（30 张） |
+| `zh-Hans`（默认） | 日常线上（88 张）；push CI 再叠加 `VISUAL_SCOPE=core`（26 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 276 张（GitHub Actions 定时任务） |
+| `all` | 全量 264 张（GitHub Actions 定时任务） |
 
 环境变量 `VISUAL_SCOPE`：
 
 | 值 | 用途 |
 | --- | --- |
 | `full`（默认） | 运行完整页面集合；未设置时也使用此范围 |
-| `core` | 仅运行核心 15 页；简中双视口共 30 张 |
+| `core` | 仅运行核心 13 页；简中双视口共 26 张 |
 
 ## CI
 
-[GitHub Actions workflow](../.github/workflows/visual.yml) 在非 `release` 分支 push 时运行简中核心范围（30 张）；每天定时对简中、繁中、英文分别运行完整矩阵，也可手动选 `full`。各语言串行执行，避免同一账号的登录 token 相互失效。Action 从应用仓库 `master` 检出源码，构建 visual 模式 Web 包，然后在固定的 Playwright Linux 容器中运行本仓库的测试和基准图。
+[视觉工作流](../.github/workflows/visual.yml) 在非 `release` 分支的视觉代码或工作流变更后，
+访问线上并检查简中核心 26 张截图；每日及手动 `full` 运行三种语言的完整场景。
+各语言顺序运行，不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
+结果反映运行时已部署版本，不代表测试仓库提交已部署到应用。
 
-应用仓库是私有仓库：在应用仓库安装只读 SSH deploy key，并将对应私钥配置为本仓库的 `APP_REPO_DEPLOY_KEY` Secret。应用构建可选用 `EXPO_PUBLIC_FRESHCHAT_TOKEN_FOR_WEB` 和 `EXPO_PUBLIC_FRESHCHAT_WIDGET_UUID_FOR_WEB` Secrets；缺失时使用与原测试等效的占位值。失败时上传 HTML 报告与 trace。Action 检查的是运行当时应用仓库 `master` 的代码。
+失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
+原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
+因此已从执行清单移除。历史图片保留，不计入当前 264 张有效场景。
+不通过点击真实牌局来替代这些 fixture，避免改变线上游戏状态。
 
 ## 工作原理
 
-1. 应用仓库构建 Web 产物，开启 `EXPO_PUBLIC_VISUAL_TEST_MODE=true` 以启用固定牌桌 fixture。
-2. Docker/CI 的 `mcr.microsoft.com/playwright:v1.61.1-jammy` 托管应用 `build/`。
-3. 每个短分片重新采集测试账号登录态，再按语言和场景写入 localStorage。
-4. `preparePage` 完成导航、稳定化和固定文本填充后，`toHaveScreenshot` 与提交的 `snapshots/` 比对；允许最多 `0.3%` 差异像素。
+1. Playwright 容器访问 `VISUAL_BASE_URL` 指定的已部署前端。
+2. 登录态采集器通过真实 UI 登录，并用只读账户接口验证凭据。
+3. 各场景注入语言、设备标识及已采集的登录态，再按实际导航进入目标页面。
+4. `preparePage` 完成稳定化后与基准图比较，最多允许 0.3% 差异像素。
+
+视觉测试仍保留现有的接口 mock 和固定文本填充，用于稳定余额、房间列表、国家码等截图内容；
+它验证线上前端的视觉表现。真实认证行为由 `e2e/cases/auth-002*` 和 `auth-003*` 检查。
+`tests/preparePage.spec.ts` 是测试工具自身的 DOM/HTTP fixture 检查，不启动应用开发环境。
 
 ### 测试与应用代码隔离
 
 visual 专用的认证校验、mock、等待、重试、稳定化及截图判定逻辑必须保留在
 `visual/`，不得为视觉测试向应用业务代码增加测试状态、测试组件或视觉测试专用分支。
 
-> 本地不要在容器里跑 `yarn install`：部分 git 依赖在容器网络下会失败。CI 仍在 node 镜像里独立安装并构建。
-
 ## 排障
 
-- 失败场景自动保留 **trace**（`test-results/`），`pnpm run report` 打开 HTML
-  报告后可逐步回放（DOM/网络/截图时间线），比看日志高效得多
+- 失败场景保留实际截图和差异图，使用 `pnpm run report` 查看 HTML 报告
 - 引擎会把页面报错打进日志；就绪等待超时会输出 `DEBUG (...) >` 现场信息
   （可见文案、testid 列表等）
 - 出现「分片登录态未生效」说明 staging 清零或 token 提前失效；重新运行即可，
@@ -256,7 +244,7 @@ visual 专用的认证校验、mock、等待、重试、稳定化及截图判定
 | --- | --- |
 | `scenarios.ts` | 场景单一数据源（页面清单、固定填充、登录后页面） |
 | `tests/visual.spec.ts` | 由场景矩阵生成的参数化用例 |
-| `playwright.config.ts` | Playwright 配置（阈值、并行、trace） |
+| `playwright.config.ts` | Playwright 配置（阈值、串行执行） |
 | `src/support/` | context 设置 / 页面准备 / 登录流程 |
 | `src/captureAuthState.ts` | 运行开头的一次性登录态采集 |
 | `run-visual.ts` | Docker/CI 入口（test / reference / approve） |

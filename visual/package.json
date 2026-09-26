@@ -12,7 +12,7 @@
     "reference:zh": "docker compose run --rm -e VISUAL_LOCALES=zh-Hans -e VISUAL_FILTER -e VISUAL_SCOPE visual reference",
     "approve": "docker compose run --rm -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_TEST_SHARDS visual approve",
     "report": "tsx open-report.ts",
-    "test:scenarios": "node --import tsx --test scenarios.test.ts run-visual-config.test.ts docker-env.test.ts src/support/runWithContext.test.ts",
+    "test:scenarios": "node --import tsx --test target.test.ts scenarios.test.ts run-visual-config.test.ts docker-env.test.ts src/support/runWithContext.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {

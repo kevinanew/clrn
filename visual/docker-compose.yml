@@ -12,6 +12,8 @@ services:
       PUPPETEER_SKIP_DOWNLOAD: "true"
       VISUAL_BASE_URL: ${VISUAL_BASE_URL:-https://h5.page.shafayouxi.org/}
       VISUAL_LOCALES: ${VISUAL_LOCALES:-zh-Hans}
+      VISUAL_USERNAME: ${VISUAL_USERNAME:-laiwanvisual01}
+      VISUAL_PASSWORD: ${VISUAL_PASSWORD:-visual2026test}
       VISUAL_FILTER: ${VISUAL_FILTER:-}
       VISUAL_SCOPE: ${VISUAL_SCOPE:-}
       LANG: C.UTF-8

@@ -907,7 +907,7 @@ export function buildScenarios(env: NodeJS.ProcessEnv = process.env): VisualScen
 
 /** 指定视口下的页面数（登录支线与部分静态子页仅 mobile） */
 export function pageCountForViewport(viewportLabel: ViewportLabel): number {
-  // 未登录页：大厅、游客牌局登录提示、私人房、登录首页、用户名登录页、俱乐部、搜索登录提示 + 登录支线 7 页（仅 mobile）+ 两个组件级牌桌
+  // 未登录页：大厅、游客牌局登录提示、私人房、登录首页、用户名登录页、俱乐部、搜索登录提示 + 登录支线 7 页（仅 mobile）
   const unauthenticated = viewportLabel === 'mobile' ? 14 : 7;
   const signedIn = SIGNED_IN_PAGES.filter(
     (page) => !page.viewports || page.viewports.includes(viewportLabel),

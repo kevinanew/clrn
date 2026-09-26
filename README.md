@@ -2,7 +2,7 @@
 
 已部署站点的 Playwright 端到端测试位于 [e2e/](e2e/README.md)。GitHub Actions 在 `master` push 和手动触发时运行完整测试，结果见仓库的 Actions 页面。
 
-Web 视觉回归测试、276 张基准图及本地运行说明位于 [visual/](visual/README.md)。GitHub Actions 在非 `release` 分支的 push 时运行简中核心场景，每天运行全部语言与场景。
+线上 Web 视觉回归及运行说明位于 [visual/](visual/README.md)。当前执行 264 个语言/视口场景；视觉代码变更后 CI 运行简中核心 26 个，每天运行全量。不需要应用源码或本地开发服务。
 
 ## 线上功能案例
 
