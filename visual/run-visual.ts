@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { type ChildProcess, spawn, spawnSync } from 'child_process';
+import { spawnSync } from 'child_process';
+import { visualBaseUrl } from './target';
 import fs from 'fs';
 import path from 'path';
 import { getVisualShardConfig } from './run-visual-config';
@@ -13,7 +14,6 @@ import {
 } from './scenarios';
 
 const VISUAL_DIR = path.resolve(__dirname);
-const APP_DIR = path.resolve(process.env.VISUAL_APP_DIR || path.join(__dirname, '..', 'app'));
 const VALID_ACTIONS = ['test', 'reference', 'approve'] as const;
 type Action = (typeof VALID_ACTIONS)[number];
 
@@ -24,9 +24,6 @@ if (!VALID_ACTIONS.includes(action)) {
   console.error(`用法: tsx run-visual.ts [${VALID_ACTIONS.join('|')}]`);
   process.exit(1);
 }
-
-const servePort = process.env.VISUAL_PORT || '8080';
-const visualBaseUrl = `http://127.0.0.1:${servePort}`;
 
 process.env.VISUAL_BASE_URL = visualBaseUrl;
 if (!process.env.VISUAL_LOCALES) {
@@ -72,8 +69,6 @@ function ensureLinuxForBaselineUpdate(): void {
 
 ensureDockerOrCi();
 ensureLinuxForBaselineUpdate();
-
-let serverProcess: ChildProcess | undefined;
 
 function runPnpm(args: string[], cwd = VISUAL_DIR): void {
   const result = spawnSync('pnpm', args, {
@@ -146,96 +141,6 @@ function getSelectedScenarios(): ReturnType<typeof buildScenarios> {
   return matcher ? scenarios.filter((scenario) => matcher.test(scenario.label)) : scenarios;
 }
 
-function startServer(): void {
-  const buildDir = path.join(APP_DIR, 'build');
-  if (!fs.existsSync(buildDir)) {
-    throw new Error(`未找到构建产物目录: ${buildDir}。请先在应用仓库以 EXPO_PUBLIC_VISUAL_TEST_MODE=true 执行 yarn build:web`);
-  }
-
-  console.log(`正在启动静态资源服务器，端口: ${servePort}...`);
-  serverProcess = spawn(
-    'pnpm',
-    ['exec', 'serve', buildDir, '-l', servePort, '--no-clipboard', '--single'],
-    { stdio: 'ignore', env: process.env, cwd: VISUAL_DIR },
-  );
-}
-
-function stopServer(): void {
-  if (serverProcess && !serverProcess.killed) {
-    serverProcess.kill('SIGTERM');
-  }
-}
-
-async function stopServerAndWait(): Promise<void> {
-  const processToStop = serverProcess;
-  if (!processToStop || processToStop.exitCode !== null || processToStop.signalCode !== null) {
-    return;
-  }
-
-  const exited = new Promise<void>((resolve) => {
-    processToStop.once('exit', () => resolve());
-    processToStop.once('error', () => resolve());
-  });
-  processToStop.kill('SIGTERM');
-  const exitedGracefully = await Promise.race([
-    exited.then(() => true),
-    new Promise<false>((resolve) => {
-      setTimeout(() => resolve(false), 5000);
-    }),
-  ]);
-  if (!exitedGracefully) {
-    console.warn('静态资源服务器未在 5 秒内退出，发送 SIGKILL...');
-    processToStop.kill('SIGKILL');
-    await exited;
-  }
-}
-
-async function isServerReachable(url: string): Promise<boolean> {
-  try {
-    const response = await fetch(url, { signal: AbortSignal.timeout(2000) });
-    return response.ok;
-  } catch {
-    return false;
-  }
-}
-
-async function waitForServer(url: string, maxAttempts = 60): Promise<void> {
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) {
-        console.log(`服务器已就绪，地址: ${url}`);
-        return;
-      }
-    } catch {
-      // 服务尚未就绪
-    }
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 1000);
-    });
-  }
-
-  throw new Error(`静态资源服务器未能成功启动于: ${url}`);
-}
-
-async function ensureServerRunning(forceRestart = false): Promise<void> {
-  if (!forceRestart && (await isServerReachable(visualBaseUrl))) {
-    return;
-  }
-
-  console.warn(
-    forceRestart
-      ? '新分片开始前重启静态资源服务器，释放上一批资源缓存...'
-      : '静态资源服务器已退出，正在重新启动...',
-  );
-  // 必须等旧进程真正退出并释放端口；只固定等待一小段时间会让新进程偶发
-  // EADDRINUSE，同时又被仍短暂可达的旧进程误判为启动成功。
-  await stopServerAndWait();
-  startServer();
-  await waitForServer(visualBaseUrl);
-}
-
 async function main(): Promise<void> {
   console.log(`VISUAL_LOCALES=${process.env.VISUAL_LOCALES}`);
 
@@ -244,10 +149,8 @@ async function main(): Promise<void> {
     runPnpm(['install', '--frozen-lockfile']);
   }
 
-  startServer();
-
   try {
-    await waitForServer(visualBaseUrl);
+    console.log(`线上视觉测试地址: ${visualBaseUrl}`);
     const playwrightArgs = ['exec', 'playwright', 'test'];
     if (action === 'reference') {
       // 只重写有显著视觉差异的基准。截图断言不再使用按面积放宽的比例容差：
@@ -290,9 +193,6 @@ async function main(): Promise<void> {
 
       for (let shard = startShard; shard <= shardCount; shard += 1) {
         console.log(`${batchLabel} BATCH > VISUAL_LOCALES=${locale}, SHARD=${shard}/${shardCount}`);
-        // 即使进程仍可访问，也在每个 shard 前重启静态资源服务器，
-        // 避免长轮次中资源累积或半失效服务让图片悄悄加载失败。
-        await ensureServerRunning(true);
         if (needsAuthState) {
           // 上一个 Playwright 进程已同步退出，此时换 token 不会作废仍在运行的场景。
           // 紧邻 shard 启动采集，确保 filter/core scope/approve 的每批都获得完整有效期。
@@ -313,12 +213,11 @@ async function main(): Promise<void> {
       runPnpm([...playwrightArgs, 'tests/visual.spec.ts']);
     }
   } finally {
-    stopServer();
+    fs.rmSync(path.join(VISUAL_DIR, 'auth-state.json'), { force: true });
   }
 }
 
 main().catch((error: Error) => {
-  stopServer();
   console.error(error.message);
   process.exit(1);
 });

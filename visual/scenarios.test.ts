@@ -70,33 +70,33 @@ describe('visual scenarios', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     process.env.VISUAL_SCOPE = 'core';
     const scenarios = buildScenarios();
-    assert.equal(scenarios.length, 30);
-    assert.equal(expectedScenarioCount(), 30);
+    assert.equal(scenarios.length, 26);
+    assert.equal(expectedScenarioCount(), 26);
     assert.equal(scenarios.length, CORE_PAGE_LABELS.size * VIEWPORTS.length);
     scenarios.forEach((scenario) => {
       assert.ok(CORE_PAGE_LABELS.has(scenario.pageLabel));
     });
   });
 
-  test('VISUAL_SCOPE=full 在简中生成全部 92 个场景', () => {
+  test('VISUAL_SCOPE=full 在简中生成全部 88 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 92);
-    assert.equal(expectedScenarioCount(), 92);
+    assert.equal(buildScenarios().length, 88);
+    assert.equal(expectedScenarioCount(), 88);
   });
 
-  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 92 个场景', () => {
+  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 88 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     delete process.env.VISUAL_SCOPE;
-    assert.equal(buildScenarios().length, 92);
-    assert.equal(expectedScenarioCount(), 92);
+    assert.equal(buildScenarios().length, 88);
+    assert.equal(expectedScenarioCount(), 88);
   });
 
-  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 276 个场景', () => {
+  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 264 个场景', () => {
     process.env.VISUAL_LOCALES = 'all';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 276);
-    assert.equal(expectedScenarioCount(), 276);
+    assert.equal(buildScenarios().length, 264);
+    assert.equal(expectedScenarioCount(), 264);
   });
 
   test('静态子页仅覆盖 mobile 视口', () => {
@@ -251,37 +251,6 @@ describe('visual scenarios', () => {
       // 就绪目标位于详情页顶部，不应为了大厅的创建入口滚动详情页列表。
       assert.equal(scenario.resetScrollSelector, undefined);
       assert.deepEqual(scenario.navClickTestIds, []);
-    });
-  });
-
-  test('经典德州等待开局为固定组件级入口，覆盖各语言 desktop/mobile', () => {
-    process.env.VISUAL_LOCALES = 'all';
-    const scenarios = buildScenarios().filter(
-      (scenario) => scenario.pageLabel === 'texas_holdem_waiting',
-    );
-    assert.equal(scenarios.length, LOCALES.length * VIEWPORTS.length);
-    scenarios.forEach((scenario) => {
-      assert.equal(scenario.path, '/?visualScenario=texas-holdem-waiting');
-      assert.equal(scenario.signIn, false);
-      assert.equal(scenario.skipAppReadyCheck, true);
-      assert.equal(scenario.waitForLoading, false);
-      assert.equal(scenario.visualReadySelector, '[data-testid="texas_holdem_main_pot_container"]');
-      assert.deepEqual(scenario.fixedTexts, [
-        { selector: '[data-testid="texas_holdem_main_pot_amount"]', text: '0' },
-      ]);
-    });
-  });
-
-  test('经典德州翻牌圈等待本人手牌渲染完成，覆盖各语言 desktop/mobile', () => {
-    process.env.VISUAL_LOCALES = 'all';
-    const scenarios = buildScenarios();
-    const flop = scenarios.filter((scenario) => scenario.pageLabel === 'texas_holdem_flop');
-    assert.equal(flop.length, LOCALES.length * VIEWPORTS.length);
-    flop.forEach((scenario) => {
-      assert.equal(scenario.path, '/?visualScenario=texas-holdem-flop');
-      assert.equal(scenario.visualReadySelector, '[data-testid="texas-holdem-player-hole-cards"]');
-      assert.equal(scenario.spriteImageCount, 5);
-      assert.equal(scenario.skipAppReadyCheck, true);
     });
   });
 

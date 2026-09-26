@@ -293,8 +293,6 @@ export const CORE_PAGE_LABELS = new Set([
   'signed_in_club',
   'signed_in_me',
   'signed_in_mall',
-  'texas_holdem_waiting',
-  'texas_holdem_flop',
 ]);
 
 export const SIGNED_IN_PAGES: SignedInPageDef[] = [
@@ -892,37 +890,6 @@ function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef):
     );
   }
 
-  scenarios.push(
-    buildScenario(hallPage, locale, viewport, {
-      label: scenarioLabel(locale, viewport, 'texas_holdem_waiting'),
-      pageLabel: 'texas_holdem_waiting',
-      path: '/?visualScenario=texas-holdem-waiting',
-      visualReadySelector: '[data-testid="texas_holdem_main_pot_container"]',
-      skipAppReadyCheck: true,
-      readyText: undefined,
-      waitForLoading: false,
-      // 固定 fixture 已锁定所有玩家余额；底池仍走 fixedTexts 稳定化通道，避免日后
-      // fixture 改为 ante 初始底池时被异步更新污染截图。
-      fixedTexts: [{ selector: '[data-testid="texas_holdem_main_pot_amount"]', text: '0' }],
-    }),
-  );
-
-  scenarios.push(
-    buildScenario(hallPage, locale, viewport, {
-      label: scenarioLabel(locale, viewport, 'texas_holdem_flop'),
-      pageLabel: 'texas_holdem_flop',
-      path: '/?visualScenario=texas-holdem-flop',
-      // fixture 的座位和手牌在挂载后通过 setState 写入；等待本人手牌，确保玩家、
-      // 公共牌和操作区均已完成布局，不能只等待首次就出现的外层根节点。
-      visualReadySelector: '[data-testid="texas-holdem-player-hole-cards"]',
-      // 三张公共牌与本人两张手牌都应显示生产精灵图，而不是加载中的文本 fallback。
-      spriteImageCount: 5,
-      skipAppReadyCheck: true,
-      readyText: undefined,
-      waitForLoading: false,
-    }),
-  );
-
   return scenarios;
 }
 
@@ -941,7 +908,7 @@ export function buildScenarios(env: NodeJS.ProcessEnv = process.env): VisualScen
 /** 指定视口下的页面数（登录支线与部分静态子页仅 mobile） */
 export function pageCountForViewport(viewportLabel: ViewportLabel): number {
   // 未登录页：大厅、游客牌局登录提示、私人房、登录首页、用户名登录页、俱乐部、搜索登录提示 + 登录支线 7 页（仅 mobile）+ 两个组件级牌桌
-  const unauthenticated = viewportLabel === 'mobile' ? 16 : 9;
+  const unauthenticated = viewportLabel === 'mobile' ? 14 : 7;
   const signedIn = SIGNED_IN_PAGES.filter(
     (page) => !page.viewports || page.viewports.includes(viewportLabel),
   ).length;

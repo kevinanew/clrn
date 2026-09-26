@@ -5,18 +5,15 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ..:/repo
-      - ${VISUAL_APP_PATH:-../app}:/repo/app:ro
       - visual_node_modules:/repo/visual/node_modules
       - pnpm_store:/root/.local/share/pnpm/store
     working_dir: /repo/visual
     environment:
       PUPPETEER_SKIP_DOWNLOAD: "true"
-      VISUAL_BASE_URL: http://127.0.0.1:8080
-      VISUAL_PORT: "8080"
+      VISUAL_BASE_URL: ${VISUAL_BASE_URL:-https://h5.page.shafayouxi.org/}
       VISUAL_LOCALES: ${VISUAL_LOCALES:-zh-Hans}
       VISUAL_FILTER: ${VISUAL_FILTER:-}
       VISUAL_SCOPE: ${VISUAL_SCOPE:-}
-      VISUAL_APP_DIR: /repo/app
       LANG: C.UTF-8
       LC_ALL: C.UTF-8
     entrypoint: ["/bin/bash", "/repo/visual/docker-entrypoint.sh"]

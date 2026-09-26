@@ -20,7 +20,7 @@ import {
 } from './support/pageSetup';
 import { runWithContext } from './support/runWithContext';
 
-const baseUrl = process.env.VISUAL_BASE_URL || 'http://127.0.0.1:8080';
+import { visualBaseUrl as baseUrl } from '../target';
 const username = process.env.VISUAL_USERNAME || 'laiwanvisual01';
 const password = process.env.VISUAL_PASSWORD || 'visual2026test';
 const deviceId = process.env.VISUAL_DEVICE_ID || 'a7f3c2e8-4d61-4b0a-9c5e-7f2d1e3a8b46';

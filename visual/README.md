@@ -1,5 +1,10 @@
 # 视觉回归测试（Web）
 
+当前入口已切换为已部署的 `https://h5.page.shafayouxi.org/`，不再检出或构建应用源码。
+使用 `VISUAL_BASE_URL` 指定已部署 staging；桌面、手机与各语言串行运行。
+旧固定牌桌入口不在正常线上构建中，已移出执行清单；当前为每语言 88 张、核心 26 张。
+下面的旧本地构建说明将在下一批文档迁移中移除。
+
 测试账号与登录方法记录在 [应用仓库的测试账号文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/testing/accounts.md)。
 
 基于 **Playwright `toHaveScreenshot`**，对应用仓库带 `EXPO_PUBLIC_VISUAL_TEST_MODE=true` 的 `yarn build:web` 产物做整页截图对比。  

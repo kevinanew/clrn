@@ -8,7 +8,7 @@ import { preparePage } from '../src/support/preparePage';
  * 语言（VISUAL_LOCALES）× 视口 × 页面，label 形如 `zh-Hans_desktop_hall`。
  */
 const scenarios = buildScenarios();
-const baseUrl = process.env.VISUAL_BASE_URL || 'http://127.0.0.1:8080';
+import { visualBaseUrl as baseUrl } from '../target';
 const backAccessibilityLabels = {
   'zh-Hans': '返回',
   'zh-Hant': '返回',
