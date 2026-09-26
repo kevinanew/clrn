@@ -10,11 +10,9 @@ function readInteger(name: string, fallback: number): number {
   return value;
 }
 
-function readRequiredUrl(name: string): string {
-  const raw = process.env[name];
-  if (!raw) {
-    throw new Error(`${name} 必须通过环境变量提供`);
-  }
+function readStagingUrl(): string {
+  const name = 'E2E_STAGING_URL';
+  const raw = process.env[name] || 'https://h5.page.shafayouxi.org/';
   let url: URL;
   try {
     url = new URL(raw);
@@ -39,7 +37,7 @@ if (expectedBuildSha && !/^[a-f0-9]{7,}$/.test(expectedBuildSha)) {
 
 export const environment = {
   expectedBuildSha,
-  stagingUrl: readRequiredUrl('E2E_STAGING_URL'),
+  stagingUrl: readStagingUrl(),
   testUsername: process.env.E2E_TEST_USERNAME || 'laiwanvisual01',
   testPassword: process.env.E2E_TEST_PASSWORD || 'visual2026test',
 };

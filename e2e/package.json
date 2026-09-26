@@ -7,7 +7,8 @@
     "test": "playwright test",
     "test:smoke": "playwright test sites-availability.spec.ts",
     "test:network-resilience": "playwright test network-resilience.spec.ts",
-    "report": "playwright show-report playwright-report"
+    "report": "playwright show-report playwright-report",
+    "test:functional": "playwright test --config cases/playwright.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.59.1"

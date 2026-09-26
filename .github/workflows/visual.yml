@@ -3,6 +3,7 @@ name: H5 Visual Regression
 on:
   push:
     branches-ignore: [release]
+    paths: ['visual/**']
   schedule:
     - cron: '12 22 * * *'
   workflow_dispatch:

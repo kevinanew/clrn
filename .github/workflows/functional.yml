@@ -1,0 +1,36 @@
+name: H5 线上功能案例
+
+on:
+  push:
+    paths: ['e2e/**', '.github/workflows/functional.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: h5-staging-test-account
+  cancel-in-progress: false
+
+jobs:
+  functional:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装测试依赖
+        working-directory: e2e
+        run: npm ci
+      - name: 运行线上 TypeScript 案例
+        working-directory: e2e
+        run: npm run test:functional
+      - name: 上传失败报告
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: functional-failure-report
+          path: |
+            e2e/playwright-report/cases/
+            e2e/test-results/cases/
