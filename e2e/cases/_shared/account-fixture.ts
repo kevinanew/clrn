@@ -62,12 +62,9 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
       validate(saved, origin);
       await verify(page, saved.account);
       try {
-        await context.addCookies(saved.storageState.cookies);
-        await context.addInitScript(({ origins }) => {
-          const state = origins.find(entry => entry.origin === location.origin);
-          if (!state) return;
-          for (const { name, value } of state.localStorage) localStorage.setItem(name, value);
-        }, { origins: saved.storageState.origins });
+        // 只在新上下文恢复一次。addInitScript 会在每次刷新时重写登录缓存，
+        // 掩盖应用丢失持久化状态的问题，使注册后的刷新测试产生假阳性。
+        await context.setStorageState(saved.storageState);
       } catch {
         throw new Error('本轮测试账号浏览器状态恢复失败');
       }

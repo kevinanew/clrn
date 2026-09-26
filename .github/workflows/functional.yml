@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: 'existing 不创建数据；all 包含注册、俱乐部和牌局创建'
+        description: 'existing 不创建；registration 仅注册；all 包含俱乐部和牌局创建'
         type: choice
-        options: [existing, all]
+        options: [existing, registration, all]
         default: existing
 
 permissions:
@@ -54,6 +54,8 @@ jobs:
         run: |
           if [ "$FUNCTIONAL_SCOPE" = all ]; then
             npm run test:functional
+          elif [ "$FUNCTIONAL_SCOPE" = registration ]; then
+            npm run test:functional:registration
           else
             npm run test:functional:existing
           fi
