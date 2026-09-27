@@ -1,15 +1,17 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { expect, type Page } from '@playwright/test';
-import type { Session } from './auth';
-import { openHall, openLoginForm, prepareContext, unique } from './page';
+import { signIn, type Session } from './auth';
+import { createTestingAccount } from './test-user';
+import { readTestApiToken } from './test-wallet';
+import { openHall, prepareContext } from './page';
 
 export type ProvisionedAccount = Session & {
   username: string;
   diamondBalance: number;
-  registrationDiamondBalance: number;
+  initialDiamondBalance: number;
 };
 
-/** 仅携带固定、无凭据的诊断，允许 fixture 原样报告已确认的注册限制。 */
+/** 仅携带固定、无凭据的诊断，允许 fixture 原样报告测试注册失败。 */
 export class RegistrationRejectedError extends Error {}
 
 export async function readDiamondBalance(page: Page, account: Session): Promise<number> {
@@ -31,7 +33,7 @@ export async function readDiamondBalance(page: Page, account: Session): Promise<
   return balance;
 }
 
-/** 每次调用使用新设备、新用户名；仅通过 staging 的真实注册界面创建测试账号。 */
+/** 每次调用使用新设备、新用户名；通过 staging 测试接口创建账号，再从真实界面登录。 */
 export async function registerAccount(page: Page): Promise<ProvisionedAccount> {
   try {
     return await registerOnStaging(page);
@@ -50,64 +52,16 @@ async function registerOnStaging(page: Page): Promise<ProvisionedAccount> {
   expect(['h5.page.shafayouxi.org', 'h5.shafayouxi.org']).toContain(target.hostname);
   const username = `e2e${randomBytes(7).toString('hex')}`;
   const password = `T${randomBytes(7).toString('hex')}9`;
-  await openLoginForm(page);
-  await (await unique(page, 'username-input')).fill(username);
-  await (await unique(page, 'password-input')).fill(password);
-  await expect.poll(async () => (await unique(page, 'password-input')).inputValue().then(value => value === password), {
-    message: '注册密码应符合长度限制并已填入',
-  }).toBe(true);
-  const registration = page.waitForResponse(response =>
-    new URL(response.url()).pathname === '/public/v11/user/register/username_password'
-    && response.request().method() === 'POST',
-    { timeout: 60_000 },
-  );
-  const login = page.waitForResponse(response =>
-    new URL(response.url()).pathname === '/public/v10/user/login/username/password',
-    { timeout: 60_000 },
-  ).catch(() => null);
-  let signedIn;
+  let created;
   try {
-    const [registered] = await Promise.all([
-      registration,
-      (await unique(page, 'sign-in-button')).click(),
-    ]);
-    const body = await registered.json();
-    if (!registered.ok() || body.ok !== true) {
-      const limit = page.getByTestId('alert-message-text').filter({
-        hasText: '此网络已达注册上限，请稍后再试', visible: true,
-      });
-      // 响应先于 alert 渲染；只报告已核实的固定文案，不打印服务端响应或凭据。
-      const rateLimited = await limit.waitFor({ state: 'visible', timeout: 3_000 })
-        .then(() => true, () => false);
-      throw new RegistrationRejectedError(rateLimited
-        ? 'staging 注册受限：此网络已达注册上限，请稍后再试；本轮不会再次注册'
-        : `staging 拒绝注册（HTTP ${registered.status()}）；本轮不会再次注册`);
-    }
-    signedIn = await login;
-    expect(signedIn, '注册成功后应收到自动登录响应').not.toBeNull();
-    expect(signedIn!.ok(), '注册后自动登录应成功').toBeTruthy();
-    expect((await signedIn!.json()).ok, '登录业务响应应成功').toBe(true);
+    const token = await readTestApiToken();
+    created = await createTestingAccount({ username, password }, token);
   } catch (error) {
-    // Playwright 的失败 DOM 快照会记录 input 值，即使 type=password；先清空随机凭据。
-    for (const id of ['username-input', 'password-input']) {
-      const input = page.getByTestId(id).filter({ visible: true });
-      if (await input.count()) await input.fill('').catch(() => undefined);
-    }
-    throw error;
+    throw new RegistrationRejectedError(error instanceof Error ? error.message : '测试账号创建失败');
   }
-  await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible({ timeout: 60_000 });
-  const session = await page.evaluate(() => {
-    const raw = localStorage.getItem('save.user.origin.data.from.server.key');
-    const auth = raw ? JSON.parse(raw) : null;
-    if (!auth?.user_id || !auth?.api_token?.access_token || !auth?.api_token?.token_type) {
-      throw new Error('注册后没有完整登录状态');
-    }
-    return { userId: String(auth.user_id), authorization: `${auth.api_token.token_type} ${auth.api_token.access_token}` };
-  });
-  const account: Session = {
-    ...session,
-    accountUrl: `${new URL(signedIn!.url()).origin}/v11/user/${encodeURIComponent(session.userId)}/account`,
-  };
+  const account = await signIn(page, { username, password });
+  expect(account.userId === created.userId, '登录账号必须与测试接口创建的账号一致').toBe(true);
   const diamondBalance = await readDiamondBalance(page, account);
-  return { ...account, username, diamondBalance, registrationDiamondBalance: diamondBalance };
+  expect(diamondBalance, '测试注册不发放钻石奖励').toBe(0);
+  return { ...account, username, diamondBalance, initialDiamondBalance: diamondBalance };
 }

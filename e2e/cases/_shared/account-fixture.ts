@@ -71,7 +71,7 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
       await openHall(page);
     } else {
       try {
-        // 注册失败或 worker 重启时也不能再次注册，避免触发同 IP 限额。
+        // 注册失败或 worker 重启时也不能再次注册，避免重复创建测试数据。
         await writeFile(join(directory, 'registration-attempted'), '', { mode: 0o600, flag: 'wx' });
       } catch {
         throw new Error('本轮已尝试注册，未得到可复用账号；不会再次注册');
@@ -81,7 +81,7 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
         account = await registerAccount(page);
       } catch (error) {
         if (error instanceof RegistrationRejectedError) throw error;
-        throw new Error('本轮新账号注册失败；请检查 staging 注册限制，不会自动重试注册');
+        throw new Error('本轮新账号注册失败；请检查 staging 测试接口、token 及登录流程，不会自动重试注册');
       }
       const browserState = await context.storageState();
       const host = new URL(origin).hostname;
