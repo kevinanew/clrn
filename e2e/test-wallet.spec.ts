@@ -8,12 +8,12 @@ const account = {
   authorization: 'unused',
 };
 const originalFetch = globalThis.fetch;
-const originalToken = process.env.TEST_API_TOKEN;
+const originalToken = process.env.TESTING_API_TOKEN;
 const originalCI = process.env.CI;
 
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
-  for (const [name, value] of [['TEST_API_TOKEN', originalToken], ['CI', originalCI]]) {
+  for (const [name, value] of [['TESTING_API_TOKEN', originalToken], ['CI', originalCI]]) {
     if (value === undefined) delete process.env[name!];
     else process.env[name!] = value;
   }
@@ -21,9 +21,9 @@ test.afterEach(() => {
 
 test('CI 未配置 token 时明确失败，配置后使用环境变量', async () => {
   process.env.CI = 'true';
-  delete process.env.TEST_API_TOKEN;
-  await expect(readTestApiToken()).rejects.toThrow('缺少 TEST_API_TOKEN');
-  process.env.TEST_API_TOKEN = 'test-only-token';
+  delete process.env.TESTING_API_TOKEN;
+  await expect(readTestApiToken()).rejects.toThrow('缺少 TESTING_API_TOKEN');
+  process.env.TESTING_API_TOKEN = 'test-only-token';
   expect(await readTestApiToken()).toBe('test-only-token');
 });
 
@@ -39,18 +39,18 @@ test('生产域名、伪造 staging 后缀及不匹配钱包在发送请求前�
   }
 });
 
-test('设置固定余额使用 JSON token，禁止重定向且不发送用户登录凭据', async () => {
+test('设置固定余额使用 X-Testing-Api-Token 请求头，禁止重定向且不发送用户登录凭据', async () => {
   let captured: RequestInit | undefined;
   globalThis.fetch = async (url, options) => {
-    expect(url).toBe(`https://api.shafayouxi.org/public/v1/wallet/${userId}/set_balance`);
+    expect(url).toBe(`https://api.shafayouxi.org/public/v1/wallet/${userId}/set_balance/testing`);
     captured = options;
     return Response.json({ ok: true, result: { wallet_id: userId, currency_name: 'diamond', balance: '60' } });
   };
   await setCreationDiamondBalance(account, 'test-only-token');
   expect(captured?.method).toBe('POST');
   expect(captured?.redirect).toBe('error');
-  expect(captured?.headers).toEqual({ 'Content-Type': 'application/json' });
-  expect(JSON.parse(captured?.body as string)).toEqual({ token: 'test-only-token', currency_name: 'diamond', balance: '60' });
+  expect(captured?.headers).toEqual({ 'Content-Type': 'application/json', 'X-Testing-Api-Token': 'test-only-token' });
+  expect(JSON.parse(captured?.body as string)).toEqual({ currency_name: 'diamond', balance: '60' });
 });
 
 for (const status of [401, 404, 500]) {

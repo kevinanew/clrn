@@ -19,7 +19,7 @@ npm run test:functional:existing
 
 `test:functional:existing` 明确排除标记为 `@creates-data` 的 AUTH-007、CLUB-001、
 CLUB-002、PRIVATE-001，适用于已有账号浏览、认证和表单回归，不需要创建专用账号或
-TEST_API_TOKEN。被排除流程不计为通过。默认 `test:functional` 仍执行全部案例。
+TESTING_API_TOKEN。被排除流程不计为通过。默认 `test:functional` 仍执行全部案例。
 功能 CI 的 push 和默认手动运行也使用 existing；具备专用账号后手动选择 `scope=all`
 才运行创建流程及其凭据预检。
 

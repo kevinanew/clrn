@@ -6,7 +6,7 @@ const stagingWalletOrigin = 'https://api.shafayouxi.org';
 
 /** CI 使用 Secret；本机可直接复用相邻 staging 部署仓库中的共用 Secret。 */
 export async function readTestApiToken(): Promise<string> {
-  const configured = process.env.TEST_API_TOKEN?.trim();
+  const configured = process.env.TESTING_API_TOKEN?.trim();
   if (configured) return configured;
   if (!process.env.CI) {
     try {
@@ -23,7 +23,7 @@ export async function readTestApiToken(): Promise<string> {
       // 文件缺失时提供统一配置提示，不将部署内容写入报告。
     }
   }
-  throw new Error('缺少 TEST_API_TOKEN；请配置环境变量或本机相邻 staging 部署文件的 test-api-token Secret');
+  throw new Error('缺少 TESTING_API_TOKEN；请配置环境变量或本机相邻 staging 部署文件的 test-api-token Secret');
 }
 
 /** 仅为已验证登录的 staging 创建专用账号设置钻石，不通过浏览器发送管理 token。 */
@@ -37,10 +37,10 @@ export async function setCreationDiamondBalance(account: Session, token: string)
   }
   let response: Response;
   try {
-    response = await fetch(`${stagingWalletOrigin}/public/v1/wallet/${account.userId}/set_balance`, {
+    response = await fetch(`${stagingWalletOrigin}/public/v1/wallet/${account.userId}/set_balance/testing`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, currency_name: 'diamond', balance: '60' }),
+      headers: { 'Content-Type': 'application/json', 'X-Testing-Api-Token': token },
+      body: JSON.stringify({ currency_name: 'diamond', balance: '60' }),
       redirect: 'error',
       signal: AbortSignal.timeout(15_000),
     });

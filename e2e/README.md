@@ -47,7 +47,8 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 ## 测试资产边界
 
-创建案例在每例开始前调用 staging `POST /public/v1/wallet/<user_id>/set_balance`，
+创建案例在每例开始前调用 staging `POST /public/v1/wallet/<user_id>/set_balance/testing`，
+通过 `X-Testing-Api-Token` 请求头传递 token，JSON 请求体包含 `currency_name` 和 `balance`。
 将专用账号设为 60 钻，再通过真实钱包读取确认。仅初始化时设置余额，保留业务扣费和退款断言。
 Production E2E 仅允许不会修改用户资产和业务数据的只读检查。
 
@@ -85,10 +86,10 @@ Production E2E 仅允许不会修改用户资产和业务数据的只读检查�
 未开始牌局解散后退还其费用。
 
 功能 CI 从仓库 Actions Secrets 注入 `E2E_CREATION_USERNAME`、
-`E2E_CREATION_PASSWORD` 和 `TEST_API_TOKEN`，从 Actions Variables 读取 `E2E_STAGING_URL`。
+`E2E_CREATION_PASSWORD` 和 `TESTING_API_TOKEN`，从 Actions Variables 读取 `E2E_STAGING_URL`。
 运行前检查三个 Secret 是否齐全；缺失会直接失败并列出配置名，不跳过创建用例。
 在仓库 Settings → Secrets and variables → Actions 配置凭据，勿写入代码或报告。
-`TEST_API_TOKEN` 与 staging 部署的 `test-api-token` Secret 一致。
+`TESTING_API_TOKEN` 与 staging 部署的 `test-api-token` Secret 一致。
 本机优先读取环境变量；未设置且非 CI 时，从相邻
 `../goplay_staging_auto_stack/user_transaction_flask/deploy.yaml` 的 `stringData.token` 读取。
 不会将 token 写入代码、浏览器或报告；请求禁止重定向，并检查 HTTP 状态和业务响应。
