@@ -4,7 +4,7 @@
 
 P0，仅 staging，简体中文，桌面和手机。配置 `TESTING_API_TOKEN`，无需预先配置账号。
 `newAccount` 每轮最多创建一个随机用户名、16 位密码和独立设备的账号。
-Node 进程调用 `POST /public/v1/user/register/username_password/testing`，
+Node 进程调用 `POST /public/v10/user/register/username_password/testing`，
 以 `X-Testing-Api-Token` 请求头鉴权，仅传 username 和 password。
 随后通过真实用户名登录界面登录；禁止回退到普通注册接口。
 桌面和手机复用本轮会话，恢复时仅调用一次 `context.setStorageState`。

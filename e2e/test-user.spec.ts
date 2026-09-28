@@ -9,7 +9,7 @@ test.afterEach(() => { globalThis.fetch = originalFetch; });
 
 test('测试注册使用专用请求头和用户名密码，不发送设备信息且禁止重定向', async () => {
   globalThis.fetch = async (url, options) => {
-    expect(url).toBe('https://api.shafayouxi.org/public/v1/user/register/username_password/testing');
+    expect(url).toBe('https://api.shafayouxi.org/public/v10/user/register/username_password/testing');
     expect(options?.method).toBe('POST');
     expect(options?.redirect).toBe('error');
     expect(options?.headers).toEqual({ 'Content-Type': 'application/json', 'X-Testing-Api-Token': 'test-token' });

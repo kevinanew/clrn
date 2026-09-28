@@ -131,7 +131,7 @@ AUTH-007、CLUB-001、CLUB-002、PRIVATE-001 标记为 `@creates-data`，不计�
 
 ### 2026-09-28 测试账号准备方式调整
 
-AUTH-007 改用 `POST /public/v1/user/register/username_password/testing` 和
+AUTH-007 改用 `POST /public/v10/user/register/username_password/testing` 和
 `X-Testing-Api-Token`，随后从真实界面登录。初始钻石必须为 0，不再断言注册奖励及奖励流水。
 上述普通注册限额及奖励检查记录为历史结果；新接口不检查 IP／设备注册频率，
 失败时仍明确失败，不重试或回退。registration 范围现在必须配置 TESTING_API_TOKEN。

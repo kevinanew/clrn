@@ -8,7 +8,7 @@ export async function createTestingAccount(
   if (!token.trim()) throw new Error('缺少 TESTING_API_TOKEN');
   let response: Response;
   try {
-    response = await fetch(`${stagingUserOrigin}/public/v1/user/register/username_password/testing`, {
+    response = await fetch(`${stagingUserOrigin}/public/v10/user/register/username_password/testing`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Testing-Api-Token': token },
       body: JSON.stringify(credentials),
