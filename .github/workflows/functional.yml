@@ -31,12 +31,16 @@ jobs:
       E2E_CREATION_PASSWORD: ${{ secrets.E2E_CREATION_PASSWORD }}
       TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
     steps:
-      - name: 检查创建专用账号及余额接口配置
-        if: github.event_name == 'workflow_dispatch' && inputs.scope == 'all'
+      - name: 检查测试注册及创建场景配置
+        if: github.event_name == 'workflow_dispatch' && (inputs.scope == 'all' || inputs.scope == 'registration')
         shell: sh
         run: |
           missing=0
-          for name in E2E_CREATION_USERNAME E2E_CREATION_PASSWORD TESTING_API_TOKEN; do
+          names="TESTING_API_TOKEN"
+          if [ "${{ inputs.scope }}" = all ]; then
+            names="$names E2E_CREATION_USERNAME E2E_CREATION_PASSWORD"
+          fi
+          for name in $names; do
             if ! printenv "$name" | grep -q .; then
               echo "::error::缺少 Actions Secret: $name；请配置独立 staging 创建账号及共用测试接口 token。"
               missing=1
@@ -47,6 +51,9 @@ jobs:
       - name: 安装测试依赖
         working-directory: e2e
         run: npm ci
+      - name: 检查测试账号及余额接口辅助代码
+        working-directory: e2e
+        run: npx playwright test test-user.spec.ts test-wallet.spec.ts --workers=1
       - name: 运行线上 TypeScript 案例
         working-directory: e2e
         env:

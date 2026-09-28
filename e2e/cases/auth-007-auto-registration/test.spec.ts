@@ -6,7 +6,7 @@ import { clickAfterSignInNotices } from '../_shared/sign-in-notices';
 
 test.use({ screenshot: 'off', trace: 'off' });
 
-test('AUTH-007：独立新账号自动注册登录并获得测试钻石', { tag: '@creates-data' }, async ({ page, newAccount }) => {
+test('AUTH-007：测试接口创建独立账号后登录且不发放奖励', { tag: '@creates-data' }, async ({ page, newAccount }) => {
   const account = newAccount;
   await page.addLocatorHandler(page.getByTestId('add-to-home-open-button'), async () => {
     await (await unique(page, 'add-to-home-close-button')).click();
@@ -17,22 +17,15 @@ test('AUTH-007：独立新账号自动注册登录并获得测试钻石', { tag:
       extraRegistrations += 1;
     }
   });
-  await test.step('通过真实注册界面创建本轮独立账号', async () => {
+  await test.step('通过测试接口创建本轮独立账号并从界面登录', async () => {
     expect(await accountStatus(page, account)).toBe(200);
   });
-  await test.step('注册奖励提供非零钻石，页面显示同一余额', async () => {
-    expect(account.registrationDiamondBalance, '注册时应获得创建功能可用的钻石').toBeGreaterThan(0);
+  await test.step('测试账号初始钻石为零，页面显示同一余额', async () => {
+    expect(account.initialDiamondBalance, '测试注册不应发放钻石').toBe(0);
     await clickAfterSignInNotices(page, 'settings-tab');
     await expect(await unique(page, 'username-text')).toContainText(account.username);
     const balance = await unique(page, 'diamond-balance-text');
     await expect(balance).toHaveText(String(account.diamondBalance));
-  });
-  await test.step('注册奖励生成可见流水', async () => {
-    await (await unique(page, 'mall')).click();
-    await (await unique(page, 'currency-transaction-record-button')).click();
-    await expect(await unique(page, 'coin-transaction-record-view')).toContainText('注册奖励');
-    await expect(page.getByTestId('CurrencyTransactionRecordItem_amount').filter({ visible: true }).first())
-      .toHaveText(/^\+\d/);
   });
   await test.step('刷新保留同一账号，不重复注册或重复发放钻石', async () => {
     await openHall(page);

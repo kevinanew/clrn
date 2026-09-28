@@ -10,7 +10,8 @@
     "report": "playwright show-report playwright-report",
     "test:functional": "playwright test --config cases/playwright.config.ts",
     "test:functional:existing": "playwright test --config cases/playwright.config.ts --grep-invert @creates-data",
-    "test:functional:registration": "playwright test --config cases/playwright.config.ts auth-007-auto-registration"
+    "test:functional:registration": "playwright test --config cases/playwright.config.ts auth-007-auto-registration",
+    "test:functional:joining": "playwright test --config cases/playwright.config.ts private-003-join-created-room club-005-join-approval-invite"
   },
   "devDependencies": {
     "@playwright/test": "1.59.1"

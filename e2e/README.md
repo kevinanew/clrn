@@ -73,8 +73,8 @@ Production E2E 仅允许不会修改用户资产和业务数据的只读检查�
 
 只读浏览案例使用 `signedInAccount` fixture，每例登录已有测试账号，禁止自动注册。
 
-[自动注册案例](cases/auth-007-auto-registration/README.md) 单独验证真实注册与奖励：
-每轮最多注册一个 staging 账号，桌面和手机恢复该会话，不重复注册。
+[测试注册案例](cases/auth-007-auto-registration/README.md) 使用专用 token 创建账号，再通过真实界面登录：
+每轮最多创建一个 staging 账号，验证初始钻石为 0；桌面和手机恢复该会话，不重复注册。
 注册失败不会重试或退回旧账号。其会话暂存在系统临时目录（目录 0700，文件 0600），
 正常结束包括测试失败时自动删除，不进入 Git 或报告；强制杀进程时可能需手动清理。
 
@@ -87,12 +87,12 @@ Production E2E 仅允许不会修改用户资产和业务数据的只读检查�
 
 功能 CI 从仓库 Actions Secrets 注入 `E2E_CREATION_USERNAME`、
 `E2E_CREATION_PASSWORD` 和 `TESTING_API_TOKEN`，从 Actions Variables 读取 `E2E_STAGING_URL`。
-运行前检查三个 Secret 是否齐全；缺失会直接失败并列出配置名，不跳过创建用例。
+scope=all 预检三个 Secret，scope=registration 仅预检 TESTING_API_TOKEN；缺失明确失败。
 在仓库 Settings → Secrets and variables → Actions 配置凭据，勿写入代码或报告。
 `TESTING_API_TOKEN` 与 staging 部署的 `test-api-token` Secret 一致。
 本机优先读取环境变量；未设置且非 CI 时，从相邻
 `../goplay_staging_auto_stack/user_transaction_flask/deploy.yaml` 的 `stringData.token` 读取。
 不会将 token 写入代码、浏览器或报告；请求禁止重定向，并检查 HTTP 状态和业务响应。
-自动注册奖励与只读案例不使用此余额初始化。
+测试注册与只读案例不使用此余额初始化。测试注册接口不发放奖励。
 
 完整功能线盘点及剩余限制见 [COVERAGE.md](cases/COVERAGE.md)。

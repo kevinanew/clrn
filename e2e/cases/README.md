@@ -12,14 +12,16 @@ npx playwright install chromium
 npm run test:functional
 npm run test:functional -- auth-001-login-form
 npm run test:functional:existing
+npm run test:functional:joining
 ```
 
 默认站点为 https://h5.page.shafayouxi.org/，可用 `E2E_STAGING_URL` 指定已部署的 staging。
 桌面与手机使用独立浏览器上下文，统一串行执行，不共享浏览器登录状态。
 
 `test:functional:existing` 明确排除标记为 `@creates-data` 的 AUTH-007、CLUB-001、
-CLUB-002、PRIVATE-001，适用于已有账号浏览、认证和表单回归，不需要创建专用账号或
+CLUB-002、PRIVATE-001、PRIVATE-003、CLUB-005，适用于已有账号浏览、认证和表单回归，不需要创建专用账号或
 TESTING_API_TOKEN。被排除流程不计为通过。默认 `test:functional` 仍执行全部案例。
+`test:functional:joining` 只运行私人房加入和俱乐部申请、审批及邀请入会，需配置创建专用账号和 TESTING_API_TOKEN。
 功能 CI 的 push 和默认手动运行也使用 existing；具备专用账号后手动选择 `scope=all`
 才运行创建流程及其凭据预检。
 
@@ -76,5 +78,6 @@ CI 使用同一并发组串行运行功能测试，避免多轮登录互相影�
 
 `npm run test:functional:registration` 或手动 CI 的 `scope=registration`
 只运行 AUTH-007 桌面／手机项目，每轮最多创建一个账号。
-它会检查自动登录、账号身份、奖励和流水、刷新后的会话与余额；不运行俱乐部或牌局创建。
-注册限额是否恢复以实际响应为准，不会自动循环注册；自动 push 仍运行 existing。
+它通过专用测试接口创建账号，需要 TESTING_API_TOKEN，检查真实界面登录、账号身份、
+零初始钻石和刷新后的会话与余额；不检查普通注册奖励，不运行俱乐部或牌局创建。
+测试接口失败不会回退到普通注册或重试；自动 push 仍运行 existing。
