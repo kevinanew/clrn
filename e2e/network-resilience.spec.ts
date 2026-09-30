@@ -100,5 +100,9 @@ test.describe('H5 弱网行为', () => {
     await expect(page.locator('[data-testid="club-list-retry-button"]')).toBeVisible();
     await expect(page.locator('[data-testid="club-tab-screen"]')).toBeVisible();
     expect(interceptedRequests).toBeGreaterThan(0);
+
+    const requestsBeforeRetry = interceptedRequests;
+    await page.locator('[data-testid="club-list-retry-button"]').click();
+    await expect.poll(() => interceptedRequests).toBeGreaterThan(requestsBeforeRetry);
   });
 });
