@@ -13,13 +13,14 @@ npm run test:functional
 npm run test:functional -- auth-001-login-form
 npm run test:functional:existing
 npm run test:functional:joining
+npm run test:functional -- club-004-member-management # 多账号连续移除，需创建凭据
 ```
 
 默认站点为 https://h5.page.shafayouxi.org/，可用 `E2E_STAGING_URL` 指定已部署的 staging。
 桌面与手机使用独立浏览器上下文，统一串行执行，不共享浏览器登录状态。
 
 `test:functional:existing` 明确排除标记为 `@creates-data` 的 AUTH-007、CLUB-001、
-CLUB-002、PRIVATE-001、PRIVATE-003、CLUB-005，适用于已有账号浏览、认证和表单回归，不需要创建专用账号或
+CLUB-002、CLUB-004、CLUB-005、PRIVATE-001、PRIVATE-003，适用于已有账号浏览、认证和表单回归，不需要创建专用账号或
 TESTING_API_TOKEN。被排除流程不计为通过。默认 `test:functional` 仍执行全部案例。
 `test:functional:joining` 只运行私人房加入和俱乐部申请、审批及邀请入会，需配置创建专用账号和 TESTING_API_TOKEN。
 功能 CI 的 push 和默认手动运行也使用 existing；具备专用账号后手动选择 `scope=all`

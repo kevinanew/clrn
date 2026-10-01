@@ -99,11 +99,9 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
       const searchResponse = await searching;
       expect(searchResponse.ok()).toBeTruthy();
       expect((await searchResponse.json()).result).toContain(clubId);
-      const result = applicant.page.getByTestId('search-club-item').filter({ visible: true });
-      await expect(result).toHaveCount(1);
-      await expect(result.getByTestId('club-search-item-name')).toHaveText(name);
-      const target = applicant.page.getByTestId('club-search-item-touchable').filter({ has: result });
+      const target = applicant.page.getByTestId('club-search-item-touchable').filter({ visible: true });
       await expect(target).toHaveCount(1);
+      await expect(target.getByTestId('club-search-item-name')).toHaveText(name);
       await target.click();
       await expect(await unique(applicant.page, 'club-info-name')).toHaveText(name);
       const applying = applicant.page.waitForResponse(response => response.request().method() === 'POST'
