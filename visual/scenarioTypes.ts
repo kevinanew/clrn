@@ -83,6 +83,8 @@ export type VisualScenario = {
   fixedTexts: FixedTextRule[];
   /** 仅用于「出现与否本身不定」的元素（如新版本提示），display:none 摘除 */
   hideSelectors: string[];
+  /** 一个真实房间流程连续采集的多张截图；缺省只采集 label 本身。 */
+  snapshotStates?: string[];
 };
 
 export const LOCALES: LocaleDef[] = [
@@ -138,6 +140,7 @@ export type SignedInPageDef = {
   fixedTexts?: FixedTextRule[];
   /** 仅用于「出现与否本身不定」的元素 */
   hideSelectors?: string[];
+  snapshotStates?: string[];
   /**
    * 覆盖的视口，缺省为全部。应用在 desktop 也是居中窄列布局，
    * 纯静态子页 desktop 与 mobile 只差左右留白，只保留 mobile 以省时间。
@@ -145,4 +148,4 @@ export type SignedInPageDef = {
   viewports?: ViewportLabel[];
 };
 
-export type ScenarioGroup = 'hall' | 'auth' | 'message' | 'private-room' | 'club' | 'account' | 'wallet' | 'help';
+export type ScenarioGroup = 'hall' | 'auth' | 'message' | 'private-room' | 'texas-holdem' | 'club' | 'account' | 'wallet' | 'help';

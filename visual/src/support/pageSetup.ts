@@ -163,7 +163,9 @@ export async function setupContextForScenario(
 ): Promise<void> {
   await fixNavigatorLanguage(context);
   await disableAnimations(context);
-  await mockVisualNetworkDependencies(context);
+  await mockVisualNetworkDependencies(context, {
+    realPrivateRoom: scenario.group === 'texas-holdem',
+  });
 
   await context.addInitScript(
     ({ locale, langKey, deviceId }: { locale: string; langKey: string; deviceId: string }) => {
