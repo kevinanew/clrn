@@ -5,7 +5,12 @@ import { buildScenarios } from './scenarios';
 import { visualBaseUrl } from './target';
 
 // 与测试使用同一份场景清单，历史废弃截图不冒充当前覆盖。
-const scenarios = buildScenarios();
+const scenarios = buildScenarios().flatMap(scenario =>
+  scenario.snapshotStates?.map(state => ({
+    ...scenario,
+    label: `${scenario.label}_${state}`,
+    pageLabel: `${scenario.pageLabel}_${state}`,
+  })) ?? [scenario]);
 const directory = path.join(__dirname, 'snapshots');
 // Playwright 对 snapshot 参数中的下划线进行文件名清洗。
 const filename = (label: string) => `${label.replace(/_/g, '-')}.png`;
@@ -38,7 +43,7 @@ const escape = (value: string) => value.replace(/[&<>"']/g, character => ({
 writeFileSync(path.join(directory, 'manifest.json'), JSON.stringify({
   baseUrl: visualBaseUrl,
   scope: process.env.VISUAL_SCOPE || 'full',
-  note: 'Linux 视觉基准清单。使用固定文本与视觉接口 fixtures，不代表真实业务提交通过；生成清单不会更新或批准截图。',
+  note: 'Linux 视觉基准清单。德州场景会真实建房、进入牌桌并解散本次房间；其余页面使用固定文本与视觉接口 fixtures。生成清单不会更新或批准截图。',
   count: pages.length,
   pages,
 }, null, 2) + '\n');
@@ -54,7 +59,7 @@ a{color:#1558a8}small{display:block;margin:8px 0}code{font-size:12px}
 </style>
 <h1>来玩 H5 页面截图索引</h1>
 <p>${pages.length} 张当前基准 · <a href="manifest.json">页面清单与 SHA-256</a></p>
-<p>截图使用固定数据用于视觉回归；真实业务验证范围见 e2e/cases/COVERAGE.md。历史废弃截图不计入清单。</p>
+<p>截图使用固定文本用于视觉回归；德州场景会真实建房并在截图后解散。其他业务验证范围见 e2e/cases/COVERAGE.md。历史废弃截图不计入清单。</p>
 <label>筛选页面、语言或视口 <input id="filter" type="search" placeholder="例如 mobile、login、club"></label>
 <p id="count" role="status">显示 ${pages.length} 张</p>
 <main>${pages.map(page => `<article data-label="${escape(page.label)}">

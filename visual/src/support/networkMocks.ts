@@ -123,7 +123,7 @@ async function mockHallMatchingGames(context: BrowserContext): Promise<void> {
 }
 
 /** 固定登录账号的俱乐部、私人房与钱包数据，避免 staging 账号状态进入基准图 */
-async function mockSignedInDynamicState(context: BrowserContext): Promise<void> {
+async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom = false): Promise<void> {
   const fulfill = (route: Parameters<Parameters<BrowserContext['route']>[1]>[0], result: unknown) =>
     route.fulfill({
       status: 200,
@@ -139,17 +139,19 @@ async function mockSignedInDynamicState(context: BrowserContext): Promise<void> 
     (url) => url.pathname === '/v10/clubs',
     (route) => fulfill(route, []),
   );
-  await context.route(/\/v10\/house\/user\/[^/?]+(?:\?|$)/, (route) =>
-    fulfill(route, {
-      house_id: 'visual-house-id',
-      user_id: 'visual-user-id',
-      house_number: 123456789,
-    }),
-  );
-  await context.route(/\/v10\/house\/users\/[^/]+\/visit_history(?:\?|$)/, (route) =>
-    fulfill(route, { house_numbers: [] }),
-  );
-  await context.route(/\/v2\/building\/rooms(?:\?|$)/, (route) => fulfill(route, []));
+  if (!realPrivateRoom) {
+    await context.route(/\/v10\/house\/user\/[^/?]+(?:\?|$)/, (route) =>
+      fulfill(route, {
+        house_id: 'visual-house-id',
+        user_id: 'visual-user-id',
+        house_number: 123456789,
+      }),
+    );
+    await context.route(/\/v10\/house\/users\/[^/]+\/visit_history(?:\?|$)/, (route) =>
+      fulfill(route, { house_numbers: [] }),
+    );
+    await context.route(/\/v2\/building\/rooms(?:\?|$)/, (route) => fulfill(route, []));
+  }
   // 商城商品接口在 staging 偶发超时/返回空列表，会让商城只剩余额卡。
   // 固定为现有视觉基准使用的商品，避免 reference 依赖远端商品配置与网络时序。
   await context.route(/\/v\d+\/alipay_order\/goods(?:\?|$)/, (route) =>
@@ -235,7 +237,10 @@ async function mockSignedInDynamicState(context: BrowserContext): Promise<void> 
  * 登录态采集会在场景开始前单独创建 context；它若跳过代理 metadata / 健康检查
  * mock，就会在应用启动阶段随机选中不可用的 staging 节点，根本无法进入登录页。
  */
-export async function mockVisualNetworkDependencies(context: BrowserContext): Promise<void> {
+export async function mockVisualNetworkDependencies(
+  context: BrowserContext,
+  options: { realPrivateRoom?: boolean } = {},
+): Promise<void> {
   // Freshchat 在线客服脚本是外部第三方资源（web 构建用占位 token），
   // 拉取慢且与视觉测试无关，直接屏蔽。
   await context.route(/freshchat\.com/, (route) => route.abort());
@@ -245,5 +250,5 @@ export async function mockVisualNetworkDependencies(context: BrowserContext): Pr
   await mockFixedCountryCode(context);
   await mockRoomDisallowRuleReminder(context);
   await mockHallMatchingGames(context);
-  await mockSignedInDynamicState(context);
+  await mockSignedInDynamicState(context, options.realPrivateRoom);
 }

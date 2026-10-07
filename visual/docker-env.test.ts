@@ -22,4 +22,12 @@ describe('visual Docker environment forwarding', () => {
     assert.match(referenceHost, /-e VISUAL_SCOPE/);
     assert.match(dockerCompose, /VISUAL_SCOPE: \$\{VISUAL_SCOPE:-\}/);
   });
+
+  test('only visual run commands forward the host testing token', () => {
+    for (const scriptName of ['test', 'test:all', 'test:locales', 'reference:zh', 'approve']) {
+      assert.match(packageJson.scripts[scriptName], /(?:^| )-e TESTING_API_TOKEN(?: |$)/, scriptName);
+    }
+    const referenceHost = readFileSync(new URL('./reference-host.sh', import.meta.url), 'utf8');
+    assert.match(referenceHost, /-e TESTING_API_TOKEN/);
+  });
 });
