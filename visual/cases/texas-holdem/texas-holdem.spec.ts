@@ -6,6 +6,7 @@ import { ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
 import { preparePage } from '../../src/support/preparePage';
 import { createTexasRoom, deleteTexasRoom } from './room';
 import { OPTIONAL_PRE_GAME_STATES, PRE_GAME_STATES } from './scenarios';
+import { appliedGameTranslation, gameViewportCorrection } from './viewportAlignment';
 
 const visible = (page: Page, id: string) => page.locator(`[data-testid="${id}"]:visible`).last();
 
@@ -23,13 +24,19 @@ async function closePopup(page: Page, button: string, marker: string): Promise<v
 
 /** React Navigation 的游戏层有时相对视口偏移 ±4px；截图前归零。 */
 async function alignGameToViewport(page: Page): Promise<void> {
-  await visible(page, 'run-game-view').evaluate(node => {
+  const game = visible(page, 'run-game-view');
+  const { measuredTop, declaration } = await game.evaluate(node => {
     const element = node as HTMLElement;
-    const previous = Number(element.dataset.visualYOffset || 0);
-    const correction = previous - element.getBoundingClientRect().top;
-    element.dataset.visualYOffset = String(correction);
-    element.style.setProperty('translate', `0 ${correction}px`, 'important');
+    return {
+      measuredTop: element.getBoundingClientRect().top,
+      declaration: element.style.getPropertyValue('translate'),
+    };
   });
+  const correction = gameViewportCorrection(measuredTop, appliedGameTranslation(declaration));
+  await game.evaluate((node, amount) => {
+    const element = node as HTMLElement;
+    element.style.setProperty('translate', `0 ${amount}px`, 'important');
+  }, correction);
 }
 
 async function waitForGameConnection(page: Page): Promise<void> {
