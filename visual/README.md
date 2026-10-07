@@ -85,7 +85,7 @@
 游戏记录/礼品卡及其兑换·已过期/钱包流水/创建俱乐部/FAQ/FAQ 详情/联系我们/意见反馈/分享/官网列表/
 下载帮助及其子页/关于/应用管理/俱乐部通知/Telegram/语言设置/忘记密码及其邮箱·短信表单/
 手机号登录/选区号/用户协议/隐私政策）只保留 mobile 视口**，
-其余页面覆盖双视口（`scenarios.ts` 的 `viewports` 字段控制）。
+其余页面覆盖双视口（对应 `cases/<功能>/scenarios.ts` 的 `viewports` 字段控制）。
 
 - 全量（`VISUAL_LOCALES=all`）= (mobile 75 页 + desktop 27 页) × 3 语言 = **306 张**
 - 默认仅简中 = **102 张**
@@ -102,7 +102,7 @@
 - 关于页服务器编号（测速选出的最快节点，每次运行可能不同）→ `0`
 - 编辑昵称/签名输入框预填值（随测试账号资料变化）→ `TestNickname` / `TestBio`
 
-在 `scenarios.ts` 对应页面的 `fixedTexts` 配置。仅「出现与否本身不定」的元素
+在对应 `cases/<功能>/scenarios.ts` 页面的 `fixedTexts` 配置。仅「出现与否本身不定」的元素
 （如关于页「有新版本」提示）才用 `hideSelectors`（display:none 摘除）。
 
 暂不覆盖的页面及原因：
@@ -157,6 +157,7 @@ pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
 pnpm run report       # 查看报告
+pnpm run lint         # 检查仓库代码文件不超过 400 行
 ```
 
 Docker 只挂载测试仓库。`VISUAL_BASE_URL` 默认为线上地址，仅允许已部署的来玩 staging 域名。
@@ -165,7 +166,8 @@ Docker 只挂载测试仓库。`VISUAL_BASE_URL` 默认为线上地址，仅允�
 
 ### 只跑部分场景
 
-`VISUAL_FILTER` 会传给 `playwright test --grep`（正则匹配场景 label）：
+`VISUAL_FILTER` 用正则匹配场景 label，随后按选中的完整 label 精确筛选 Playwright 用例；
+功能目录名不会影响匹配：
 
 场景 label 格式为 `{locale}_{viewport}_{page}`（如 `zh-Hans_desktop_hall`），
 按「语言 → 视口 → 页面」生成。
@@ -211,6 +213,8 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 [视觉工作流](../.github/workflows/visual.yml) 在非 `release` 分支的视觉代码或工作流变更后，
 访问线上并检查简中核心 40 张截图；每日及手动 `full` 运行三种语言的完整场景。
 各语言顺序运行，不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
+三语言 CI 中，类型检查、场景配置测试和浏览器辅助测试只在简中任务运行一次；
+本机运行 `test`、`reference` 或 `approve` 仍会执行浏览器辅助测试。
 结果反映运行时已部署版本，不代表测试仓库提交已部署到应用。
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
@@ -227,7 +231,7 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 视觉测试仍保留现有的接口 mock 和固定文本填充，用于稳定余额、房间列表、国家码等截图内容；
 它验证线上前端的视觉表现。真实认证行为由 `e2e/cases/auth-002*` 和 `auth-003*` 检查。
-`tests/preparePage.spec.ts` 是测试工具自身的 DOM/HTTP fixture 检查，不启动应用开发环境。
+`tests/preparePage.spec.ts` 与 `tests/authValidation.spec.ts` 检查测试工具自身的 DOM/HTTP fixture，不启动应用开发环境。
 
 ### 测试与应用代码隔离
 
@@ -242,20 +246,25 @@ visual 专用的认证校验、mock、等待、重试、稳定化及截图判定
 - 出现「分片登录态未生效」说明 staging 清零或 token 提前失效；重新运行即可，
   入口会重新采集登录态，场景自身不会并发登录并作废其它 worker 的 token
 - `reference` 失败时**不要**直接提交生成的基准图，先看日志确认所有场景成功
-- **页内点击导航必须走 `scenarios.ts` 的 `navClickTestIds`**（截图前执行）；
+- **页内点击导航必须走对应 `cases/<功能>/scenarios.ts` 的 `navClickTestIds`**（截图前执行）；
   不要改成截图流程末尾点击——打开的登录 modal 会被随即卸载，且极难排查
 
 ## 文件说明
 
 | 路径 | 说明 |
 | --- | --- |
-| `scenarios.ts` | 场景单一数据源（页面清单、固定填充、登录后页面） |
-| `tests/visual.spec.ts` | 由场景矩阵生成的参数化用例 |
+| `scenarios.ts` | 语言、视口、范围过滤及场景矩阵 |
+| `scenarioTypes.ts` | 场景类型与固定文本规则 |
+| `cases/<功能>/scenarios.ts` | 对应功能的页面入口、导航和就绪条件 |
+| `cases/<功能>/<功能>.spec.ts` | 对应功能的参数化用例 |
+| `cases/<功能>/snapshots/` | 与用例放在一起的基准图（提交到 Git） |
+| `cases/runScenario.ts` | 各功能共用的截图执行流程 |
 | `playwright.config.ts` | Playwright 配置（阈值、串行执行） |
 | `src/support/` | context 设置 / 页面准备 / 登录流程 |
 | `src/captureAuthState.ts` | 运行开头的一次性登录态采集 |
 | `run-visual.ts` | Docker/CI 入口（test / reference / approve） |
-| `snapshots/` | 基准图（提交到 Git） |
+| `snapshots/` | 汇总索引与清单（由 `pnpm run gallery` 生成） |
+| `../lint-lines.mjs` | 仓库代码文件 400 行上限，CI 会执行 |
 
 ## 页面截图索引
 
@@ -266,7 +275,8 @@ cd visual
 npm run gallery
 ```
 
-打开 [snapshots/index.html](snapshots/index.html) 可按页面、语言、视口筛选图片。
+打开 [snapshots/index.html](snapshots/index.html) 可按页面、语言、视口筛选图片。PNG 位于对应
+`cases/<功能>/snapshots/`，例如大厅截图与 `cases/hall/hall.spec.ts`、`cases/hall/scenarios.ts` 相邻。
 [manifest.json](snapshots/manifest.json) 记录当前场景的入口、就绪定位、固定内容、尺寸和
 PNG 的 SHA-256。索引与测试共用 `buildScenarios()`，排除历史废弃图片；缺少基准图时命令失败，
 不会将不完整覆盖报告为成功。生成索引不更新或批准图片，也不表示本次已重新测试历史基准。

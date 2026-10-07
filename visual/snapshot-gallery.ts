@@ -9,15 +9,18 @@ const scenarios = buildScenarios();
 const directory = path.join(__dirname, 'snapshots');
 // Playwright 对 snapshot 参数中的下划线进行文件名清洗。
 const filename = (label: string) => `${label.replace(/_/g, '-')}.png`;
-const missing = scenarios.filter(scenario => !existsSync(path.join(directory, filename(scenario.label))));
+const snapshotFile = (scenario: (typeof scenarios)[number]) =>
+  `../cases/${scenario.group}/snapshots/${filename(scenario.label)}`;
+const missing = scenarios.filter(scenario => !existsSync(path.join(directory, snapshotFile(scenario))));
 if (missing.length) {
   throw new Error(`缺少 ${missing.length} 张基准图，请先完成 reference：\n${missing.map(s => s.label).join('\n')}`);
 }
 const pages = scenarios.map(scenario => {
-  const file = filename(scenario.label);
+  const file = snapshotFile(scenario);
   return {
     label: scenario.label,
     page: scenario.pageLabel,
+    group: scenario.group,
     locale: scenario.locale,
     viewport: scenario.viewport,
     signedIn: scenario.signIn,

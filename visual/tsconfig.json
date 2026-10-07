@@ -21,7 +21,10 @@
     "playwright.config.ts",
     "scenarios.ts",
     "scenarios.test.ts",
+    "scenarioPages.test.ts",
+    "snapshotLocations.test.ts",
     "target.test.ts",
+    "cases/**/*.ts",
     "src/**/*.ts",
     "tests/**/*.ts"
   ]

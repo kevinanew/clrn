@@ -39,6 +39,7 @@ jobs:
       VISUAL_BASE_URL: https://h5.page.shafayouxi.org/
       VISUAL_LOCALES: ${{ matrix.locale }}
       VISUAL_SCOPE: ${{ (github.event_name == 'schedule' || inputs.full) && 'full' || 'core' }}
+      VISUAL_SKIP_SUPPORT_TESTS: ${{ matrix.locale != 'zh-Hans' }}
       VISUAL_WORKERS: '1'
     steps:
       - name: Check out visual tests
@@ -51,6 +52,7 @@ jobs:
         working-directory: visual
         run: pnpm install --frozen-lockfile
       - name: Check visual suite
+        if: matrix.locale == 'zh-Hans'
         working-directory: visual
         run: |
           pnpm run typecheck

@@ -4,7 +4,7 @@ import { spawnSync } from 'child_process';
 import { visualBaseUrl } from './target';
 import fs from 'fs';
 import path from 'path';
-import { getVisualShardConfig } from './run-visual-config';
+import { exactScenarioGrep, getVisualShardConfig, selectScenariosByLabel } from './run-visual-config';
 import {
   buildScenarios,
   getActiveLocales,
@@ -125,20 +125,9 @@ function captureAuthState(): void {
   throw new Error('登录态采集进程连续失败，已中止本轮视觉回归');
 }
 
-/** 返回 Playwright --grep 实际会选中的场景，用于计算安全分片与登录态需求。 */
+/** 返回按场景 label 选中的用例，用于计算安全分片与登录态需求。 */
 function getSelectedScenarios(): ReturnType<typeof buildScenarios> {
-  const scenarios = buildScenarios();
-  const filter = process.env.VISUAL_FILTER;
-  let matcher: RegExp | undefined;
-  if (filter) {
-    try {
-      matcher = new RegExp(filter);
-    } catch {
-      // Playwright 会给出正式的无效 grep 错误；这里只保守地按全部场景规划。
-      return scenarios;
-    }
-  }
-  return matcher ? scenarios.filter((scenario) => matcher.test(scenario.label)) : scenarios;
+  return selectScenariosByLabel(buildScenarios(), process.env.VISUAL_FILTER);
 }
 
 async function main(): Promise<void> {
@@ -161,16 +150,15 @@ async function main(): Promise<void> {
       // approve：只接受上次 test 里真正 diff/失败的场景为新基准，未变化的不动
       playwrightArgs.push('--update-snapshots');
     }
-    if (process.env.VISUAL_FILTER) {
-      playwrightArgs.push(`--grep=${process.env.VISUAL_FILTER}`);
-    }
 
     // test/reference/approve 以及 filter/core scope 都可能包含超过 token 生命周期的登录场景。
     // 统一逐语言切成短 shard；每批启动新的 worker/browser，且最多包含三个场景。
     const batchLabel = action.toUpperCase();
-    console.log(`${batchLabel} SUPPORT > tests/preparePage.spec.ts`);
-    // support 用例不属于场景 label，不能继承用户的 --grep，否则会误报“没有测试”。
-    runPnpm(['exec', 'playwright', 'test', 'tests/preparePage.spec.ts']);
+    if (!isEnvTrue('VISUAL_SKIP_SUPPORT_TESTS')) {
+      console.log(`${batchLabel} SUPPORT > tests/`);
+      // support 用例不属于场景 label，不能继承用户的 --grep，否则会误报“没有测试”。
+      runPnpm(['exec', 'playwright', 'test', 'tests']);
+    }
 
     const requestedLocales = process.env.VISUAL_LOCALES;
     const selectedLocales = getActiveLocales().map((locale) => locale.code);
@@ -185,6 +173,9 @@ async function main(): Promise<void> {
       }
 
       ranVisualScenario = true;
+      const scenarioArgs = process.env.VISUAL_FILTER
+        ? [...playwrightArgs, `--grep=${exactScenarioGrep(selectedScenarios.map(scenario => scenario.label))}`]
+        : playwrightArgs;
       const needsAuthState = selectedScenarios.some((scenario) => scenario.signIn);
       const { count: shardCount, start: startShard } = getVisualShardConfig(
         action,
@@ -198,7 +189,7 @@ async function main(): Promise<void> {
           // 紧邻 shard 启动采集，确保 filter/core scope/approve 的每批都获得完整有效期。
           captureAuthState();
         }
-        runPnpm([...playwrightArgs, 'tests/visual.spec.ts', `--shard=${shard}/${shardCount}`]);
+        runPnpm([...scenarioArgs, 'cases', `--shard=${shard}/${shardCount}`]);
       }
     }
 
@@ -209,8 +200,8 @@ async function main(): Promise<void> {
     }
 
     if (!ranVisualScenario) {
-      // 保留 Playwright 对无匹配 filter 的标准错误，而不是静默成功。
-      runPnpm([...playwrightArgs, 'tests/visual.spec.ts']);
+      // 与 Playwright 一样将无匹配 filter 视为错误，而不是静默成功。
+      runPnpm([...playwrightArgs, `--grep=${exactScenarioGrep([])}`, 'cases']);
     }
   } finally {
     fs.rmSync(path.join(VISUAL_DIR, 'auth-state.json'), { force: true });

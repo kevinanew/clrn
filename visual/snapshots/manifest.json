@@ -7,6 +7,7 @@
     {
       "label": "zh-Hans_desktop_hall",
       "page": "hall",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -18,12 +19,13 @@
       "readySelector": "[data-testid=\"hall-sign-in-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-hall.png",
+      "file": "../cases/hall/snapshots/zh-Hans-desktop-hall.png",
       "sha256": "a77d752cd24a42d3d8b35f16bb2d06b5a50341060f641c197fba6841e4e6b7a9"
     },
     {
       "label": "zh-Hans_desktop_guest_game_sign_in_prompt",
       "page": "guest_game_sign_in_prompt",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -37,12 +39,13 @@
       "readySelector": "[data-testid=\"game-matching-sign-in-popup\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-guest-game-sign-in-prompt.png",
+      "file": "../cases/hall/snapshots/zh-Hans-desktop-guest-game-sign-in-prompt.png",
       "sha256": "1512ba9be55b559584670e1b89ef9639a0395205d8e4908b5828b1a695bc0422"
     },
     {
       "label": "zh-Hans_desktop_guest_private_room",
       "page": "guest_private_room",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -56,12 +59,13 @@
       "readySelector": "[data-testid=\"guest-private-room-empty-state\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-guest-private-room.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-desktop-guest-private-room.png",
       "sha256": "e34156a6ed94dbe1ea9c8adf9ca43582d1011da365ea4eb68cfeffa768ef28bb"
     },
     {
       "label": "zh-Hans_desktop_login",
       "page": "login",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -75,12 +79,13 @@
       "readySelector": "[data-testid=\"sign-in-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-login.png",
+      "file": "../cases/auth/snapshots/zh-Hans-desktop-login.png",
       "sha256": "eebc970d0c7a396278281a120a319db77738788035d02b7b329e42aaedcaf42b"
     },
     {
       "label": "zh-Hans_desktop_login_username",
       "page": "login_username",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -95,12 +100,13 @@
       "readySelector": "[data-testid=\"username-input\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-login-username.png",
+      "file": "../cases/auth/snapshots/zh-Hans-desktop-login-username.png",
       "sha256": "833b7f668bc5c8ff2998dda1b6a2c12f93fce8bfa4f6b722001344facca79b3c"
     },
     {
       "label": "zh-Hans_desktop_guest_club",
       "page": "guest_club",
+      "group": "club",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -114,12 +120,13 @@
       "readySelector": "[data-testid=\"club-tab-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-guest-club.png",
+      "file": "../cases/club/snapshots/zh-Hans-desktop-guest-club.png",
       "sha256": "c5ec8cb1e503fd6f1722c89a0777db4f2cb31e1fbc9ba709692b7bc0766651b9"
     },
     {
       "label": "zh-Hans_desktop_search_sign_in_prompt",
       "page": "search_sign_in_prompt",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -133,12 +140,13 @@
       "readySelector": "[data-testid=\"confirm-pop-up-image-background\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-search-sign-in-prompt.png",
+      "file": "../cases/hall/snapshots/zh-Hans-desktop-search-sign-in-prompt.png",
       "sha256": "1335f685ebeb648405a01e2ab7e8e6e45c585591964ccc9847bf633cf80e189a"
     },
     {
       "label": "zh-Hans_desktop_guest_message",
       "page": "guest_message",
+      "group": "message",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -152,12 +160,13 @@
       "readySelector": "[data-testid=\"not-sign-in-container\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-guest-message.png",
+      "file": "../cases/message/snapshots/zh-Hans-desktop-guest-message.png",
       "sha256": "4302b07e7ec70904ad0075635df57a5bc8f6a0153ae9af1411e2f5c68150f1e0"
     },
     {
       "label": "zh-Hans_desktop_guest_me",
       "page": "guest_me",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -171,12 +180,13 @@
       "readySelector": "[data-testid=\"after-sign-in-see-asset-text\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-guest-me.png",
+      "file": "../cases/account/snapshots/zh-Hans-desktop-guest-me.png",
       "sha256": "741f155b41ac8cefa3752567e6790ef1999318e7070040cca41cc75aea9030cd"
     },
     {
       "label": "zh-Hans_desktop_signed_in_slot",
       "page": "signed_in_slot",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -191,12 +201,13 @@
       "readySelector": "[data-testid=\"slot-machine-view\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-slot.png",
+      "file": "../cases/hall/snapshots/zh-Hans-desktop-signed-in-slot.png",
       "sha256": "fc98ca3b6da1e0bf3be09291efbbfa2d6a28753980b79e5fbedf12738d8ea8b0"
     },
     {
       "label": "zh-Hans_desktop_signed_in_hall_search",
       "page": "signed_in_hall_search",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -211,12 +222,13 @@
       "readySelector": "[data-testid=\"club-search-input\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-hall-search.png",
+      "file": "../cases/hall/snapshots/zh-Hans-desktop-signed-in-hall-search.png",
       "sha256": "734282312acbde072761d89b2ca21b6dd53fef9e507037fc1fd5725a02bb2330"
     },
     {
       "label": "zh-Hans_desktop_signed_in_hall",
       "page": "signed_in_hall",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -230,12 +242,33 @@
       "readySelector": "[data-testid=\"hall-shortcut-buttons-container\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-hall.png",
+      "file": "../cases/hall/snapshots/zh-Hans-desktop-signed-in-hall.png",
+      "sha256": "19a29dca16a189b767592c298f27c8f4f55d3557e6814be7d7edefa0bb02ce84"
+    },
+    {
+      "label": "zh-Hans_desktop_signed_in_hall_match",
+      "page": "signed_in_hall_match",
+      "group": "hall",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "signedIn": true,
+      "navigation": [
+        "hall-tab"
+      ],
+      "readySelector": "[data-testid=\"match-game-room-group\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/hall/snapshots/zh-Hans-desktop-signed-in-hall-match.png",
       "sha256": "19a29dca16a189b767592c298f27c8f4f55d3557e6814be7d7edefa0bb02ce84"
     },
     {
       "label": "zh-Hans_desktop_signed_in_message",
       "page": "signed_in_message",
+      "group": "message",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -249,12 +282,13 @@
       "readySelector": "[data-testid=\"message-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-message.png",
+      "file": "../cases/message/snapshots/zh-Hans-desktop-signed-in-message.png",
       "sha256": "380024a659b3a987df4742169189a9ceb97b240c9cce42e23ca6b0c62f8ef59c"
     },
     {
       "label": "zh-Hans_desktop_signed_in_private_room",
       "page": "signed_in_private_room",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -268,116 +302,13 @@
       "readySelector": "[data-testid=\"copy-house-number-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-private-room.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-desktop-signed-in-private-room.png",
       "sha256": "1a38c3f78cde1ae5bbf3293a42b944c3aacabc17947c4ea7d0f04237e7db7540"
-    },
-    {
-      "label": "zh-Hans_desktop_signed_in_club",
-      "page": "signed_in_club",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "desktop",
-        "width": 1440,
-        "height": 900
-      },
-      "signedIn": true,
-      "navigation": [
-        "club-tab"
-      ],
-      "readySelector": "[data-testid=\"club-tab-screen\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-club.png",
-      "sha256": "220fc923b7884118db5977bc9018f3f09fafc87aa2b25503c0d126346b6b3515"
-    },
-    {
-      "label": "zh-Hans_desktop_signed_in_club_rooms",
-      "page": "signed_in_club_rooms",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "desktop",
-        "width": 1440,
-        "height": 900
-      },
-      "signedIn": true,
-      "navigation": [
-        "club-tab",
-        "club_tab_room"
-      ],
-      "readySelector": "[data-testid=\"club-rooms-empty-view\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-club-rooms.png",
-      "sha256": "b9d3764821c89e1581383e4e5281f02acdb7999c27cdd8d10532a818f634c3ce"
-    },
-    {
-      "label": "zh-Hans_desktop_signed_in_club_more",
-      "page": "signed_in_club_more",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "desktop",
-        "width": 1440,
-        "height": 900
-      },
-      "signedIn": true,
-      "navigation": [
-        "club-tab",
-        "show-more-button"
-      ],
-      "readySelector": "[data-testid=\"club-more-popup\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-club-more.png",
-      "sha256": "5d7a7ea5185ee0070b5277b569f86fdd08c19e5f457fed2cbd86705ef731cd1b"
-    },
-    {
-      "label": "zh-Hans_desktop_signed_in_club_search",
-      "page": "signed_in_club_search",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "desktop",
-        "width": 1440,
-        "height": 900
-      },
-      "signedIn": true,
-      "navigation": [
-        "club-tab",
-        "show-more-button",
-        "search-club-button"
-      ],
-      "readySelector": "[data-testid=\"club-search-input\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-club-search.png",
-      "sha256": "9fe1c9828da19dbb402c1163e84e67a203d7b32bb26357312047a2a00f39b9eb"
-    },
-    {
-      "label": "zh-Hans_desktop_signed_in_me",
-      "page": "signed_in_me",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "desktop",
-        "width": 1440,
-        "height": 900
-      },
-      "signedIn": true,
-      "navigation": [
-        "settings-tab"
-      ],
-      "readySelector": "[data-testid=\"settings-screen\"]",
-      "fixedTexts": [
-        {
-          "selector": "[data-testid$=\"-balance-text\"]",
-          "text": "12345"
-        }
-      ],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-me.png",
-      "sha256": "b55363800e10e25304b6ab5c7968a5012844aac224ceb2f79e15805b39711cf2"
     },
     {
       "label": "zh-Hans_desktop_signed_in_private_room_join",
       "page": "signed_in_private_room_join",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -392,12 +323,13 @@
       "readySelector": "[data-testid=\"copy-house-number-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-private-room-join.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-desktop-signed-in-private-room-join.png",
       "sha256": "8e4b0f31751988979126641e46bd5191d29f6b29ed55ed17864168007cebc51e"
     },
     {
       "label": "zh-Hans_desktop_signed_in_private_room_detail",
       "page": "signed_in_private_room_detail",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -412,12 +344,13 @@
       "readySelector": "[data-testid=\"create-game-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-private-room-detail.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-desktop-signed-in-private-room-detail.png",
       "sha256": "a6fbd36020a1a903d763e1e9460fceed9b0ca3a0e362aef3768ccd8b43db118e"
     },
     {
       "label": "zh-Hans_desktop_signed_in_create_room_picker",
       "page": "signed_in_create_room_picker",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -433,12 +366,13 @@
       "readySelector": "[data-testid=\"select-game-category-text\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-create-room-picker.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-desktop-signed-in-create-room-picker.png",
       "sha256": "119b5d3d40d20bb96813646431750f20bc38a8081245d6020157c3888c937093"
     },
     {
       "label": "zh-Hans_desktop_signed_in_create_room_form",
       "page": "signed_in_create_room_form",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -464,12 +398,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-create-room-form.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-desktop-signed-in-create-room-form.png",
       "sha256": "0d750222085156c1b9e386eeded224b8fa0fbc070389f7b66e4b4cc945c4d10f"
     },
     {
       "label": "zh-Hans_desktop_signed_in_create_room_form_zhajinhua",
       "page": "signed_in_create_room_form_zhajinhua",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -495,12 +430,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-create-room-form-zhajinhua.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-desktop-signed-in-create-room-form-zhajinhua.png",
       "sha256": "9ef647f04d6c316512c6a297c5d58317131c401746dc9c8ece855a2503e3d31d"
     },
     {
       "label": "zh-Hans_desktop_signed_in_create_room_form_six_plus",
       "page": "signed_in_create_room_form_six_plus",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -526,12 +462,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-create-room-form-six-plus.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-desktop-signed-in-create-room-form-six-plus.png",
       "sha256": "6b6fb2efc7c185c19a5be0a67832a39fa2a16d40bc83130b72dd985487c6267c"
     },
     {
-      "label": "zh-Hans_desktop_signed_in_hall_match",
-      "page": "signed_in_hall_match",
+      "label": "zh-Hans_desktop_signed_in_club",
+      "page": "signed_in_club",
+      "group": "club",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -540,17 +477,107 @@
       },
       "signedIn": true,
       "navigation": [
-        "hall-tab"
+        "club-tab"
       ],
-      "readySelector": "[data-testid=\"match-game-room-group\"]",
+      "readySelector": "[data-testid=\"club-tab-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-hall-match.png",
-      "sha256": "19a29dca16a189b767592c298f27c8f4f55d3557e6814be7d7edefa0bb02ce84"
+      "file": "../cases/club/snapshots/zh-Hans-desktop-signed-in-club.png",
+      "sha256": "220fc923b7884118db5977bc9018f3f09fafc87aa2b25503c0d126346b6b3515"
+    },
+    {
+      "label": "zh-Hans_desktop_signed_in_club_rooms",
+      "page": "signed_in_club_rooms",
+      "group": "club",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "signedIn": true,
+      "navigation": [
+        "club-tab",
+        "club_tab_room"
+      ],
+      "readySelector": "[data-testid=\"club-rooms-empty-view\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/club/snapshots/zh-Hans-desktop-signed-in-club-rooms.png",
+      "sha256": "b9d3764821c89e1581383e4e5281f02acdb7999c27cdd8d10532a818f634c3ce"
+    },
+    {
+      "label": "zh-Hans_desktop_signed_in_club_more",
+      "page": "signed_in_club_more",
+      "group": "club",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "signedIn": true,
+      "navigation": [
+        "club-tab",
+        "show-more-button"
+      ],
+      "readySelector": "[data-testid=\"club-more-popup\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/club/snapshots/zh-Hans-desktop-signed-in-club-more.png",
+      "sha256": "5d7a7ea5185ee0070b5277b569f86fdd08c19e5f457fed2cbd86705ef731cd1b"
+    },
+    {
+      "label": "zh-Hans_desktop_signed_in_club_search",
+      "page": "signed_in_club_search",
+      "group": "club",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "signedIn": true,
+      "navigation": [
+        "club-tab",
+        "show-more-button",
+        "search-club-button"
+      ],
+      "readySelector": "[data-testid=\"club-search-input\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/club/snapshots/zh-Hans-desktop-signed-in-club-search.png",
+      "sha256": "9fe1c9828da19dbb402c1163e84e67a203d7b32bb26357312047a2a00f39b9eb"
+    },
+    {
+      "label": "zh-Hans_desktop_signed_in_me",
+      "page": "signed_in_me",
+      "group": "account",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "signedIn": true,
+      "navigation": [
+        "settings-tab"
+      ],
+      "readySelector": "[data-testid=\"settings-screen\"]",
+      "fixedTexts": [
+        {
+          "selector": "[data-testid$=\"-balance-text\"]",
+          "text": "12345"
+        }
+      ],
+      "hiddenSelectors": [],
+      "file": "../cases/account/snapshots/zh-Hans-desktop-signed-in-me.png",
+      "sha256": "b55363800e10e25304b6ab5c7968a5012844aac224ceb2f79e15805b39711cf2"
     },
     {
       "label": "zh-Hans_desktop_signed_in_mall",
       "page": "signed_in_mall",
+      "group": "wallet",
       "locale": "zh-Hans",
       "viewport": {
         "label": "desktop",
@@ -570,12 +597,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-desktop-signed-in-mall.png",
+      "file": "../cases/wallet/snapshots/zh-Hans-desktop-signed-in-mall.png",
       "sha256": "594f7bf47759c738dde0f7ca827844dd853fbd6ab4dd1b41f5316c4bfdef0ae7"
     },
     {
       "label": "zh-Hans_mobile_hall",
       "page": "hall",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -587,12 +615,13 @@
       "readySelector": "[data-testid=\"hall-sign-in-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-hall.png",
+      "file": "../cases/hall/snapshots/zh-Hans-mobile-hall.png",
       "sha256": "222852a810bd3cda951b8919ccad693957f2c334b3bf75f59cb3a47ee5b78de9"
     },
     {
       "label": "zh-Hans_mobile_guest_game_sign_in_prompt",
       "page": "guest_game_sign_in_prompt",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -606,12 +635,13 @@
       "readySelector": "[data-testid=\"game-matching-sign-in-popup\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-guest-game-sign-in-prompt.png",
+      "file": "../cases/hall/snapshots/zh-Hans-mobile-guest-game-sign-in-prompt.png",
       "sha256": "7364dcd082d61c7165632022f06633dc22ef91a9bb6c74f1094cc488e787a4c1"
     },
     {
       "label": "zh-Hans_mobile_guest_private_room",
       "page": "guest_private_room",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -625,12 +655,13 @@
       "readySelector": "[data-testid=\"guest-private-room-empty-state\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-guest-private-room.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-guest-private-room.png",
       "sha256": "6c4732fcd13eb013ecf580d4023a4f39f131977b6d54e490a3e1e6c98d055120"
     },
     {
       "label": "zh-Hans_mobile_login",
       "page": "login",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -644,12 +675,13 @@
       "readySelector": "[data-testid=\"sign-in-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login.png",
       "sha256": "9e722476f004390e7735d15ed58e140f746c7c2e07066b2114220bdb10216e21"
     },
     {
       "label": "zh-Hans_mobile_login_username",
       "page": "login_username",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -664,12 +696,13 @@
       "readySelector": "[data-testid=\"username-input\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-username.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-username.png",
       "sha256": "e614c8509f7605d4a100397b5abbc3175d6d93be87499d2c15fed6ad3236c2dd"
     },
     {
       "label": "zh-Hans_mobile_guest_club",
       "page": "guest_club",
+      "group": "club",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -683,12 +716,13 @@
       "readySelector": "[data-testid=\"club-tab-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-guest-club.png",
+      "file": "../cases/club/snapshots/zh-Hans-mobile-guest-club.png",
       "sha256": "b9b05e2e5781ff4ae4465475a0ba865ad88635222381f2923c445e3baa8b04b8"
     },
     {
       "label": "zh-Hans_mobile_search_sign_in_prompt",
       "page": "search_sign_in_prompt",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -702,12 +736,13 @@
       "readySelector": "[data-testid=\"confirm-pop-up-image-background\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-search-sign-in-prompt.png",
+      "file": "../cases/hall/snapshots/zh-Hans-mobile-search-sign-in-prompt.png",
       "sha256": "cd8a11ed08ef93595f0d0e7217fb758cfbb188b7e5ce94f3346a0b81d4c63578"
     },
     {
       "label": "zh-Hans_mobile_login_forgot_password",
       "page": "login_forgot_password",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -723,12 +758,13 @@
       "readySelector": "[data-testid=\"reset-password-by-email-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-forgot-password.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-forgot-password.png",
       "sha256": "2d2542c1c3b2526e65db11749d49e01d6ba5cfabac8116f0ff5f05b9ab8d0048"
     },
     {
       "label": "zh-Hans_mobile_login_forgot_password_email",
       "page": "login_forgot_password_email",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -745,12 +781,13 @@
       "readySelector": "[data-testid=\"email-address-input\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-forgot-password-email.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-forgot-password-email.png",
       "sha256": "8118af45b1040cd2f7febe5a48f01fa219596e5386ea75940dfa6f794d308522"
     },
     {
       "label": "zh-Hans_mobile_login_phone",
       "page": "login_phone",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -765,12 +802,13 @@
       "readySelector": "[data-testid=\"sms-request-code-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-phone.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-phone.png",
       "sha256": "68cbdc94cb87a78dc4c5f4de7857eb58907bb7f5728fcfb6786c20984185d846"
     },
     {
       "label": "zh-Hans_mobile_login_forgot_password_sms",
       "page": "login_forgot_password_sms",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -787,12 +825,13 @@
       "readySelector": "[data-testid=\"next-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-forgot-password-sms.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-forgot-password-sms.png",
       "sha256": "e6d8bef69a650ccbc2db31f3e61102e20a0c1d96ae8fbc590b69d45d960fb900"
     },
     {
       "label": "zh-Hans_mobile_login_pick_country_code",
       "page": "login_pick_country_code",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -808,12 +847,13 @@
       "readySelector": "[data-testid=\"pick-country-code-container\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-pick-country-code.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-pick-country-code.png",
       "sha256": "9859be22f6f0c83684983b7b5bf7572b8bc8d697ac280b2654560693dbfa412b"
     },
     {
       "label": "zh-Hans_mobile_login_user_agreement",
       "page": "login_user_agreement",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -828,12 +868,13 @@
       "readySelector": "[data-testid=\"user-agreement-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-user-agreement.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-user-agreement.png",
       "sha256": "aff9b41b8a32443648278fe9376409f224f2516efdf8562906da856dace81d2f"
     },
     {
       "label": "zh-Hans_mobile_login_user_privacy",
       "page": "login_user_privacy",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -848,12 +889,13 @@
       "readySelector": "[data-testid=\"user-privacy-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-user-privacy.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-user-privacy.png",
       "sha256": "b10d7b01c0c21031efea641a4f74d63f31b13b29180b63329858cf082931dbd1"
     },
     {
       "label": "zh-Hans_mobile_login_language",
       "page": "login_language",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -868,12 +910,13 @@
       "readySelector": "[data-testid=\"switch-language-container\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-language.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-language.png",
       "sha256": "e1a5ac26cd592a9a58fe3bec5ee616cadc34097ab6d4e23771b3513f41c8965f"
     },
     {
       "label": "zh-Hans_mobile_login_phone_password",
       "page": "login_phone_password",
+      "group": "auth",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -889,12 +932,13 @@
       "readySelector": "[data-testid=\"password-input\"] input",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-login-phone-password.png",
+      "file": "../cases/auth/snapshots/zh-Hans-mobile-login-phone-password.png",
       "sha256": "43b6cf61e9b8bee58e185958a0b8fccfdb1e443c1315c156c59ba3840af3ca1f"
     },
     {
       "label": "zh-Hans_mobile_guest_message",
       "page": "guest_message",
+      "group": "message",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -908,12 +952,13 @@
       "readySelector": "[data-testid=\"not-sign-in-container\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-guest-message.png",
+      "file": "../cases/message/snapshots/zh-Hans-mobile-guest-message.png",
       "sha256": "6b84de8f5b0b0507ca57697345d7cf210f10dac6270201c70e2bf83c3c2017f2"
     },
     {
       "label": "zh-Hans_mobile_guest_me",
       "page": "guest_me",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -927,12 +972,13 @@
       "readySelector": "[data-testid=\"after-sign-in-see-asset-text\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-guest-me.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-guest-me.png",
       "sha256": "ea711f9ee334c366e570014ee70c968a9dc189da6766d5f984d1d7e6c0cbb8fe"
     },
     {
       "label": "zh-Hans_mobile_signed_in_slot",
       "page": "signed_in_slot",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -947,12 +993,13 @@
       "readySelector": "[data-testid=\"slot-machine-view\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-slot.png",
+      "file": "../cases/hall/snapshots/zh-Hans-mobile-signed-in-slot.png",
       "sha256": "8fdc3938ea3f12328c3488c3a065d0120ffb8eb9f85fbc326bfb5c12375d5e56"
     },
     {
       "label": "zh-Hans_mobile_signed_in_daily_bonus",
       "page": "signed_in_daily_bonus",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -972,12 +1019,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-daily-bonus.png",
+      "file": "../cases/hall/snapshots/zh-Hans-mobile-signed-in-daily-bonus.png",
       "sha256": "0ad2b729248243affee6e38b64da9dd7df91a72c21d4eb1ccdb35bb6ad30505c"
     },
     {
       "label": "zh-Hans_mobile_signed_in_hall_search",
       "page": "signed_in_hall_search",
+      "group": "hall",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -992,12 +1040,136 @@
       "readySelector": "[data-testid=\"club-search-input\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-hall-search.png",
+      "file": "../cases/hall/snapshots/zh-Hans-mobile-signed-in-hall-search.png",
       "sha256": "4c08422ef05cc6e85ebab5bdba5b55a8730b0af78206eeb9af446dce53307b91"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_hall",
+      "page": "signed_in_hall",
+      "group": "hall",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "hall-tab"
+      ],
+      "readySelector": "[data-testid=\"hall-shortcut-buttons-container\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/hall/snapshots/zh-Hans-mobile-signed-in-hall.png",
+      "sha256": "4d82628ba5985d83ce4b325fefaf2b126115e733b8fc38eb0dbdb53ed176455a"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_hall_match",
+      "page": "signed_in_hall_match",
+      "group": "hall",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "hall-tab"
+      ],
+      "readySelector": "[data-testid=\"match-game-room-group\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/hall/snapshots/zh-Hans-mobile-signed-in-hall-match.png",
+      "sha256": "4d82628ba5985d83ce4b325fefaf2b126115e733b8fc38eb0dbdb53ed176455a"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_message",
+      "page": "signed_in_message",
+      "group": "message",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "message-tab"
+      ],
+      "readySelector": "[data-testid=\"message-screen\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/message/snapshots/zh-Hans-mobile-signed-in-message.png",
+      "sha256": "774e9803ebd05c954ff7ea0d1e98802a8fef4b63300ee95f4c8188b19ca2a8e3"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_message_club_notifications",
+      "page": "signed_in_message_club_notifications",
+      "group": "message",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "message-tab",
+        "message-notification-item-club"
+      ],
+      "readySelector": "[data-testid=\"club-notification-screen\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/message/snapshots/zh-Hans-mobile-signed-in-message-club-notifications.png",
+      "sha256": "61d0ecf65a35cac80df54b1cb77a7dece43275f3186bf04287d1440f38e34963"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_message_buy_in",
+      "page": "signed_in_message_buy_in",
+      "group": "message",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "message-tab",
+        "message-notification-item-buy-in"
+      ],
+      "readySelector": "[data-testid=\"game-buy-in-application-list-screen\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/message/snapshots/zh-Hans-mobile-signed-in-message-buy-in.png",
+      "sha256": "1d91664eccb1a9814942f271d3f2b557c3da5d95f1954466cd4d0e619b8fceae"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_message_system",
+      "page": "signed_in_message_system",
+      "group": "message",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "message-tab",
+        "message-notification-item-system"
+      ],
+      "readySelector": "[data-testid=\"system-notification-screen-root\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/message/snapshots/zh-Hans-mobile-signed-in-message-system.png",
+      "sha256": "a4c27b387246d6dfe02ae629aebc937a8698c9a3fcce6bf8e20e234941c348c5"
     },
     {
       "label": "zh-Hans_mobile_signed_in_create_room_advanced_texas",
       "page": "signed_in_create_room_advanced_texas",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1023,12 +1195,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-create-room-advanced-texas.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-create-room-advanced-texas.png",
       "sha256": "3032fe881979df92b15f6b787439f1f128d39581f368b727f46f0a98b27ad9ed"
     },
     {
       "label": "zh-Hans_mobile_signed_in_create_room_advanced_zhajinhua",
       "page": "signed_in_create_room_advanced_zhajinhua",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1054,12 +1227,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-create-room-advanced-zhajinhua.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-create-room-advanced-zhajinhua.png",
       "sha256": "a17c442f513161ad8669d5476175210b326d75dcfba60c5eefedc0899d04c361"
     },
     {
       "label": "zh-Hans_mobile_signed_in_create_room_advanced_six_plus",
       "page": "signed_in_create_room_advanced_six_plus",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1085,110 +1259,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-create-room-advanced-six-plus.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-create-room-advanced-six-plus.png",
       "sha256": "efc473a292e09d432fe6fd2963318145a07c85cdcb71d2df1aa9026995467373"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_hall",
-      "page": "signed_in_hall",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "hall-tab"
-      ],
-      "readySelector": "[data-testid=\"hall-shortcut-buttons-container\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-hall.png",
-      "sha256": "4d82628ba5985d83ce4b325fefaf2b126115e733b8fc38eb0dbdb53ed176455a"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_message",
-      "page": "signed_in_message",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "message-tab"
-      ],
-      "readySelector": "[data-testid=\"message-screen\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-message.png",
-      "sha256": "774e9803ebd05c954ff7ea0d1e98802a8fef4b63300ee95f4c8188b19ca2a8e3"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_message_club_notifications",
-      "page": "signed_in_message_club_notifications",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "message-tab",
-        "message-notification-item-club"
-      ],
-      "readySelector": "[data-testid=\"club-notification-screen\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-message-club-notifications.png",
-      "sha256": "61d0ecf65a35cac80df54b1cb77a7dece43275f3186bf04287d1440f38e34963"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_message_buy_in",
-      "page": "signed_in_message_buy_in",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "message-tab",
-        "message-notification-item-buy-in"
-      ],
-      "readySelector": "[data-testid=\"game-buy-in-application-list-screen\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-message-buy-in.png",
-      "sha256": "1d91664eccb1a9814942f271d3f2b557c3da5d95f1954466cd4d0e619b8fceae"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_message_system",
-      "page": "signed_in_message_system",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "message-tab",
-        "message-notification-item-system"
-      ],
-      "readySelector": "[data-testid=\"system-notification-screen-root\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-message-system.png",
-      "sha256": "a4c27b387246d6dfe02ae629aebc937a8698c9a3fcce6bf8e20e234941c348c5"
     },
     {
       "label": "zh-Hans_mobile_signed_in_private_room",
       "page": "signed_in_private_room",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1202,116 +1279,13 @@
       "readySelector": "[data-testid=\"copy-house-number-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-private-room.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-private-room.png",
       "sha256": "23e14c6ef5f42b94821e301b4c6e096adda8cf4f02069f4afdfd3e9e9cf621d3"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_club",
-      "page": "signed_in_club",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "club-tab"
-      ],
-      "readySelector": "[data-testid=\"club-tab-screen\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-club.png",
-      "sha256": "e4cb1c62b964ff288c42f893f5a83628162bdc66b95a5e7f14329183e293294f"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_club_rooms",
-      "page": "signed_in_club_rooms",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "club-tab",
-        "club_tab_room"
-      ],
-      "readySelector": "[data-testid=\"club-rooms-empty-view\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-club-rooms.png",
-      "sha256": "f784d3aaa6af2dfa5b38f8d61957457ed387ffb71b9a81eaa3ae8ae179762768"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_club_more",
-      "page": "signed_in_club_more",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "club-tab",
-        "show-more-button"
-      ],
-      "readySelector": "[data-testid=\"club-more-popup\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-club-more.png",
-      "sha256": "2d60ef619c0c2608410991898d4a68a3f6e938c9022510f877ab9e548488f16a"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_club_search",
-      "page": "signed_in_club_search",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "club-tab",
-        "show-more-button",
-        "search-club-button"
-      ],
-      "readySelector": "[data-testid=\"club-search-input\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-club-search.png",
-      "sha256": "fb8ebc856743ea4ba63bab44de4c8600132baffe5bc0a877d659366a7570afb8"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_me",
-      "page": "signed_in_me",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "settings-tab"
-      ],
-      "readySelector": "[data-testid=\"settings-screen\"]",
-      "fixedTexts": [
-        {
-          "selector": "[data-testid$=\"-balance-text\"]",
-          "text": "12345"
-        }
-      ],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-me.png",
-      "sha256": "f5ab65265819d245d6d6ef18e89cb4b91a46348a6a9f4d6e61f33d6e94fc3577"
     },
     {
       "label": "zh-Hans_mobile_signed_in_private_room_join",
       "page": "signed_in_private_room_join",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1326,12 +1300,13 @@
       "readySelector": "[data-testid=\"copy-house-number-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-private-room-join.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-private-room-join.png",
       "sha256": "715aeb33ed4eb339bd2619ac1e9bea6913d65f28ea28ddbcd114168d7a30b4ee"
     },
     {
       "label": "zh-Hans_mobile_signed_in_private_room_detail",
       "page": "signed_in_private_room_detail",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1346,12 +1321,13 @@
       "readySelector": "[data-testid=\"create-game-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-private-room-detail.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-private-room-detail.png",
       "sha256": "9d7adfd7c24d3bd0caaf893faa984063a4709c2d9ffeae3d7ce1a83931c07925"
     },
     {
       "label": "zh-Hans_mobile_signed_in_create_room_picker",
       "page": "signed_in_create_room_picker",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1367,12 +1343,13 @@
       "readySelector": "[data-testid=\"select-game-category-text\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-create-room-picker.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-create-room-picker.png",
       "sha256": "0628c3ef7f3d43253da1bff92cb25e44fcdf6bf08eb4794707309d5670aedfa9"
     },
     {
       "label": "zh-Hans_mobile_signed_in_create_room_form",
       "page": "signed_in_create_room_form",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1398,12 +1375,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-create-room-form.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-create-room-form.png",
       "sha256": "d112d35d8602470d4043bbfc45b0807aeec3c514218b42e728623b2b5bfc80e3"
     },
     {
       "label": "zh-Hans_mobile_signed_in_create_room_form_zhajinhua",
       "page": "signed_in_create_room_form_zhajinhua",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1429,12 +1407,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-create-room-form-zhajinhua.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-create-room-form-zhajinhua.png",
       "sha256": "b13df79597721894c648377b07725920aded5af4fcb7953768d5e018d84ffa39"
     },
     {
       "label": "zh-Hans_mobile_signed_in_create_room_form_six_plus",
       "page": "signed_in_create_room_form_six_plus",
+      "group": "private-room",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1460,12 +1439,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-create-room-form-six-plus.png",
+      "file": "../cases/private-room/snapshots/zh-Hans-mobile-signed-in-create-room-form-six-plus.png",
       "sha256": "e8d7c2c28472366eb245314af9b7b98677aa0c1e96543fde0a6f7440849d9621"
     },
     {
-      "label": "zh-Hans_mobile_signed_in_hall_match",
-      "page": "signed_in_hall_match",
+      "label": "zh-Hans_mobile_signed_in_club",
+      "page": "signed_in_club",
+      "group": "club",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1474,17 +1454,128 @@
       },
       "signedIn": true,
       "navigation": [
-        "hall-tab"
+        "club-tab"
       ],
-      "readySelector": "[data-testid=\"match-game-room-group\"]",
+      "readySelector": "[data-testid=\"club-tab-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-hall-match.png",
-      "sha256": "4d82628ba5985d83ce4b325fefaf2b126115e733b8fc38eb0dbdb53ed176455a"
+      "file": "../cases/club/snapshots/zh-Hans-mobile-signed-in-club.png",
+      "sha256": "e4cb1c62b964ff288c42f893f5a83628162bdc66b95a5e7f14329183e293294f"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_club_rooms",
+      "page": "signed_in_club_rooms",
+      "group": "club",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "club-tab",
+        "club_tab_room"
+      ],
+      "readySelector": "[data-testid=\"club-rooms-empty-view\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/club/snapshots/zh-Hans-mobile-signed-in-club-rooms.png",
+      "sha256": "f784d3aaa6af2dfa5b38f8d61957457ed387ffb71b9a81eaa3ae8ae179762768"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_club_more",
+      "page": "signed_in_club_more",
+      "group": "club",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "club-tab",
+        "show-more-button"
+      ],
+      "readySelector": "[data-testid=\"club-more-popup\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/club/snapshots/zh-Hans-mobile-signed-in-club-more.png",
+      "sha256": "2d60ef619c0c2608410991898d4a68a3f6e938c9022510f877ab9e548488f16a"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_club_search",
+      "page": "signed_in_club_search",
+      "group": "club",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "club-tab",
+        "show-more-button",
+        "search-club-button"
+      ],
+      "readySelector": "[data-testid=\"club-search-input\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/club/snapshots/zh-Hans-mobile-signed-in-club-search.png",
+      "sha256": "fb8ebc856743ea4ba63bab44de4c8600132baffe5bc0a877d659366a7570afb8"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_create_club",
+      "page": "signed_in_create_club",
+      "group": "club",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "settings-tab",
+        "create-club"
+      ],
+      "readySelector": "[data-testid=\"club-profile-list\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/club/snapshots/zh-Hans-mobile-signed-in-create-club.png",
+      "sha256": "020a5254cfbeb651bf2f873e4d0edfd262b2b4f15029ac9b1016fb0b3eaaaf6b"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_me",
+      "page": "signed_in_me",
+      "group": "account",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "settings-tab"
+      ],
+      "readySelector": "[data-testid=\"settings-screen\"]",
+      "fixedTexts": [
+        {
+          "selector": "[data-testid$=\"-balance-text\"]",
+          "text": "12345"
+        }
+      ],
+      "hiddenSelectors": [],
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-me.png",
+      "sha256": "f5ab65265819d245d6d6ef18e89cb4b91a46348a6a9f4d6e61f33d6e94fc3577"
     },
     {
       "label": "zh-Hans_mobile_signed_in_profile",
       "page": "signed_in_profile",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1499,12 +1590,13 @@
       "readySelector": "[data-testid=\"profile-item-0\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-profile.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-profile.png",
       "sha256": "4b541dd36a95440fa87f4d7b90450aad421f1eeb44b8c5da3bc09c6a071e69aa"
     },
     {
       "label": "zh-Hans_mobile_signed_in_update_nickname",
       "page": "signed_in_update_nickname",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1525,12 +1617,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-update-nickname.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-update-nickname.png",
       "sha256": "0d5eb297c3699fc04f298e5c25b4df2d44c419939b00ee93294629805f1fd9e5"
     },
     {
       "label": "zh-Hans_mobile_signed_in_update_bio",
       "page": "signed_in_update_bio",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1551,12 +1644,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-update-bio.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-update-bio.png",
       "sha256": "b250647db4216618ea088d5f3228d755e076e8bc91175e60679ca40e4804ad51"
     },
     {
       "label": "zh-Hans_mobile_signed_in_account_security",
       "page": "signed_in_account_security",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1571,12 +1665,13 @@
       "readySelector": "[data-testid=\"account-security-items-list\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-account-security.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-account-security.png",
       "sha256": "c31375a21107400519f807b9c2919185c926e5ee71eb7735ebf2af8f812f02c4"
     },
     {
       "label": "zh-Hans_mobile_signed_in_bind_phone",
       "page": "signed_in_bind_phone",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1592,12 +1687,13 @@
       "readySelector": "[data-testid=\"input-phone-number-container\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-bind-phone.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-bind-phone.png",
       "sha256": "d51ee18a4cc5b94cfc65dd3250ebd8beda0423440fe787ac14102e7f3e8b130e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_bind_email",
       "page": "signed_in_bind_email",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1613,12 +1709,13 @@
       "readySelector": "[data-testid=\"bind-email-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-bind-email.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-bind-email.png",
       "sha256": "dd98142b713db662bc9119dd4f87d574f96416a9b418f636da6153e3c83daf7f"
     },
     {
       "label": "zh-Hans_mobile_signed_in_reset_password",
       "page": "signed_in_reset_password",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1634,12 +1731,13 @@
       "readySelector": "[data-testid=\"old-password-input\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-reset-password.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-reset-password.png",
       "sha256": "79e1cef9e590aa4289d693c86af2a90026102d785632fbe442c7ef8b4764f90e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_delete_account",
       "page": "signed_in_delete_account",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1655,12 +1753,13 @@
       "readySelector": "[data-testid=\"warning-sign-image\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-delete-account.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-delete-account.png",
       "sha256": "65748ffad2bb2362af7cc76a2062b8a66766379196ad2495e38b3a8fd0f65692"
     },
     {
       "label": "zh-Hans_mobile_signed_in_user_level",
       "page": "signed_in_user_level",
+      "group": "account",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1675,12 +1774,98 @@
       "readySelector": "[data-testid=\"user-level-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-user-level.png",
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-user-level.png",
       "sha256": "47c4dd1df9ff739758aa93c2ff9bd136377bd080a912f85fed35fc76a014882a"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_application_management",
+      "page": "signed_in_application_management",
+      "group": "account",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "settings-tab",
+        "application-management"
+      ],
+      "readySelector": "[data-testid=\"application-management-list\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-application-management.png",
+      "sha256": "cb142d68be1968055e320ce3fc1016193dfc780cb987d599ee385b61fc5d384c"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_club_notifications",
+      "page": "signed_in_club_notifications",
+      "group": "account",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "settings-tab",
+        "club-notifications"
+      ],
+      "readySelector": "[data-testid=\"club-notification-screen\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-club-notifications.png",
+      "sha256": "61d0ecf65a35cac80df54b1cb77a7dece43275f3186bf04287d1440f38e34963"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_telegram_channel",
+      "page": "signed_in_telegram_channel",
+      "group": "account",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "settings-tab",
+        "telegram-channel"
+      ],
+      "readySelector": "[data-testid=\"channel-url-container\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-telegram-channel.png",
+      "sha256": "49f5bac5416a5093448c26c30489d7f6826645a89bd43d4fa669d1275cae9369"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_language",
+      "page": "signed_in_language",
+      "group": "account",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "settings-tab",
+        "application-management",
+        "language"
+      ],
+      "readySelector": "[data-testid=\"switch-language-container\"]",
+      "fixedTexts": [],
+      "hiddenSelectors": [],
+      "file": "../cases/account/snapshots/zh-Hans-mobile-signed-in-language.png",
+      "sha256": "cb1f7c8242f5a4ae7084cb0ae35798995f607ee57743438db38bfca3d7e29181"
     },
     {
       "label": "zh-Hans_mobile_signed_in_mall",
       "page": "signed_in_mall",
+      "group": "wallet",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1700,12 +1885,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-mall.png",
+      "file": "../cases/wallet/snapshots/zh-Hans-mobile-signed-in-mall.png",
       "sha256": "35c2289768791b9d27529cd608bf2ff107d2d2586552ea51ad2c9cfe18002035"
     },
     {
       "label": "zh-Hans_mobile_signed_in_currency_transaction",
       "page": "signed_in_currency_transaction",
+      "group": "wallet",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1726,12 +1912,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-currency-transaction.png",
+      "file": "../cases/wallet/snapshots/zh-Hans-mobile-signed-in-currency-transaction.png",
       "sha256": "a1dd88419123a6a683d37b2136f401b9c7378c2e9ba8aeac9d02eb0d11867736"
     },
     {
       "label": "zh-Hans_mobile_signed_in_purchase_history",
       "page": "signed_in_purchase_history",
+      "group": "wallet",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1751,12 +1938,13 @@
         }
       ],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-purchase-history.png",
+      "file": "../cases/wallet/snapshots/zh-Hans-mobile-signed-in-purchase-history.png",
       "sha256": "14115a8c9a1c88781284aa248372b67c4522878279993cd40fdd53775d053e92"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_record",
       "page": "signed_in_game_record",
+      "group": "wallet",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1771,12 +1959,13 @@
       "readySelector": "[data-testid=\"no-records-text\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-game-record.png",
+      "file": "../cases/wallet/snapshots/zh-Hans-mobile-signed-in-game-record.png",
       "sha256": "76b51ffb173ce518f78701631f1f6d8dd322a05fb4d11f6fab6f6de5057aa925"
     },
     {
       "label": "zh-Hans_mobile_signed_in_gift_card",
       "page": "signed_in_gift_card",
+      "group": "wallet",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1791,12 +1980,13 @@
       "readySelector": "[data-testid=\"personal-gift-card-screen-container\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-gift-card.png",
+      "file": "../cases/wallet/snapshots/zh-Hans-mobile-signed-in-gift-card.png",
       "sha256": "a6345f1e97bb5c3b01a1dcdbc59f198949fa4dd258478aa81e3a671d80b7882e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_gift_card_exchange",
       "page": "signed_in_gift_card_exchange",
+      "group": "wallet",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1812,12 +2002,13 @@
       "readySelector": "[data-testid=\"gift-card-input\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-gift-card-exchange.png",
+      "file": "../cases/wallet/snapshots/zh-Hans-mobile-signed-in-gift-card-exchange.png",
       "sha256": "b2431ea488fd765e9848deb195eeeab7f63f4e6a4e9872ba53a16fdce4ca1858"
     },
     {
       "label": "zh-Hans_mobile_signed_in_gift_card_expired",
       "page": "signed_in_gift_card_expired",
+      "group": "wallet",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1833,32 +2024,13 @@
       "readySelector": "[data-testid=\"expired-gift-card\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-gift-card-expired.png",
+      "file": "../cases/wallet/snapshots/zh-Hans-mobile-signed-in-gift-card-expired.png",
       "sha256": "5174f826e382b346df3b51f3e10250841fd80bb5cdaefe8b711888ad75e54891"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_create_club",
-      "page": "signed_in_create_club",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "settings-tab",
-        "create-club"
-      ],
-      "readySelector": "[data-testid=\"club-profile-list\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-create-club.png",
-      "sha256": "020a5254cfbeb651bf2f873e4d0edfd262b2b4f15029ac9b1016fb0b3eaaaf6b"
     },
     {
       "label": "zh-Hans_mobile_signed_in_faq",
       "page": "signed_in_faq",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1873,12 +2045,13 @@
       "readySelector": "[data-testid=\"faq-screen\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-faq.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-faq.png",
       "sha256": "07a215b84968edad8d3a2d7d30df1a1951b6bf39244e7194037ff10afbb49a11"
     },
     {
       "label": "zh-Hans_mobile_signed_in_faq_detail",
       "page": "signed_in_faq_detail",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1894,12 +2067,13 @@
       "readySelector": "[data-testid=\"faq-detail-scroll-view\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-faq-detail.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-faq-detail.png",
       "sha256": "44a6e5486d0bcbe717c60ea217f171b69c8e38f02c12a1f755cfb6b3ae6a1b39"
     },
     {
       "label": "zh-Hans_mobile_signed_in_contact_us",
       "page": "signed_in_contact_us",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1914,12 +2088,13 @@
       "readySelector": "[data-testid=\"online-service-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-contact-us.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-contact-us.png",
       "sha256": "aefa3a07c651ef30726e9735d8f53dc060a5d9563d1d5b8c4667d34f9b1c5e8e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_feedback",
       "page": "signed_in_feedback",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1937,12 +2112,13 @@
       "hiddenSelectors": [
         "[data-testid=\"loading-indicator\"]"
       ],
-      "file": "zh-Hans-mobile-signed-in-feedback.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-feedback.png",
       "sha256": "7fb25470a5b55b5559d30a8bdf68ec754bd838bff55d7fbaecfd92cb6a55d7eb"
     },
     {
       "label": "zh-Hans_mobile_signed_in_share_app",
       "page": "signed_in_share_app",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1957,12 +2133,13 @@
       "readySelector": "[data-testid=\"content-image-background\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-share-app.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-share-app.png",
       "sha256": "fb7513858d72b963cbad1d4128f4771f507db62362c2951301dc1bf02f9c2a23"
     },
     {
       "label": "zh-Hans_mobile_signed_in_official_site",
       "page": "signed_in_official_site",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1977,12 +2154,13 @@
       "readySelector": "[data-testid=\"application-management-list\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-official-site.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-official-site.png",
       "sha256": "8e33bc3a08dc4edd49504b2aeb68711aa83adc6b17c140f415ffcfe8185b4402"
     },
     {
       "label": "zh-Hans_mobile_signed_in_download_help",
       "page": "signed_in_download_help",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -1997,12 +2175,13 @@
       "readySelector": "[data-testid=\"apple-button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-download-help.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-download-help.png",
       "sha256": "13ac41dd626b121c8b8004d476a89f60670a77e766221286fa40dfd08b1c309d"
     },
     {
       "label": "zh-Hans_mobile_signed_in_download_help_apple",
       "page": "signed_in_download_help_apple",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -2018,12 +2197,13 @@
       "readySelector": "[data-testid=\"h5_link1_button\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-download-help-apple.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-download-help-apple.png",
       "sha256": "0778d71f2d579b15e905a5d2be3d0120d3849a884fb93cde46fbb660e10547e6"
     },
     {
       "label": "zh-Hans_mobile_signed_in_download_help_android",
       "page": "signed_in_download_help_android",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -2039,12 +2219,13 @@
       "readySelector": "[data-testid=\"download-android-help-view\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-download-help-android.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-download-help-android.png",
       "sha256": "da84e718b6b5abc7a2b02b479b2d180e07923806d917b72fe09aebc08cd0582e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_download_help_h5",
       "page": "signed_in_download_help_h5",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -2060,12 +2241,13 @@
       "readySelector": "[data-testid=\"h5-version-help-view\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-download-help-h5.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-download-help-h5.png",
       "sha256": "64f290178c0cdbdeb956626bbd5cdbc9dfbf05c2029811505666a7d2abcf420a"
     },
     {
       "label": "zh-Hans_mobile_signed_in_download_help_official",
       "page": "signed_in_download_help_official",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -2081,12 +2263,13 @@
       "readySelector": "[data-testid=\"download-official-website-help-view\"]",
       "fixedTexts": [],
       "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-download-help-official.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-download-help-official.png",
       "sha256": "bd5a67059f00e9061f9542963080e32192d35b3dbcfd9090181ded8a2ab5364a"
     },
     {
       "label": "zh-Hans_mobile_signed_in_about",
       "page": "signed_in_about",
+      "group": "help",
       "locale": "zh-Hans",
       "viewport": {
         "label": "mobile",
@@ -2116,89 +2299,8 @@
       "hiddenSelectors": [
         "[data-testid=\"new-version-need-update-text\"]"
       ],
-      "file": "zh-Hans-mobile-signed-in-about.png",
+      "file": "../cases/help/snapshots/zh-Hans-mobile-signed-in-about.png",
       "sha256": "3522e097670a75e0f06a966758f9f36b289a5a072c3ba5af595dc64683b62b55"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_application_management",
-      "page": "signed_in_application_management",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "settings-tab",
-        "application-management"
-      ],
-      "readySelector": "[data-testid=\"application-management-list\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-application-management.png",
-      "sha256": "cb142d68be1968055e320ce3fc1016193dfc780cb987d599ee385b61fc5d384c"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_club_notifications",
-      "page": "signed_in_club_notifications",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "settings-tab",
-        "club-notifications"
-      ],
-      "readySelector": "[data-testid=\"club-notification-screen\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-club-notifications.png",
-      "sha256": "61d0ecf65a35cac80df54b1cb77a7dece43275f3186bf04287d1440f38e34963"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_telegram_channel",
-      "page": "signed_in_telegram_channel",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "settings-tab",
-        "telegram-channel"
-      ],
-      "readySelector": "[data-testid=\"channel-url-container\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-telegram-channel.png",
-      "sha256": "49f5bac5416a5093448c26c30489d7f6826645a89bd43d4fa669d1275cae9369"
-    },
-    {
-      "label": "zh-Hans_mobile_signed_in_language",
-      "page": "signed_in_language",
-      "locale": "zh-Hans",
-      "viewport": {
-        "label": "mobile",
-        "width": 375,
-        "height": 812
-      },
-      "signedIn": true,
-      "navigation": [
-        "settings-tab",
-        "application-management",
-        "language"
-      ],
-      "readySelector": "[data-testid=\"switch-language-container\"]",
-      "fixedTexts": [],
-      "hiddenSelectors": [],
-      "file": "zh-Hans-mobile-signed-in-language.png",
-      "sha256": "cb1f7c8242f5a4ae7084cb0ae35798995f607ee57743438db38bfca3d7e29181"
     }
   ]
 }

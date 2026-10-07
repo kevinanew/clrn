@@ -4,6 +4,7 @@
   "private": true,
   "description": "针对已部署来玩 H5 站点的独立 Playwright 测试",
   "scripts": {
+    "lint": "node ../lint-lines.mjs",
     "test": "playwright test",
     "test:smoke": "playwright test sites-availability.spec.ts",
     "test:network-resilience": "playwright test network-resilience.spec.ts",

@@ -5,10 +5,12 @@ import { visualBaseUrl } from './target';
 const MAX_DIFF_PIXEL_RATIO = 0.003;
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: './',
+  // Node 自测使用 *.test.ts；Playwright 只收集浏览器用例。
+  testMatch: '**/*.spec.ts',
   outputDir: './test-results',
-  // 基准图提交到 Git：snapshots/{场景 label}.png（仅在 Docker/Linux 生成，无平台后缀）
-  snapshotPathTemplate: '{testDir}/../snapshots/{arg}{ext}',
+  // 每组基准图放在对应 spec.ts 旁边（仅在 Docker/Linux 生成，无平台后缀）。
+  snapshotPathTemplate: '{testDir}/{testFileDir}/snapshots/{arg}{ext}',
   fullyParallel: true,
   workers: 1,
   // 截图类偶发失败（staging 波动）自动重试一次

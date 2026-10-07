@@ -1,0 +1,16 @@
+name: Source file length
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check 400-line limit
+        run: node lint-lines.mjs

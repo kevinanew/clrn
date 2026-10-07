@@ -1,8 +1,27 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { getVisualShardConfig } from './run-visual-config';
+import { exactScenarioGrep, getVisualShardConfig, selectScenariosByLabel } from './run-visual-config';
 
 describe('visual run shard config', () => {
+  test('filter and Playwright grep select the same labels despite feature paths', () => {
+    const scenarios = [
+      { label: 'zh-Hans_mobile_signed_in_mall' },
+      { label: 'zh-Hans_mobile_signed_in_account_security' },
+      { label: 'zh-Hans_mobile_guest_me' },
+    ];
+    const selected = selectScenariosByLabel(scenarios, 'account');
+    assert.deepEqual(selected.map(scenario => scenario.label), [
+      'zh-Hans_mobile_signed_in_account_security',
+    ]);
+
+    const grep = new RegExp(exactScenarioGrep(selected.map(scenario => scenario.label)));
+    assert.ok(grep.test('cases/account/account.spec.ts zh-Hans_mobile_signed_in_account_security'));
+    assert.ok(!grep.test('cases/account/account.spec.ts zh-Hans_mobile_guest_me'));
+    assert.ok(!grep.test('cases/wallet/wallet.spec.ts zh-Hans_mobile_signed_in_mall'));
+    assert.ok(!new RegExp(exactScenarioGrep([])).test('cases/account/account.spec.ts zh-Hans_mobile_guest_me'));
+    assert.throws(() => selectScenariosByLabel(scenarios, '['), /VISUAL_FILTER/);
+  });
+
   test('unfiltered test runs are split into short renewable-auth batches', () => {
     assert.deepEqual(getVisualShardConfig('test', 84, {}), {
       countEnv: 'VISUAL_TEST_SHARDS',

@@ -13,7 +13,8 @@
     "approve": "docker compose run --rm -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_TEST_SHARDS visual approve",
     "report": "tsx open-report.ts",
     "gallery": "node --import tsx snapshot-gallery.ts",
-    "test:scenarios": "node --import tsx --test target.test.ts scenarios.test.ts run-visual-config.test.ts docker-env.test.ts src/support/runWithContext.test.ts",
+    "test:scenarios": "node --import tsx --test target.test.ts scenarios.test.ts scenarioPages.test.ts snapshotLocations.test.ts run-visual-config.test.ts docker-env.test.ts src/support/runWithContext.test.ts",
+    "lint": "node ../lint-lines.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {

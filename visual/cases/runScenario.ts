@@ -1,13 +1,8 @@
-import { expect, test } from '@playwright/test';
-import { buildScenarios } from '../scenarios';
+import { expect, type Browser } from '@playwright/test';
+import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
 import { preparePage } from '../src/support/preparePage';
 
-/**
- * 场景矩阵由 scenarios.ts 单一数据源生成：
- * 语言（VISUAL_LOCALES）× 视口 × 页面，label 形如 `zh-Hans_desktop_hall`。
- */
-const scenarios = buildScenarios();
 import { visualBaseUrl as baseUrl } from '../target';
 const backAccessibilityLabels = {
   'zh-Hans': '返回',
@@ -15,8 +10,7 @@ const backAccessibilityLabels = {
   en: 'Back',
 };
 
-for (const scenario of scenarios) {
-  test(scenario.label, async ({ browser }) => {
+export async function runVisualScenario(scenario: VisualScenario, browser: Browser): Promise<void> {
     const context = await browser.newContext({
       viewport: { width: scenario.viewport.width, height: scenario.viewport.height },
       locale: 'en-US',
@@ -56,5 +50,4 @@ for (const scenario of scenarios) {
     } finally {
       await context.close();
     }
-  });
 }

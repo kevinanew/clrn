@@ -9,6 +9,28 @@ export type VisualShardConfig = {
 const MAX_SHARD_COUNT = 80;
 export const DEFAULT_MAX_SCENARIOS_PER_SHARD = 3;
 
+/** VISUAL_FILTER 只匹配场景 label，不让 spec 文件名影响登录态和分片规划。 */
+export function selectScenariosByLabel<T extends { label: string }>(
+  scenarios: T[],
+  filter: string | undefined,
+): T[] {
+  if (!filter) return scenarios;
+  let matcher: RegExp;
+  try {
+    matcher = new RegExp(filter);
+  } catch {
+    throw new Error(`VISUAL_FILTER 不是有效正则表达式: ${filter}`);
+  }
+  return scenarios.filter(scenario => matcher.test(scenario.label));
+}
+
+/** 将已选 label 转成 Playwright 的精确 grep；它匹配的完整标题还包含 spec 路径。 */
+export function exactScenarioGrep(labels: string[]): string {
+  if (labels.length === 0) return '(?!)';
+  const escaped = labels.map(label => label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return `(?:^|\\s)(?:${escaped.join('|')})$`;
+}
+
 /**
  * 所有视觉场景都按小分片执行，调用方可在分片边界更新短时登录态。
  * 默认每批最多三个场景；显式分片数仍用于诊断或 reference 断点续跑。
