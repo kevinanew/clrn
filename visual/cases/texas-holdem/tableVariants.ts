@@ -18,6 +18,13 @@ export async function captureTableStates(page: Page, scenario: VisualScenario, p
   await expect(visible(page, 'texas-holdem-self-seated-marker')).toBeHidden();
   await expect(visible(page, 'texas-holdem-operation-button-raise')).toBeHidden();
   await snapshot('observer');
+  const clearHand = async () => {
+    await proxy.replayTexas(room, events([{ event: 'new_game', game_id: 'visual-fixed-game',
+      settings: { small_blind: 1, big_blind: 2, ante: 0 } }]));
+    await advance(page);
+    await expect(page.locator('[data-testid="player_card"]:visible')).toHaveCount(0);
+  };
+  await clearHand();
   await table(page, proxy, room, self, { full: true });
   await expect(page.locator('[data-testid^="texas-holdem-player-container-"]:visible')).toHaveCount(9);
   await snapshot('full_table');
@@ -25,11 +32,14 @@ export async function captureTableStates(page: Page, scenario: VisualScenario, p
   await proxy.replayTexas(room, events(Array.from({ length: 4 }, (_, index) => ({ event: 'stand_up',
     player_id: `00000000-0000-4000-8000-${String(index + 5).padStart(12, '0')}` }))));
   await advance(page);
+  await clearHand();
   await table(page, proxy, room, self);
-  await proxy.replayTexas(room, events([{ event: 'stand_up', player_id: REPLAY_PLAYER_IDS[1] },
-    { event: 'reserve_seat', seat_number: 6, player_id: REPLAY_PLAYER_IDS[1], remain_reserve_seconds: 120 }]));
+  await proxy.replayTexas(room, events([{ event: 'reserve_seat', seat_number: 6,
+    player_id: '00000000-0000-4000-8000-000000000005', remain_reserve_seconds: 120 }]));
   await advance(page);
   await expect(visible(page, 'seat-reserve-container')).toBeVisible();
+  await expect(page.locator('[data-testid^="texas-holdem-player-container-"]:visible')).toHaveCount(5);
+  await expect(page.locator('[data-testid="player_card"]:visible')).toHaveCount(8);
   await snapshot('reserved_seat');
   await proxy.replayTexas(room, events([{ event: 'cancel_reserve_seat', seat_number: 6 },
     { event: 'quit', player_id: REPLAY_PLAYER_IDS[2] }]));
