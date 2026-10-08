@@ -2700,7 +2700,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-desktop-signed-in-texas-panels-chat-phrases.png",
-      "sha256": "22b720bcc33206946de7247bda66996545edd9f97840c2182a4972b56245ecc8"
+      "sha256": "9fb3d85ba4103bf7247b78158534224f9defe2ffbb4c70a3e8f97baacf3120b7"
     },
     {
       "label": "zh-Hans_desktop_signed_in_texas_panels_chat_history",
@@ -2753,7 +2753,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-desktop-signed-in-texas-panels-chat-history.png",
-      "sha256": "f70dd9a046bee98f8bef0c3de7529ff61b09c0e2c772960d1b0bef62a54127ad"
+      "sha256": "f5d57fb154ad3608e3d334c98ecf45c76f7fe966a4615a5407cbbe7c9fa2f530"
     },
     {
       "label": "zh-Hans_desktop_signed_in_texas_panels_chat_actions",
@@ -2806,7 +2806,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-desktop-signed-in-texas-panels-chat-actions.png",
-      "sha256": "d192d9fa368a16f5521f41fc7894bcff5558376bda5c6a4c3d1bbaa04a6dd0a2"
+      "sha256": "63c1ad2f5ddcf51d8f64a31d35e5421108f23e8640e007ab5a8a376b131cbaa8"
     },
     {
       "label": "zh-Hans_desktop_signed_in_texas_panels_chat_report",
@@ -2859,7 +2859,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-desktop-signed-in-texas-panels-chat-report.png",
-      "sha256": "eebbd0cd0bb9eb84704f39d532f6268ee216d0bbdf8cad948a3c9a825078aacf"
+      "sha256": "f992ea767ff608aefb001941b3306433d64bba88830297da7e5cdf755da7c568"
     },
     {
       "label": "zh-Hans_desktop_signed_in_texas_panels_chat_block_confirm",
@@ -2912,7 +2912,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-desktop-signed-in-texas-panels-chat-block-confirm.png",
-      "sha256": "0172233ef294913681d161025a2370dd64ad5c587151f31836546b60772a7702"
+      "sha256": "68b17aa89dfbe80a92847aa294cf2c779b1e4b181bd8dc26e1c5fec6b2482491"
     },
     {
       "label": "zh-Hans_desktop_signed_in_texas_panels_buy_in_review",
@@ -2965,7 +2965,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-desktop-signed-in-texas-panels-buy-in-review.png",
-      "sha256": "0b6eda04505e6ab2152c8cad051b2aae9d93d6eda7745d53333ce9f7961f08d8"
+      "sha256": "ae6fd524e288bc34dc437d4c45fd039bf8d15f871b41109d928e01b3144385aa"
     },
     {
       "label": "zh-Hans_desktop_signed_in_texas_panels_hand_end",
@@ -6974,7 +6974,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-mobile-signed-in-texas-panels-chat-phrases.png",
-      "sha256": "fde755213f39c21c4d972a304871793137779683b69b3fa950883939f30df8fb"
+      "sha256": "c12bddc97a1313dfdf27b8314db377cac3f40e5c2569790e8c3483824ff9bf9e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_texas_panels_chat_history",
@@ -7027,7 +7027,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-mobile-signed-in-texas-panels-chat-history.png",
-      "sha256": "1cf2c5fa5ebbaf89add0ffe9dc2f43be11cb19d8dc84e4b7660a5f014bb943e2"
+      "sha256": "37cf393d2976625af7d9a8d3e44ea54f1ef32d1fabdfbf5f102efb2d788c6443"
     },
     {
       "label": "zh-Hans_mobile_signed_in_texas_panels_chat_actions",
@@ -7080,7 +7080,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-mobile-signed-in-texas-panels-chat-actions.png",
-      "sha256": "c63d5455382842251c19c66a28661bcf117647737b727c944bfa916492cd09a5"
+      "sha256": "5b98330c22535886afdc6d156ba64acccfc9f9d5967ff10a4afb12fa8d3b178a"
     },
     {
       "label": "zh-Hans_mobile_signed_in_texas_panels_chat_report",
@@ -7239,7 +7239,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-mobile-signed-in-texas-panels-buy-in-review.png",
-      "sha256": "7eb8f598ed8352e117a2652ee97d7d3ba98482606f9ee400bd7a14e03314d0b1"
+      "sha256": "3f8868c4fc82377d65d333c0c18958a79b764a1039f1720c761ec182198adcc2"
     },
     {
       "label": "zh-Hans_mobile_signed_in_texas_panels_hand_end",
@@ -11592,7 +11592,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-desktop-signed-in-texas-panels-chat-phrases.png",
-      "sha256": "2048940c4a46fca1616b134784e8a939e4c116bfcaa1401f14edd939f523065e"
+      "sha256": "b854a95bcd5ac8340a1c6af3de453e3f07e50ff46331659e3aa95b7715663836"
     },
     {
       "label": "zh-Hant_desktop_signed_in_texas_panels_chat_history",
@@ -11645,7 +11645,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-desktop-signed-in-texas-panels-chat-history.png",
-      "sha256": "9b6a2b46d88aab3044e3781a0e11f8f9ff304c21f4e849a31b8875619626bc41"
+      "sha256": "3a3550d523ddeca106b6a4fc8749240ffa45af404bc1cf68c98aaadd7eab54aa"
     },
     {
       "label": "zh-Hant_desktop_signed_in_texas_panels_chat_actions",
@@ -11698,7 +11698,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-desktop-signed-in-texas-panels-chat-actions.png",
-      "sha256": "633e3f0d527489a00fa2672fc29a83ef4d04f75c04668b813b41dc535a48c08a"
+      "sha256": "76becf1e20906b7d02bb7403ba8fd35f44942f97042c737768bbb736ba25a73b"
     },
     {
       "label": "zh-Hant_desktop_signed_in_texas_panels_chat_report",
@@ -11751,7 +11751,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-desktop-signed-in-texas-panels-chat-report.png",
-      "sha256": "ebd77a2b83dd462739eb7d33e3a3dc4756b2a6d54213511320c15d45b2226772"
+      "sha256": "08c4e522168f065179df6c2adbd0d5691377a92651dc91d799ca2dd140af77e4"
     },
     {
       "label": "zh-Hant_desktop_signed_in_texas_panels_chat_block_confirm",
@@ -11804,7 +11804,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-desktop-signed-in-texas-panels-chat-block-confirm.png",
-      "sha256": "1baebf0b5eaf095d21c219729661bda0f3381df64983042aff00159798def7ce"
+      "sha256": "1919971987759906f8c620996a2f1dac8055197d92199f0dc598857b3e09d691"
     },
     {
       "label": "zh-Hant_desktop_signed_in_texas_panels_buy_in_review",
@@ -11857,7 +11857,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-desktop-signed-in-texas-panels-buy-in-review.png",
-      "sha256": "878bf75335f633316b37b1c8acdd3191c0edc2542a869c2e35516879066ec71a"
+      "sha256": "67a36a2c74c5f95335daa4bbe8cbafea529c0d4e7136e336b24fe26349c089bd"
     },
     {
       "label": "zh-Hant_desktop_signed_in_texas_panels_hand_end",
@@ -11910,7 +11910,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-desktop-signed-in-texas-panels-hand-end.png",
-      "sha256": "fe11d8cef6786c210362666a25da8b2780d90dac6e10091342d958d100265815"
+      "sha256": "57d3b9b04e6bf6d5790bcf9b68c3ccb47174c2c6773b8c85ff984313dd949c52"
     },
     {
       "label": "zh-Hant_desktop_signed_in_texas_panels_remaining_cards",
@@ -15866,7 +15866,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-mobile-signed-in-texas-panels-chat-phrases.png",
-      "sha256": "29b93418ec5851ab7d4f09522c428f9c774e85d5c11719e31854944a6ffd7c43"
+      "sha256": "3fef70fab32075fd47a0ead39e6cd2767909a11ad601edbc66159a46c6470210"
     },
     {
       "label": "zh-Hant_mobile_signed_in_texas_panels_chat_history",
@@ -15919,7 +15919,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-mobile-signed-in-texas-panels-chat-history.png",
-      "sha256": "f93e8946817cbeaca09fb9f3193a3752a2d425f36b3109add2e3ecb63af60abc"
+      "sha256": "32dc4b97c653cfdd5221059b72bca526405e62abf592b0533ab9706d5a09f295"
     },
     {
       "label": "zh-Hant_mobile_signed_in_texas_panels_chat_actions",
@@ -15972,7 +15972,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-mobile-signed-in-texas-panels-chat-actions.png",
-      "sha256": "0600bbd2d9e009ff1458d99b1717bbf0714aefb721a47d24fccff3e792783890"
+      "sha256": "ff13bb20bf1101cc87239694ab9ef32dc75ae47112abadabe6cd5ca2efc52d58"
     },
     {
       "label": "zh-Hant_mobile_signed_in_texas_panels_chat_report",
@@ -16131,7 +16131,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-mobile-signed-in-texas-panels-buy-in-review.png",
-      "sha256": "c90d7111728f356627d09159e3f586ceb85eddef9aa9a9b85b3d64dbfcd9c34f"
+      "sha256": "c89b4c2ac8efbbbee5de7d7a24558eea5a697509126e550c79a9aa8aada15699"
     },
     {
       "label": "zh-Hant_mobile_signed_in_texas_panels_hand_end",
@@ -20325,7 +20325,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-desktop-signed-in-texas-panels-leaderboard-players.png",
-      "sha256": "468c65a41ea8b24886aed970564598ac9935a52c200d87c114374ba66e940264"
+      "sha256": "c7673ddc68649d8b117925adb579bec8d8473ac9549fd755344bed8ade793219"
     },
     {
       "label": "en_desktop_signed_in_texas_panels_record_settlement",
@@ -20484,7 +20484,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-desktop-signed-in-texas-panels-chat-phrases.png",
-      "sha256": "db2c87ee08355861e31d6e458820e9f9a82b462870bf59e0aeabe36dd4a87321"
+      "sha256": "19b1ed68f43cac7983fddc17593f634b620642a97db88c6df2ec1344a4fc51f4"
     },
     {
       "label": "en_desktop_signed_in_texas_panels_chat_history",
@@ -20537,7 +20537,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-desktop-signed-in-texas-panels-chat-history.png",
-      "sha256": "ae90783688d6b5f7be37fda18b202da4423a55ac2d04df5ffc1ff997b4c0a881"
+      "sha256": "767eca7a94ebbbb9558f851aec4a2307bad52199c731f3d1696867060f91a104"
     },
     {
       "label": "en_desktop_signed_in_texas_panels_chat_actions",
@@ -20590,7 +20590,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-desktop-signed-in-texas-panels-chat-actions.png",
-      "sha256": "80db0911db48db6da8d1c98acf694bd8c1b945561bb88a2548934ecc441254e4"
+      "sha256": "07ac6851f38e7c9ac75b32ef311f4dc71c8c71f4edfb42f8f20c10d93fd941af"
     },
     {
       "label": "en_desktop_signed_in_texas_panels_chat_report",
@@ -20643,7 +20643,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-desktop-signed-in-texas-panels-chat-report.png",
-      "sha256": "5c3326e4e5e6961e617a39cc2f32b2c1587754994d30f220143a0f4de231b513"
+      "sha256": "22f065f119c3a99597997eb187df4d4ffdb511917d163177d0a1100d6982dadd"
     },
     {
       "label": "en_desktop_signed_in_texas_panels_chat_block_confirm",
@@ -20696,7 +20696,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-desktop-signed-in-texas-panels-chat-block-confirm.png",
-      "sha256": "7a32d2db223877abfecffcb9046bac8410f9b4214e9f829e1320d76d4896d1db"
+      "sha256": "de0423c435b47caf52ee4aacc3b43e94718e5d46d4d2d93655f33d46f61a737a"
     },
     {
       "label": "en_desktop_signed_in_texas_panels_buy_in_review",
@@ -20749,7 +20749,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-desktop-signed-in-texas-panels-buy-in-review.png",
-      "sha256": "6faec19c7256cef00a4834040c51b4919093a99a3c3169b595307a5894dd0740"
+      "sha256": "bb902c9a15074a4a4b4122be8c86e9c63f2a1ceaaf63749246f937447c383904"
     },
     {
       "label": "en_desktop_signed_in_texas_panels_hand_end",
@@ -24758,7 +24758,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-mobile-signed-in-texas-panels-chat-phrases.png",
-      "sha256": "937560c7162fabfa10c26126cc8bf42c7d9106febc421ec0076fe7898f39c4ee"
+      "sha256": "5b65cf35e3c4006979bddb3aa93acd158987b76b59faee1fcad7a1a19c9ad75a"
     },
     {
       "label": "en_mobile_signed_in_texas_panels_chat_history",
@@ -24811,7 +24811,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-mobile-signed-in-texas-panels-chat-history.png",
-      "sha256": "a5945de25e60debbdb56590a95cfaf6e2f5524280828a813f7865ecc250a9df9"
+      "sha256": "c64080cce7d6c6d8374e57deff5e4017df96f43338d106cdc76fb8f72a1b658a"
     },
     {
       "label": "en_mobile_signed_in_texas_panels_chat_actions",
@@ -24864,7 +24864,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-mobile-signed-in-texas-panels-chat-actions.png",
-      "sha256": "9399980bf639d045d84fe6ad1cd7fcba878cb3b66f2fb2f6133b4d2b2913944f"
+      "sha256": "9d805efacc9db1e12c9c9e496f874aba06dcc43abaae468561d1ed2f46b66bc3"
     },
     {
       "label": "en_mobile_signed_in_texas_panels_chat_report",
@@ -25023,7 +25023,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-mobile-signed-in-texas-panels-buy-in-review.png",
-      "sha256": "189fde33031da667d042e48bface8b602ac587f29398edd076da1e49f41aca65"
+      "sha256": "edfe98842fed7c2518b0f1bbe4271bc91c3c0c786451fdcfb3b73b7e0a7e011d"
     },
     {
       "label": "en_mobile_signed_in_texas_panels_hand_end",
