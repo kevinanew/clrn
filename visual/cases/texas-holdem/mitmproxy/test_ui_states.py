@@ -55,10 +55,11 @@ class UIStateTests(unittest.TestCase):
             self.assertIsNotNone(self.request(path, 'PUT').response)
             self.assertIsNone(self.request(path, 'POST').response)
             self.assertIsNone(self.request(path.replace(ROOM, OTHER), 'PUT').response)
-        for method in ('POST', 'DELETE'):
+        for method in ('PUT', 'DELETE'):
             path = f'/v10/texas_holdem/room/{ROOM}/hand_prediction'
             self.assertIsNotNone(self.request(path, method).response)
             self.assertIsNone(self.request(path.replace(ROOM, OTHER), method).response)
+        self.assertIsNone(self.request(path, 'POST').response)
 
     def test_payment_isolation_matches_room_method_and_exact_action(self):
         frame = {'id': 9, 'method': 9, 'params': {'data': {'method': 'POST', 'path': '/v3/pay_action/do',

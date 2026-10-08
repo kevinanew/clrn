@@ -39,7 +39,7 @@ class UIStates:
         settings = f'/v10/texas_holdem/room/{room_id}/user_settings'
         if method == 'PUT' and path in (settings + '/enable_auto_rebuy', settings + '/disable_auto_rebuy'):
             return {'auto_rebuy': path.endswith('/enable_auto_rebuy')}
-        if method in ('POST', 'DELETE') and path == f'/v10/texas_holdem/room/{room_id}/hand_prediction':
+        if method in ('PUT', 'DELETE') and path == f'/v10/texas_holdem/room/{room_id}/hand_prediction':
             return {}
         if method != 'GET' or path != f'/v11/buy_in/{room_id}/applications' or not self.applications:
             return None
