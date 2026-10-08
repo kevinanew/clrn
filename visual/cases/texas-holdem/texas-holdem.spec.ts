@@ -1,4 +1,5 @@
 import { type Page } from '@playwright/test';
+import { writeFileSync } from 'node:fs';
 import { expect, test, texasProxyOptions } from './proxy';
 import { buildScenarios, type VisualScenario } from '../../scenarios';
 import { visualBaseUrl } from '../../target';
@@ -161,7 +162,13 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
       console.log(`MITMPROXY > requests=${proxyStatus.proxiedRequests}, stabilized=${proxyStatus.stabilizedRequests}`);
       const optional = scenario.pageLabel === 'signed_in_texas_optional_pre_game';
       if (scenario.pageLabel === 'signed_in_texas_hall') await mitmproxy.configureHallView();
-      room = await createTexasRoom(page, created => { room = created; }, optional);
+      room = await createTexasRoom(page, created => {
+        room = created;
+        // 不记录凭据；强制中断时仍可从失败 artifact 核实本轮创建的 UUID。
+        writeFileSync(test.info().outputPath('created-room.json'), JSON.stringify({
+          roomId: created.roomId, apiOrigin: created.apiOrigin,
+        }));
+      }, optional);
       if (scenario.pageLabel === 'signed_in_texas_game') {
         await waitForGameConnection(page);
         await captureGameplay(page, scenario, mitmproxy, room.roomId, capture);
@@ -183,7 +190,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
         try {
           await mitmproxy.releaseTexas();
         } finally {
-          if (room) await deleteTexasRoom(page, room);
+          if (room) await deleteTexasRoom(room);
         }
       } finally {
         await context.close();

@@ -235,6 +235,9 @@ CI 按「应用 app」和「德州 texas」拆为独立任务并行执行；每�
 应用覆盖核心 40 张 / 全量 102 张，德州每种语言覆盖 116 张，各任务分别保存失败报告。
 不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 手动触发可用 `suite` 选择 `all`、`app` 或 `texas`，只重跑所需部分。
+手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
+不会自动提交图片；`filter` 可只选新增场景。生成新图片时跳过依赖已有图片的完整性检查，
+提交后 `mode=compare` 和 push CI 会执行完整检查和截图对比。
 类型检查和场景配置测试只在简中应用任务运行一次（仅跑德州时由简中德州任务执行）；
 浏览器辅助测试属于应用，只在简中应用任务运行；
 本机运行 `test`、`reference` 或 `approve` 仍会执行浏览器辅助测试。
@@ -259,6 +262,7 @@ VISUAL_SUITE=texas pnpm run test:all # 德州三种语言
 `VISUAL_SUITE` 默认为 `all`，保留完整本机测试入口。按功能组划分用例，
 应用的德州建房表单仍属 `app`，进入真实牌桌的用例才属 `texas`；
 `VISUAL_SCOPE`、语言和 label 过滤可与它叠加使用。
+`all` 会分别启动 App、德州子进程，各自采集登录态；App 的登录采集也保持直连。
 
 应用默认账号为 `laiwanvisual01`，单独的德州测试默认使用 `laiwanvisualtexas01`；
 两者沿用固定 staging 测试密码和现有 UI 的首次自动注册机制，随后复用账号。
