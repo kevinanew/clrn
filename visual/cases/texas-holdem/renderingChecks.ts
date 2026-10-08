@@ -3,10 +3,17 @@ import { expect } from './proxy';
 import { REPLAY_PLAYER_IDS } from './replayData';
 
 /** 翻牌圈必须显示三张公共牌和本人两张手牌，精灵图加载完成后才能截图。 */
-export async function checkFlopCardFaces(page: Page, self: string): Promise<void> {
+export async function checkFlopCardFaces(page: Page): Promise<void> {
   const communityFaces = page.locator('[data-testid="community_card"] [data-testid="sprite-image-content"]');
-  const holeFaces = page.getByTestId(`texas-holdem-player-container-${self}`)
-    .getByTestId('texas-holdem-player-hole-cards').getByTestId('sprite-image-content');
+  // 本人未摊牌的手牌由桌面 PlayerCard 渲染，头像旁的手牌只用于公开牌。
+  const handCards = page.getByTestId('player_card').filter({
+    has: page.getByTestId('player_card_name_text').filter({ hasText: /^(as|ad)$/ }),
+  });
+  await expect(handCards.getByTestId('player_card_name_text')).toHaveText(['as', 'ad']);
+  const handFronts = handCards.getByTestId('card-flip-side-b');
+  await expect(handFronts).toHaveCount(2);
+  for (const front of await handFronts.all()) await expect(front).toHaveCSS('opacity', '1');
+  const holeFaces = handFronts.getByTestId('sprite-image-content');
   await expect(communityFaces).toHaveCount(3);
   await expect(holeFaces).toHaveCount(2);
   for (const faces of [communityFaces, holeFaces]) {

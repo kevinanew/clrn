@@ -29,7 +29,7 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   for (const street of ['preflop', 'flop', 'turn', 'river'] as const) {
     await restore(street);
     if (street === 'flop') {
-      await checkFlopCardFaces(page, self);
+      await checkFlopCardFaces(page);
       if (scenario.viewport.label === 'mobile') await checkMobilePlayerAction(page);
     }
     await snapshot(street);
