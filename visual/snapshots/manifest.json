@@ -5085,7 +5085,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-loading.png",
-      "sha256": "d2b79965445143d63a0afaaa3ae72fca6e88c8fc4112616cc15cc74d83d5169f"
+      "sha256": "64c8432a74bd030dc6415dbc9bcbc9234a0ccc09131ccc46e404e06a9504d575"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_empty",
@@ -5105,7 +5105,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-empty.png",
-      "sha256": "bb4464b6ed6f06aaa7d827e0a039d8059fc1dd99fd5768dd3e87c7465e129f92"
+      "sha256": "3f16cd2ffcfd991ed89e0c2e991714ead1eb22509ae64c740191d45e68482fca"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_list",
@@ -5125,7 +5125,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-list.png",
-      "sha256": "b045c0af79adaa4dd9d43d482c0c6cfaaa99e0a661ba72eca13c86a4ae51e730"
+      "sha256": "5af282e9abd1c40449cf8df0968c969245836297003be5df46fead5660bf44aa"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_list_bottom",
@@ -5145,7 +5145,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-list-bottom.png",
-      "sha256": "b045c0af79adaa4dd9d43d482c0c6cfaaa99e0a661ba72eca13c86a4ae51e730"
+      "sha256": "5af282e9abd1c40449cf8df0968c969245836297003be5df46fead5660bf44aa"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_select_none",
@@ -5165,7 +5165,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-select-none.png",
-      "sha256": "13f4598cbd68bb16125ff93082ca68548d81f87f2c3d3bf49d52a290441f6302"
+      "sha256": "16ff347c1090982d5f3db0c1db4ae97bd4a2ac69cca7c541da6ac4b444a6352d"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_select_win",
@@ -5185,7 +5185,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-select-win.png",
-      "sha256": "b05c222115708967c71f0e55cd41b32eb1c5656aab49cc38529c3c8e991159df"
+      "sha256": "69968f4d5122069521bd668e72367f62da5af8fb9e744fbdb74f1884d6a6e202"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_select_loss",
@@ -5205,7 +5205,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-select-loss.png",
-      "sha256": "d3bf4fd710d42693fa12948eb63c7b01956790e2151dada82da7bde1acffcc97"
+      "sha256": "058763f22b0a52a215557f29a5da126d69a3dc7344cb416e63c540ce7a0ce180"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_select_all",
@@ -5225,7 +5225,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-select-all.png",
-      "sha256": "08f4f689304d6026ac46453f3f1a1ad0e6fcee0645f9adf3ccf46f7a124adc5e"
+      "sha256": "ce18032fccef921c3a1da17c3978df9bc4d93d83ac751af0acaaef369bf3196a"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_select_clear",
@@ -5245,7 +5245,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-select-clear.png",
-      "sha256": "13f4598cbd68bb16125ff93082ca68548d81f87f2c3d3bf49d52a290441f6302"
+      "sha256": "16ff347c1090982d5f3db0c1db4ae97bd4a2ac69cca7c541da6ac4b444a6352d"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_select_cancel",
@@ -5265,7 +5265,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-select-cancel.png",
-      "sha256": "b045c0af79adaa4dd9d43d482c0c6cfaaa99e0a661ba72eca13c86a4ae51e730"
+      "sha256": "5af282e9abd1c40449cf8df0968c969245836297003be5df46fead5660bf44aa"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_swipe_delete",
@@ -5285,7 +5285,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-swipe-delete.png",
-      "sha256": "305df01a24a8128e660db6945f86f5e13f9a7a9d244ab532e45c8b9387756b54"
+      "sha256": "53de4e7d0d897d855a89971f89884514e5b1495771e9df9bfa35898594e9ed5a"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_delete_confirm",
@@ -5305,7 +5305,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-delete-confirm.png",
-      "sha256": "d6342cc0de861e515eb60296e786ca2776e2bcc03ccda48cbdf1ec2620588b74"
+      "sha256": "dac47450c2cc076e386cbb8d5e341f3da1af48457a576395c24483c7c3d0a072"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_delete_cancel",
@@ -5325,7 +5325,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-delete-cancel.png",
-      "sha256": "1ae471bff8c7a7296785972324eb34dab6a50479734bd4cf3c2f9a6955795d71"
+      "sha256": "ad95e04d9f1d19aba39a5be39efa01c15b37e20fc2077601a4adc3ab5f31bd3f"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_delete_blocked",
@@ -5345,7 +5345,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-delete-blocked.png",
-      "sha256": "b3d2c36a961c45557b0b8075c80476874cccb7bf9edb92f42eefc4934756a9fe"
+      "sha256": "fec5eaf0e9bb6158790dad7929cfb0dd0400e7988f4725ca83cbfc541255fddd"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_private_overview",
@@ -5365,7 +5365,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-private-overview.png",
-      "sha256": "676a6b3b8a40a109cb1ebe9d69797c9d0f8de354d8cb1753dc212df356b5effa"
+      "sha256": "90aeffa352fda7775f3f3be148a8095f6ca51d95a6f1e8db3bb3b4a5d7eadaf4"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_private_relationship",
@@ -5385,7 +5385,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-private-relationship.png",
-      "sha256": "5083565102e6c6d01aa98c9c94a7be1ddaa6349ab3ff6b45064441f250385185"
+      "sha256": "90bee2f070fc4773a55553ac62a70b302f43d837582a16e66486d91d86cb59c7"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_private_relationship_switch",
@@ -5405,7 +5405,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-private-relationship-switch.png",
-      "sha256": "452f3c0a303358b964c9c796eaf2e492dbe1bdbb0493411fa7ccbcb1689a6af4"
+      "sha256": "f960b8bbec49db909d330682e1fd14c10a3053b9a161c8ed2bd3ff15b00e8074"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_private_actions",
@@ -5425,7 +5425,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-private-actions.png",
-      "sha256": "ab02f04bac739fce3fd298e9df0e6b1d0eb86e8a5d950f85504b66db4ca946a3"
+      "sha256": "f3ce0f38c42860bd98a895fea584b8489f890e0168816264a8377855b4faedb6"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_private_settlement",
@@ -5445,7 +5445,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-private-settlement.png",
-      "sha256": "ef08857010d2a6c0f3dcde0e91ee8231a3910a25c3880e17610ffa47699d841b"
+      "sha256": "39c59efa1668e286d52f79271fe3d40c4ed7af3971b2883d20a35ae4769eb46e"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_replay_list",
@@ -5465,7 +5465,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-replay-list.png",
-      "sha256": "8772e962fe709d546fec5b614444ae802b839b2946dd19f9e31144f4e117084b"
+      "sha256": "cbf3a22124faf2004c3b8e11b56e01b9b3e1ab01c7d33fb0cebc2152d869063b"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_club_overview",
@@ -5485,7 +5485,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-club-overview.png",
-      "sha256": "04701655cd86933e3f2c79c7c6fe2f718bf9630cebb9e67091d4a92716b5c71c"
+      "sha256": "48357e4b525a21ce89ecfb590597ba6514cae2677ba515598e96a464352f29d9"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_club_actions",
@@ -5505,7 +5505,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-club-actions.png",
-      "sha256": "13d50d19ffa0f1508c9cd88b7587029e5bbd2cf950e8f9ca1cde938a7d568484"
+      "sha256": "775ddf59a698a72f459ebebe5e2cc91fd50952dcea92fc9bf2991bcc47feca0d"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_club_settlement",
@@ -5525,7 +5525,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-club-settlement.png",
-      "sha256": "33e15c86f6b16195de7e3e2e6f9e69441f6597d818351cfa8f0aae1f064fbc22"
+      "sha256": "c16498bbed838c6c5e09bf37d8d02e8d25f7384d0b898633526bbbd947fae9a6"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_hall_overview",
@@ -5545,7 +5545,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-hall-overview.png",
-      "sha256": "56876bd6cfacf003cc335f5ca61ea57d18f18198c85115dd9676911ec832e412"
+      "sha256": "aa00ee1a96cfda39d0d739e3e683f50846d8beabeb098821c2e4c2a175d45621"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_short_deck_overview",
@@ -5565,7 +5565,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-short-deck-overview.png",
-      "sha256": "c9cf2a6829da4cf926152f8ed648d81cbbf72c1426e1efbea2486129de808933"
+      "sha256": "a3f09c8d25b76238b37550ef0d477923fd8e5b2fcb8ab32dd6b6dcb398e07b24"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_no_hands",
@@ -5585,7 +5585,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-no-hands.png",
-      "sha256": "645fd88209f07cd9b3786a33d7f379e5da747f27b70e1a787858a88366902870"
+      "sha256": "dc74ea49ef0aeb82d7b0866bee4c7bf7e3bbe3b23b967fec178018df75e39c9e"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_replay_empty",
@@ -5605,7 +5605,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-replay-empty.png",
-      "sha256": "766531745c390b2c0982e5158b7e8655ad875a78a4249f33276bdc15a97b0585"
+      "sha256": "4cdd01e47e44842656ddfe66482f88e624a499bf61d345863ac45642e6ae08f8"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_delete_success",
@@ -5625,7 +5625,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-delete-success.png",
-      "sha256": "bf5d1616bf619a0ab18a89cdb0608e47d8be22da763da2bdf75aa6fc7c086e2b"
+      "sha256": "598d8e298a89436eba54eea2cefce80b3659522c5d7639624f509dbaa820997d"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_delete_failure",
@@ -5645,7 +5645,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-delete-failure.png",
-      "sha256": "3883d85ae390db927c6da941ad24ab9a00e766c8e19873a912664f9a553516ad"
+      "sha256": "ff2c12b873a2a14ee4910f9897d9fc63ae930881a6a3d0c2fb13c7dee04c97db"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_pagination_loading",
@@ -5665,7 +5665,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-pagination-loading.png",
-      "sha256": "2ed1f306116a12c6f376d3183a2cbdfba212334049001097b0f21e0a0e6aa106"
+      "sha256": "8c616b6cdf3a0346c0e487488658948f6a35bad0eb3608725b0a622952059512"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_pagination_end",
@@ -5685,7 +5685,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-pagination-end.png",
-      "sha256": "e4a906d72e320149af57a06c91bf42ab9bcb831c2b6eab07d4093e5ba5a78c77"
+      "sha256": "fbf6611f477626aabd355d8efb7f32631d475ff567ec34419c8fdc15bc5d8592"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_legacy_reopen",
@@ -5705,7 +5705,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-legacy-reopen.png",
-      "sha256": "bf5d1616bf619a0ab18a89cdb0608e47d8be22da763da2bdf75aa6fc7c086e2b"
+      "sha256": "598d8e298a89436eba54eea2cefce80b3659522c5d7639624f509dbaa820997d"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_loading",
@@ -5725,7 +5725,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-loading.png",
-      "sha256": "7da36b598764b739847ecd7f7ce8b4dd8988129d7b4e689f970db858d0fb942e"
+      "sha256": "50dc707b5d05e6d2425bc910d3299189eb107bafb19e63e83a4f47067110ede5"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_empty",
@@ -5745,7 +5745,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-empty.png",
-      "sha256": "41fb36f2dd97bb79386dc4d128889614e8a390a4dd8a05353aa2e9ff7e54b80e"
+      "sha256": "554fd9393c7cf765c22a2c4370bfc75b8ceb7ac757e10474f68d1ef3b8a66fbb"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_list",
@@ -5765,7 +5765,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-list.png",
-      "sha256": "a2a9c80194b4cd297b0128373d3a489debf2eb2ad87904c2af0cce18406a6bbf"
+      "sha256": "60b229c3b8b2c0b7d9fb630d93b5fa1d5b4e80ab88e661ca39125bdae96c2417"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_list_bottom",
@@ -5785,7 +5785,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-list-bottom.png",
-      "sha256": "a2a9c80194b4cd297b0128373d3a489debf2eb2ad87904c2af0cce18406a6bbf"
+      "sha256": "e48c99b4a5ebcddc1842855002d92734fcf4d1f015e58d6dc80df2842fcb8c49"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_select_none",
@@ -5805,7 +5805,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-select-none.png",
-      "sha256": "861a3d5692a2808fdb1357fdc2d286e930f5552e88153a75920ffd98c1da51cb"
+      "sha256": "0c3c8f34aefb528fa5de4a28b405dbe62a7529ba2944d3719bc9f41593f9a948"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_select_win",
@@ -5825,7 +5825,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-select-win.png",
-      "sha256": "adf71e558a62f3f65610c428d736495141f121ce246c6fbf023c3e5ff7f138d8"
+      "sha256": "77ac7e475aa88752c83e59cb55d65cc8dc44a96856e871c472ad15f71355a449"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_select_loss",
@@ -5845,7 +5845,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-select-loss.png",
-      "sha256": "18552998fd5d55172b5bc391a3286988e89deffc5828ce7be69939107dc76f6b"
+      "sha256": "6872d38107ba75b25fd02acff11dbefa12268e75eab6fe5e572764f796cbe7fc"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_select_all",
@@ -5865,7 +5865,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-select-all.png",
-      "sha256": "68757a889a0a23d2f0a30a9a638ac2b4f8d210b23bcf88c0344824c613b94ff2"
+      "sha256": "100db8b633c9435e04e2742d24a772fbca773cfcf65155562521a80473aae39a"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_select_clear",
@@ -5885,7 +5885,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-select-clear.png",
-      "sha256": "861a3d5692a2808fdb1357fdc2d286e930f5552e88153a75920ffd98c1da51cb"
+      "sha256": "0c3c8f34aefb528fa5de4a28b405dbe62a7529ba2944d3719bc9f41593f9a948"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_select_cancel",
@@ -5905,7 +5905,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-select-cancel.png",
-      "sha256": "a2a9c80194b4cd297b0128373d3a489debf2eb2ad87904c2af0cce18406a6bbf"
+      "sha256": "60b229c3b8b2c0b7d9fb630d93b5fa1d5b4e80ab88e661ca39125bdae96c2417"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_swipe_delete",
@@ -5925,7 +5925,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-swipe-delete.png",
-      "sha256": "5f425c3b2fd063a09be26ab05479ccdcd3b5037d71160ab94c403861d97a6bc3"
+      "sha256": "b6e96c02dbcf554961b94b20434f0e54927fc28888b4a980ee92879c6855784c"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_delete_confirm",
@@ -5945,7 +5945,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-delete-confirm.png",
-      "sha256": "9d20523081b6dfdaec244fa972d6235e40aba6571fd76ea5ddb2b93a8e819712"
+      "sha256": "d699bc3d8e039339222ec3569fc21e4d6afbbc22c93aaad451c330506fd6d29a"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_delete_cancel",
@@ -5965,7 +5965,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-delete-cancel.png",
-      "sha256": "6447989eb6f3bd364898aa3b9e336edd2dd04a2108beb57e5c3d8c73f648d2f5"
+      "sha256": "59fed01d36da558679e4e52bce356a16c9642800186b7213aeca2d929b79c3ef"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_delete_blocked",
@@ -5985,7 +5985,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-delete-blocked.png",
-      "sha256": "a3c0492544bc2674c98efb86288e13e1ba4351d05a9bc252e00e1d76fc8a163c"
+      "sha256": "a8d07ed83219d59d665f5f1d22a40484558bc5ff5ae58599a56ebae258c4468d"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_private_overview",
@@ -6005,7 +6005,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-private-overview.png",
-      "sha256": "da7bdda884e1b921914717affa32bd615184725d6cc86d7aab890879491f9bf0"
+      "sha256": "0acab92e500efc1a0461b09c36831e21688f728064491dadb585f8f32a263fc1"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_private_relationship",
@@ -6025,7 +6025,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-private-relationship.png",
-      "sha256": "01885d3ac76bb8dbc1c56a57ca6ab758785041ee98181d43e204510a9d94d5b4"
+      "sha256": "d948d6563728ba738210928ddda2018d8bed5fb3e11dfd15545c73466c8d2d89"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_private_relationship_switch",
@@ -6045,7 +6045,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-private-relationship-switch.png",
-      "sha256": "c2d9e2a66dd9a3a4584e455bf0770577a34784510c275f8d836ceb50c95d48c8"
+      "sha256": "d68b65a6a8237c5174fd11f9093bf1c51b3c1464ff5e3c12d1630e82218a3981"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_private_actions",
@@ -6065,7 +6065,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-private-actions.png",
-      "sha256": "3320cd4344ab38089f029e22d3b81e9e1d505ebe5ba1f74bfd5610dcf5971006"
+      "sha256": "9105afb9e3698fb2b911f37bcebb5ccce9f88aa770fd5e75963b98348bd54540"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_private_settlement",
@@ -6085,7 +6085,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-private-settlement.png",
-      "sha256": "134af6a30aa09576e7d6d78efed1a98609588a1e6878ee7c1c85909c20d262d2"
+      "sha256": "b5dfe909c8bcd432298506a7e438a77e9f006cbea81df1377004ee12d7467841"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_replay_list",
@@ -6105,7 +6105,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-replay-list.png",
-      "sha256": "15514a459e8d0f2a9f110877ef8962fb9ed45c1b83e670ef2c92a70eeab11d7f"
+      "sha256": "2a52d05a4ad00b941de22c8ea83c89ed3f1c8c78c7f6057d39c2cee6f42eeae5"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_club_overview",
@@ -6125,7 +6125,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-club-overview.png",
-      "sha256": "e6e00b20470c7b8c307a87ed0e7d70c0ea0fbeb970cbb1563e96327094861f2e"
+      "sha256": "d2ee0f8723adfe178b06a85e96d940a051c9b3720fccec3fde56cc4b7cb796dd"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_club_actions",
@@ -6145,7 +6145,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-club-actions.png",
-      "sha256": "0d6c4dd348f22c512ea2a6faa4f0fcc617f80f60a80d3d538011c0eab4920bc6"
+      "sha256": "b00c784210575082b44b1fe0f33fbf4b213148c76a5b4bdadd6ae2c5e79489a8"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_club_settlement",
@@ -6165,7 +6165,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-club-settlement.png",
-      "sha256": "f82e6fa7abe4f97f65f03e7330cdab7ccd977762af242b3bdb0caadec1866fa8"
+      "sha256": "8a7f44f309d5ab1ab50e4355355a386d601e1f489aa4d2264096d5b5959f368f"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_hall_overview",
@@ -6185,7 +6185,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-hall-overview.png",
-      "sha256": "a5471054e20bf4b0f8bc4c76967c53d5a19dc55b53e34d874aca2eacd3a24b27"
+      "sha256": "47f2e268a40ffb92d4c3d8d5fcba5d6db7a267de6951ecd61abfb0c750fe58c5"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_short_deck_overview",
@@ -6205,7 +6205,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-short-deck-overview.png",
-      "sha256": "f4a04c5956b80dda138f89a4293165bc6aa081d5a7453574574507d19aebdb5f"
+      "sha256": "460289e86d2497c66cdfdb2d4b5df99ad29c51bfaac5f2591bf174670f38073f"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_no_hands",
@@ -6225,7 +6225,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-no-hands.png",
-      "sha256": "8e76fa3e53c73b0d5d8b2b9a376d0f92573b711e56c1d96f5877c8eac204a13d"
+      "sha256": "95e8ce7f2de71840d766428aa9923773b710d29901b44272e49b59afc1fce872"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_replay_empty",
@@ -6245,7 +6245,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-replay-empty.png",
-      "sha256": "a7da04245ccdf9807e2bfdd44bfefcc5735378cfff9ce5df7810080549150bdb"
+      "sha256": "2782a175e64c1d7446c17e768ab1669b2512aa51af43a9134a02e63908a5d02f"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_list_failure",
@@ -6265,7 +6265,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-list-failure.png",
-      "sha256": "2b17baaf9ab4c28b66207d6131ac46c77bdb2237be99a81eb200406c43330763"
+      "sha256": "36a6e8869114a1237f028b5d1cd3a74ac977d4e659ad1863e7918f662c84ad58"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_retry_success",
@@ -6285,7 +6285,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-retry-success.png",
-      "sha256": "a2a9c80194b4cd297b0128373d3a489debf2eb2ad87904c2af0cce18406a6bbf"
+      "sha256": "60b229c3b8b2c0b7d9fb630d93b5fa1d5b4e80ab88e661ca39125bdae96c2417"
     },
     {
       "label": "zh-Hans_desktop_signed_in_game_records_v2_detail_failure",
@@ -6305,7 +6305,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-desktop-signed-in-game-records-v2-detail-failure.png",
-      "sha256": "f192497e71bd4f2c1bcfe0c0f3893fe76640e96e189050aa48996ac46e6bfb16"
+      "sha256": "3ff7efc99b1a0004117d4055d4de2eb7121c365034d877d97619ada8639a1cab"
     },
     {
       "label": "zh-Hans_mobile_hall",
@@ -12219,7 +12219,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-loading.png",
-      "sha256": "36ae87fb69691db5a04e8a9bff3e84163234ba2585a9c1d3f7f6647c378e6b26"
+      "sha256": "3c1b3eae0bf9edead0d28dd16c2c0ff691b5f1178ca1c85aad59f192e2cc2dee"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_empty",
@@ -12239,7 +12239,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-empty.png",
-      "sha256": "97c3150b554ae88991dc839ea9ac96dbe34454095f4106f02eafc8418bc294fb"
+      "sha256": "45c1f2876eb218b739b723b19d253df4ba345cbd8a1e326c4915aa769cfc972f"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_list",
@@ -12259,7 +12259,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-list.png",
-      "sha256": "8a1d5667e2334e7fdf0f698fb08184f3962f63667671247dbfceb3199cd27237"
+      "sha256": "de17d6a7b8c8d534da2089d8e85c5e7461f3cf0b49f022f110c80c58f6e72fd3"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_list_bottom",
@@ -12279,7 +12279,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-list-bottom.png",
-      "sha256": "8a1d5667e2334e7fdf0f698fb08184f3962f63667671247dbfceb3199cd27237"
+      "sha256": "de17d6a7b8c8d534da2089d8e85c5e7461f3cf0b49f022f110c80c58f6e72fd3"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_select_none",
@@ -12299,7 +12299,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-select-none.png",
-      "sha256": "fe024d5af9fb4754267334340d2b6e30742063b239441e6fc69b7c7bdfb5c82b"
+      "sha256": "670831601e74738234254ae788764293941741a48307ee138399f9567fd54966"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_select_win",
@@ -12319,7 +12319,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-select-win.png",
-      "sha256": "95cbc240e78723c0d487e204a6bfe3a11405f96582b6fd233e76a6d45dda6a65"
+      "sha256": "6fdec5ba1bb3667ed9384f225de3ec1866842927569e59875f21b713d5192e20"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_select_loss",
@@ -12339,7 +12339,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-select-loss.png",
-      "sha256": "0b46d7cf4416f95ea831f8ff45a85288e9b88e50ebcf873184cf6ef311847db7"
+      "sha256": "e4a3fcac4082130ce0880d744e7d9b791c7cb8d2f8e7b4cb7cbab095a72d1d4a"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_select_all",
@@ -12359,7 +12359,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-select-all.png",
-      "sha256": "f193cc273a6da049f77d0dd7d435d1ff1a9cff646ea421af23b0212b4d10f1aa"
+      "sha256": "2c4a7fdb75bfe4ad7513bc685c6da189241d82d7d866e649c9f4c7825284a863"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_select_clear",
@@ -12379,7 +12379,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-select-clear.png",
-      "sha256": "fe024d5af9fb4754267334340d2b6e30742063b239441e6fc69b7c7bdfb5c82b"
+      "sha256": "670831601e74738234254ae788764293941741a48307ee138399f9567fd54966"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_select_cancel",
@@ -12399,7 +12399,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-select-cancel.png",
-      "sha256": "8a1d5667e2334e7fdf0f698fb08184f3962f63667671247dbfceb3199cd27237"
+      "sha256": "de17d6a7b8c8d534da2089d8e85c5e7461f3cf0b49f022f110c80c58f6e72fd3"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_swipe_delete",
@@ -12419,7 +12419,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-swipe-delete.png",
-      "sha256": "b965c7f964156ee07e5f62b1e1c3f3667ba4f8fa0c13a50c9561e427e13acdad"
+      "sha256": "57f81474d0984ff1488a6c8b8e2a17850295b19a321c2704ac7f16e4089beefc"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_delete_confirm",
@@ -12439,7 +12439,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-delete-confirm.png",
-      "sha256": "1ae66797aa6a5fe5f987b7abd8aa4654540488bad0156256f992f1cebc46b16f"
+      "sha256": "1a3ae5da7445901290de2665afa0ea9d59c338b62a4fb318a5b7ba401c55f67c"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_delete_cancel",
@@ -12459,7 +12459,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-delete-cancel.png",
-      "sha256": "4aea2e98e802f813f22b1762b9f5d5b1c81025b64410dace2b7befa9243e294a"
+      "sha256": "16cd03930bbaac51ca5cc5813cdf780bda833e74d95384d022bb738d5a92b792"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_delete_blocked",
@@ -12479,7 +12479,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-delete-blocked.png",
-      "sha256": "a3657272d1bf433134873b6a99e85d4a2c1df95c367ce3764e6fa7e30ad3ca25"
+      "sha256": "2ff7139c74335410525ef6e2734dae4b45180f2c02830abd2401b0b916ed53ac"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_private_overview",
@@ -12499,7 +12499,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-private-overview.png",
-      "sha256": "6c4597740f18680bf84f672b18260aa1adcee4133be047795ed1006ac66e0328"
+      "sha256": "be71127dd88de85004efd639067ef9b76f0e599b224ca02737c4aad32af07e9f"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_private_relationship",
@@ -12519,7 +12519,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-private-relationship.png",
-      "sha256": "73f74ab0eea29c8865e996b9a778122dd007b409ddc9d9f4e6581a5dd6651c42"
+      "sha256": "a36516110c6dd293d4d622fd5f4c5e13f13b296248ea93bcdb369826f5bb4294"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_private_relationship_switch",
@@ -12539,7 +12539,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-private-relationship-switch.png",
-      "sha256": "303624f2c6f6361ec33bc2eb363b96757d757a98b965329b6a387909ac5e2cc4"
+      "sha256": "1cce040ff468ff2c7dc961fb8f4fb96728c9f8c41b7c390ca1f4abf06d1aaa08"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_private_actions",
@@ -12559,7 +12559,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-private-actions.png",
-      "sha256": "1445f0b8a322fcebe9b7224a5c009284763a766e2e47992cbbcca471a7619c6a"
+      "sha256": "f45f3bcf1b1c6d7f350b3c75dcd4f8b992e8618f02b75930020b41c66ebe453a"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_private_settlement",
@@ -12579,7 +12579,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-private-settlement.png",
-      "sha256": "2222248a91bca64bc44732c87d78abd278c0d886130a2f10b0e9fc9051e89e07"
+      "sha256": "e94e164d02966c6592f1d2aa155021b12d7693a65c6f8282aeb56f361980710a"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_replay_list",
@@ -12599,7 +12599,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-replay-list.png",
-      "sha256": "5864fbe857af73bb63d8211c7ed5f428706318f0b358755d9fd13348d88fa990"
+      "sha256": "2145be1cba012983659cb64b330604bbdaeeb5acfd81cfa678cb43412a98ac3c"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_club_overview",
@@ -12619,7 +12619,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-club-overview.png",
-      "sha256": "22cf868bce663fc6363046b2bf022c948b1ee079019fdd023a6e6ba6e061c78e"
+      "sha256": "d6407e20ffa9f0d68c6d39d410feb0cc6e66b312129036be4e5af84506d7e564"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_club_actions",
@@ -12639,7 +12639,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-club-actions.png",
-      "sha256": "3279e40a5e781f967d18b0632bd283b6176f8b988c4c84c39d5b8326d88f86b3"
+      "sha256": "949a7c9d4321ce9f9e042fd3e967585ae00a4f38568b46e9769393743ff3717e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_club_settlement",
@@ -12659,7 +12659,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-club-settlement.png",
-      "sha256": "20b5d40f9c367df94c45970b437ffd7c19d14d6908ba1c2e013c4cbf22815e23"
+      "sha256": "eff6236973b32f72bade283452b24a2da05a5e7de1805ebc4bac8ae0da557f6c"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_hall_overview",
@@ -12679,7 +12679,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-hall-overview.png",
-      "sha256": "0bbbe150cd03d94343ef6ea56b120b363f9913a2e8543adab72756f217c58852"
+      "sha256": "a2dc24096c436f98d86e31ba936d137150e9556f1094c5476a9cf970555f3ba4"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_short_deck_overview",
@@ -12699,7 +12699,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-short-deck-overview.png",
-      "sha256": "64c19159fb227f83a3142448308933de7010a8bb5941e345b706f4ad198f5673"
+      "sha256": "13c43e62f7125579cd2fd0b246ba155aa6c30430f8c06bbfc89a52408c07c17c"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_no_hands",
@@ -12719,7 +12719,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-no-hands.png",
-      "sha256": "416d4277a0f00b24bc01e3d7bc7b1588c4bf89bedce14c7fa67864a20d312dd4"
+      "sha256": "947467077c44173b9ebbf19f76fefa71502304f0523f3c31ee1b0943eb9e0f01"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_replay_empty",
@@ -12739,7 +12739,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-replay-empty.png",
-      "sha256": "3e439a72fd27b349c10e41ae656cd1ee1ed6e3eba43f08eef2ab787424ee682c"
+      "sha256": "86283dd9d98251e8f44ccdfd004f5479a3be36cea5859066cc8ab12c220ce33b"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_delete_success",
@@ -12759,7 +12759,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-delete-success.png",
-      "sha256": "ec6d73a0f6896649ba67f3068f90b1907c3c06fecdfc9769e80e87c6870053e2"
+      "sha256": "34d7c0e8c94ed409a24767cef506118e14140d9439ea7053d3dd558eaf400e4e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_delete_failure",
@@ -12779,7 +12779,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-delete-failure.png",
-      "sha256": "abff16b5b5be7e580202eaa6890496430fe4539a3368d89a813cfd0776e74599"
+      "sha256": "ff7c9caa087be842fceebfc215c4bda7a4f0fe05ef89c6dab90d1c78a2fa2709"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_pagination_loading",
@@ -12799,7 +12799,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-pagination-loading.png",
-      "sha256": "79bb1881466c0e2f354d8b74f011c656ef9afb1a0d83c2cc51c9ab2dc3788658"
+      "sha256": "8164663292f0f8c8b34937292d2dbd2ab5bf098081a9753106a59fa6626da0fc"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_pagination_end",
@@ -12819,7 +12819,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-pagination-end.png",
-      "sha256": "c46dc3c1eb4e4b86c9fcaa883e4ecda949dbac1cd95e263f9cfa932a3936f416"
+      "sha256": "bd927eb8f43ff1731f9b47b5e92c5ad720eb8a28eda8cc5c732f486ea92835dc"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_legacy_reopen",
@@ -12839,7 +12839,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-legacy-reopen.png",
-      "sha256": "ec6d73a0f6896649ba67f3068f90b1907c3c06fecdfc9769e80e87c6870053e2"
+      "sha256": "34d7c0e8c94ed409a24767cef506118e14140d9439ea7053d3dd558eaf400e4e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_loading",
@@ -12859,7 +12859,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-loading.png",
-      "sha256": "58e14c7b966224235c2f8066de8edca81fe91980b07e0887bda50639a27b4519"
+      "sha256": "db0cce4827138b9486483c35ab8c38f237e11f6e1641ef98a9fb59a770eadadd"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_empty",
@@ -12879,7 +12879,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-empty.png",
-      "sha256": "b56648026e648ef0ad1bbbc955d770604e1126675ecf4a610f9bdd6993150785"
+      "sha256": "aed107b9cfbf97619349a7cc7b61b51a6f605f05f48e8ef44dd3d0d09f74c86b"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_list",
@@ -12899,7 +12899,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-list.png",
-      "sha256": "8f1bb770124a2a70aa357bd6303b0142e551b625e5872e1ed3ae583d3a19c3ee"
+      "sha256": "7fb95bfac3055d6071d73cc006877546bb5ed228d9e16199db792794bca8e1d8"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_list_bottom",
@@ -12919,7 +12919,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-list-bottom.png",
-      "sha256": "8f1bb770124a2a70aa357bd6303b0142e551b625e5872e1ed3ae583d3a19c3ee"
+      "sha256": "dc6b8faa0eaa78f2a2b1c50bc0341f64beda5a44679aab50ad97176273c03b12"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_select_none",
@@ -12939,7 +12939,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-select-none.png",
-      "sha256": "c3375923228e4428723256062bb22165e3001ceb27f0534a01235e2e620772fe"
+      "sha256": "c026da403d9c1eda5d5b16a8e0417e1f399d7130053e25b5d8e904e06948d258"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_select_win",
@@ -12959,7 +12959,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-select-win.png",
-      "sha256": "bc866e07f26ea9a0393f71bb854e7c045573e4d43ea15c9801e34a03b2d3a2c5"
+      "sha256": "e7cc118d6d8684ff9ce2d61ec557037aec183952f966e1825c432ecb8bb58095"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_select_loss",
@@ -12979,7 +12979,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-select-loss.png",
-      "sha256": "d27f328784507b91c512c96d28ed804b0465a2224c13ff75bd1f897e519021b9"
+      "sha256": "b3b8625c564a08701bc257e66c09dd0dded2cbd53089f80b54039a118009cc60"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_select_all",
@@ -12999,7 +12999,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-select-all.png",
-      "sha256": "91dbbc6011cbc558512e5f50a0051f43c2cbc7e3d976bd76f89750a9c043f064"
+      "sha256": "c3632fc065a0b38662485c0cc585df60551f9fecbdd1a571491510713782a41c"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_select_clear",
@@ -13019,7 +13019,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-select-clear.png",
-      "sha256": "c3375923228e4428723256062bb22165e3001ceb27f0534a01235e2e620772fe"
+      "sha256": "c026da403d9c1eda5d5b16a8e0417e1f399d7130053e25b5d8e904e06948d258"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_select_cancel",
@@ -13039,7 +13039,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-select-cancel.png",
-      "sha256": "8f1bb770124a2a70aa357bd6303b0142e551b625e5872e1ed3ae583d3a19c3ee"
+      "sha256": "7fb95bfac3055d6071d73cc006877546bb5ed228d9e16199db792794bca8e1d8"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_swipe_delete",
@@ -13059,7 +13059,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-swipe-delete.png",
-      "sha256": "dcd2d199dcda8ed0d66aac8a88f76d976892b6267783972f3bb26bb0c1b9fadc"
+      "sha256": "dca3eb62973b597d57c39678881a68e9898c38fe0e83d5e5d29e6e395a24cebb"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_delete_confirm",
@@ -13079,7 +13079,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-delete-confirm.png",
-      "sha256": "416bf2535bceb6653724fa3b9c8fbe9349e5e15d3598ba267fb6ba549fc84962"
+      "sha256": "929c5f99778763302dc243e215819cde6d8150ec065f6fc494b5b4d53da75d9e"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_delete_cancel",
@@ -13099,7 +13099,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-delete-cancel.png",
-      "sha256": "b87b9559f3e7a5093fec087e732e90742fc4240e5a284ea09a79c846dcd2b7fd"
+      "sha256": "f5e804632a458fed7c30907a4d2e3b9c910786f52e6f4b296cb468c6067ceffe"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_delete_blocked",
@@ -13119,7 +13119,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-delete-blocked.png",
-      "sha256": "e409a3cd985ab61167e0f82299884ab651e75b3e6e2720d52d01e79b3353f53b"
+      "sha256": "1f7199db39467207ffe4f8c00f212692558adfe801158bc8dfc6bc7768a722e2"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_private_overview",
@@ -13139,7 +13139,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-private-overview.png",
-      "sha256": "91a0c22f63585d14f5671572a3f70f4a7435279f994b184357d5cd570b6f6f33"
+      "sha256": "f01feaaf7d44c5de5ddc4770bbf06a20e1f256b02d08ef7aa656dc1b154fbd30"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_private_relationship",
@@ -13159,7 +13159,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-private-relationship.png",
-      "sha256": "3fbec14825d2ba874187ca4e2642f1f8ef040c5ecc4441a29b0db8e20f91dd6c"
+      "sha256": "a78b6888c0df99414cf67dda2fb41df57ce1dbe8c5a1970598aef19d9aad6a9d"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_private_relationship_switch",
@@ -13179,7 +13179,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-private-relationship-switch.png",
-      "sha256": "d549ee2bd97e9d9a2e588a40980e5f4a53e6e3f5d9153c5bc086efbe5bbc2912"
+      "sha256": "b40c94fe7edc383d2346352802a9f6ff397ce506889eb66f5626937742242b0b"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_private_actions",
@@ -13199,7 +13199,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-private-actions.png",
-      "sha256": "f809375f34c17668f9c10ca207515e78f9f3db1c60f24dd47cdfffcef3e49864"
+      "sha256": "899faac42b1a13b8e316999cfb7adf6ced3f4f6e6b66b849a301036a87b18c10"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_private_settlement",
@@ -13219,7 +13219,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-private-settlement.png",
-      "sha256": "c4b61c390b63c6fbb93c5488885adc5fafec0379ac765d71a6f51f22b8cf9051"
+      "sha256": "c96619f33e10671bd57a934fc3ed36deae9e577d761ef2f4a5f412c11513b0c4"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_replay_list",
@@ -13239,7 +13239,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-replay-list.png",
-      "sha256": "0dc0d4f1b11a481582fc36ec56d922b9921d6fd4b8a54df670f967ee38bce927"
+      "sha256": "d3f522e6cfd425d1953f8e19a3ca08dc908ffc3ef62c9849d286666e821e378b"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_club_overview",
@@ -13259,7 +13259,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-club-overview.png",
-      "sha256": "513d889056d4484b9a922b8bc5fe1ffc803689a6fd8ff85d00c3a41875f39390"
+      "sha256": "b5820f125d3001e7c0aea41fba118c5426f6ced3d0415a48414c07474a532c57"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_club_actions",
@@ -13279,7 +13279,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-club-actions.png",
-      "sha256": "92a6d1f9b025eb8a8a91a7e3e7e4f3544fbd3b17234c8f7ae9b98d2f49147919"
+      "sha256": "3c1ed234bb52084c5e9da838ad26d9623bb618358bab78525b545750b58a36ba"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_club_settlement",
@@ -13299,7 +13299,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-club-settlement.png",
-      "sha256": "cfc5e8b2b31518209794c04ac047aed65ac538024f29335299d692c0f4b64e3f"
+      "sha256": "8fa7d95ab636d54723abd76ef625862af61863d7bfed41b76a90c964a79a5609"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_hall_overview",
@@ -13319,7 +13319,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-hall-overview.png",
-      "sha256": "c74c4bf83b3c051e8c9ede89b7b353d2398d9bdb51c1615947ff43804221ff38"
+      "sha256": "e5e7ea3429a841c1e0b23a735bbd635cfc39d722c442959bcced5830f25c620c"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_short_deck_overview",
@@ -13339,7 +13339,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-short-deck-overview.png",
-      "sha256": "381435e983b8a9d000d593e2678bb61f683059ca828b44cc1c3e822186969f4e"
+      "sha256": "7ff22e435bb02263af2b6a8586e2acfb939120f5094d2a3e5c6141579c893947"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_no_hands",
@@ -13359,7 +13359,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-no-hands.png",
-      "sha256": "b1f5025864ad4a3103e2fbcad02e932a5561ff3baba1cca87c6f9916eaa59299"
+      "sha256": "8b0d955f02873eecab49dc04775f00912e4029e85a08e535f4922df439b159cf"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_replay_empty",
@@ -13379,7 +13379,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-replay-empty.png",
-      "sha256": "d07039e59ef0fe654dd9068deda4ed117613fc80c61f685723c16ed8fe09f90c"
+      "sha256": "e48f83f6da37a5cb049517fd05dd13a62253600ec7b42c8ac07ea18702f331a1"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_list_failure",
@@ -13399,7 +13399,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-list-failure.png",
-      "sha256": "39393fb0f528e024a86a487e0875ad41ba53f3b97a05868ce74eae15ae079f71"
+      "sha256": "a465c4e7a42f925fbddda0c61409141a0a0a76fe273458a83354008a08e8d9bf"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_retry_success",
@@ -13419,7 +13419,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-retry-success.png",
-      "sha256": "8f1bb770124a2a70aa357bd6303b0142e551b625e5872e1ed3ae583d3a19c3ee"
+      "sha256": "7fb95bfac3055d6071d73cc006877546bb5ed228d9e16199db792794bca8e1d8"
     },
     {
       "label": "zh-Hans_mobile_signed_in_game_records_v2_detail_failure",
@@ -13439,7 +13439,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hans-mobile-signed-in-game-records-v2-detail-failure.png",
-      "sha256": "754510e72eaab774cdec0e7ddf9ecf16ae930ac69eb65f80b2e6457991f8b013"
+      "sha256": "f74f4c7d880c1e2d195722eee3ad02042a4cfd944f09a36a6dd0830377a9ca43"
     },
     {
       "label": "zh-Hans_mobile_signed_in_faq",
@@ -18797,7 +18797,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-loading.png",
-      "sha256": "9c6fddccd9da8c004d4325e130e341774b86345ffb9941ba1b72c5292442618a"
+      "sha256": "35d008643a6e79f93a87f945b86e3df010c72036ae5a91249bdb9623797ea59f"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_empty",
@@ -18817,7 +18817,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-empty.png",
-      "sha256": "e5bb504a3a4822ad758f05acb58e6e8c7909b8f4ad427fc1b19e5d09f32499e1"
+      "sha256": "9d1497ebda5e2910b30fe7011e4afefba4c6bcc3921edd54670a49178688d9b5"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_list",
@@ -18837,7 +18837,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-list.png",
-      "sha256": "604d49cc6e486668b099a89ca8bd4f0649534e2e7a6cbe18c1a188008a86c92f"
+      "sha256": "2d8c09dc720d62e42924a1dd967482d5bbb28411bf8080f296d2c98473a77bdb"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_list_bottom",
@@ -18857,7 +18857,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-list-bottom.png",
-      "sha256": "604d49cc6e486668b099a89ca8bd4f0649534e2e7a6cbe18c1a188008a86c92f"
+      "sha256": "2d8c09dc720d62e42924a1dd967482d5bbb28411bf8080f296d2c98473a77bdb"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_select_none",
@@ -18877,7 +18877,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-select-none.png",
-      "sha256": "22be197ff5ddd8ad5150a2f6098df3c80d44c175a3e24549e4bb00591d057920"
+      "sha256": "3689d8a5a766e0723a728280babd3e2e11ff3ac20d018b6097eaa45d79210af5"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_select_win",
@@ -18897,7 +18897,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-select-win.png",
-      "sha256": "261bec85a4e3a6842c9960c04736bec4e9dc2363c62c087127b191a5a548f2d4"
+      "sha256": "6f15f44d052fc1d1927e4377124d6c708ed432b7b2b292bb036a36ab8b1603ca"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_select_loss",
@@ -18917,7 +18917,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-select-loss.png",
-      "sha256": "9724756077619e6ee8a0f9d6153469475565171c7f4ad89312f9b1f2da299a47"
+      "sha256": "0f5bf99e77234b1bb3fc312610c639fcde2ed09fcc0cb3c2768324312e8ed867"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_select_all",
@@ -18937,7 +18937,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-select-all.png",
-      "sha256": "47ee555d6fa7976acd34b0176b2b8f78790c229e7ca77098a12a655ba3af2988"
+      "sha256": "17f105dea6908feb6d66538cde2a987a7187360f70e64d753a02e006b31aa831"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_select_clear",
@@ -18957,7 +18957,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-select-clear.png",
-      "sha256": "22be197ff5ddd8ad5150a2f6098df3c80d44c175a3e24549e4bb00591d057920"
+      "sha256": "3689d8a5a766e0723a728280babd3e2e11ff3ac20d018b6097eaa45d79210af5"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_select_cancel",
@@ -18977,7 +18977,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-select-cancel.png",
-      "sha256": "604d49cc6e486668b099a89ca8bd4f0649534e2e7a6cbe18c1a188008a86c92f"
+      "sha256": "2d8c09dc720d62e42924a1dd967482d5bbb28411bf8080f296d2c98473a77bdb"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_swipe_delete",
@@ -18997,7 +18997,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-swipe-delete.png",
-      "sha256": "bd737e83efe5b21262d2a70b5bfe7397329cb59e575c085aee43c1f38a5b8065"
+      "sha256": "92a138a0d0e456fa5e8964d3678ceea49250493c3c27e9de6672072c2e322ac0"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_delete_confirm",
@@ -19017,7 +19017,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-delete-confirm.png",
-      "sha256": "17eac53842b5043bd1c25a1f1cb61b9f50c9acd3a73bbdc6fc14b1643fc9f6a9"
+      "sha256": "666ada2d79e1421d28a0def2c7e80f6c1b3dc2bb96a3f054e58230602b5d73c4"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_delete_cancel",
@@ -19037,7 +19037,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-delete-cancel.png",
-      "sha256": "f3eacb229bc4baf38cb2aa2cb7ef769cdb1f1d98ceff56e7749ef833a5cf7873"
+      "sha256": "26d3b30804e4fe841aefbeda8bafd5608f9d4384ff3be6c2fc0ac51c265890a9"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_delete_blocked",
@@ -19057,7 +19057,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-delete-blocked.png",
-      "sha256": "336c2f31f23b83147baa18370cbfeb2cc10df5a5c3ff6831851b84cb8c5c7c33"
+      "sha256": "e4ba6c8d489670c748a8c21c85533ebeaff1eb70f15089526ddcb9effc204dff"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_private_overview",
@@ -19077,7 +19077,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-private-overview.png",
-      "sha256": "1be512a3999562fee45506c22dedd46a383e0b341f66e179341070e4f4fdfb57"
+      "sha256": "67b690cf56650e3725dddaaaa3666f3260d874508eae6b4df219e4eb9bc92699"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_private_relationship",
@@ -19097,7 +19097,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-private-relationship.png",
-      "sha256": "aacb7e3ddfcbcb8fa880f5468c9fcc5a7687f12128be3195e1d27c84a882a9d9"
+      "sha256": "914daa4374855616fbb1825fcb09fd96180b7c293d8aeb19d25da07c5e582cd1"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_private_relationship_switch",
@@ -19117,7 +19117,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-private-relationship-switch.png",
-      "sha256": "3b2de16e0f542d39efe7d9997ea496683d407b395bf74100f00557fd59abb297"
+      "sha256": "ecb8e4e6e5ba8951d38e4e12de3933f239b101ceb2b907465c08c429e2611438"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_private_actions",
@@ -19137,7 +19137,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-private-actions.png",
-      "sha256": "46bb056eaf9ea4674b3e45ee2d869a8f4ac4bf1232a74c43058a4802a05ab305"
+      "sha256": "b8007d4cefcfed29adb559dc1d44557d9b3acf197ac82bd4e4a0e3193d33617a"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_private_settlement",
@@ -19157,7 +19157,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-private-settlement.png",
-      "sha256": "5b32ea9828b41b45cd6c1ba68490af302f837290b4005f1623ad7fd4a5fdbf60"
+      "sha256": "42a74e72df165a81543d0af3fb49b660d6c72cc015989c2e3ae3dbf3e15319a4"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_replay_list",
@@ -19177,7 +19177,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-replay-list.png",
-      "sha256": "a6134cc56fb9d483cda961a227253688b5c8a70a9f2b03a224eb8faf6c7a67f6"
+      "sha256": "3e755377155824cde45a9e8a7b14617b5595b56e3d52b86f8f75e0a007f2aa88"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_club_overview",
@@ -19197,7 +19197,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-club-overview.png",
-      "sha256": "c7a0086d808597d0009d2c12b165c68afd5b5d2fbd7cb2dbb3aca55defd7339a"
+      "sha256": "9ccb3b1891fa792aa07bfd33c78d2c397598a22d3bd4f59650b59d1c205920e4"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_club_actions",
@@ -19217,7 +19217,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-club-actions.png",
-      "sha256": "e3d6c6b0ce8319f2f5be36a77f4109f23ba0890c4c90edb8c5897fb54d549bd7"
+      "sha256": "35fe99e5fb0e2b63cf75c3bab24071743cbf9dfe44e1483abcf70216ab7ce49e"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_club_settlement",
@@ -19237,7 +19237,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-club-settlement.png",
-      "sha256": "c0d819784e962ffee9e077f07125192e6d59d7f4457c8ae33ff2b21f68621f0b"
+      "sha256": "a79c0675a5c85edc6f6c8c8625e62117ac47a7d658b7a6c02befcdecb671916d"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_hall_overview",
@@ -19257,7 +19257,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-hall-overview.png",
-      "sha256": "eae7d487dcc7dc08fd40ca2ade3c6f6a5e5f42990424e9016cc8ef8b9d75b163"
+      "sha256": "be16a75afe3a12cf5692f758f840239c4f62f6136f622b07768d3827dbbff2c4"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_short_deck_overview",
@@ -19277,7 +19277,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-short-deck-overview.png",
-      "sha256": "433eab0827de5d99952b3f2fb72d1d5c656c87611d0c218bbfc4ec2a330facfe"
+      "sha256": "19c7e7b8f722af9309d5f78cd585471ef003d9f9e912e6b52dd9fc70be920e44"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_no_hands",
@@ -19297,7 +19297,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-no-hands.png",
-      "sha256": "4671a6edf7ab1ef1786ec156e71e9541ecb3db5714274302f20017c1fa32ed34"
+      "sha256": "9c2a4e575c1c2b8d6e2a56165b155155f59ea81283555e9e3fea06af6d6cea84"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_replay_empty",
@@ -19317,7 +19317,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-replay-empty.png",
-      "sha256": "d5309e54c62efc7213b45b167e0608ae0f3df3317a4f164521200dbb8f3fb5b3"
+      "sha256": "2abad1548ed4c58d1960d4abd0954a27a2298c87bdebfed467294bd636affbe1"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_delete_success",
@@ -19337,7 +19337,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-delete-success.png",
-      "sha256": "93f076954e3a60eb36d25c5d972e6dca6b634c2649eb4b3c97e4deab879bd31e"
+      "sha256": "8dd78eef7e677adddb52a978b6546c04ac63b8a53e240420bf3c052e12e8509a"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_delete_failure",
@@ -19357,7 +19357,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-delete-failure.png",
-      "sha256": "dc7d80951a2e1e9a5a5122fad5b9923bc8b4b69f5666259ac9ce1f60f22315ad"
+      "sha256": "a981600c8e6dd5bd3d9d4caeae760d6ab9102d737064c153d62b46d919626cb3"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_pagination_loading",
@@ -19377,7 +19377,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-pagination-loading.png",
-      "sha256": "bc938e2e6b41470a82750cabc536db30a64355416bbce647ff2f16fd6bee190b"
+      "sha256": "47a0e748db4710f1a0ed81029d892a2a6517e2b5469b73839ed9bb2ea241ae3c"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_pagination_end",
@@ -19397,7 +19397,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-pagination-end.png",
-      "sha256": "566edaf88d2fa118b5f57cfe4049daf112ea63b909effe11e61bfeea7606b4a6"
+      "sha256": "0e89e36f55c8c3d7df3975ee0adc3bd9b39e815d58b78c9366a1a24065185f6b"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_reopen",
@@ -19417,7 +19417,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-reopen.png",
-      "sha256": "93f076954e3a60eb36d25c5d972e6dca6b634c2649eb4b3c97e4deab879bd31e"
+      "sha256": "8dd78eef7e677adddb52a978b6546c04ac63b8a53e240420bf3c052e12e8509a"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_loading",
@@ -19437,7 +19437,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-loading.png",
-      "sha256": "d521dc2610bf79cdfa8a6f52807e44b9078745ab04bbf92b2150f85785227388"
+      "sha256": "02c5b5b4f8626c75f2a97430487432a16532f2ef97be61d5b874e614ac69a41d"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_empty",
@@ -19457,7 +19457,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-empty.png",
-      "sha256": "1db043a2379470176d9d587bc500bff4cd119aff4dde3ab9fd4f489bcc518728"
+      "sha256": "b614669a6a82bbb11e5f6ee4109282f1151500cb065184ac5ba3963cfbdd12c3"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_list",
@@ -19477,7 +19477,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-list.png",
-      "sha256": "fac8fd1d13cc66136b950651d8d3ef145e1ee7fb7114de39224a14c52091393e"
+      "sha256": "0b2bb0f62333a7e05fb6a5c5aa8cff3b9879349faa747f4b27d9c1daccf18b66"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_list_bottom",
@@ -19497,7 +19497,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-list-bottom.png",
-      "sha256": "fac8fd1d13cc66136b950651d8d3ef145e1ee7fb7114de39224a14c52091393e"
+      "sha256": "a12797d5144eb25edc0bb0bccdf2d63087977cc569edadfedbe4f1f5f9099240"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_select_none",
@@ -19517,7 +19517,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-select-none.png",
-      "sha256": "9777757071c98d986fd7d5d62bedd108cc2df7d8b8a7e8eef20930e051000ff7"
+      "sha256": "19aac869d637a09f0b8d0c921868f6d02ad0aaaf76c41777d9a53519c17736ab"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_select_win",
@@ -19537,7 +19537,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-select-win.png",
-      "sha256": "330470e7cbad2de91731377ab10807bc51c521386f008842e0797cc111624dd0"
+      "sha256": "7069b44f0d9ae77c0569dd7d2b554d47d195025394f55e2b74823ed1d9e90136"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_select_loss",
@@ -19557,7 +19557,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-select-loss.png",
-      "sha256": "67fa05a94ba291c728b3a2bbcf843bb5bb0f3fd2344539d00588107ea4ce0064"
+      "sha256": "7aa131a21164945fc53a4b9b9d6710bb20f13c8e421d3f636e36cf26d96d57a3"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_select_all",
@@ -19577,7 +19577,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-select-all.png",
-      "sha256": "b55dc918a330d58ec7ecab73ac5037c3cb8d3669ab74918487c2944d60b9dc39"
+      "sha256": "de615e6365faab5b8d1edbd4fc7ee62ca80901eea79edd2e4b015e0232c14b45"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_select_clear",
@@ -19597,7 +19597,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-select-clear.png",
-      "sha256": "9777757071c98d986fd7d5d62bedd108cc2df7d8b8a7e8eef20930e051000ff7"
+      "sha256": "19aac869d637a09f0b8d0c921868f6d02ad0aaaf76c41777d9a53519c17736ab"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_select_cancel",
@@ -19617,7 +19617,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-select-cancel.png",
-      "sha256": "fac8fd1d13cc66136b950651d8d3ef145e1ee7fb7114de39224a14c52091393e"
+      "sha256": "0b2bb0f62333a7e05fb6a5c5aa8cff3b9879349faa747f4b27d9c1daccf18b66"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_swipe_delete",
@@ -19637,7 +19637,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-swipe-delete.png",
-      "sha256": "15276ab864493edcc2b290878758f5d36147e4c227064221ac6dceb6e74794ec"
+      "sha256": "9e5d33f879c9fac7503bab87d1bb35c23a24f2f230ea40f27c29e7636ad7ce56"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_delete_confirm",
@@ -19657,7 +19657,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-delete-confirm.png",
-      "sha256": "4e068fb78b9c63851c447bfc2642a4e94aef9865cb7a8e9ecdba137379c0ee41"
+      "sha256": "4954bb3d946f627af60d76782dd92c983e010c6a309c59e89dc2c4b215cd76a7"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_delete_cancel",
@@ -19677,7 +19677,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-delete-cancel.png",
-      "sha256": "21fc1dbd9538972796b642e08fce4dd8d297c98c28aa5ced4a6c6a8e7b26d3f0"
+      "sha256": "16e1b738d687b19ad99403ac8147db6bc8d55c726d671d4078e40e1d15d50f41"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_delete_blocked",
@@ -19697,7 +19697,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-delete-blocked.png",
-      "sha256": "739f4c1ff8477986106ea83af74699840a8d3bdcdf31f4be7d596da64fc01772"
+      "sha256": "048c8206a8cd7ab6567a87d225db842d8fb12a0a4fa722455e66bb17c6621803"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_private_overview",
@@ -19717,7 +19717,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-private-overview.png",
-      "sha256": "c275dc675bd707b1ef264ad91a604b40c580388fb4c98d28f111b04f0b40bebe"
+      "sha256": "4fbc1103ffcc19a35ad9ef4b3b63511973cc282c00c3c9857c819291a77858bf"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_private_relationship",
@@ -19737,7 +19737,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-private-relationship.png",
-      "sha256": "78bc22b5fbda575d4200fcbfc37c15c835493682d848e02348970d22bcd6f0d0"
+      "sha256": "cc053437290502bc7d11979bf82514f3acb1a185bb4f1e239b212337e4d9afa5"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_private_relationship_switch",
@@ -19757,7 +19757,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-private-relationship-switch.png",
-      "sha256": "22ec5b1d261ca87e63520da131d55a30cc793df106892c04f19fc258fcae3d72"
+      "sha256": "20271667441c7e2cdb37415a7ca135c482b77c734b0bc62ed7404035d477ed1a"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_private_actions",
@@ -19777,7 +19777,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-private-actions.png",
-      "sha256": "bf2361f53b957a639676c643ab000afd90f352b411558910cfbbf92cdad40c8f"
+      "sha256": "dd99e16d5f733ab037b25f371b3e93883b69e455b2723db87626160bd829de5d"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_private_settlement",
@@ -19797,7 +19797,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-private-settlement.png",
-      "sha256": "a02010a688b12459162c8b9572e8be3ea090df17e7707589c470d5b4e23c3729"
+      "sha256": "9918af0a804f5a115d367eda024542a8a6ddd4ed366cc56bca25cd9ac98b4f63"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_replay_list",
@@ -19817,7 +19817,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-replay-list.png",
-      "sha256": "334452f0441a80da743b9e30a35deec67abfe4b3439db648724fd425eda352ab"
+      "sha256": "9e034b4f133173563a1670aeda8fdea0f001e33e3f3b7be74c7bcaae223dbf80"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_club_overview",
@@ -19837,7 +19837,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-club-overview.png",
-      "sha256": "2902676d81784c35a934378f064c3448fc2b48d9888395d33483de0f7a28bae3"
+      "sha256": "4de5b2d860f6eb15d3c017713347541fa2be1cd2c696625843c799d63def30da"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_club_actions",
@@ -19857,7 +19857,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-club-actions.png",
-      "sha256": "7016255e21cc7bb058c186b302e04297bcfe4ca18c6e28c90a575b39ab7f0bce"
+      "sha256": "3e9fa1fc714752b1bee55ff53d72013a576713ff484f3be87eefdd52f4285095"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_club_settlement",
@@ -19877,7 +19877,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-club-settlement.png",
-      "sha256": "06b38da0b989dedede0245dba9f9990c6abd081113e7f8893c06a15f2fbdf450"
+      "sha256": "6cfecc6c2f23c950458df3c2888349b1e01ca163ca34cfadb02952e92efa22cc"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_hall_overview",
@@ -19897,7 +19897,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-hall-overview.png",
-      "sha256": "f4aac5564ca04c0fa1bcbc6a515f40a857b3c92912f72f2c59c360c4e705b120"
+      "sha256": "ae4ba625711527af003ce9b1a2bd3127a674a6bd9b4a6a830dec12d68893f8f0"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_short_deck_overview",
@@ -19917,7 +19917,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-short-deck-overview.png",
-      "sha256": "43364d371e52bae7be5eeb643fc70b1da566df22707a9b88946877a8cc3e1faf"
+      "sha256": "c765ca2ddc24e1ba0b16385065b803fac0540a180b0c620596a71ec0d1b1b2c5"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_no_hands",
@@ -19937,7 +19937,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-no-hands.png",
-      "sha256": "16b4d391eede2c0137fc6d16d5b78adf1f10725fdeba0702638b79265c4e36be"
+      "sha256": "b9630bcb786dfedf81e1a8d311ac89be46f6b6afd2746d36924cb1b0b1bc58fd"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_replay_empty",
@@ -19957,7 +19957,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-replay-empty.png",
-      "sha256": "ea2673eaa6fa290541c6cd14016f00d03da77d12e7907d5e9082e0a1d35e1f94"
+      "sha256": "6fef175e79182e17783b1f27330c5f867e1a4fe6e79175eb95affdcf2b0068f3"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_list_failure",
@@ -19977,7 +19977,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-list-failure.png",
-      "sha256": "c63c57d3b6dd30fecf5790e1c4235d53e3fd36af75f712f6d1254d2286cb14db"
+      "sha256": "6d1fb5d043908ba52be64f90837aeaa8b8bbfa413ba68ab3a6ba823583ace358"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_retry_success",
@@ -19997,7 +19997,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-retry-success.png",
-      "sha256": "fac8fd1d13cc66136b950651d8d3ef145e1ee7fb7114de39224a14c52091393e"
+      "sha256": "0b2bb0f62333a7e05fb6a5c5aa8cff3b9879349faa747f4b27d9c1daccf18b66"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_v2_detail_failure",
@@ -20017,7 +20017,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-v2-detail-failure.png",
-      "sha256": "8c94c22f5ecf85852a9a0900e60772b47103712c0f2ab00d8c68af17ef858eda"
+      "sha256": "a2615961fd43a4299c9f2c134e576fd3d9fb7d3ee3cf559e6666c459a3b1728f"
     },
     {
       "label": "zh-Hant_mobile_hall",
@@ -25931,7 +25931,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-loading.png",
-      "sha256": "53de0f215a2a964361982e3ee53180a3d3def1d43e10f038b7bf6131f5a0ebf7"
+      "sha256": "ec534f86ad7708bf7f31631b8c4a3e7a4a5cb697ec1bd9e96a0093980a012573"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_empty",
@@ -25951,7 +25951,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-empty.png",
-      "sha256": "f2901338faad35e6877ed0e55b21eb8a0169a1e100a85908eff33ae35ce364cd"
+      "sha256": "c413939b66c02eab39b1f11780daf251002cae893272c4546acb2bee65d05aab"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_list",
@@ -25971,7 +25971,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-list.png",
-      "sha256": "191cde0e470da6073349367af7b6b9fc4c01f6ed6c69d6329664c1ebe8007012"
+      "sha256": "a0178a529f2d85b6130ed35f429366aa3c2d85e31962abb38969e64930fb6ea3"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_list_bottom",
@@ -25991,7 +25991,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-list-bottom.png",
-      "sha256": "191cde0e470da6073349367af7b6b9fc4c01f6ed6c69d6329664c1ebe8007012"
+      "sha256": "a0178a529f2d85b6130ed35f429366aa3c2d85e31962abb38969e64930fb6ea3"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_select_none",
@@ -26011,7 +26011,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-select-none.png",
-      "sha256": "f1d9614698c02b0afb999b0c5d2236061a646268466b014e7498fbab91774977"
+      "sha256": "58122781c4a5bc36b3ca03f4fe42f638a41182e7a5778a542086ccb0626a7e68"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_select_win",
@@ -26031,7 +26031,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-select-win.png",
-      "sha256": "a52b600f5e05a2a19caef188061738a26d23b1fa741ffe6e69fa956cce86c540"
+      "sha256": "1b1e8f6d638d9d2cf0384fccb50cc60ab7105ec3d15baefcc60083438562c857"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_select_loss",
@@ -26051,7 +26051,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-select-loss.png",
-      "sha256": "d37bef247718e5d1986b16bf8037fe5ea1510e45f11e02b81a790c07e7469543"
+      "sha256": "387a40c1ca53124963193e2d697b7005782271bd21351a500313fe06a1461436"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_select_all",
@@ -26071,7 +26071,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-select-all.png",
-      "sha256": "3a86f3c27f236757ef95675280c90c7f6c6cc464205609fa1a328c69788d4bb8"
+      "sha256": "7f63995302487173f343292cae92a651e98dd4bced3be5756abeb231bdece587"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_select_clear",
@@ -26091,7 +26091,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-select-clear.png",
-      "sha256": "f1d9614698c02b0afb999b0c5d2236061a646268466b014e7498fbab91774977"
+      "sha256": "58122781c4a5bc36b3ca03f4fe42f638a41182e7a5778a542086ccb0626a7e68"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_select_cancel",
@@ -26111,7 +26111,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-select-cancel.png",
-      "sha256": "191cde0e470da6073349367af7b6b9fc4c01f6ed6c69d6329664c1ebe8007012"
+      "sha256": "a0178a529f2d85b6130ed35f429366aa3c2d85e31962abb38969e64930fb6ea3"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_swipe_delete",
@@ -26131,7 +26131,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-swipe-delete.png",
-      "sha256": "dc31bae3f094ebfdad604e472987792e592bbd9a82321d13052568afcafddb8e"
+      "sha256": "40fb937e54c8f5bd402246a4069dd0dc9738dc51a641a605a16921200af365fa"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_delete_confirm",
@@ -26151,7 +26151,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-delete-confirm.png",
-      "sha256": "77907b9d50522179e35d5cc45461b4933868c7ad72d32ada38c32e266669b173"
+      "sha256": "4e7fdef95fac44429a1b346088ef2d14b00c84bd683b5d378510cedb5860a526"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_delete_cancel",
@@ -26171,7 +26171,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-delete-cancel.png",
-      "sha256": "7f1292949e9572bf3c8e00db7286868bccd56c8cdb9a67845cefacc6e5686985"
+      "sha256": "ab8509d03f44bd40d596d4a55d27829b2a4b0ffd3d81670ddba6cb092655eea2"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_delete_blocked",
@@ -26191,7 +26191,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-delete-blocked.png",
-      "sha256": "9ad4817cbd736ee98db60e406298da86549ebbcfb06a9c676390e8c055633739"
+      "sha256": "3be5de9839594edf5c821658ab49b82ba17dd84c6126362d4d8cfce773a37122"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_private_overview",
@@ -26211,7 +26211,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-private-overview.png",
-      "sha256": "3a9ca01d9749e36851b2f9c95764fe3a6f010e71e18ba9726effaee4607637ea"
+      "sha256": "eeaf502dcb8ad0eaae492668afd2a18c2ed127778c2ac7bd8e20d8bd3b7407e7"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_private_relationship",
@@ -26231,7 +26231,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-private-relationship.png",
-      "sha256": "beb24bad396c37537d010eb9f8a3d554cb55101700051f4961ecf4389c9edbbd"
+      "sha256": "04c6ad71d6e32ede6085895de60148b2dd4889b1557cdfedc7f59be1f5461fbf"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_private_relationship_switch",
@@ -26251,7 +26251,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-private-relationship-switch.png",
-      "sha256": "3830f6f679a3104941ef0eccc77d5fa9f89fe3153da9fd3aeb3ae91e208f4a63"
+      "sha256": "03a687fda13eadd9e4ea3d64f90c43e45134cbe619f3531ff98aeefafbc7e499"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_private_actions",
@@ -26271,7 +26271,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-private-actions.png",
-      "sha256": "3f1238f285b68f0357d90655b8d50aeabb742d7b07a6258bcc86d59dca2fbe0d"
+      "sha256": "bf6078023e0c1c98b5bd125473092aacc05ada42dbb3398d6d318df423ff1b0d"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_private_settlement",
@@ -26291,7 +26291,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-private-settlement.png",
-      "sha256": "11ccdef745fc6a58aa336751a7b20af5d954c73d861b15026ba4cf9fd7ad0974"
+      "sha256": "92baf22bcea29e730ef7e60140ef11539f2b9ed1dff87f7b0c50ccb423685fc0"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_replay_list",
@@ -26311,7 +26311,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-replay-list.png",
-      "sha256": "b621a248288dc5658cdc3ec2f5741daea36bdb4d3038c7dbae38a01636b012ff"
+      "sha256": "481b60715819183467092ae6fa4653b9444205d5672c4b7dc084b56cfea8ac19"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_club_overview",
@@ -26331,7 +26331,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-club-overview.png",
-      "sha256": "49549256a9036bfa0f33b8379a6ca428bfec55d38053626baf6ec67a7a3338bc"
+      "sha256": "b577b9d06d07c3a3beb079f3712c224d6a4aef3c13712719e3e3b47657649e04"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_club_actions",
@@ -26351,7 +26351,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-club-actions.png",
-      "sha256": "2db087499205ab452e8706314a5a483242a03e50041b8da3f13be58540bde430"
+      "sha256": "b53b54cc9fcd3be6de8bd2027769e8284c1dd81b458c69ed3afe8f6fd8bad21a"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_club_settlement",
@@ -26371,7 +26371,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-club-settlement.png",
-      "sha256": "ab3bf0bf62ab3a696b0a904f91adae1aa6744f49e28a78ad0cdfb01dde53f3dd"
+      "sha256": "2298b5ed326512fd457be9143ab80bd579041a5dd51c4ac61fea76b809348bb0"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_hall_overview",
@@ -26391,7 +26391,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-hall-overview.png",
-      "sha256": "6635df9f1e9561f06e098009f6009f12e89516b7774b20ec51af42b3b02eef68"
+      "sha256": "91cef497bb75608f0166bc6f4984bb41e4d170d8791a31d4e5deec2b634479d9"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_short_deck_overview",
@@ -26411,7 +26411,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-short-deck-overview.png",
-      "sha256": "9296bbc38ccbad6eeb70941029564f9b6d787ae9eaa14b7fed3c1f63406ea042"
+      "sha256": "9ae99abc277ab33dbf38a46bae7443cea8ac1c28cc96ef03907e067ca60716f8"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_no_hands",
@@ -26431,7 +26431,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-no-hands.png",
-      "sha256": "fe03baa9499b87366da39903e489317def4f39208428078c5c5f1f0d6bd2379e"
+      "sha256": "a4e4040976a851019854d1430054f199e5739ad1ce125adad9e865acfd5b2e20"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_replay_empty",
@@ -26451,7 +26451,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-replay-empty.png",
-      "sha256": "e783c317eaab57c78a0497c8d940f2f6ae9417dcfd397a501572792431314a19"
+      "sha256": "82c73301826688c93f3db4c6e8245495f30697d94011e7be10b31284aa3334cf"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_delete_success",
@@ -26471,7 +26471,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-delete-success.png",
-      "sha256": "83fc488c8ffe39ffa251b02211698a436806bc72fcef93d726a667581a1a7c74"
+      "sha256": "d4544f522c98b8042e9bd3b34bdb4f00439b3cbdc1d6ef79057a3ea5768ec781"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_delete_failure",
@@ -26491,7 +26491,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-delete-failure.png",
-      "sha256": "cbbd0fccef79c5a9f02f54721b6f6eeb2689a46bd6deee320f203820b740d1d7"
+      "sha256": "566f8b261846f0809a1c06f45e8fa8fb44429f4767052bd67caf8b7fa9b20093"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_pagination_loading",
@@ -26511,7 +26511,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-pagination-loading.png",
-      "sha256": "d7ebb9ad555c719199879bec7f6c0aa22c8e4a9bab41003cba0094614fd5183a"
+      "sha256": "13b5c298adf757cb444388dfe4eb9663b21618839774c107f3ad143c066ae9e2"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_pagination_end",
@@ -26531,7 +26531,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-pagination-end.png",
-      "sha256": "be00aff4d1eb625f679c7281c87c07f2aaafeb76c0e3a99706f92a7061f83d6f"
+      "sha256": "36f5952681d7d88789b37d8f98e33e8a6f0179316915b72abb8ec6c82c092032"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_reopen",
@@ -26551,7 +26551,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-reopen.png",
-      "sha256": "83fc488c8ffe39ffa251b02211698a436806bc72fcef93d726a667581a1a7c74"
+      "sha256": "d4544f522c98b8042e9bd3b34bdb4f00439b3cbdc1d6ef79057a3ea5768ec781"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_loading",
@@ -26571,7 +26571,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-loading.png",
-      "sha256": "27ec22c415297fb5af7515605130ff4ce82590a3fbbc09e9da2ef2951c17f578"
+      "sha256": "c8d0ada74a46e8ed00220db78f348fa86ca278693b593820051169a41eb5e71b"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_empty",
@@ -26591,7 +26591,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-empty.png",
-      "sha256": "40d8caa341c4cdadd299325d4d56254dcabb2137ecf9c440996a3e4fccab7764"
+      "sha256": "85b4b2ff9f12ed9f726b81fbe2e4e99c2ffefd3c44c064b5f5ac81d410fc82f5"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_list",
@@ -26611,7 +26611,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-list.png",
-      "sha256": "4ff13cd6ea46e0b9f7cb6b1b8e4ec315eb67e8ef0ccf9a593a50f5afc0d58e08"
+      "sha256": "90a48fdf91b5eb68ac838efbb5086e670e1f73c1571625a8f9ba551f64431b1d"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_list_bottom",
@@ -26631,7 +26631,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-list-bottom.png",
-      "sha256": "4ff13cd6ea46e0b9f7cb6b1b8e4ec315eb67e8ef0ccf9a593a50f5afc0d58e08"
+      "sha256": "205b45538c96a8665d4a1f23f3500a119f87ae4ab57cbb336bf647d96b37f9f1"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_select_none",
@@ -26651,7 +26651,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-select-none.png",
-      "sha256": "e657cd96347b7260303d44a08a01da90515a88d110b1a4a1c5058b5ebbcde582"
+      "sha256": "10f0a5168f7523df981cd0ec5409cda4ed924505d088db8c32ea0ca49c17a2de"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_select_win",
@@ -26671,7 +26671,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-select-win.png",
-      "sha256": "8a96b92e14107aee4e3bff52f37960c616b1ddea3f071ddf4ef9fdf73062b49b"
+      "sha256": "3f686d614adcd8428d8aa37e6336897122b8d57f49cd32ac57cad8e09d867e6d"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_select_loss",
@@ -26691,7 +26691,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-select-loss.png",
-      "sha256": "127920ec5b1847d97689372824677f6945563fe8f7873f93dcd704d689cc732e"
+      "sha256": "ae05c46e5c1d027a16c8f16cbb1a4620b59be41939c044dde0e4d970b7757152"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_select_all",
@@ -26711,7 +26711,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-select-all.png",
-      "sha256": "f4d98e3a5e3d2212fecfccd0275ee6f71334a302fc442727ac643c0a3d318124"
+      "sha256": "78494b80431f3e33e82fedb18e07b58b4fc7a94e2b40c3853b1e4f8a565a5bc5"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_select_clear",
@@ -26731,7 +26731,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-select-clear.png",
-      "sha256": "e657cd96347b7260303d44a08a01da90515a88d110b1a4a1c5058b5ebbcde582"
+      "sha256": "10f0a5168f7523df981cd0ec5409cda4ed924505d088db8c32ea0ca49c17a2de"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_select_cancel",
@@ -26751,7 +26751,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-select-cancel.png",
-      "sha256": "4ff13cd6ea46e0b9f7cb6b1b8e4ec315eb67e8ef0ccf9a593a50f5afc0d58e08"
+      "sha256": "90a48fdf91b5eb68ac838efbb5086e670e1f73c1571625a8f9ba551f64431b1d"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_swipe_delete",
@@ -26771,7 +26771,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-swipe-delete.png",
-      "sha256": "e8146a27aa284e4c445f45e3635ee84fdd18ffdbf68c3f9a91d53c1b3741efe1"
+      "sha256": "7aa608983325f6011c91b361868e3316f9e651ac58e6b73164181f86978f5edc"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_delete_confirm",
@@ -26791,7 +26791,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-delete-confirm.png",
-      "sha256": "3367f8511c573b8d04997c2f1ccdaa9d2f6645ef0f7c4966b81bc870198e99d7"
+      "sha256": "2baa6845f74a1f873dde64e06c0a00badd73d2018e9d42fe52416c3609156e26"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_delete_cancel",
@@ -26811,7 +26811,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-delete-cancel.png",
-      "sha256": "e8146a27aa284e4c445f45e3635ee84fdd18ffdbf68c3f9a91d53c1b3741efe1"
+      "sha256": "d0e267518e27f873f9060fccbf00e7480eb7daee66ada47426e4ef8c32a6004d"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_delete_blocked",
@@ -26831,7 +26831,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-delete-blocked.png",
-      "sha256": "b24367da7a35906b86eaac290475a4708e4dda0d419f26cd5e8daac10a54bb8c"
+      "sha256": "11d08fbc0b44a4bf24a3cfa4bca8d218cdb6e3142f2b4478577f012582519727"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_private_overview",
@@ -26851,7 +26851,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-private-overview.png",
-      "sha256": "76b7071091e02f44767bf5e8487c6eea32439c284a905b0690b4619ace5662b5"
+      "sha256": "771566c3cf1a8ee883f58bac280cb389ebf78e815ccc2de7585512e3802649f8"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_private_relationship",
@@ -26871,7 +26871,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-private-relationship.png",
-      "sha256": "b7230ebc2686c1da6f62407e9da36bee057c3e30c5ee14cb673ab7cb827a0a9a"
+      "sha256": "6915d7a5392b1f393da4275e544d9aab42fa5661fe11be7d91d9f1552c52e741"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_private_relationship_switch",
@@ -26891,7 +26891,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-private-relationship-switch.png",
-      "sha256": "25ad649c93119457ebb732a56c71a9d19c6f1f6923e7525a1ea248573430bec1"
+      "sha256": "ab45ddcf56cfbacc0b1110dfd1b20fccc2c564eb70b90a1d0fa71f649087f65b"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_private_actions",
@@ -26911,7 +26911,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-private-actions.png",
-      "sha256": "ff2ebff894e02255c0825f9ea61b2bf0c9be8b32a0ef35a90edfe57eada92e92"
+      "sha256": "1c2c649bd150018e1eafdf5af07346d034b0729938073be2e2e133eaf54cf6c1"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_private_settlement",
@@ -26931,7 +26931,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-private-settlement.png",
-      "sha256": "b573d307ee9a059e34d14a37df36220ed6075612f6a148edcf0fbf0d9da7119e"
+      "sha256": "fa36ec4f5811feb1fb69f929c0fd8af3b9595fdd2155136020578ec070e6febe"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_replay_list",
@@ -26951,7 +26951,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-replay-list.png",
-      "sha256": "48d5ca0f725854566872b74ad223ef8e85daf7b8b2f1c83a6cf9e583265e3bc4"
+      "sha256": "a7d1aa086f0f07ddd826e4733cb0aaa8306babf42920df0fdc4cf51f966b5bae"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_club_overview",
@@ -26971,7 +26971,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-club-overview.png",
-      "sha256": "0b14dd3d283c23a12fa3b252d87f1ad618a48442c6fee0536872a83c0971e313"
+      "sha256": "0ba419e9e7e2a0fc85501246ab42819a96e4c953ff3e95ca09b67d615f2d71d2"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_club_actions",
@@ -26991,7 +26991,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-club-actions.png",
-      "sha256": "74736c6ad5308e665d2d73cc24b7713b1448af85d08da5afd7d56ea2194d428b"
+      "sha256": "2f69af875ceb060e421db0ab6aee1016f298f7cb21b7e79a1e7f070608b92279"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_club_settlement",
@@ -27011,7 +27011,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-club-settlement.png",
-      "sha256": "5a816d7a4741975343e9dc447aacb8bac0ee5686bc731ea663028a304930bc9c"
+      "sha256": "acb65b65f140d14c6795beeafb1a97cd1a00d6876e9f25b75f1e009095e382ce"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_hall_overview",
@@ -27031,7 +27031,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-hall-overview.png",
-      "sha256": "a9999a6a03f2c29808c9598634fdc4339e3d46159822bab097e4134e790e167c"
+      "sha256": "8c947aff3e8a41e4d632fb8be4d2aaaa2795370aa12afedc6e515068a485acbe"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_short_deck_overview",
@@ -27051,7 +27051,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-short-deck-overview.png",
-      "sha256": "4f7324dfacd5c014f85c8a19309ff8e498b5355c7b6ec8d4f4d9269dc833eaea"
+      "sha256": "607e1be09e740b398140c5f9ec9744bf14f3dc1cb55e1c160cf45a38a32fa109"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_no_hands",
@@ -27071,7 +27071,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-no-hands.png",
-      "sha256": "bb96736e1a7ca02ee2edad365e0b4abbe574563be9ebf274f89fbc5d7bbd5d1d"
+      "sha256": "f013fae549ee875e032f20d35f1664778eb8a42f9ff7e18232b3259950abed90"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_replay_empty",
@@ -27091,7 +27091,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-replay-empty.png",
-      "sha256": "1bf623f15978880b76d7e635c820a6ae70f5f3bf9b06212dbe11469824d3d905"
+      "sha256": "e3bacb8596137809e3b5142203b3e58b47f703c8254198eaa36a4feca24f9bf1"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_list_failure",
@@ -27111,7 +27111,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-list-failure.png",
-      "sha256": "6ca96582b9fcb1d6113a3f15a3f547419799a6a3f951fdaf3468f1471060cc2a"
+      "sha256": "a3d9162049dca2b9abe20a15e5f185c254df473bd1b4796d0d7076ed855302e2"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_retry_success",
@@ -27131,7 +27131,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-retry-success.png",
-      "sha256": "4ff13cd6ea46e0b9f7cb6b1b8e4ec315eb67e8ef0ccf9a593a50f5afc0d58e08"
+      "sha256": "90a48fdf91b5eb68ac838efbb5086e670e1f73c1571625a8f9ba551f64431b1d"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_v2_detail_failure",
@@ -27151,7 +27151,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-v2-detail-failure.png",
-      "sha256": "de10403b55348d88ea454d47c63728b42d1a8331a117272ab4ec431d0fcf633d"
+      "sha256": "be66bf0f8f01693d2baec19e76dc18f6c58ad03203aecdb1a30b476d8754145a"
     },
     {
       "label": "zh-Hant_mobile_signed_in_faq",
@@ -32509,7 +32509,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-loading.png",
-      "sha256": "7d949f3f3fb4b2e34264db831af767ba3e8af9fc3c7d3c3e238f77d775cfab5c"
+      "sha256": "d44a0987bbe5a3bbe76dc7354e82dfbe9b153b1ab6c651889242ce45706fbcb2"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_empty",
@@ -32529,7 +32529,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-empty.png",
-      "sha256": "7c300ba247ba5399bfb4c135245719b98b228f6a25ab419e11a88fe1fcbb719e"
+      "sha256": "a9ac05c8381fc48c6c5e07d5f4e6180d57263c111b9f558bb73f0540783461fb"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_list",
@@ -32549,7 +32549,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-list.png",
-      "sha256": "aafd8b08c23734fa07968b1525d4213e3e77c3121611dbcd1d65400242f54c10"
+      "sha256": "3374c172b39ec0e61ec334dced5e964700be01a98238aad388e37986e1c7ac92"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_list_bottom",
@@ -32569,7 +32569,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-list-bottom.png",
-      "sha256": "aafd8b08c23734fa07968b1525d4213e3e77c3121611dbcd1d65400242f54c10"
+      "sha256": "3374c172b39ec0e61ec334dced5e964700be01a98238aad388e37986e1c7ac92"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_select_none",
@@ -32589,7 +32589,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-select-none.png",
-      "sha256": "05d0999a94e9fe404491d57cf6756ea2171f77b3c450af7027564ba4aeb7ca72"
+      "sha256": "9f6b6b5d07012f2f403e8babe7f9e6cca88b21a4460eb4f296ba057b7eb1239f"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_select_win",
@@ -32609,7 +32609,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-select-win.png",
-      "sha256": "c5f009703c8aa7e9d2e9587c8b772b9a8ce17805780c937f99bf59778c8225d2"
+      "sha256": "c658ea331e834c3a0627fa2abdcfec0ba29ab1c71629427a63c91e6044cea742"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_select_loss",
@@ -32629,7 +32629,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-select-loss.png",
-      "sha256": "c3ea922b757bae78abd43ad45f21deea1fef92996e1da63d952d67a7d2242f1a"
+      "sha256": "9baac04438314f4bb45e13c08887adb4a642ca48e50b2c6df0ca905d38c76b79"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_select_all",
@@ -32649,7 +32649,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-select-all.png",
-      "sha256": "8dddb1c935c6dd314fa1ac39e8113acd4e658e43e70ba2833f76592d333a8e05"
+      "sha256": "29897dd1290b4373d93fe2a62c178c3c822174d40e16a8d30c6ca44bb256a7d1"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_select_clear",
@@ -32669,7 +32669,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-select-clear.png",
-      "sha256": "05d0999a94e9fe404491d57cf6756ea2171f77b3c450af7027564ba4aeb7ca72"
+      "sha256": "9f6b6b5d07012f2f403e8babe7f9e6cca88b21a4460eb4f296ba057b7eb1239f"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_select_cancel",
@@ -32689,7 +32689,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-select-cancel.png",
-      "sha256": "aafd8b08c23734fa07968b1525d4213e3e77c3121611dbcd1d65400242f54c10"
+      "sha256": "3374c172b39ec0e61ec334dced5e964700be01a98238aad388e37986e1c7ac92"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_swipe_delete",
@@ -32709,7 +32709,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-swipe-delete.png",
-      "sha256": "136126a4b76046dd2e73e44fd08146d4a365a4e220a01265f66802e9a32726f5"
+      "sha256": "7101b69699330cdea3aa0fc34de36bfc06024131cea29df565a905cc0df07e3d"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_delete_confirm",
@@ -32729,7 +32729,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-delete-confirm.png",
-      "sha256": "6aea5ac1ea8f583d4f3a52ce8da8cf0d1df78787974842c928338892bdc775bd"
+      "sha256": "e5d0b6df8d7133a6f6027604bbf288b02619857abbe6227f9244603bdae84d70"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_delete_cancel",
@@ -32749,7 +32749,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-delete-cancel.png",
-      "sha256": "3231d33de0958e89f8f08568e4429bdf92ac2f7de3b92f6548d4701dcb465247"
+      "sha256": "6b844026034767ecbceedb1903694e9bbfe33251d52412c0ce1ad26477e8194d"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_delete_blocked",
@@ -32769,7 +32769,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-delete-blocked.png",
-      "sha256": "6d10075a7e24e5546ee3f8f848674466b73983509a34398062ef458074337b81"
+      "sha256": "f9f9e83664a755e46fd69c3a9cf4d9715bf9125fcc713debcf98b1aae7eb34d5"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_private_overview",
@@ -32789,7 +32789,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-private-overview.png",
-      "sha256": "6b14029a1ec3797dc2ae46fad221b0ffb6e4e3d0b07756ce088be7c709885c26"
+      "sha256": "363fa8fbd4f85e18d9dd3b863f1968e33dec3f239ba537e97314102c1bf2e416"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_private_relationship",
@@ -32809,7 +32809,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-private-relationship.png",
-      "sha256": "32c2e9aa9159174e21c86d540255ca52aec7b91a42d0373c22f786ca99289a4f"
+      "sha256": "6c27a72cdefd7deba5d88691c9769585416dbfd2aa84d85c06338645d88e0411"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_private_relationship_switch",
@@ -32829,7 +32829,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-private-relationship-switch.png",
-      "sha256": "6e6d6c34b4932694c9e14f1b9671fded615c5a69fd0cfa53df754a9041ff0f76"
+      "sha256": "95bbbd5394a76fd37cc774e9dcf2de96d9042cef2b36d34b93ccce02f49fe443"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_private_actions",
@@ -32849,7 +32849,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-private-actions.png",
-      "sha256": "df469e16c1263f736e5b58f4e6bc32805e18f18c6a95992999aff571881067d5"
+      "sha256": "dc23099f9060323625a7c0501eb84226de7792e64a3d1c8fd547a369c741ecc5"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_private_settlement",
@@ -32869,7 +32869,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-private-settlement.png",
-      "sha256": "048e6692170ac50f254f78e9a73c29f4da527c4d6dbc362ebc829a3a56c70daf"
+      "sha256": "3066fa96475d05607fbf2a3e8113fd0a0f79c28a67ec520aaebbba9827570b5e"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_replay_list",
@@ -32889,7 +32889,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-replay-list.png",
-      "sha256": "7c2980be1f22478b0b7a1bf5592cdc6d03a5913237387ebcf427b591ca1b7e9e"
+      "sha256": "6de498440844c599885aaf016c108e2b4dbf5432270719dfe6ca429f0dc9262c"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_club_overview",
@@ -32909,7 +32909,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-club-overview.png",
-      "sha256": "2531b5002e68f033590dc3e9ec3fc09b0f6bb73495a2f50b6fa7e720e1e52692"
+      "sha256": "57ddb29d3546d345407e8611e1b4896cf5301751eea39ac4fc47ae6993bc496d"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_club_actions",
@@ -32929,7 +32929,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-club-actions.png",
-      "sha256": "867bdb16fe5dc8e6af8183443ccc31df20baefd3b8eed11b1212f97d94b390f6"
+      "sha256": "8c1030d1a5dcd67ed0266fcea1d56be85c3d4b8905e3b8bd51f1eec339f9d80c"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_club_settlement",
@@ -32949,7 +32949,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-club-settlement.png",
-      "sha256": "00e26c0a8c73aaf1b843f508c75802ffd20b2d9160f8bb200029634e655224b8"
+      "sha256": "5720b5e3f2c98dcc03f9b23e3125c241db58e9cf7e294ac6997a8b056e63538a"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_hall_overview",
@@ -32969,7 +32969,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-hall-overview.png",
-      "sha256": "496cc64f491b303c57cafec314c0ededcbf2daf3308c7f7c80e63cda47b75ee1"
+      "sha256": "87b6fcca7f215dec24a9dc25587b23154a9c6b06e46c15c6b5b370e755598144"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_short_deck_overview",
@@ -32989,7 +32989,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-short-deck-overview.png",
-      "sha256": "6e69883383028cf910a99524d445d597891fb1c35ac2961377f26cbfe39073a1"
+      "sha256": "5df9990a416b71cbe81780f93597c8643ae4cb045747d0ab7719cafe5b2c21ac"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_no_hands",
@@ -33009,7 +33009,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-no-hands.png",
-      "sha256": "6a885cb49da3363211cb1bbb89ee5f25c16d13f2a49184adabd559613e4440f8"
+      "sha256": "beb956fe560a2340951e060f5991efaad17b07de19807c6a91e8a22d520f5558"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_replay_empty",
@@ -33029,7 +33029,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-replay-empty.png",
-      "sha256": "4d77b6e1ef1426ef4a9a40c7eb30687606bb8bc466ceed8803b835a02f5d527c"
+      "sha256": "9a7282a1f1dc752423477144beed416136760016501c1155cad148e726f7e15a"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_delete_success",
@@ -33049,7 +33049,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-delete-success.png",
-      "sha256": "7a0c4e9e1657a307f30305027f1ea63a27985f646c684dfa2bf656e7309c9946"
+      "sha256": "44ba7739b942be8f67d338a36022337642592805e529dd33174464c483420ccb"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_delete_failure",
@@ -33069,7 +33069,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-delete-failure.png",
-      "sha256": "4c3ec27780cf7d744360e6649a1fa1cdc8ed53a3a412836e79862a08375fb5bf"
+      "sha256": "880b7d6c6e4c10aa45ea854e354b0883ffecf69decbcbcded3ee53f456d31c8a"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_pagination_loading",
@@ -33089,7 +33089,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-pagination-loading.png",
-      "sha256": "a5544331d7b76873e02c293ca8af30d0ef5fdebc4c606932e310f6b1a24153c0"
+      "sha256": "faa406c9aa1dca3facc7d9b7dbdf91a378f87daa1d184710baa34cd92951b547"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_pagination_end",
@@ -33109,7 +33109,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-pagination-end.png",
-      "sha256": "28f7434da7782b1c4b5342a543d3f493f75233db28cf8996d144a3c5aa053006"
+      "sha256": "dce2ce2346a46dfa0de403b5d1340e0feaed8c92b62346fe4011fad41151f39d"
     },
     {
       "label": "en_desktop_signed_in_game_records_legacy_reopen",
@@ -33129,7 +33129,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-legacy-reopen.png",
-      "sha256": "7a0c4e9e1657a307f30305027f1ea63a27985f646c684dfa2bf656e7309c9946"
+      "sha256": "44ba7739b942be8f67d338a36022337642592805e529dd33174464c483420ccb"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_loading",
@@ -33149,7 +33149,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-loading.png",
-      "sha256": "b0d98badfc0464cc801beef5e001dd95406b147f4608b37595d9298fc1659577"
+      "sha256": "62660613f0719ca2e8bc712d937997098465d49d6cab5aab840bdf7783908a10"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_empty",
@@ -33169,7 +33169,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-empty.png",
-      "sha256": "d248f9a84b775dc73573f7ecae522264c77ef4111a5620d8e801b73f9cd2044d"
+      "sha256": "a64d1647a37497b6df402186af9d3cb22d35926001c2bf373ea1800116ae7a7e"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_list",
@@ -33189,7 +33189,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-list.png",
-      "sha256": "ac8c2a5d51a89b59a9ccb8e6680077f9eebc618313e37b373d22b2de78a18214"
+      "sha256": "e3af8f56e7c3e7d40e6ea5333eba49764854c06d9d6f8fbb7351aa8a5da7d2ee"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_list_bottom",
@@ -33209,7 +33209,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-list-bottom.png",
-      "sha256": "ac8c2a5d51a89b59a9ccb8e6680077f9eebc618313e37b373d22b2de78a18214"
+      "sha256": "a8e16bfb635a14aafe264c6c79509c10c5c34030385a662f33c8f68529b3e770"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_select_none",
@@ -33229,7 +33229,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-select-none.png",
-      "sha256": "6ff13136ffbdecd846ccca99e0e3fefa82f9a94f53e838c93fa61f0c18afae34"
+      "sha256": "e31dfa12d6109af87510d5be8ea4196082416ea491b3d9f20af6b2d93f50d250"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_select_win",
@@ -33249,7 +33249,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-select-win.png",
-      "sha256": "3456574e9b63db8f3717785d4343f0bdfb30afdcc47202422eb099751645397c"
+      "sha256": "b08f452fe146a6edbddf603679f016a17472180084d75624e74311af0c95677f"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_select_loss",
@@ -33269,7 +33269,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-select-loss.png",
-      "sha256": "541c9e5be4fee07c5e6ca36453020968eff9142dc46924b1d1f1c56f3b5421b9"
+      "sha256": "87de16773af0bfd7a13036650542c844c8f87b7c147b4f1e5f5a20cc1bf4f68c"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_select_all",
@@ -33289,7 +33289,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-select-all.png",
-      "sha256": "4cbdce3aa69ee2c24fb5570399a04d696118e778de89ae59537814d8bb5a979f"
+      "sha256": "22d6609aa8b0136e0939848de862501bbb14d706053249cf2742bd2cf95767bb"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_select_clear",
@@ -33309,7 +33309,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-select-clear.png",
-      "sha256": "6ff13136ffbdecd846ccca99e0e3fefa82f9a94f53e838c93fa61f0c18afae34"
+      "sha256": "e31dfa12d6109af87510d5be8ea4196082416ea491b3d9f20af6b2d93f50d250"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_select_cancel",
@@ -33329,7 +33329,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-select-cancel.png",
-      "sha256": "ac8c2a5d51a89b59a9ccb8e6680077f9eebc618313e37b373d22b2de78a18214"
+      "sha256": "e3af8f56e7c3e7d40e6ea5333eba49764854c06d9d6f8fbb7351aa8a5da7d2ee"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_swipe_delete",
@@ -33349,7 +33349,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-swipe-delete.png",
-      "sha256": "34821a9bb683b24c191ab6983e4145995080a4ae0e52c7483aabdd38d3077a23"
+      "sha256": "3c1a8d1c1bfad1a19d741221e3b73bf61ed465da1c04d4934c76abce32f2dead"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_delete_confirm",
@@ -33369,7 +33369,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-delete-confirm.png",
-      "sha256": "fafed316f354a80e87596fd1c3d11e7a33ec18b0031a31b5121cd9a839ce4656"
+      "sha256": "653b74a330cbf4f85dc30e8ede13d3ca58472f7c38f08a09edc059e32c40d6d1"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_delete_cancel",
@@ -33389,7 +33389,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-delete-cancel.png",
-      "sha256": "34821a9bb683b24c191ab6983e4145995080a4ae0e52c7483aabdd38d3077a23"
+      "sha256": "5ee8474c175868949096dbc09ed49d5dae79a574d8bb638701d5e4699648b817"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_delete_blocked",
@@ -33409,7 +33409,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-delete-blocked.png",
-      "sha256": "5acf89f830f5a6e7a4f3dd95f2ffabf9eeed2f4cd09dfd8426706080c8d364b7"
+      "sha256": "bcf3703449ce9998994f9dddead20d019a8c8abda4538906e98e655379547829"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_private_overview",
@@ -33429,7 +33429,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-private-overview.png",
-      "sha256": "a9cb2f300e93fb4057ab5929edc3cea910f796b5e7411751d9ba51c243a9d416"
+      "sha256": "da01320d7f3a46ca1ee5b07879eb773c1acd0859bcf413ab6234737bbcf9eebc"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_private_relationship",
@@ -33449,7 +33449,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-private-relationship.png",
-      "sha256": "adafc7db2decc3910b9b6bc0ca50bd6e171cd6584b02c48a8ab8381d4a2e4a81"
+      "sha256": "4feb472fb4069a27a576099852d0727b8f40c3dd8e8597455955a453afa886cc"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_private_relationship_switch",
@@ -33469,7 +33469,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-private-relationship-switch.png",
-      "sha256": "20891b0328f0b8ea735de8de69c579551ef4d7b8c55aa62bfd773ad0bf67b823"
+      "sha256": "1981adb78f8b577d7115f69b38b9b3300c218b9301e0e4366781230f391ea513"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_private_actions",
@@ -33489,7 +33489,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-private-actions.png",
-      "sha256": "e4d7d48a46fc1598e643a1d5380755c32bdebc05eaaa6c711ce945c49f7103de"
+      "sha256": "85b8674e17105f654430be96f0dcda90446b1efea53aac8b2ca6c922c34986ff"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_private_settlement",
@@ -33509,7 +33509,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-private-settlement.png",
-      "sha256": "192b6e02b057767986229542324ea59668f9fe2247293b6e13c6014eab000036"
+      "sha256": "961ef9f47ba30d96bb0178c89b894bd05c102f1965c0654889e0016d67df8d70"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_replay_list",
@@ -33529,7 +33529,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-replay-list.png",
-      "sha256": "97fe0dd205be4a9f5cc1ce8de2900a30315546fdf238fb2905aa6b845d0c6023"
+      "sha256": "aa4788846edcb0eef25c35facc2e9fbc29c4a66901f984b3c1ead95a67a3f552"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_club_overview",
@@ -33549,7 +33549,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-club-overview.png",
-      "sha256": "7fcc966563b5c80da87a990f2f3471330ec039964e810a5112c7f1f3eead6e66"
+      "sha256": "247f3bcc6b8b2942c1c9333737ff411ad9969535b213196084b3afd14bc0b003"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_club_actions",
@@ -33569,7 +33569,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-club-actions.png",
-      "sha256": "718683cc165e46232501378951f8f638d81992d9e54a87d5a05a35fe1d403c55"
+      "sha256": "c2414965ecc6be5061b6886c8476fdb073b35a33e34024777ffdc49cd752a4fa"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_club_settlement",
@@ -33589,7 +33589,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-club-settlement.png",
-      "sha256": "f188ba173a529b3d63de537183d3db085537b7624c8d7ca861aa02027e186a0d"
+      "sha256": "c60b4701f5d3a110d4aa84ab7cedf0db608b889d79a2cc45f489ce9c78f09432"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_hall_overview",
@@ -33609,7 +33609,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-hall-overview.png",
-      "sha256": "0a74250fd97d584763d4991af1fc355fd1a4fecada56f201a1f061112de67288"
+      "sha256": "63be75777c4df31f84c0e9475db5e472a4210344eabb17c423afaa4e340e4aeb"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_short_deck_overview",
@@ -33629,7 +33629,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-short-deck-overview.png",
-      "sha256": "c377e3ba77a0097173953582c2d53fd11efd4441d01a6c7abccd344f767b606a"
+      "sha256": "f2a1dfb52bc4211ff951175b1e10cbdf4234f911d20139e8a01858cd02eaf9f7"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_no_hands",
@@ -33649,7 +33649,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-no-hands.png",
-      "sha256": "e7f7cd88f7823cd2f4ee8530ef04f86196de8cc5d38ae2a61b3acc71d1d8c2b1"
+      "sha256": "c6972ec401a8523267818e5ae5cf486f1c353b6b30f8ed0fd63f1f029ec969a1"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_replay_empty",
@@ -33669,7 +33669,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-replay-empty.png",
-      "sha256": "a6e11d90675304fc2ce71250be22d7f4b6732f8f21bcf9dfc5fe4885e083573d"
+      "sha256": "f2d632695d3cfb2e6462612fa5900317c937489afd53e445ec7f5fee511d918f"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_list_failure",
@@ -33689,7 +33689,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-list-failure.png",
-      "sha256": "d3b4f231c687e8ee786846c25fed3979f78a169d6dec79f995e69460aee6707e"
+      "sha256": "561689c230ba92ba0dde4382d52e6b38606802abf8cd900b2a4944d911c4b7f7"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_retry_success",
@@ -33709,7 +33709,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-retry-success.png",
-      "sha256": "ac8c2a5d51a89b59a9ccb8e6680077f9eebc618313e37b373d22b2de78a18214"
+      "sha256": "e3af8f56e7c3e7d40e6ea5333eba49764854c06d9d6f8fbb7351aa8a5da7d2ee"
     },
     {
       "label": "en_desktop_signed_in_game_records_v2_detail_failure",
@@ -33729,7 +33729,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-desktop-signed-in-game-records-v2-detail-failure.png",
-      "sha256": "535c69a942833993e05b24300cb6f97caef4e1e230734b811af9942a72108437"
+      "sha256": "17ec8b2346b521dc7d5aa79b5ea25a4a5c90533d0cd5feef16b4cbcb4a74a407"
     },
     {
       "label": "en_mobile_hall",
@@ -39643,7 +39643,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-loading.png",
-      "sha256": "22575579fcc50215ce0491ffd30568948877f12fe0a67bc4a12732a1f1102151"
+      "sha256": "183f0037bff013c7fe6107468070849928541f58726fc060fd54128e7fc93e43"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_empty",
@@ -39663,7 +39663,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-empty.png",
-      "sha256": "c5935acb7a6b3447ab78604be1916a4acb8bd7f4e57a9759760e071c446b88eb"
+      "sha256": "1723c11be0ec5bfedb5301fc7d3d1b78daa8eeb1ac7e7ef374a02fec3b415901"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_list",
@@ -39683,7 +39683,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-list.png",
-      "sha256": "d44a81133d21920ce5c9d55645ddb1ebfa2c80da2c07c8136681fc4e545ec97b"
+      "sha256": "4c96da3685eb13c8cc3b2ac9442ba5e6c9b6625a0eca8478d86a584ce5386f6c"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_list_bottom",
@@ -39703,7 +39703,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-list-bottom.png",
-      "sha256": "d44a81133d21920ce5c9d55645ddb1ebfa2c80da2c07c8136681fc4e545ec97b"
+      "sha256": "4c96da3685eb13c8cc3b2ac9442ba5e6c9b6625a0eca8478d86a584ce5386f6c"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_select_none",
@@ -39723,7 +39723,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-select-none.png",
-      "sha256": "ced1e7183cb2734555741314f92ef4ab6403ca544105c6414a81b4bfcb4bce90"
+      "sha256": "0a8b4d2c1cca32f3e28e6ecb6fb107fe0a0fdc500652f0e3ffb1921e7ad50799"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_select_win",
@@ -39743,7 +39743,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-select-win.png",
-      "sha256": "70ec252445ce7c5624bdefb547b9501125741846ffaa0a0c1698a11ffd2a85c2"
+      "sha256": "fe5031563e9f789be9576d2e418cf1af1cad58803ab03b6587e3205f75ca27bb"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_select_loss",
@@ -39763,7 +39763,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-select-loss.png",
-      "sha256": "c705daae329d825888a048630b958d640d053a2b3a2c654b3de7858b3b03e136"
+      "sha256": "99ae09c02124f3b1f05cb7510ea841e25a7e791d4731532eaf693ecf6d5233f5"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_select_all",
@@ -39783,7 +39783,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-select-all.png",
-      "sha256": "a59a8eadba740b881d55948e30af0f428090bb958c7bf135202ae160322a91cf"
+      "sha256": "37e3763c8b309f26b97d05d09ed5f8a84ea3e8b80d530815f194b241d8a83188"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_select_clear",
@@ -39803,7 +39803,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-select-clear.png",
-      "sha256": "ced1e7183cb2734555741314f92ef4ab6403ca544105c6414a81b4bfcb4bce90"
+      "sha256": "0a8b4d2c1cca32f3e28e6ecb6fb107fe0a0fdc500652f0e3ffb1921e7ad50799"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_select_cancel",
@@ -39823,7 +39823,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-select-cancel.png",
-      "sha256": "d44a81133d21920ce5c9d55645ddb1ebfa2c80da2c07c8136681fc4e545ec97b"
+      "sha256": "4c96da3685eb13c8cc3b2ac9442ba5e6c9b6625a0eca8478d86a584ce5386f6c"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_swipe_delete",
@@ -39843,7 +39843,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-swipe-delete.png",
-      "sha256": "f60a66dcd38b6cde39189a44ab0e77451454474c5525c55c26f936c4d8f58801"
+      "sha256": "91afd56922c5a17b0c1c4be21bcbb32607f934e70218d18c3ae9e69319478dd4"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_delete_confirm",
@@ -39863,7 +39863,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-delete-confirm.png",
-      "sha256": "9c0b1ffba922d27b8a6daed24ca8f750c8fa075077dd96ec342fb40b66cf055f"
+      "sha256": "7bf17b98069e6e3083cfedd65178607812d40da613eea4664216cd35fb20c7c8"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_delete_cancel",
@@ -39883,7 +39883,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-delete-cancel.png",
-      "sha256": "f60a66dcd38b6cde39189a44ab0e77451454474c5525c55c26f936c4d8f58801"
+      "sha256": "851c53ff528bf6214e4ae4583d9c2d2d60756015be84335a99e4fe11102f6ab8"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_delete_blocked",
@@ -39903,7 +39903,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-delete-blocked.png",
-      "sha256": "30a2b60312429dfe273a25534a0b15538358bb7e118577d5862232270dd18bb6"
+      "sha256": "78e5905001b1abc2c8b4a63189e8c04cb0b59271463c8f020cc72ff1460f9759"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_private_overview",
@@ -39923,7 +39923,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-private-overview.png",
-      "sha256": "01b9b8d37523f320a968466cac81ed3ae2538dd995c745688e929f3c8c9fab18"
+      "sha256": "5d9dde1f35fc8e8f687cb16f35bb6a6ac82f03ce5f83574a9ebd565322e9b913"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_private_relationship",
@@ -39943,7 +39943,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-private-relationship.png",
-      "sha256": "eb98105dc9078391d0df584d8d3958f9a6c705d6c100fdfebd3ccae369c20d8b"
+      "sha256": "062339aaf4f11e1dc830ea45b93ff732e350738176fc5e887d20def5d139afbb"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_private_relationship_switch",
@@ -39963,7 +39963,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-private-relationship-switch.png",
-      "sha256": "7eb5495d38fad9fe6d82008cde1d6ea088a93c2988b69d809d485fd197ce09fe"
+      "sha256": "1d1ff07e85fb494e5ae61def1c7e2b3abb981d11b0cb535c06060c3fbd70ac9d"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_private_actions",
@@ -39983,7 +39983,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-private-actions.png",
-      "sha256": "4c4bf6351a8cdb600788067a0e4fb1b978129898250b3b8a5cd8f309bf39284a"
+      "sha256": "27ca603bb3a7334f2687baa410cd784ebffb0d0c3888b5afd12be8a26b61f79c"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_private_settlement",
@@ -40003,7 +40003,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-private-settlement.png",
-      "sha256": "a0ac5f618475bc5a2a50bdb07aa5a69091ab8b091806a6b3fbe0ecc67bc78019"
+      "sha256": "b992ede7196abf05b3ce74f922f3ffd1b2756e9a0ea5f62ede11c4f964c0c6e9"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_replay_list",
@@ -40023,7 +40023,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-replay-list.png",
-      "sha256": "834450c5a6fcb800772e39aedcf5db7bdabc04e0e997fb63c9d55313f4856d30"
+      "sha256": "3e18a6ae1d048ddf0910e62aec071a4eadb0e2c80968ea6064e8c9f1fae98846"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_club_overview",
@@ -40043,7 +40043,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-club-overview.png",
-      "sha256": "66c3b00b5d5805b7ef36f7c5086123b11a930b13661523d2d458aef31e0eb60a"
+      "sha256": "f51f280bdb365d04c0f54367b2289e3c88d5f8ec63672d0b41f3c84557f28eae"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_club_actions",
@@ -40063,7 +40063,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-club-actions.png",
-      "sha256": "c0f0302519966dd8277a1854db6a126e167ffcf33b1215893b3925458fb27fb3"
+      "sha256": "8ec177fcf9106676b7bb5ea3903b941c2c5ee71010bd7770c4117fc21aa1882c"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_club_settlement",
@@ -40083,7 +40083,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-club-settlement.png",
-      "sha256": "b8dbf04cefcdc9ee08ed28b6cf2abb37207126dc532a36f28bd7ea63c838022e"
+      "sha256": "24f0440c794cafdc960dbb7e57c6bbe8dd3b949d01bd17fcf933e2d2b43302ef"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_hall_overview",
@@ -40103,7 +40103,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-hall-overview.png",
-      "sha256": "5b0d39c5c26202b1f5d2ec6380abdd323233b7333c08bb83754682bd023a7408"
+      "sha256": "df5514bd6aefb83ea86f4b745f594acd9899d53616ac6e48d5c64483ddbb0b4d"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_short_deck_overview",
@@ -40123,7 +40123,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-short-deck-overview.png",
-      "sha256": "b30a02dda91aa72d6c2fbb8a65b9e1ef83b5428758567bf2d2cd7136ec635574"
+      "sha256": "af92d93002815bb38edaa3beaf496ad6a181e24dfe33db89d4e6ec9c8469d087"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_no_hands",
@@ -40143,7 +40143,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-no-hands.png",
-      "sha256": "66547a42a50c59a75d69eb6b6cb1498a2cf5795dbbf7093d804d4f061eac6926"
+      "sha256": "961f75082a4716c8289e5393f919b7d9fe630debae83f6bc2e1c7851f0b796b7"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_replay_empty",
@@ -40163,7 +40163,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-replay-empty.png",
-      "sha256": "6d9c0899287b0f0c67d062df8e1ca60f0cf577f3206b72687464e4cc25ae6c89"
+      "sha256": "923b89ed8c6b9406a3a8599a272f847ea0c98145060fffce25ee7cdaed7da950"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_delete_success",
@@ -40183,7 +40183,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-delete-success.png",
-      "sha256": "c3ee21fd8707df9a182a6339749cede031043755c8bbea5a1cb3a849bfade111"
+      "sha256": "acfc89626d8e01816e37ee0d16620bc56010f95fb804c4ff64df20148fb30e65"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_delete_failure",
@@ -40203,7 +40203,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-delete-failure.png",
-      "sha256": "ae095e253e43d280909ed8e64166c29dab2b8bddd144c067c128e1b9535a564d"
+      "sha256": "cf4ccfe6da52ae759f227d533b61a816ae6f6d9b277468374a1ae86afba4e99c"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_pagination_loading",
@@ -40223,7 +40223,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-pagination-loading.png",
-      "sha256": "745df66ba745ec660b20818fa038aa8eec2434b6c430709199515e12dbf88b88"
+      "sha256": "5a473f884c2314d78ab1d53e786a017628889d194ae2eed41400ddbda852f923"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_pagination_end",
@@ -40243,7 +40243,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-pagination-end.png",
-      "sha256": "1167a55b45720015dc1d4806f50bd32c6dd0f724ebf9fc323d5f39bcacedea9e"
+      "sha256": "05f5a4aa128b94deaef89a6571fd61b2bda44ffc5d92025a380dbfe380bf9cd3"
     },
     {
       "label": "en_mobile_signed_in_game_records_legacy_reopen",
@@ -40263,7 +40263,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-legacy-reopen.png",
-      "sha256": "4ab4c9003ea3e1f7755c9cdb76f1ee8fc97f72853b91b2b01882ada3286a7200"
+      "sha256": "acfc89626d8e01816e37ee0d16620bc56010f95fb804c4ff64df20148fb30e65"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_loading",
@@ -40283,7 +40283,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-loading.png",
-      "sha256": "9622524cc77ed6dcb3932aebe3893dc3a96e2a0368434496706178c4574e5c26"
+      "sha256": "f72d1abd383967ce3e5fffdac2bf729acc1cae8ab7bad772e4a6e9d5708cf562"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_empty",
@@ -40303,7 +40303,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-empty.png",
-      "sha256": "27cc39d8acafa9d802b69883b88f104100c7ed3f5f7e23f57b3599280156c083"
+      "sha256": "a1a32a2603e78190a4c8c6fc523ca63f8a99179a1e911454243dfa14ab10f4e6"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_list",
@@ -40323,7 +40323,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-list.png",
-      "sha256": "e8c6da0dfee63d1da8cb0a12adf02e2507f9c0f360efbefd5103f9657e2e81c4"
+      "sha256": "d948de43ab7b9e2d974c2b79f818bcea5cef69c4d72aff54ee3115031b870a7c"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_list_bottom",
@@ -40343,7 +40343,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-list-bottom.png",
-      "sha256": "a1024f49f7a3c00f044bd6f84a32c5aaf7bf36e0ba774e6c47c553eaaceb76a0"
+      "sha256": "32ed824d26f8990033c14c792b3912bd411e2bc65611e2ee6e8e37ffd24b2800"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_select_none",
@@ -40363,7 +40363,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-select-none.png",
-      "sha256": "7a7d194f61964c2fffb7dfe8da164b73f476ef514d3ba439a870dbfe32cb1c7c"
+      "sha256": "2cf4384dec12da1cde68cbf75c7eaf0ec84e40aa16416f1750bb768f926067aa"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_select_win",
@@ -40383,7 +40383,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-select-win.png",
-      "sha256": "70d63f9b723463a0b5821d30de76ed6bab2a0519954cabbc0678c12cd66794d2"
+      "sha256": "4bcd91ac4e7335cea8a36ab7cb66d4e1d6dd53d63d243d528d4d1ee545189997"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_select_loss",
@@ -40403,7 +40403,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-select-loss.png",
-      "sha256": "d90d3fefb119f136d14505d04c2c6048d5a716cc98901962893de8f3d4d0349c"
+      "sha256": "77dbf7b590e22bf2cf4cdb15dcd7b0614737f61e56d09c205cff823c90c4f63c"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_select_all",
@@ -40423,7 +40423,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-select-all.png",
-      "sha256": "76842b96626d2e170bf4a2691a663f849fe171d492aef3403d21ebd0aed6ea20"
+      "sha256": "f01d46a1287c069bca056ec916364368f57ab6d3ad9aa22876d20727ec05a1c8"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_select_clear",
@@ -40443,7 +40443,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-select-clear.png",
-      "sha256": "7a7d194f61964c2fffb7dfe8da164b73f476ef514d3ba439a870dbfe32cb1c7c"
+      "sha256": "2cf4384dec12da1cde68cbf75c7eaf0ec84e40aa16416f1750bb768f926067aa"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_select_cancel",
@@ -40463,7 +40463,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-select-cancel.png",
-      "sha256": "a1024f49f7a3c00f044bd6f84a32c5aaf7bf36e0ba774e6c47c553eaaceb76a0"
+      "sha256": "d948de43ab7b9e2d974c2b79f818bcea5cef69c4d72aff54ee3115031b870a7c"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_swipe_delete",
@@ -40483,7 +40483,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-swipe-delete.png",
-      "sha256": "588ff4b7e064db90f021258e53c67d50928f63c09b3a9b3c0e85be908784bdcc"
+      "sha256": "8f063f1c959d1701a93d2a4307bb71dd72c408ec2497ba1b743e72e31a7e29d7"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_delete_confirm",
@@ -40503,7 +40503,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-delete-confirm.png",
-      "sha256": "8cc91aa4e32cf123c2bfdca75e00c26698d9f4ee7eac09060a2f1d9f06ea48b5"
+      "sha256": "a5f4240a65ed2bfce7836a30fd89919e0b2219ad326a1f9be0a88118a7ea7573"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_delete_cancel",
@@ -40523,7 +40523,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-delete-cancel.png",
-      "sha256": "8e9948c66b9cac770a3b8d6eb81172e245b69500ddc34226ceb59be06cce69f0"
+      "sha256": "239d30818c2160e76893f8751e8526bd478a41107ee8cc3c80efea589c2e99e8"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_delete_blocked",
@@ -40543,7 +40543,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-delete-blocked.png",
-      "sha256": "fa477bdd27dd8f953ba1c66ca5ea6eea09a9baa560eff9272c2584662072c191"
+      "sha256": "11366932ae48ba90680fd5d427a5ae2bb8b634b298e5f6460d24ec69961bbc27"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_private_overview",
@@ -40563,7 +40563,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-private-overview.png",
-      "sha256": "7edd79a6e08c243de3edb62d615d623b0b737bee5d967c46097e6cce4955acab"
+      "sha256": "821fe4889e85a3a89a3f59b2ae5e399ac861e5cb8a683c967119965e2dfaf575"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_private_relationship",
@@ -40583,7 +40583,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-private-relationship.png",
-      "sha256": "25686a7a2b6861046da20cff6070087a22af3021aabc9183838ca84cc5bd0b6f"
+      "sha256": "5f194187df23424d403a61a49b68b74a5edcc756612ff8ea6765739a6eeee597"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_private_relationship_switch",
@@ -40603,7 +40603,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-private-relationship-switch.png",
-      "sha256": "fdf130566837f6d1b70085d75d74f1ac4f6753a3941bdd2cda84e731bb1b95b1"
+      "sha256": "12721df01928934365b0d01dba0db68b1e99ba1dc5a51836298e44b4cd367ffd"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_private_actions",
@@ -40623,7 +40623,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-private-actions.png",
-      "sha256": "2826aeac5126c70014d70cbe54eb2371b4bb984ec7a0b9618f8b0cc10f098b32"
+      "sha256": "330ef98f465681cde6d811cd49fc3d06a5d466cb2e4c0dd1aa2772fac66ed2f4"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_private_settlement",
@@ -40643,7 +40643,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-private-settlement.png",
-      "sha256": "475b1935adcd0579cc1e1ea5e4bfb13d00e9656601f9d4f6e45865c55b1d17c3"
+      "sha256": "48349555cbbb6106b0e8e3e01c949f354c8901d87caa7107b36a80b8cfd7c349"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_replay_list",
@@ -40663,7 +40663,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-replay-list.png",
-      "sha256": "d6a7add69e6c41e59437b17f5dd670a733bd94f6870c882e90933f694ff55015"
+      "sha256": "93d2535afc5bfc866d6dd1136694c60eebbb6df1c64c7737f64af6785c19c11e"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_club_overview",
@@ -40683,7 +40683,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-club-overview.png",
-      "sha256": "4850f4bbf45bc6e8c3d48b2e2ac3b3fc52971594b80662725893c33b45af2034"
+      "sha256": "d51ff8b4aa9578e3c7d8c1f120381ac446fae8932c6910d9c8fe9d2fc39bce0c"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_club_actions",
@@ -40703,7 +40703,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-club-actions.png",
-      "sha256": "f34a064dea08ec05cdc12abfa199b46ac3e685e0d19ed449b16d1515ef8057a4"
+      "sha256": "c80be1f3f4002cf8eaa6b5bd358e0b945fe375acf04c6abb95d6918d39d467b5"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_club_settlement",
@@ -40723,7 +40723,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-club-settlement.png",
-      "sha256": "e0bcd0bec0f9c9d6e49cf9ec8a6adf3bce0ab470fa8c8c21c7c86a1a6fa34fe8"
+      "sha256": "59f0a1a6ae57428ac977a2e20810b264371643274b58d41d4d7e0c9cdd4ed15d"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_hall_overview",
@@ -40743,7 +40743,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-hall-overview.png",
-      "sha256": "a1ff5542939a7bd17f7a124093fcdd942ccc2e7b89631cd7cfb11763b52f9f0a"
+      "sha256": "d39b73860dd53c44e16c023becf13121f139d0c28dd8fda816da107c9c9f48f6"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_short_deck_overview",
@@ -40763,7 +40763,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-short-deck-overview.png",
-      "sha256": "89229afc2cabfc4529571cd33f9ac9ad9ac70f7e97211e438ca7d6a79938c27c"
+      "sha256": "3fc3ab3ef00856ebcf638c47814e74a59d88ffe7da86b75372d89110520bf535"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_no_hands",
@@ -40783,7 +40783,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-no-hands.png",
-      "sha256": "f4a9651c7c78db2e684abfcf434fd4f610d696718ec0290c3aacbc022b698fd6"
+      "sha256": "e2fe7590c26dd95391a6418263c2de4cb8c606c6e0e97f28254bd8babc2014d2"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_replay_empty",
@@ -40803,7 +40803,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-replay-empty.png",
-      "sha256": "af9acb84296e52b32a32c86e006f2645f91b49ffe73735c0614cd1dfdc843f02"
+      "sha256": "ab84353194ff5053222acf91e22fca0c04844abfa14400e4ab937cab3e2349e2"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_list_failure",
@@ -40823,7 +40823,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-list-failure.png",
-      "sha256": "aacbbf20b79aff34c06e7d03dd8c0696d556a21b2fab77b4fff508f18b224ce7"
+      "sha256": "ed5e693c1126e6a584a3c3676b1c1a1853817239930a29df9d5357c240c7ea69"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_retry_success",
@@ -40843,7 +40843,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-retry-success.png",
-      "sha256": "a1024f49f7a3c00f044bd6f84a32c5aaf7bf36e0ba774e6c47c553eaaceb76a0"
+      "sha256": "d948de43ab7b9e2d974c2b79f818bcea5cef69c4d72aff54ee3115031b870a7c"
     },
     {
       "label": "en_mobile_signed_in_game_records_v2_detail_failure",
@@ -40863,7 +40863,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/en-mobile-signed-in-game-records-v2-detail-failure.png",
-      "sha256": "3ef951e6b4966cb8d2df6d11dca1da3c7a5012b40f93e019382196b0780e37e8"
+      "sha256": "87ccc90bf9d89d77a923ee2dfc88025ce4f99413e97c2855515d0ce19b113a17"
     },
     {
       "label": "en_mobile_signed_in_faq",

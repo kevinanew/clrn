@@ -66,3 +66,10 @@ VISUAL_FILTER='signed_in_game_records_(legacy|v2)$' VISUAL_SUITE=app pnpm run te
 ```bash
 e2e/.venv/bin/python -m unittest discover -s visual/cases/game-record/mitmproxy -v
 ```
+
+## 验证记录
+
+2026-10-09：[GitHub Linux 基准生成](https://github.com/kevinanew/clrn/actions/runs/37811806109)
+完成三语言的 12 个场景、372 张截图，全部首轮通过，没有重试；同轮 9 项代理自测和
+29 项浏览器辅助检查通过。整合最新 master 后，64 项场景与基准完整性检查、
+TypeScript 类型检查和 lint 均通过。
