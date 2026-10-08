@@ -89,7 +89,7 @@ function runPnpm(args: string[], cwd = VISUAL_DIR): void {
  * 采集器内部会重试 staging 瞬时失败；仍失败则中止本轮。
  * 并行场景不能各自回退 UI 登录，否则同一账号重复登录会互相作废 token。
  */
-function captureAuthState(): void {
+function captureAuthState(useMitmproxy: boolean): void {
   const authStatePath = path.join(VISUAL_DIR, 'auth-state.json');
   const maxProcessAttempts = 2;
 
@@ -107,6 +107,7 @@ function captureAuthState(): void {
         VISUAL_USERNAME: process.env.VISUAL_USERNAME || VISUAL_TEST_USERNAME,
         VISUAL_PASSWORD: process.env.VISUAL_PASSWORD || VISUAL_TEST_PASSWORD,
         VISUAL_DEVICE_ID,
+        VISUAL_AUTH_USES_MITMPROXY: String(useMitmproxy),
       },
       timeout: 600000,
     });
@@ -177,6 +178,7 @@ async function main(): Promise<void> {
         ? [...playwrightArgs, `--grep=${exactScenarioGrep(selectedScenarios.map(scenario => scenario.label))}`]
         : playwrightArgs;
       const needsAuthState = selectedScenarios.some((scenario) => scenario.signIn);
+      const needsMitmproxy = selectedScenarios.some(scenario => scenario.group === 'texas-holdem');
       const { count: shardCount, start: startShard } = getVisualShardConfig(
         action,
         selectedScenarios.length,
@@ -187,7 +189,7 @@ async function main(): Promise<void> {
         if (needsAuthState) {
           // 上一个 Playwright 进程已同步退出，此时换 token 不会作废仍在运行的场景。
           // 紧邻 shard 启动采集，确保 filter/core scope/approve 的每批都获得完整有效期。
-          captureAuthState();
+          captureAuthState(needsMitmproxy);
         }
         runPnpm([...scenarioArgs, 'cases', `--shard=${shard}/${shardCount}`]);
       }

@@ -1,8 +1,10 @@
 # 来玩 H5 E2E
 
-已部署站点的 Playwright 端到端测试位于 [e2e/](e2e/README.md)。GitHub Actions 在 `master` push 和手动触发时运行完整测试，结果见仓库的 Actions 页面。
+已部署站点的 Playwright 端到端测试位于 [e2e/](e2e/README.md)，弱网故障由 mitmproxy 注入。GitHub Actions 在 E2E 代码或工作流 push 变更和手动触发时运行完整测试，结果见仓库的 Actions 页面。
 
 线上 Web 视觉回归及运行说明位于 [visual/](visual/README.md)。当前执行 384 张基准截图；视觉代码变更后 CI 将应用（简中核心 40 张）和德州（26 张）拆成独立任务并行运行，每天运行三语言全量。不需要应用源码或本地开发服务。
+
+德州视觉测试和弱网 E2E 共用 mitmproxy 进程管理。德州截图里的 `0ms` 是固定文案，用于稳定截图；实际浏览器流量经过 `mitmdump`。
 
 ## 线上功能案例
 

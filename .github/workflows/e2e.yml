@@ -2,7 +2,7 @@ name: H5 E2E
 
 on:
   push:
-    branches: [master]
+    paths: ['e2e/**', '.github/workflows/e2e.yml']
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,8 @@ concurrency:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    # setup-python 使用 runner 的工具缓存，需与 Jammy 容器的 glibc 匹配。
+    runs-on: ubuntu-22.04
     timeout-minutes: 25
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-jammy
@@ -31,6 +32,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install mitmproxy
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r mitmproxy/requirements.txt
+      - name: Check mitmproxy addon
+        run: .venv/bin/python -m unittest discover -s mitmproxy -p 'test_*.py'
       - name: Run E2E tests
         run: npm test
       - name: Upload failure report

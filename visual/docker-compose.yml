@@ -1,8 +1,8 @@
 services:
   visual:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: visual/Dockerfile
     volumes:
       - ..:/repo
       - visual_node_modules:/repo/visual/node_modules

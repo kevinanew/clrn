@@ -8,6 +8,7 @@ export default defineConfig({
   testDir: './',
   // Node 自测使用 *.test.ts；Playwright 只收集浏览器用例。
   testMatch: '**/*.spec.ts',
+  testIgnore: '**/.venv/**',
   outputDir: './test-results',
   // 每组基准图放在对应 spec.ts 旁边（仅在 Docker/Linux 生成，无平台后缀）。
   snapshotPathTemplate: '{testDir}/{testFileDir}/snapshots/{arg}{ext}',

@@ -8,6 +8,7 @@
     "test": "playwright test",
     "test:smoke": "playwright test sites-availability.spec.ts",
     "test:network-resilience": "playwright test network-resilience.spec.ts",
+    "test:mitmproxy": "playwright test mitmproxy.spec.ts",
     "report": "playwright show-report playwright-report",
     "test:functional": "playwright test --config cases/playwright.config.ts",
     "test:functional:existing": "playwright test --config cases/playwright.config.ts --grep-invert @creates-data",
