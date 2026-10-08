@@ -23,7 +23,7 @@ test('删房不依赖已关闭的浏览器/代理，且业务失败必须报错'
     assert.deepEqual(requests, [{ method: 'DELETE', path: `/v1/room/${roomId}`,
       authorization: 'Bearer test-only' }]);
     accepted = false;
-    await assert.rejects(() => deleteTexasRoom(room), /本次新建德州房间应成功解散/);
+    await assert.rejects(() => deleteTexasRoom(room), /本次新建房间应成功解散/);
   } finally {
     server.close();
     await once(server, 'close');

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { VisualScenario } from '../scenarios';
 import {
+  ensureAppReadyPastStaging,
   fillStableSignInCredentials,
   usernameOrEmailSubmitButton,
   waitForUsernameOrEmailSubmitEnabled,
@@ -30,6 +31,27 @@ const FIXTURE_HTML = `
     <button role="button" aria-label="Bottom sheet backdrop"></button>
   </div>
 `;
+
+test('startup proxy failures retry initialization before entering the hall', async ({ page }) => {
+  await page.setContent(`
+    <div data-testid="startup-alert">
+      ServerType: staging Message: server_down
+      <button data-testid="alert-custom-button" id="cancel">取消</button>
+      <button data-testid="alert-custom-button" id="retry">重试</button>
+    </div>
+  `);
+  await page.evaluate(() => {
+    document.getElementById('cancel')!.onclick = () => {
+      document.body.dataset.cancelled = 'true';
+    };
+    document.getElementById('retry')!.onclick = () => {
+      document.body.innerHTML = '<div data-testid="hall-screen">Hall</div>';
+    };
+  });
+  await ensureAppReadyPastStaging(page);
+  await expect(page.getByTestId('hall-screen')).toBeVisible();
+  await expect(page.locator('body')).not.toHaveAttribute('data-cancelled', 'true');
+});
 
 test('login credentials are refilled when a late form initializer clears them', async ({
   page,

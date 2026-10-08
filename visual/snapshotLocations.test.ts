@@ -19,7 +19,7 @@ test('every active scenario has one baseline beside its feature spec', () => {
   }
 
   const actual = readdirSync(path.join(__dirname, 'cases'), { withFileTypes: true })
-    .filter(entry => entry.isDirectory())
+    .filter(entry => entry.isDirectory() && entry.name !== '_shared')
     .flatMap(entry => readdirSync(path.join(__dirname, 'cases', entry.name, 'snapshots'))
       .filter(file => file.endsWith('.png'))
       .map(file => path.join(__dirname, 'cases', entry.name, 'snapshots', file)));

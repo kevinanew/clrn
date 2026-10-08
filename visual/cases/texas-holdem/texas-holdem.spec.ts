@@ -202,9 +202,9 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
     } finally {
       try {
         try {
-          await mitmproxy.releaseTexas();
-        } finally {
           if (room) await deleteTexasRoom(room);
+        } finally {
+          await mitmproxy.releaseTexas();
         }
       } finally {
         await context.close();

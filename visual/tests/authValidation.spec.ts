@@ -315,9 +315,13 @@ test('account validation fails explicitly on request timeout', async ({ page }) 
   try {
     await openAuthFixture(page, server.origin);
     await setPersistedAuth(page);
-    await expect(
-      waitForSignInState(page, { apiBaseUrl: server.origin, requestTimeoutMs: 100 }),
-    ).rejects.toThrow('网络错误或超时');
+    const error = await waitForSignInState(page, { apiBaseUrl: server.origin, requestTimeoutMs: 100 })
+      .then(() => null, failure => failure as Error);
+    expect(error).toBeInstanceOf(Error);
+    expect(error!.message).toContain('网络错误或超时');
+    expect(error!.message).toContain('Timeout');
+    expect(error!.message).not.toContain('Authorization');
+    expect(error!.message).not.toContain(COMPLETE_AUTH.api_token.access_token);
   } finally {
     await server.close();
   }

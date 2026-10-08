@@ -36,6 +36,7 @@ import { pages as hallPages } from './cases/hall/scenarios';
 import { pages as messagePages } from './cases/message/scenarios';
 import { pages as private_roomPages } from './cases/private-room/scenarios';
 import { pages as texasHoldemPages } from './cases/texas-holdem/scenarios';
+import { pages as zhajinhuaPages } from './cases/zhajinhua/scenarios';
 import { pages as clubPages } from './cases/club/scenarios';
 import { pages as accountPages } from './cases/account/scenarios';
 import { pages as walletPages } from './cases/wallet/scenarios';
@@ -55,6 +56,8 @@ export const CORE_PAGE_LABELS = new Set([
   'signed_in_create_room_advanced_texas',
   'signed_in_create_room_advanced_zhajinhua',
   'signed_in_create_room_advanced_six_plus',
+  'signed_in_zhajinhua_pre_game',
+  'signed_in_zhajinhua_game',
   'signed_in_texas_pre_game',
   'signed_in_texas_optional_pre_game',
   'signed_in_texas_game',
@@ -87,6 +90,7 @@ export const SIGNED_IN_PAGES: GroupedPageDef[] = [
   ...withGroup('message', messagePages),
   ...withGroup('private-room', private_roomPages),
   ...withGroup('texas-holdem', texasHoldemPages),
+  ...withGroup('zhajinhua', zhajinhuaPages),
   ...withGroup('club', clubPages),
   ...withGroup('account', accountPages),
   ...withGroup('wallet', walletPages),

@@ -13,9 +13,9 @@ on:
         type: boolean
         default: false
       suite:
-        description: 'all 两部分；app 应用；texas 德州'
+        description: 'all 三部分；app 应用；texas 德州；zhajinhua 拼三张'
         type: choice
-        options: [all, app, texas]
+        options: [all, app, texas, zhajinhua]
         default: all
       mode:
         description: 'compare 对比；reference 生成 Linux 基准供审查下载'
@@ -32,19 +32,19 @@ permissions:
 
 jobs:
   visual:
-    name: ${{ matrix.suite == 'texas' && '德州' || '应用' }} (${{ matrix.locale }})
+    name: ${{ matrix.suite == 'texas' && '德州' || matrix.suite == 'zhajinhua' && '拼三张' || '应用' }} (${{ matrix.locale }})
     # Python 工具缓存需与 Jammy 容器使用相同的 glibc 基线。
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
-        suite: ${{ fromJSON(inputs.suite == 'app' && '["app"]' || inputs.suite == 'texas' && '["texas"]' || '["app","texas"]') }}
+        suite: ${{ fromJSON(inputs.suite == 'app' && '["app"]' || inputs.suite == 'texas' && '["texas"]' || inputs.suite == 'zhajinhua' && '["zhajinhua"]' || '["app","texas","zhajinhua"]') }}
         locale: ${{ fromJSON((github.event_name == 'schedule' || inputs.full) && '["zh-Hans","zh-Hant","en"]' || '["zh-Hans"]') }}
-    # 同套测试的语言/轮次互斥；德州用独立账号，与应用及功能/E2E 可并行。
+    # 同套测试的语言/轮次互斥；两种玩法各用独立账号，与应用及功能/E2E 可并行。
     # 显式改回应用账号时恢复跨工作流互斥。
     concurrency:
-      group: ${{ matrix.suite == 'texas' && vars.VISUAL_TEXAS_USERNAME != 'laiwanvisual01' && 'h5-staging-texas-test-account' || 'h5-staging-test-account' }}
+      group: ${{ (matrix.suite == 'app' || (matrix.suite == 'texas' && vars.VISUAL_TEXAS_USERNAME == 'laiwanvisual01') || (matrix.suite == 'zhajinhua' && vars.VISUAL_ZHAJINHUA_USERNAME == 'laiwanvisual01')) && 'h5-staging-test-account' || ((matrix.suite == 'texas' && (!vars.VISUAL_TEXAS_USERNAME || vars.VISUAL_TEXAS_USERNAME == 'laiwanvisualtexas01')) || (matrix.suite == 'zhajinhua' && vars.VISUAL_ZHAJINHUA_USERNAME == 'laiwanvisualtexas01')) && 'h5-staging-texas-test-account' || format('h5-staging-{0}-account', matrix.suite == 'texas' && (vars.VISUAL_TEXAS_USERNAME || 'laiwanvisualtexas01') || matrix.suite == 'zhajinhua' && (vars.VISUAL_ZHAJINHUA_USERNAME || 'laiwanvisualzjh01') || 'laiwanvisual01') }}
       cancel-in-progress: false
       queue: max
     container:
@@ -70,19 +70,19 @@ jobs:
         working-directory: visual
         run: pnpm install --frozen-lockfile
       - uses: actions/setup-python@v5
-        if: matrix.suite == 'texas'
+        if: matrix.suite != 'app'
         with:
           python-version: '3.12'
-      - name: Install mitmproxy for Texas
-        if: matrix.suite == 'texas'
+      - name: Install mitmproxy for game suites
+        if: matrix.suite != 'app'
         run: |
           python -m venv e2e/.venv
           e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
-      - name: Check Texas proxy isolation and replay
-        if: matrix.suite == 'texas' && matrix.locale == 'zh-Hans'
-        run: e2e/.venv/bin/python -m unittest discover -s visual/cases/texas-holdem/mitmproxy -v
+      - name: Check game proxy isolation and replay
+        if: matrix.suite != 'app' && matrix.locale == 'zh-Hans'
+        run: e2e/.venv/bin/python -m unittest discover -s visual/cases/${{ matrix.suite == 'texas' && 'texas-holdem' || 'zhajinhua' }}/mitmproxy -v
       - name: Check visual suite
-        if: matrix.locale == 'zh-Hans' && (matrix.suite == 'app' || inputs.suite == 'texas')
+        if: matrix.locale == 'zh-Hans' && (matrix.suite == 'app' || inputs.suite == 'texas' || inputs.suite == 'zhajinhua')
         working-directory: visual
         run: |
           pnpm run typecheck
@@ -91,16 +91,17 @@ jobs:
         working-directory: visual
         env:
           VISUAL_SUITE: ${{ matrix.suite }}
-          VISUAL_USERNAME: ${{ matrix.suite == 'texas' && vars.VISUAL_TEXAS_USERNAME || '' }}
-          VISUAL_PASSWORD: ${{ matrix.suite == 'texas' && secrets.VISUAL_TEXAS_PASSWORD || '' }}
+          VISUAL_USERNAME: ${{ matrix.suite == 'texas' && vars.VISUAL_TEXAS_USERNAME || matrix.suite == 'zhajinhua' && vars.VISUAL_ZHAJINHUA_USERNAME || '' }}
+          VISUAL_PASSWORD: ${{ matrix.suite == 'texas' && secrets.VISUAL_TEXAS_PASSWORD || matrix.suite == 'zhajinhua' && secrets.VISUAL_ZHAJINHUA_PASSWORD || '' }}
           TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
         run: |
-          if [ -n "$VISUAL_USERNAME" ] && [ "$VISUAL_USERNAME" != laiwanvisualtexas01 ] && [ -z "$VISUAL_PASSWORD" ]; then
-            echo '::error::自定义德州账号必须配置 VISUAL_TEXAS_PASSWORD Secret。'
+          default_username='${{ matrix.suite == 'texas' && 'laiwanvisualtexas01' || matrix.suite == 'zhajinhua' && 'laiwanvisualzjh01' || 'laiwanvisual01' }}'
+          if [ -n "$VISUAL_USERNAME" ] && [ "$VISUAL_USERNAME" != "$default_username" ] && [ -z "$VISUAL_PASSWORD" ]; then
+            echo '::error::自定义玩法账号必须配置对应的 VISUAL_*_PASSWORD Secret。'
             exit 1
           fi
           if [ "$VISUAL_USERNAME" != "$(printf '%s' "$VISUAL_USERNAME" | tr -d '[:space:]')" ]; then
-            echo '::error::VISUAL_TEXAS_USERNAME 不得包含空白字符。'
+            echo '::error::VISUAL_*_USERNAME 不得包含空白字符。'
             exit 1
           fi
           if [ '${{ inputs.mode }}' = reference ]; then

@@ -41,7 +41,7 @@ const pages = scenarios.map(scenario => {
 writeFileSync(path.join(directory, 'manifest.json'), JSON.stringify({
   baseUrl: visualBaseUrl,
   scope: process.env.VISUAL_SCOPE || 'full',
-  note: 'Linux 视觉基准清单。德州场景会真实建房、进入牌桌并解散本次房间；其余页面使用固定文本与视觉接口 fixtures。生成清单不会更新或批准截图。',
+  note: 'Linux 视觉基准清单。德州和拼三张场景会真实建房、进入牌桌并解散本次房间；其余页面使用固定文本与视觉接口 fixtures。生成清单不会更新或批准截图。',
   count: pages.length,
   pages,
 }, null, 2) + '\n');
