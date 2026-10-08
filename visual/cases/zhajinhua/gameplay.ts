@@ -25,6 +25,10 @@ export async function captureGameplay(page: Page, scenario: VisualScenario,
   }, { timeout: 30_000, message: '拼三张本次新建房间应接受回放' }).toBe(true);
   await page.clock.runFor(3000);
   await expect(page.locator('[data-testid^="zhajinhua-player-container-"]:visible')).toHaveCount(5);
+  // 等待桌的玩家在 table_status 后才挂载，需要再次接收运行状态。
+  await proxy.replay(roomId, events([restoreTable(self).queue[0]]));
+  await advance(page);
+  await expect(page.locator('[data-testid="player_tips_text"]:visible')).toHaveCount(0);
   await expect(visible(page, 'zhajinhua-operation-button-call')).toBeVisible();
   await expect(visible(page, 'zhajinhua-see-hand-card-button')).toBeVisible();
   await snapshot('blind_cards');
