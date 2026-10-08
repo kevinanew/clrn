@@ -19,6 +19,8 @@ import {
   mockVisualNetworkDependencies,
 } from './support/pageSetup';
 import { runWithContext } from './support/runWithContext';
+import { visualProxyOptions, withVisualProxy } from './support/mitmproxy';
+import { type Mitmproxy } from '../../e2e/helpers/mitmproxy-client';
 
 import { visualBaseUrl as baseUrl } from '../target';
 const username = VISUAL_TEST_USERNAME;
@@ -59,8 +61,10 @@ const TUTORIAL_COMPLETE_KEYS = [
 async function createAuthContext(
   browser: import('@playwright/test').Browser,
   storageEntries?: Record<string, string>,
+  proxy?: Mitmproxy,
 ) {
   const context = await browser.newContext({
+    ...(proxy ? visualProxyOptions(proxy) : {}),
     viewport: { width: 1440, height: 900 },
     locale: 'en-US',
     storageState: storageEntries
@@ -82,7 +86,7 @@ async function createAuthContext(
   await disableAnimations(context);
   // 登录态采集与场景必须使用同一套启动网络 mock；否则采集会在代理选址阶段
   // 随机命中 server_load_offline 节点，尚未显示登录入口就失败。
-  await mockVisualNetworkDependencies(context);
+  await mockVisualNetworkDependencies(context, { useMitmproxy: Boolean(proxy) });
   await context.addInitScript(
     ({
       device,
@@ -135,8 +139,9 @@ function persistAuthState(entries: Record<string, string>) {
 async function validateCapturedAuthState(
   browser: import('@playwright/test').Browser,
   entries: Record<string, string>,
+  proxy?: Mitmproxy,
 ): Promise<Record<string, string>> {
-  const context = await createAuthContext(browser, entries);
+  const context = await createAuthContext(browser, entries, proxy);
 
   return runWithContext(context, async () => {
     const page = await context.newPage();
@@ -159,13 +164,13 @@ async function validateCapturedAuthState(
   });
 }
 
-async function main(): Promise<void> {
+async function captureAuthState(proxy?: Mitmproxy): Promise<void> {
   const browser = await chromium.launch({ args: BROWSER_LAUNCH_ARGS });
 
   try {
     let lastError: Error | undefined;
     for (let attempt = 1; attempt <= MAX_CAPTURE_ATTEMPTS; attempt += 1) {
-      const context = await createAuthContext(browser);
+      const context = await createAuthContext(browser, undefined, proxy);
       try {
         console.log(`AUTH STATE > 采集尝试 ${attempt}/${MAX_CAPTURE_ATTEMPTS}`);
         const page = await context.newPage();
@@ -179,7 +184,7 @@ async function main(): Promise<void> {
 
         await ensureSignedIn(page, { username, password });
         const entries = await collectLocalStorageEntries(page);
-        const validatedEntries = await validateCapturedAuthState(browser, entries);
+        const validatedEntries = await validateCapturedAuthState(browser, entries, proxy);
         persistAuthState(validatedEntries);
         return;
       } catch (error) {
@@ -204,12 +209,20 @@ async function main(): Promise<void> {
   }
 }
 
+async function main(): Promise<void> {
+  if (process.env.VISUAL_AUTH_USES_MITMPROXY === 'true') {
+    await withVisualProxy(captureAuthState);
+  } else {
+    await captureAuthState();
+  }
+}
+
 main().catch((error: Error) => {
   console.error(`AUTH STATE > 登录态采集连续失败：${error.message}`);
   try {
     fs.rmSync(AUTH_STATE_PATH, { force: true });
   } catch {
-    // ignore
+    // 不让文件清理失败覆盖原始登录错误。
   }
   process.exitCode = 1;
 });

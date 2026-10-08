@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 
 from mitmproxy import connection, http
 
-with patch.dict(os.environ, {"E2E_MITMPROXY_CONTROL_TOKEN": "test-token"}):
+with patch.dict(os.environ, {"MITMPROXY_CONTROL_TOKEN": "test-token"}):
     from network_faults import NetworkFaults
 
 
@@ -24,12 +24,12 @@ def flow(url, method="GET", body=b"", token=None):
 
 class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        with patch.dict(os.environ, {"E2E_MITMPROXY_CONTROL_TOKEN": "test-token"}):
+        with patch.dict(os.environ, {"MITMPROXY_CONTROL_TOKEN": "test-token"}):
             self.addon = NetworkFaults()
 
     async def configure(self, scenario, token="test-token"):
         request = flow(
-            "http://e2e-mitmproxy.invalid/scenario", "POST",
+            "http://test-mitmproxy.invalid/scenario", "POST",
             json.dumps({"scenario": scenario}).encode(), token,
         )
         await self.addon.request(request)
@@ -40,7 +40,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(self.addon.scenario)
         self.assertEqual((await self.configure("unknown")).response.status_code, 400)
         self.assertIsNone(self.addon.scenario)
-        malformed = flow("http://e2e-mitmproxy.invalid/scenario", "POST", b"[]", "test-token")
+        malformed = flow("http://test-mitmproxy.invalid/scenario", "POST", b"[]", "test-token")
         await self.addon.request(malformed)
         self.assertEqual(malformed.response.status_code, 400)
 
@@ -119,6 +119,43 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         preflight = flow(url, "OPTIONS")
         await self.addon.request(preflight)
         self.assertIsNone(preflight.response)
+
+    async def test_visual_mode_only_stabilizes_metadata_and_health(self):
+        await self.configure("visual-stable")
+        metadata = flow("https://api.shafayouxi.org/public/v13/metadata/servers")
+        await self.addon.request(metadata)
+        host = "64.kr-seoul.api.staging.laiwan.shafayouxi.com"
+        self.assertEqual(json.loads(metadata.response.content)["result"]["servers"],
+                         {host: "127.0.0.1"})
+        for node, status in ((host, 200), ("offline.example.com", 503)):
+            health = flow(f"https://{node}/node/v1/status")
+            await self.addon.request(health)
+            self.assertEqual(health.response.status_code, status)
+        for url in (
+            "https://production.example.com/public/v13/metadata/servers",
+            "https://api.shafayouxi.org/v10/club?user_id=42",
+            "https://api.shafayouxi.org/public/v10/user/login/username/password",
+        ):
+            request = flow(url, "POST")
+            await self.addon.request(request)
+            self.assertIsNone(request.response)
+            self.assertIsNone(request.error)
+        self.assertEqual(self.addon.stabilized_requests, 3)
+        self.assertEqual(self.addon.intercepted_requests, 0)
+
+    async def test_visual_preflight_is_local_and_clear_restores_metadata(self):
+        await self.configure("visual-stable")
+        url = "https://api.shafayouxi.org/public/v13/metadata/servers"
+        preflight = flow(url, "OPTIONS")
+        preflight.request.headers["Origin"] = "https://h5.page.shafayouxi.org"
+        preflight.request.headers["Access-Control-Request-Headers"] = "authorization"
+        await self.addon.request(preflight)
+        self.assertEqual(preflight.response.status_code, 204)
+        self.assertEqual(preflight.response.headers["Access-Control-Allow-Headers"], "authorization")
+        await self.configure(None)
+        normal = flow(url)
+        await self.addon.request(normal)
+        self.assertIsNone(normal.response)
 
 
 if __name__ == "__main__":

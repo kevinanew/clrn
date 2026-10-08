@@ -79,8 +79,8 @@ test.describe('H5 弱网行为', () => {
     await expect(page.locator('[data-testid="club-list-load-error"]')).not.toBeVisible();
     await expect.poll(async () => (await mitmproxy.status()).interceptedRequests)
       .toBeGreaterThan(requestsBeforeRetry);
-    // A hit means the retry has started, not that all fallback requests finished.
-    // Keep faults active until the UI returns to its retryable error state.
+    // 代理命中只说明重试已开始，客户端的回退请求可能仍在进行。
+    // 保持故障，直到界面重新进入可重试的错误状态。
     await expect(page.locator('[data-testid="club-list-load-error"]')).toBeVisible({
       timeout: 30_000,
     });

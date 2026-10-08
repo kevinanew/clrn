@@ -4,6 +4,17 @@
 用例与辅助代码使用 TypeScript；截图对比在 Docker/Linux 中运行以保持字体和渲染环境一致。
 测试账号见 [应用仓库账号文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/testing/accounts.md)。
 
+德州视觉用例及其登录态采集使用独立的 `mitmdump`，浏览器流量经过本机代理。
+节点列表和节点健康检查由代理返回固定响应，业务数据的截图 fixture 保持原有规则。
+代理复用 `../e2e/helpers/mitmproxy-*.ts` 与 `../e2e/mitmproxy/`，只需要视觉目录的 Node 依赖。
+Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的德州任务也会安装。
+已有镜像需先执行 `docker compose build visual`，再执行 `pnpm run test:texas`。
+每例结束后停止代理并删除临时 CA，不保存网络 flow 或请求正文。
+
+德州截图（包括 `zh-Hans_mobile_signed_in_texas_pre_game_chat`）中的 `0ms`
+是 `fixedTexts` 固定文案，用于消除延迟变化造成的截图差异，不表示真实网速或代理延迟。
+日志中的 `MITMPROXY > requests=..., stabilized=...` 用于确认真实流量经过代理。
+
 ## 场景
 
 | 页面 | 说明 | 登录态 | 固定填充 |
@@ -292,6 +303,7 @@ visual 专用的认证校验、mock、等待、重试、稳定化及截图判定
 | `cases/runScenario.ts` | 各功能共用的截图执行流程 |
 | `playwright.config.ts` | Playwright 配置（阈值、串行执行） |
 | `src/support/` | context 设置 / 页面准备 / 登录流程 |
+| `src/support/mitmproxy.ts` | 德州代理 fixture、登录态采集与浏览器代理配置 |
 | `src/captureAuthState.ts` | 运行开头的一次性登录态采集 |
 | `run-visual.ts` | Docker/CI 入口（test / reference / approve） |
 | `snapshots/` | 汇总索引与清单（由 `pnpm run gallery` 生成） |
@@ -306,7 +318,9 @@ cd visual
 npm run gallery
 ```
 
-打开 [snapshots/index.html](snapshots/index.html) 可按页面、语言、视口筛选图片。PNG 位于对应
+打开 [snapshots/index.html](snapshots/index.html) 可按大厅、登录与认证、消息、私人房、德州牌桌、
+俱乐部、个人账号、钱包与记录、帮助与下载九个模块查看，再按页面、语言和视口搜索。
+搜索支持多个关键词，例如 `mobile chat`。PNG 位于对应
 `cases/<功能>/snapshots/`，例如大厅截图与 `cases/hall/hall.spec.ts`、`cases/hall/scenarios.ts` 相邻。
 [manifest.json](snapshots/manifest.json) 记录当前场景的入口、就绪定位、固定内容、尺寸和
 PNG 的 SHA-256。索引与测试共用 `buildScenarios()`，排除历史废弃图片；缺少基准图时命令失败，

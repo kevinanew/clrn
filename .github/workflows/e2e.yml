@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   e2e:
-    # setup-python uses the runner's tool cache; match the Jammy container's glibc.
+    # setup-python 使用 runner 的工具缓存，需与 Jammy 容器的 glibc 匹配。
     runs-on: ubuntu-22.04
     timeout-minutes: 25
     container:

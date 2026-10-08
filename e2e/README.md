@@ -41,8 +41,8 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 - `E2E_RETRIES`：失败重试次数，默认 `1`。
 - `E2E_EXPECT_BUILD_SHA`：至少 7 位的提交 SHA 前缀。
 - `E2E_TEST_USERNAME` / `E2E_TEST_PASSWORD`：弱网俱乐部场景的 staging 测试账号。
-- `E2E_MITMDUMP_PATH`：已有 mitmdump 可执行文件的路径；默认 `e2e/.venv/bin/mitmdump`
-  （Windows 为 `.venv/Scripts/mitmdump.exe`）。
+- `E2E_MITMDUMP_PATH`：已有 mitmdump 可执行文件的路径；默认 `e2e/.venv/bin/mitmdump`。
+- `MITMDUMP_PATH`：E2E 与德州视觉测试共用的可执行文件覆盖，优先于 `E2E_MITMDUMP_PATH`。
 
 ## 覆盖范围
 
@@ -60,6 +60,11 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 忽略证书错误，不修改系统证书信任。代理不保存 flow 或输出请求正文，避免记录登录凭据。
 本机可运行 `.venv/bin/python -m unittest discover -s mitmproxy -p 'test_*.py'`
 验证故障范围、首次延迟、控制认证和清除故障。
+
+代理公共代码分为 `helpers/mitmproxy-process.ts`（启动与停止）、
+`helpers/mitmproxy-client.ts`（故障控制与计数）和 `helpers/mitmproxy-session.ts`
+（临时证书与清理）。`helpers/mitmproxy.ts` 只负责 Playwright fixture。
+德州视觉测试复用这些纯 Node 模块，不依赖 E2E 的 Playwright 版本或 node_modules。
 
 ## 测试资产边界
 

@@ -3,7 +3,7 @@ name: H5 Visual Regression
 on:
   push:
     branches-ignore: [release]
-    paths: ['visual/**', '.github/workflows/visual.yml']
+    paths: ['visual/**', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', '.github/workflows/visual.yml']
   schedule:
     - cron: '12 22 * * *'
   workflow_dispatch:
@@ -24,7 +24,8 @@ permissions:
 jobs:
   visual:
     name: ${{ matrix.suite == 'texas' && '德州' || '应用' }} (${{ matrix.locale }})
-    runs-on: ubuntu-latest
+    # Python 工具缓存需与 Jammy 容器使用相同的 glibc 基线。
+    runs-on: ubuntu-22.04
     timeout-minutes: 360
     strategy:
       fail-fast: false
@@ -58,6 +59,15 @@ jobs:
       - name: Install visual dependencies
         working-directory: visual
         run: pnpm install --frozen-lockfile
+      - uses: actions/setup-python@v5
+        if: matrix.suite == 'texas'
+        with:
+          python-version: '3.12'
+      - name: Install mitmproxy for Texas
+        if: matrix.suite == 'texas'
+        run: |
+          python -m venv e2e/.venv
+          e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
       - name: Check visual suite
         if: matrix.locale == 'zh-Hans' && (matrix.suite == 'app' || inputs.suite == 'texas')
         working-directory: visual

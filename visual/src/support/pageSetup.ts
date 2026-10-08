@@ -56,7 +56,7 @@ function readAuthStateEntries(): Record<string, string> | null {
       return entries as Record<string, string>;
     }
   } catch {
-    // ignore
+    // 登录态文件不存在或损坏时，交由场景报告失败。
   }
   return null;
 }
@@ -73,7 +73,7 @@ export async function fixNavigatorLanguage(context: BrowserContext): Promise<voi
         configurable: true,
       });
     } catch {
-      // ignore
+      // 浏览器不允许覆盖语言属性时继续使用默认值。
     }
   });
 }
@@ -160,11 +160,13 @@ export async function setupContextForScenario(
   context: BrowserContext,
   scenario: VisualScenario,
   page?: Page,
+  options: { useMitmproxy?: boolean } = {},
 ): Promise<void> {
   await fixNavigatorLanguage(context);
   await disableAnimations(context);
   await mockVisualNetworkDependencies(context, {
     realPrivateRoom: scenario.group === 'texas-holdem',
+    useMitmproxy: options.useMitmproxy,
   });
 
   await context.addInitScript(

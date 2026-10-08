@@ -239,14 +239,16 @@ async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom
  */
 export async function mockVisualNetworkDependencies(
   context: BrowserContext,
-  options: { realPrivateRoom?: boolean } = {},
+  options: { realPrivateRoom?: boolean; useMitmproxy?: boolean } = {},
 ): Promise<void> {
   // Freshchat 在线客服脚本是外部第三方资源（web 构建用占位 token），
   // 拉取慢且与视觉测试无关，直接屏蔽。
   await context.route(/freshchat\.com/, (route) => route.abort());
 
-  await mockProxyMetadata(context);
-  await mockProxyHealthChecks(context);
+  if (!options.useMitmproxy) {
+    await mockProxyMetadata(context);
+    await mockProxyHealthChecks(context);
+  }
   await mockFixedCountryCode(context);
   await mockRoomDisallowRuleReminder(context);
   await mockHallMatchingGames(context);

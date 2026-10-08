@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { expect, test, visualProxyOptions } from '../../src/support/mitmproxy';
 import { buildScenarios, type VisualScenario } from '../../scenarios';
 import { visualBaseUrl } from '../../target';
 import { buildStorageStateForScenario, setupContextForScenario } from '../../src/support/pageSetup';
@@ -126,8 +127,9 @@ async function captureOptionalPreGame(page: Page, scenario: VisualScenario): Pro
 }
 
 for (const scenario of buildScenarios().filter(item => item.group === 'texas-holdem')) {
-  test(scenario.label, async ({ browser }) => {
+  test(scenario.label, async ({ browser, mitmproxy }) => {
     const context = await browser.newContext({
+      ...visualProxyOptions(mitmproxy),
       viewport: scenario.viewport,
       locale: 'en-US',
       deviceScaleFactor: 1,
@@ -136,9 +138,12 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
     const page = await context.newPage();
     let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     try {
-      await setupContextForScenario(context, scenario, page);
+      await setupContextForScenario(context, scenario, page, { useMitmproxy: true });
       await page.goto(scenario.path);
       await preparePage(page, scenario);
+      const proxyStatus = await mitmproxy.status();
+      expect(proxyStatus.proxiedRequests, '德州浏览器流量应经过 mitmproxy').toBeGreaterThan(0);
+      console.log(`MITMPROXY > requests=${proxyStatus.proxiedRequests}, stabilized=${proxyStatus.stabilizedRequests}`);
       const optional = scenario.pageLabel === 'signed_in_texas_optional_pre_game';
       room = await createTexasRoom(page, created => { room = created; }, optional);
       if (optional) await captureOptionalPreGame(page, scenario);

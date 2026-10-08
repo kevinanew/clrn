@@ -29,6 +29,7 @@ const common: Omit<SignedInPageDef, 'label' | 'snapshotStates'> = {
     { selector: '[data-testid^="public-leader-board-item-nickname-"]', text: 'TestPlayer' },
     { selector: '[data-testid="public-leader-board-container"] > :last-child', text: '00000000-0000-0000-0000-000000000000' },
     { selector: '[data-testid="texas-holdem-nickname-text"]', text: 'TestPlayer' },
+    // 固定文案用于稳定截图，不代表 mitmproxy 的真实延迟。
     { selector: '[data-testid="ping-screen-text"]', text: '0ms' },
     { selector: '[data-testid="renew-popup-remain-diamond"]', text: '60' },
   ],
