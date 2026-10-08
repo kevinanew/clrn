@@ -3,7 +3,7 @@ import { expect, type TexasProxy } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import { PANEL_VARIANT_STATES } from './scenarios';
 import { events, REPLAY_PLAYER_IDS } from './replayData';
-import { advance, click, closeMask, freezeClock, selfId, visible } from './replay';
+import { advance, click, closeMask, freezeClock, restore, selfId, visible } from './replay';
 import { enableSetting, sequence, table, type Capture } from './variantSupport';
 
 export async function capturePanelVariants(page: Page, scenario: VisualScenario, proxy: TexasProxy,
@@ -43,6 +43,7 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
   await snapshot('alert_retry');
   await page.getByText(/取消|Cancel/i, { exact: true }).last().click();
   await advance(page);
+  await restore(page, proxy, room, self, 'flop', true);
   await proxy.configureUI({ rpcError: 'balance' });
   await proxy.replayTexas(room, events([{ event: 'settlement', players: [{ player_id: self, net: 180, prize: 180, stack: 1180 }] }]));
   await advance(page);
