@@ -11,9 +11,10 @@ test('截图索引支持模块选择、组合搜索和空结果恢复', async ({
   await expect(sections).toHaveCount(1);
   await expect(sections).toHaveAttribute('data-group', 'texas-holdem');
 
-  await page.getByRole('searchbox', { name: '搜索截图' }).fill('zh-Hans mobile chat');
+  await page.getByRole('searchbox', { name: '搜索截图' }).fill('zh-Hans mobile pre_game chat');
   const cards = page.locator('article:visible');
   await expect(cards).toHaveCount(1);
+  await expect(cards).toHaveAttribute('data-label', 'zh-Hans_mobile_signed_in_texas_pre_game_chat');
   await expect(page.getByRole('status')).toHaveText('显示 1 张 · 1 个模块');
 
   await page.getByRole('searchbox', { name: '搜索截图' }).fill('不存在的截图');
