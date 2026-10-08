@@ -66,6 +66,24 @@ class RoomViewTests(unittest.TestCase):
         view.response(request, f'/v1/room/{ROOM}')
         self.assertEqual(view.self_id, SELF)
 
+    def test_guest_identity_only_changes_successful_read_of_created_room(self):
+        view = RoomView()
+        view.configure('guest')
+        view.room_id, view.self_id = ROOM, SELF
+        for room in (ROOM, OTHER):
+            for method in ('GET', 'PUT', 'DELETE'):
+                for ok in (True, False):
+                    path = f'/v1/room/{room}'
+                    request = flow(f'https://api.shafayouxi.org{path}', method)
+                    original = {'ok': ok, 'result': {'creator_id': SELF, 'admin_ids': [SELF]}}
+                    request.response = http.Response.make(200, json.dumps(original).encode())
+                    view.response(request, path)
+                    result = json.loads(request.response.content)['result']
+                    changed = room == ROOM and method == 'GET' and ok
+                    self.assertEqual(result['creator_id'] != SELF, changed)
+                    self.assertEqual(result['admin_ids'], [] if changed else [SELF])
+        self.assertEqual(view.self_id, SELF)
+
     def test_logs_do_not_replace_other_room_or_user_records(self):
         path = '/v1/game_log/room/game_amount'
         self.assertIsNotNone(log_fixture(path, 'PUT', json.dumps({'room_ids': [ROOM]}).encode(), ROOM, SELF))

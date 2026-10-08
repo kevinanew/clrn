@@ -186,14 +186,17 @@ async function captureAuthState(proxy?: TexasProxy | ZhajinhuaProxy): Promise<vo
           }
         });
         await page.goto(baseUrl, { waitUntil: 'load', timeout: 120000 });
+        console.log('AUTH STATE > 页面加载完成');
         await ensureAppReadyPastStaging(page);
+        console.log('AUTH STATE > 大厅已就绪');
         await page
-          .waitForFunction(() => !document.querySelector('[role="progressbar"]'), {
+          .waitForFunction(() => !document.querySelector('[role="progressbar"]'), undefined, {
             timeout: 60000,
           })
           .catch(() => undefined);
 
         await ensureSignedIn(page, { username, password });
+        console.log('AUTH STATE > UI 登录完成，验证注入态');
         const entries = await collectLocalStorageEntries(page);
         const validatedEntries = await validateCapturedAuthState(browser, entries, proxy);
         persistAuthState(validatedEntries);
