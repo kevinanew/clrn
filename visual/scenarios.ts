@@ -40,6 +40,7 @@ import { pages as clubPages } from './cases/club/scenarios';
 import { pages as accountPages } from './cases/account/scenarios';
 import { pages as walletPages } from './cases/wallet/scenarios';
 import { pages as helpPages } from './cases/help/scenarios';
+import { getVisualSuite, selectVisualSuite } from './visual-suite';
 
 /** push CI 核心范围（VISUAL_SCOPE=core）：核心页面，全量矩阵由 cron 覆盖 */
 export const CORE_PAGE_LABELS = new Set([
@@ -307,15 +308,16 @@ function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef):
 }
 
 export function buildScenarios(env: NodeJS.ProcessEnv = process.env): VisualScenario[] {
+  const suite = getVisualSuite(env);
   const locales = getActiveLocales(env);
   const scenarios = locales.flatMap((locale) =>
     VIEWPORTS.flatMap((viewport) => buildLocaleViewportScenarios(locale, viewport)),
   );
 
-  if (env.VISUAL_SCOPE === 'core') {
-    return scenarios.filter((scenario) => CORE_PAGE_LABELS.has(scenario.pageLabel));
-  }
-  return scenarios;
+  const scopedScenarios = env.VISUAL_SCOPE === 'core'
+    ? scenarios.filter(scenario => CORE_PAGE_LABELS.has(scenario.pageLabel))
+    : scenarios;
+  return selectVisualSuite(scopedScenarios, suite);
 }
 
 /** 指定视口下的页面数（登录支线与部分静态子页仅 mobile） */

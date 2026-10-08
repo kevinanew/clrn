@@ -120,7 +120,8 @@ async function captureOptionalPreGame(page: Page, scenario: VisualScenario): Pro
   await visible(page, 'texas-holdem-raise-blind-button').click();
   await expect(visible(page, 'raise-blind-detail')).toBeVisible();
   await expect(visible(page, 'raise-blind-loading')).toBeHidden({ timeout: 30_000 });
-  await expect(visible(page, 'blinds-structure-list')).toBeVisible();
+  // 列表容器会先于数据出现；等待本用例默认配置的首级盲注，避免截到加载图标。
+  await expect(visible(page, 'blinds-structure-list')).toContainText('1/2', { timeout: 30_000 });
   await capture(page, scenario, OPTIONAL_PRE_GAME_STATES[1]);
 }
 

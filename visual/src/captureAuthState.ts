@@ -9,7 +9,7 @@
 
 import { chromium } from '@playwright/test';
 import fs from 'fs';
-import { LANGUAGE_STORAGE_KEY } from '../scenarios';
+import { LANGUAGE_STORAGE_KEY, VISUAL_TEST_USERNAME, VISUAL_TEST_PASSWORD } from '../scenarios';
 import { ensureAppReadyPastStaging, ensureSignedIn, waitForSignInState } from './support/authFlow';
 import {
   AUTH_STATE_PATH,
@@ -21,8 +21,8 @@ import {
 import { runWithContext } from './support/runWithContext';
 
 import { visualBaseUrl as baseUrl } from '../target';
-const username = process.env.VISUAL_USERNAME || 'laiwanvisual01';
-const password = process.env.VISUAL_PASSWORD || 'visual2026test';
+const username = VISUAL_TEST_USERNAME;
+const password = VISUAL_TEST_PASSWORD;
 const deviceId = process.env.VISUAL_DEVICE_ID || 'a7f3c2e8-4d61-4b0a-9c5e-7f2d1e3a8b46';
 const MAX_CAPTURE_ATTEMPTS = Number(process.env.VISUAL_AUTH_CAPTURE_ATTEMPTS || 3);
 

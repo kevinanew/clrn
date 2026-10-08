@@ -40,6 +40,7 @@ for locale in zh-Hans zh-Hant en; do
     -e "VISUAL_LOCALES=$locale" \
     -e VISUAL_FILTER \
     -e VISUAL_SCOPE \
+    -e VISUAL_SUITE \
     -e TESTING_API_TOKEN \
     -e VISUAL_REFERENCE_SHARDS \
     -e VISUAL_REFERENCE_START_SHARD \

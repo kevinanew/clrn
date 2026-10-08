@@ -15,6 +15,19 @@ describe('visual Docker environment forwarding', () => {
     }
   });
 
+  test('Docker entries preserve suite selection and let the runner choose its default account', () => {
+    for (const scriptName of ['test', 'test:all', 'test:locales', 'reference:zh', 'approve']) {
+      assert.match(packageJson.scripts[scriptName], /(?:^| )-e VISUAL_SUITE(?: |$)/, scriptName);
+    }
+    assert.match(packageJson.scripts['test:app'], /-e VISUAL_SUITE=app/);
+    assert.match(packageJson.scripts['test:texas'], /-e VISUAL_SUITE=texas/);
+    const compose = readFileSync(new URL('./docker-compose.yml', import.meta.url), 'utf8');
+    assert.match(compose, /VISUAL_SUITE: \$\{VISUAL_SUITE:-all\}/);
+    assert.match(compose, /VISUAL_USERNAME: \$\{VISUAL_USERNAME:-\}/);
+    const reference = readFileSync(new URL('./reference-host.sh', import.meta.url), 'utf8');
+    assert.match(reference, /-e VISUAL_SUITE/);
+  });
+
   test('multi-locale reference and Compose configuration forward VISUAL_SCOPE', () => {
     const referenceHost = readFileSync(new URL('./reference-host.sh', import.meta.url), 'utf8');
     const dockerCompose = readFileSync(new URL('./docker-compose.yml', import.meta.url), 'utf8');
