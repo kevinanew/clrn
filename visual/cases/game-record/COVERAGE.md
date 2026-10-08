@@ -60,6 +60,9 @@ VISUAL_FILTER='signed_in_game_records_(legacy|v2)$' VISUAL_SUITE=app pnpm run re
 VISUAL_FILTER='signed_in_game_records_(legacy|v2)$' VISUAL_SUITE=app pnpm run test:all
 ```
 
+只选战绩的 `reference` 会重写每张所选基准，避免像素占比较低但语义不同的滚动位置
+被对比容差保留；普通 `test` 的对比容差不变。
+
 机器上并发运行其他应用用例时，可用 `VISUAL_USERNAME=laiwanvisualrecords01` 为这轮
 战绩测试选择独立账号；密码沿用现有测试配置，通过真实 UI 登录。账号需预先通过
 仓库现有的 staging 测试注册接口创建，避免普通注册的 IP 限额。

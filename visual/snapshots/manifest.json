@@ -26511,7 +26511,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-pagination-loading.png",
-      "sha256": "13b5c298adf757cb444388dfe4eb9663b21618839774c107f3ad143c066ae9e2"
+      "sha256": "fa0917d0cd1e787fe3ea0892c4e6e2387ec6828de35e461f78a679110c88183f"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_pagination_end",
@@ -26531,7 +26531,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-mobile-signed-in-game-records-legacy-pagination-end.png",
-      "sha256": "36f5952681d7d88789b37d8f98e33e8a6f0179316915b72abb8ec6c82c092032"
+      "sha256": "a20ba39180f9600eb83c90d654df76b8eb550c2ff0b8ff3577e7180a3514fbce"
     },
     {
       "label": "zh-Hant_mobile_signed_in_game_records_legacy_reopen",
