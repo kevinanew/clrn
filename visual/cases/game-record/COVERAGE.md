@@ -77,3 +77,9 @@ e2e/.venv/bin/python -m unittest discover -s visual/cases/game-record/mitmproxy 
 完成三语言的 12 个场景、372 张截图，全部首轮通过，没有重试；同轮 9 项代理自测和
 29 项浏览器辅助检查通过。整合最新 master 后，64 项场景与基准完整性检查、
 TypeScript 类型检查和 lint 均通过。
+
+修复虚拟列表滚动等待后，[源修复 CI](https://github.com/kevinanew/clrn/actions/runs/37820913205)
+的 44 个 App 核心场景全部首轮通过，没有重试；34 项辅助检查与 9 项代理自测也通过。
+两轮分页基准生成（[完整分页](https://github.com/kevinanew/clrn/actions/runs/37820933372)、
+[强制重写繁中任务](https://github.com/kevinanew/clrn/actions/runs/37824596468)）提供了正确底部位置的图片。
+复核后仅替换四张繁中分页截图，其余 368 张战绩基准保持不变，总数仍为 372。

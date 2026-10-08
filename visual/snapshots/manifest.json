@@ -19377,7 +19377,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-pagination-loading.png",
-      "sha256": "47a0e748db4710f1a0ed81029d892a2a6517e2b5469b73839ed9bb2ea241ae3c"
+      "sha256": "75c9fcb277f74b480ab6a5ff6b3759eec9147aa4fa2f52dbdbbd29c7055bb73d"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_pagination_end",
@@ -19397,7 +19397,7 @@
       "fixedTexts": [],
       "hiddenSelectors": [],
       "file": "../cases/game-record/snapshots/zh-Hant-desktop-signed-in-game-records-legacy-pagination-end.png",
-      "sha256": "0e89e36f55c8c3d7df3975ee0adc3bd9b39e815d58b78c9366a1a24065185f6b"
+      "sha256": "bd3d966ef5ae9bf4635840e2ab45cb5a1490bbe28b7f84cbb90a13d013ae43c8"
     },
     {
       "label": "zh-Hant_desktop_signed_in_game_records_legacy_reopen",
