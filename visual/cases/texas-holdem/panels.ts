@@ -85,6 +85,14 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await click(page, 'texas-holdem-chat-button');
   await click(page, '-in-game-chat-message-tab');
   await expect(page.locator('[data-testid^="in-game-chat-phrase-"]:visible').first()).toBeVisible();
+  // 弹幕每次渲染随机选择高度；等待真实五秒动画退场后再固定聊天界面。
+  await page.clock.runFor(6000);
+  await expect.poll(async () => {
+    await page.clock.runFor(250);
+    return page.locator('[data-testid="barrage_container"]').evaluateAll(nodes =>
+      nodes.every(node => { const rect = node.getBoundingClientRect();
+        return rect.right <= 0 || rect.left >= innerWidth || rect.width === 0; }));
+  }, { timeout: 30_000, intervals: [100, 250, 500] }).toBe(true);
   await snapshot('chat_phrases');
   await click(page, '-in-game-chat-record-tab');
   await expect(visible(page, 'in-game-chat-text-message-0')).toContainText('Good hand!');
