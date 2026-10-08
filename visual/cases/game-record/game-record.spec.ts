@@ -97,13 +97,27 @@ async function legacyEnd(page: Page, proxy: RecordProxy,
   await holdListDeadline(page, true);
   await scrollList(page, true);
   await expect(visible(page, 'pull-up-activity-indicator')).toBeVisible();
+  // 滚动驱动首批记录全部挂载，再贴底，避免在虚拟列表较早的高度停住。
+  await expect.poll(async () => {
+    await scrollList(page, true);
+    return visible(page, 'right-content-button').count();
+  }).toBe(20);
+  await row(page, 'No Hands', 'legacy').scrollIntoViewIfNeeded();
+  await scrollList(page, true);
+  await expect(row(page, 'No Hands', 'legacy')).toBeInViewport();
   await snapshot('pagination_loading');
   await proxy.release();
   await holdListDeadline(page, false);
   await expect(visible(page, 'pull-up-activity-indicator')).toHaveCount(0);
+  await expect.poll(async () => {
+    await scrollList(page, true);
+    return visible(page, 'right-content-button').count();
+  }).toBe(22);
+  await row(page, 'Long Room Name', 'legacy').scrollIntoViewIfNeeded();
   await scrollList(page, true);
   await expect(row(page, 'Long Room Name', 'legacy')).toBeVisible();
   await expect(row(page, 'Long Room Name', 'legacy')).toHaveCount(1);
+  await expect(row(page, 'Long Room Name', 'legacy')).toBeInViewport();
   await snapshot('pagination_end');
   await proxy.mode('list');
   await reopen(page);
