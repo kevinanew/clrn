@@ -37,7 +37,7 @@ export const PANEL_STATES = [
 export const HALL_STATES = ['hall_table', 'hall_menu', 'auto_rebuy', 'pair_play_report',
   'personal_leaderboard', 'prediction', 'prediction_result', 'level_up'] as const;
 
-export const RECORD_STATES = ['empty', 'actions', 'settlement', 'symbols'] as const;
+export const RECORD_STATES = ['empty', 'actions', 'settlement'] as const;
 
 const common: Omit<SignedInPageDef, 'label' | 'snapshotStates'> = {
   tabTestId: 'private-room-tab',

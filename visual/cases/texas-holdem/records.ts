@@ -33,17 +33,6 @@ export async function captureNewRecords(page: Page, scenario: VisualScenario, pr
   await expect(visible(page, 'review-board-settlement-list')).toBeVisible();
   await expect(board.locator('[data-testid="GameSettlementItemTwoV2_container"]')).toHaveCount(2);
   await snapshot('settlement');
-  await board.getByText(/detail|record|详情|詳情/i).last().click();
-  await advance(page);
-  await visible(page, 'GameActionListV2_ScrollView').evaluate(node => {
-    const heading = node.querySelector('[data-testid="TexasActionListV2_SymbolMemoHeader"]');
-    if (!heading) throw new Error('新版牌谱缺少符号说明');
-    node.scrollTop += heading.getBoundingClientRect().top - node.getBoundingClientRect().top;
-  });
-  await advance(page);
-  await expect(visible(page, 'TexasActionListV2_SymbolMemoHeader')).toBeInViewport();
-  await expect(visible(page, 'TexasActionListV2_SymbolMemoItem_0')).toBeInViewport();
-  await snapshot('symbols');
   await click(page, 'review-board-close-button');
   expect(index).toBe(RECORD_STATES.length);
 }

@@ -4,7 +4,7 @@
 `src/texas_holdem_react_native/main/MainScreen.js` 及其引用组件整理界面。
 截图反映运行时的部署版本；源码中存在组件不等于部署版本有可用入口。
 
-每种语言有 desktop/mobile 两个视口，每视口 62 张，共 372 张德州基准图。
+每种语言有 desktop/mobile 两个视口，每视口 61 张，共 366 张德州基准图。
 三种语言为 `zh-Hans`、`zh-Hant`、`en`。场景清单以 [scenarios.ts](scenarios.ts) 为准，
 新增状态必须同时提供六张 Linux 基准图，完整性测试会检查缺失和多余图片。
 
@@ -20,7 +20,7 @@
 | 本人/其他玩家资料、百手/千手统计、统计说明 | own_profile、player_profile、player_statistics_1000、statistics_help |
 | 举报、屏蔽玩家 | report、block；chat_report、chat_block_confirm |
 | 排行榜 | 空列表 leaderboard、有玩家 leaderboard_players、大厅 personal_leaderboard |
-| 牌谱 | 旧版空牌谱 game_record、record_settlement、record_actions；新版 `records_v2`: empty、actions、settlement、symbols |
+| 牌谱 | 旧版空牌谱 game_record、record_settlement、record_actions；新版 `records_v2`: empty、actions、settlement |
 | 聊天、语音 | 表情 chat、快捷短语 chat_phrases、chat_history、chat_actions、voice |
 | 结束后亮牌、查看剩余公共牌 | hand_end、remaining_cards、show_cards |
 | 退出确认 | quit_confirm |
@@ -60,4 +60,9 @@ zhajinhua 应使用自己的目录及控制命令，方便分别调试。
 - **换房匹配提示**：普通菜单过滤掉 rematch，源码标注其换房流程已失效。
   管理员、原生专属摄像头/录音状态和第三方客服内容不冒充普通 Web 界面。
 
-上游修复入口后应补充对应场景及六张基准图，并保留真实 UI 打开方式。
+- **新版牌谱末尾符号说明**：当前 Web 动作列表未形成受约束的内部滚动区，
+  设置列表 scrollTop 不移动内容，移动端末尾说明和底部分页被挤出视口。
+  因此只覆盖实际空牌谱、动作、结算，不用与动作页完全相同的图片冒充独立符号页。
+  结算页客服按钮覆盖部分公共牌也是当前部署的实际布局，基准保留该画面。
+
+上游修复入口或布局后应补充对应场景及六张基准图，并保留真实 UI 打开方式。
