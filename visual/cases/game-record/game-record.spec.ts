@@ -8,6 +8,9 @@ import { back, captureStates, click, holdListDeadline, reopen, row, scrollList, 
 import { captureDetails } from './details';
 import type { Page } from '@playwright/test';
 
+const pagedRoomNames = Array.from({ length: 17 }, (_, index) =>
+  `Paged Texas ${String(index + 1).padStart(2, '0')}`);
+
 async function selections(page: Page, version: 'legacy' | 'v2',
   snapshot: (state: string) => Promise<void>): Promise<void> {
   const header = version === 'legacy' ? 'header-right-button' : 'navigation-bar-right-button';
@@ -102,6 +105,9 @@ async function legacyEnd(page: Page, proxy: RecordProxy,
     await scrollList(page, true);
     return visible(page, 'right-content-button').count();
   }).toBe(20);
+  await expect(visible(page, 'right-content-button').getByTestId('room-name-text')).toHaveText([
+    'Private Texas', 'Hall Texas', ...pagedRoomNames.slice(0, 16), 'Short Deck', 'No Hands',
+  ]);
   await row(page, 'No Hands', 'legacy').scrollIntoViewIfNeeded();
   await scrollList(page, true);
   await expect(row(page, 'No Hands', 'legacy')).toBeInViewport();
@@ -113,6 +119,9 @@ async function legacyEnd(page: Page, proxy: RecordProxy,
     await scrollList(page, true);
     return visible(page, 'right-content-button').count();
   }).toBe(22);
+  await expect(visible(page, 'right-content-button').getByTestId('room-name-text')).toHaveText([
+    'Private Texas', 'Hall Texas', ...pagedRoomNames, 'Short Deck', 'No Hands', 'Long Room Name ABCDE',
+  ]);
   await row(page, 'Long Room Name', 'legacy').scrollIntoViewIfNeeded();
   await scrollList(page, true);
   await expect(row(page, 'Long Room Name', 'legacy')).toBeVisible();
@@ -181,6 +190,11 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
           return row(page, 'Long Room Name', version).isVisible();
         }, { message: '滚动长列表后应挂载末条记录' }).toBe(true);
         await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(23);
+        await expect(page.locator('[data-testid^="record-visual-record-"]:visible')
+          .getByTestId('room-name-text')).toHaveText([
+          'Private Texas', 'Club Cards', 'Hall Texas', ...pagedRoomNames,
+          'Short Deck', 'No Hands', 'Long Room Name ABCDE',
+        ]);
         await row(page, 'Long Room Name', version).scrollIntoViewIfNeeded();
       }
       await scrollList(page, true);
