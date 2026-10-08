@@ -91,7 +91,7 @@ class GameRecordProxy:
         user = self.user_id
         source = all_records() if self.mode == 'paged' else records()
         data = [record for record in source if record['play_session_id'] not in self.deleted
-                and (record['all_round_count'] == 0 if self.mode == 'no-hands' else record['all_round_count'] > 0)]
+                and (self.mode != 'no-hands' or record['all_round_count'] == 0)]
         ids = {record['play_session_id'] for record in all_records()}
         if path == '/public/v11/game_log/available.json' and method == 'GET':
             return {'available_url_version': 'v11' if self.version == 'v2' else 'v1'}
@@ -159,7 +159,8 @@ class GameRecordProxy:
             if path == f'/v1/game_log/room/{room_id}/settlement' and method == 'GET':
                 return {'settlements': settlements(user, room_id)}
         if path == '/v1/game_log/room/game_amount' and method == 'PUT' and set(body.get('room_ids', [])) <= ids:
-            return {'results': [{'room_id': room_id, 'game_amount': 3} for room_id in body['room_ids']]}
+            return {'results': [{'room_id': room_id, 'game_amount': 0 if room_id.endswith('empty') else 3}
+                                for room_id in body['room_ids']]}
         if path == f'/v1/game_log/user/{user}/games' and method == 'PUT':
             game_ids = body.get('game_ids', [])
             if not set(game_ids) <= {f'{session}-game-{i}' for session in ids for i in range(1, 4)}:

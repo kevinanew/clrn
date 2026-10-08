@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect } from './proxy';
-import { back, click, row, scrollList, visible } from './ui';
+import { back, click, reopen, row, scrollList, visible } from './ui';
 import type { RecordProxy } from './proxy';
 
 export async function captureDetails(page: Page, version: 'legacy' | 'v2',
@@ -55,8 +55,7 @@ export async function captureDetails(page: Page, version: 'legacy' | 'v2',
   await snapshot('short_deck_overview');
   await back(page);
   await proxy.mode('no-hands');
-  await back(page);
-  await click(page, 'game-record');
+  await reopen(page);
   await row(page, 'No Hands', version).click({ noWaitAfter: true });
   await expect(visible(page, version === 'legacy' ? 'no-hands-text' : 'no-hands-footer')).toBeVisible();
   await expect(visible(page, 'detail-button')).toHaveCount(0);
@@ -67,7 +66,6 @@ export async function captureDetails(page: Page, version: 'legacy' | 'v2',
   await snapshot('replay_empty');
   await back(page);
   await proxy.mode('list');
-  await back(page);
-  await click(page, 'game-record');
+  await reopen(page);
   await expect(row(page, 'Private Texas', version)).toBeVisible();
 }

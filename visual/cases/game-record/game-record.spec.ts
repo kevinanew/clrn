@@ -4,14 +4,9 @@ import { buildScenarios } from '../../scenarios';
 import { AUTH_STATE_PATH, buildStorageStateForScenario, setupContextForScenario } from '../../src/support/pageSetup';
 import { preparePage } from '../../src/support/preparePage';
 import { visualBaseUrl } from '../../target';
-import { back, captureStates, click, holdListDeadline, row, scrollList, swipe, visible } from './ui';
+import { back, captureStates, click, holdListDeadline, reopen, row, scrollList, swipe, visible } from './ui';
 import { captureDetails } from './details';
 import type { Page } from '@playwright/test';
-
-async function reopen(page: Page): Promise<void> {
-  await back(page);
-  await click(page, 'game-record');
-}
 
 async function selections(page: Page, version: 'legacy' | 'v2',
   snapshot: (state: string) => Promise<void>): Promise<void> {
@@ -23,6 +18,16 @@ async function selections(page: Page, version: 'legacy' | 'v2',
   const select = (key: string, index: number) => version === 'v2'
     ? visible(page, `select-record-visual-record-${key}-button`)
     : visible(page, 'select-status-button').nth(index);
+  // 未开局没有结算分数，核对勾选图标避免零金额掩盖未响应的点击。
+  const emptyIcon = select('empty', 4).locator('img');
+  const unselected = await emptyIcon.getAttribute('src');
+  expect(unselected).toBeTruthy();
+  await select('empty', 4).click({ noWaitAfter: true });
+  await expect(emptyIcon).not.toHaveAttribute('src', unselected!);
+  await expect(score).toHaveText('0');
+  await select('empty', 4).click({ noWaitAfter: true });
+  await expect(emptyIcon).toHaveAttribute('src', unselected!);
+  await scrollList(page, false);
   await select('private', 0).click({ noWaitAfter: true });
   await expect(score).toHaveText('+180');
   await snapshot('select_win');
@@ -30,6 +35,9 @@ async function selections(page: Page, version: 'legacy' | 'v2',
   await select('club', 1).click({ noWaitAfter: true });
   await expect(score).toHaveText('-90');
   await snapshot('select_loss');
+  await select('empty', 4).click({ noWaitAfter: true });
+  await expect(emptyIcon).not.toHaveAttribute('src', unselected!);
+  await expect(score).toHaveText('-90');
   await click(page, 'game-record-list-select-all-button');
   await expect(score).toHaveText('-1.2m');
   await snapshot('select_all');
@@ -147,9 +155,31 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
       await expect(visible(page, 'club-game-text')).toHaveCount(1);
       await expect(visible(page, 'club-game-text')).toContainText('Visual Club');
       await snapshot('list');
+      if (version === 'v2') {
+        // 新版一次返回全部记录；长列表必须真实滚动才能看到末尾。
+        await recordProxy.mode('paged');
+        await reopen(page);
+        await expect(row(page, 'Paged Texas 01', version)).toBeVisible();
+        await expect(visible(page, 'loading-indicator')).toHaveCount(0);
+        await expect(row(page, 'Long Room Name', version)).toBeVisible();
+        await row(page, 'Long Room Name', version).scrollIntoViewIfNeeded();
+        await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(23);
+      }
       await scrollList(page, true);
+      if (version === 'v2') {
+        await expect.poll(() => visible(page, 'my-game-record-list').evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+        await expect(row(page, 'Long Room Name', version)).toBeInViewport();
+      }
       await expect(row(page, 'Long Room Name', version)).toBeVisible();
       await snapshot('list_bottom');
+      if (version === 'v2') {
+        await recordProxy.mode('list');
+        await reopen(page);
+        await scrollList(page, false);
+        await expect(row(page, 'Private Texas', version)).toBeVisible();
+        await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(6);
+        await expect(row(page, 'Paged Texas 01', version)).toHaveCount(0);
+      }
       await scrollList(page, false);
       await selections(page, version, snapshot);
       await deletion(page, version, snapshot);

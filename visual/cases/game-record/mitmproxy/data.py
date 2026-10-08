@@ -11,7 +11,7 @@ SPECS = [
     ('short', 'TexasHoldem:6Plus', 'house', 'chip', 1200, 8, 'Short Deck'),
     ('empty', 'TexasHoldem:Classic', 'house', 'chip', 0, 0, 'No Hands'),
     ('large', 'TexasHoldem:Classic', 'house', 'coin', -1234567.5, 12,
-     'Long Room Name / 很长的牌局名称用于检查换行与金额布局'),
+     'Long Room Name ABCDE'),
 ]
 
 

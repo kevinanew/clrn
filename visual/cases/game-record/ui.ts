@@ -40,6 +40,14 @@ export async function back(page: Page, detail = false): Promise<void> {
   await click(page, detail ? 'back-button' : 'navigation-bar-back-image');
 }
 
+export async function reopen(page: Page): Promise<void> {
+  await back(page);
+  // 等待列表真正退出，避免导航过渡中再次点击入口仍命中旧页面。
+  await expect(page.getByTestId('my-game-record-list')).toHaveCount(0);
+  await click(page, 'game-record');
+  await expect(visible(page, 'my-game-record-list')).toHaveCount(1);
+}
+
 export async function scrollList(page: Page, end: boolean): Promise<void> {
   await visible(page, 'my-game-record-list').evaluate((node, atEnd) => {
     const element = node as HTMLElement;
