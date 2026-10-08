@@ -12,6 +12,7 @@ import { appliedGameTranslation, gameViewportCorrection } from './viewportAlignm
 import { captureGameplay } from './gameplay';
 import { capturePanels } from './panels';
 import { captureHall } from './hall';
+import { captureNewRecords } from './records';
 import config from '../../playwright.config';
 
 // 德州语音弹窗只检查界面，使用浏览器的虚拟麦克风，不读取开发机设备。
@@ -149,14 +150,18 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
     let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     try {
       await setupContextForScenario(context, scenario, page, { useMitmproxy: true });
-      if (['signed_in_texas_game', 'signed_in_texas_panels', 'signed_in_texas_hall'].includes(scenario.pageLabel)) {
+      if (['signed_in_texas_game', 'signed_in_texas_panels', 'signed_in_texas_hall', 'signed_in_texas_records_v2'].includes(scenario.pageLabel)) {
         await page.clock.install({ time: Date.now() });
       }
+      if (scenario.pageLabel === 'signed_in_texas_records_v2') await mitmproxy.configureNewRecords(true);
       if (scenario.pageLabel === 'signed_in_texas_panels') {
         await context.grantPermissions(['microphone']);
       }
       await page.goto(scenario.path);
       await preparePage(page, scenario);
+      if (scenario.pageLabel === 'signed_in_texas_records_v2') {
+        await expect.poll(() => page.evaluate(() => localStorage.getItem('use.new.game.record.key'))).toBe('true');
+      }
       const proxyStatus = await mitmproxy.status();
       expect(proxyStatus.proxiedRequests, '德州浏览器流量应经过 mitmproxy').toBeGreaterThan(0);
       console.log(`MITMPROXY > requests=${proxyStatus.proxiedRequests}, stabilized=${proxyStatus.stabilizedRequests}`);
@@ -180,6 +185,10 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
         await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
         await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
         await captureHall(page, scenario, mitmproxy, room.roomId, capture);
+      } else if (scenario.pageLabel === 'signed_in_texas_records_v2') {
+        await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+        await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
+        await captureNewRecords(page, scenario, mitmproxy, room.roomId, capture);
       } else if (optional) await captureOptionalPreGame(page, scenario);
       else await capturePreGame(page, scenario);
     } catch (error) {

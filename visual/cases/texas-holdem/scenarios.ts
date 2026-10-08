@@ -37,6 +37,8 @@ export const PANEL_STATES = [
 export const HALL_STATES = ['hall_table', 'hall_menu', 'auto_rebuy', 'pair_play_report',
   'personal_leaderboard', 'prediction', 'prediction_result', 'level_up'] as const;
 
+export const RECORD_STATES = ['empty', 'actions', 'settlement', 'symbols'] as const;
+
 const common: Omit<SignedInPageDef, 'label' | 'snapshotStates'> = {
   tabTestId: 'private-room-tab',
   visualReadySelector: '[data-testid="copy-house-number-button"]',
@@ -45,6 +47,7 @@ const common: Omit<SignedInPageDef, 'label' | 'snapshotStates'> = {
     { selector: '[data-testid="texas-holdem-room-name-text"]', text: 'TestRoom' },
     { selector: '[data-testid^="public-leader-board-item-nickname-"]', text: 'TestPlayer' },
     { selector: '[data-testid="public-leader-board-container"] > :last-child', text: '00000000-0000-0000-0000-000000000000' },
+    { selector: '[data-testid="personal-leader-board-record-container"] + :last-child', text: '00000000-0000-0000-0000-000000000000' },
     { selector: '[data-testid="texas-holdem-nickname-text"]', text: 'TestPlayer' },
     // 固定文案用于稳定截图，不代表 mitmproxy 的真实延迟。
     { selector: '[data-testid="ping-screen-text"]', text: '0ms' },
@@ -58,4 +61,5 @@ export const pages: SignedInPageDef[] = [
   { ...common, label: 'signed_in_texas_game', snapshotStates: [...GAME_STATES] },
   { ...common, label: 'signed_in_texas_panels', snapshotStates: [...PANEL_STATES] },
   { ...common, label: 'signed_in_texas_hall', snapshotStates: [...HALL_STATES] },
+  { ...common, label: 'signed_in_texas_records_v2', snapshotStates: [...RECORD_STATES] },
 ];

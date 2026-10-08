@@ -65,6 +65,27 @@ class TexasAddonTests(unittest.TestCase):
         self.assertEqual(unauthorized.response.status_code, 403)
         self.assertEqual(self.addon.texas.room_id, ROOM)
 
+    def test_new_record_version_control_is_authenticated_and_released(self):
+        path = '/public/v11/game_log/available.json'
+        unauthorized = flow('http://test-mitmproxy.invalid/texas/records', 'POST', b'{"empty":true}')
+        self.addon.request(unauthorized)
+        self.assertEqual(unauthorized.response.status_code, 403)
+        self.assertFalse(self.addon.records.enabled)
+        for body in (b'{}', b'[]', b'{"empty":"true"}'):
+            invalid = flow('http://test-mitmproxy.invalid/texas/records', 'POST', body, 'test-token')
+            self.addon.request(invalid)
+            self.assertEqual(invalid.response.status_code, 400)
+            self.assertFalse(self.addon.records.enabled)
+        valid = flow('http://test-mitmproxy.invalid/texas/records', 'POST', b'{"empty":true}', 'test-token')
+        self.addon.request(valid)
+        self.assertEqual(valid.response.status_code, 200)
+        self.assertIsNotNone(self.request(path).response)
+        self.assertIsNone(self.request(path, host='production.example.com').response)
+        release = flow('http://test-mitmproxy.invalid/texas/release', 'POST', b'{}', 'test-token')
+        self.addon.request(release)
+        self.assertFalse(self.addon.records.enabled)
+        self.assertIsNone(self.request(path).response)
+
 
 if __name__ == '__main__':
     unittest.main()

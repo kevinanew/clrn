@@ -60,6 +60,7 @@ export const CORE_PAGE_LABELS = new Set([
   'signed_in_texas_game',
   'signed_in_texas_panels',
   'signed_in_texas_hall',
+  'signed_in_texas_records_v2',
   'hall',
   'search_sign_in_prompt',
   'guest_private_room',

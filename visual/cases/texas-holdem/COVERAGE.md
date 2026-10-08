@@ -4,7 +4,7 @@
 `src/texas_holdem_react_native/main/MainScreen.js` 及其引用组件整理界面。
 截图反映运行时的部署版本；源码中存在组件不等于部署版本有可用入口。
 
-每种语言有 desktop/mobile 两个视口，每视口 58 张，共 348 张德州基准图。
+每种语言有 desktop/mobile 两个视口，每视口 62 张，共 372 张德州基准图。
 三种语言为 `zh-Hans`、`zh-Hant`、`en`。场景清单以 [scenarios.ts](scenarios.ts) 为准，
 新增状态必须同时提供六张 Linux 基准图，完整性测试会检查缺失和多余图片。
 
@@ -20,7 +20,7 @@
 | 本人/其他玩家资料、百手/千手统计、统计说明 | own_profile、player_profile、player_statistics_1000、statistics_help |
 | 举报、屏蔽玩家 | report、block；chat_report、chat_block_confirm |
 | 排行榜 | 空列表 leaderboard、有玩家 leaderboard_players、大厅 personal_leaderboard |
-| 牌谱 | 空牌谱 game_record；record_settlement、record_actions |
+| 牌谱 | 旧版空牌谱 game_record、record_settlement、record_actions；新版 `records_v2`: empty、actions、settlement、symbols |
 | 聊天、语音 | 表情 chat、快捷短语 chat_phrases、chat_history、chat_actions、voice |
 | 结束后亮牌、查看剩余公共牌 | hand_end、remaining_cards、show_cards |
 | 退出确认 | quit_confirm |
@@ -34,12 +34,13 @@ App 直连，德州只加载本目录 [proxy.ts](proxy.ts) 和 [mitmproxy/addon.
 E2E 故障代理的场景和脚本完全独立。共享部分只有进程管理、临时 CA 和本地控制客户端。
 zhajinhua 应使用自己的目录及控制命令，方便分别调试。
 
-每例通过真实 UI 登录并创建私人房；大厅显示配置只修改这次成功创建的房间 UUID。
+整轮通过真实 UI 登录一次，每例再通过真实 UI 创建私人房；大厅显示配置只修改这次成功创建的房间 UUID。
 大厅自动入座在订阅前就被隔离，测试只建立真实观察者连接。
 固定消息通过 mitmproxy 的 WebSocket 注入发送给浏览器，组件仍走实际 Centrifuge v2 恢复协议。
 代理保留 ping、订阅、其他房间/用户消息以及混合批次中的其他 RPC。
 回放房间的操作与查看公共牌支付由夹具响应，不在服务端开局或真实下注。
-资料、排行、牌谱夹具只匹配本房间与本例玩家。结束时解除回放并删除本次房间。
+资料、排行、牌谱夹具只匹配本房间与本例玩家。新版通过真实版本接口启用，
+牌谱请求还必须匹配本次真实入房响应中的 play_session_id。结束时解除回放并删除本次房间。
 
 页面时钟从导航前安装，连接后暂停并推进固定时间，等待翻牌与筹码动画结束。
 语音使用 Chromium 虚拟麦克风，仅截图弹窗，不录制或发送语音。
@@ -56,8 +57,6 @@ zhajinhua 应使用自己的目录及控制命令，方便分别调试。
 - **猜牌记录**：`_queryRoomInfo` 更新 `allowBetNextHand` 后立即调用 `DrawerMenu.setOptions`，
   子组件读到旧 `showItemRecord`；之后没有随 props 更新重算选项。真实重连只刷新牌局状态，
   管理员入口也跳过记录菜单的插入。猜牌入口和结果本身已经覆盖。
-- **新版牌谱**：当前普通 Web 入口没有启用 `USE_NEW_GAME_RECORD` 的设置；
-  基准覆盖实际打开的旧版牌谱，尚未覆盖仅通过隐藏存储开关启用的新版。
 - **换房匹配提示**：普通菜单过滤掉 rematch，源码标注其换房流程已失效。
   管理员、原生专属摄像头/录音状态和第三方客服内容不冒充普通 Web 界面。
 

@@ -15,6 +15,9 @@ export class TexasProxy {
   configureHallView(): Promise<ProxyStatus> {
     return this.proxy.command('texas/view', { mode: 'hall' });
   }
+  configureNewRecords(empty: boolean): Promise<ProxyStatus> {
+    return this.proxy.command('texas/records', { empty });
+  }
   releaseTexas(): Promise<ProxyStatus> {
     return this.proxy.command('texas/release', {});
   }

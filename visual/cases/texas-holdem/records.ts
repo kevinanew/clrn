@@ -1,0 +1,49 @@
+import type { Page } from '@playwright/test';
+import { expect, type TexasProxy } from './proxy';
+import type { VisualScenario } from '../../scenarioTypes';
+import { advance, click, closeMask, freezeClock, restore, selfId, visible } from './replay';
+import { RECORD_STATES } from './scenarios';
+
+type Capture = (page: Page, scenario: VisualScenario, state: string) => Promise<void>;
+
+export async function captureNewRecords(page: Page, scenario: VisualScenario, proxy: TexasProxy,
+  roomId: string, capture: Capture): Promise<void> {
+  await freezeClock(page);
+  await restore(page, proxy, roomId, await selfId(page), 'river');
+  let index = 0;
+  const snapshot = async (state: typeof RECORD_STATES[number]) => {
+    expect(state).toBe(RECORD_STATES[index++]);
+    await page.clock.runFor(500);
+    await capture(page, scenario, state);
+  };
+  await click(page, 'game-record-button');
+  await expect(visible(page, 'base-review-board-container')).toBeVisible();
+  await expect(visible(page, 'review-board-description-text')).toHaveText(/empty games|没有|沒有/i);
+  await snapshot('empty');
+  await closeMask(page, 'base-review-board-container');
+  await proxy.configureNewRecords(false);
+  await click(page, 'game-record-button');
+  await expect(visible(page, 'review-board-action-list')).toBeVisible();
+  await expect(page.locator('[data-testid^="TexasActionListV2_PlayerAction_"]:visible').first()).toBeVisible();
+  await expect(visible(page, 'review-board-pot-text')).toContainText('180');
+  await snapshot('actions');
+  const board = visible(page, 'base-review-board-container');
+  await board.getByText(/settle|结算|結算/i).last().click();
+  await advance(page);
+  await expect(visible(page, 'review-board-settlement-list')).toBeVisible();
+  await expect(board.locator('[data-testid="GameSettlementItemTwoV2_container"]')).toHaveCount(2);
+  await snapshot('settlement');
+  await board.getByText(/detail|record|详情|詳情/i).last().click();
+  await advance(page);
+  await visible(page, 'GameActionListV2_ScrollView').evaluate(node => {
+    const heading = node.querySelector('[data-testid="TexasActionListV2_SymbolMemoHeader"]');
+    if (!heading) throw new Error('新版牌谱缺少符号说明');
+    node.scrollTop += heading.getBoundingClientRect().top - node.getBoundingClientRect().top;
+  });
+  await advance(page);
+  await expect(visible(page, 'TexasActionListV2_SymbolMemoHeader')).toBeInViewport();
+  await expect(visible(page, 'TexasActionListV2_SymbolMemoItem_0')).toBeInViewport();
+  await snapshot('symbols');
+  await click(page, 'review-board-close-button');
+  expect(index).toBe(RECORD_STATES.length);
+}

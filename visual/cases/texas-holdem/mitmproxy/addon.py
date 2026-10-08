@@ -7,6 +7,7 @@ from mitmproxy import http
 from texas_replay import PLAYER_IDS, TexasReplay
 from room_view import RoomView
 from game_log import fixture as log_fixture
+from records_v2 import RecordsV2
 
 CONTROL_HOST = 'test-mitmproxy.invalid'
 PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com'
@@ -34,6 +35,7 @@ class TexasVisualProxy:
         self.stabilized_requests = 0
         self.texas = TexasReplay()
         self.view = RoomView()
+        self.records = RecordsV2()
 
     def control(self, flow):
         if flow.request.headers.get('X-E2E-Control-Token') != self.token:
@@ -47,13 +49,19 @@ class TexasVisualProxy:
                     self.scenario = body['scenario']
                     self.texas.release()
                     self.view.configure(None)
+                    self.records.release()
                 elif self.scenario == 'visual-stable' and path == '/texas/view':
                     self.view.configure(body.get('mode'))
                 elif self.scenario == 'visual-stable' and path == '/texas/replay':
                     self.texas.publish(body.get('roomId'), body.get('data'))
+                elif self.scenario == 'visual-stable' and path == '/texas/records':
+                    self.records.configure(body.get('empty'))
+                    if self.view.mode != 'record-v2':
+                        self.view.configure('record-v2')
                 elif path == '/texas/release':
                     self.texas.release()
                     self.view.configure(None)
+                    self.records.release()
                 else:
                     raise ValueError('Unknown command')
             elif flow.request.method != 'GET' or path != '/status':
@@ -77,6 +85,10 @@ class TexasVisualProxy:
     def response(self, flow):
         if self.scenario == 'visual-stable' and is_staging(flow.request.host):
             self.view.response(flow, urlsplit(flow.request.path).path)
+            try:
+                self.records.response(flow, urlsplit(flow.request.path).path, self.view.room_id)
+            except (ValueError, TypeError, AttributeError):
+                pass
             if self.view.room_id and not self.texas.room_id:
                 # 大厅入口会自动请求入座；从房间创建响应开始隔离其 RPC，避免真实带入。
                 self.texas.arm_created_room(self.view.room_id, self.view.self_id)
@@ -91,6 +103,11 @@ class TexasVisualProxy:
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
             return
         path = urlsplit(flow.request.path).path
+        fixture = self.records.fixture(path, flow.request.method, self.texas.self_id)
+        if fixture is not None:
+            respond(flow, {'ok': True, 'result': fixture})
+            self.stabilized_requests += 1
+            return
         try:
             fixture = self.view.fixture(path, flow.request.method, self.texas.self_id, flow.request.content)
         except (ValueError, TypeError, AttributeError):

@@ -138,6 +138,10 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await expect(published.locator('[data-testid="poker-text-letter"]')).toHaveText(['a', 'a']);
   await expect(published.locator('[data-testid="poker-text-suit"]')).toHaveText(['♠', '♦']);
   await snapshot('show_cards');
+  // 通过真实新一局协议清空公开手牌和结算动效，避免叠在下一局的私有手牌上。
+  await proxy.replayTexas(roomId, events([{ event: 'new_game', game_id: 'visual-fixed-game',
+    settings: { small_blind: 1, big_blind: 2, ante: 0 } }]));
+  await advance(page);
   await restore(page, proxy, roomId, self, 'flop');
   await menu('exit');
   await expect(visible(page, 'common-alert-button-quit')).toBeVisible();
