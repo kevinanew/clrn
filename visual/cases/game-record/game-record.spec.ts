@@ -161,9 +161,13 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
         await reopen(page);
         await expect(row(page, 'Paged Texas 01', version)).toBeVisible();
         await expect(visible(page, 'loading-indicator')).toHaveCount(0);
-        await expect(row(page, 'Long Room Name', version)).toBeVisible();
-        await row(page, 'Long Room Name', version).scrollIntoViewIfNeeded();
+        // SectionList 可能尚未挂载末行；先滚动并随内容高度更新继续滚动。
+        await expect.poll(async () => {
+          await scrollList(page, true);
+          return row(page, 'Long Room Name', version).isVisible();
+        }, { message: '滚动长列表后应挂载末条记录' }).toBe(true);
         await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(23);
+        await row(page, 'Long Room Name', version).scrollIntoViewIfNeeded();
       }
       await scrollList(page, true);
       if (version === 'v2') {
