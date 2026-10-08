@@ -12,7 +12,7 @@ describe('visual suite selection and account isolation', () => {
       const app = buildScenarios({ ...env, VISUAL_SUITE: 'app' });
       const texas = buildScenarios({ ...env, VISUAL_SUITE: 'texas' });
       assert.equal(texas.length, 36);
-      assert.equal(app.length, (scope === 'core' ? 40 : 102) * 3);
+      assert.equal(app.length, (scope === 'core' ? 44 : 106) * 3);
       assert.ok(app.every(scenario => scenario.group !== 'texas-holdem'));
       assert.ok(texas.every(scenario => scenario.group === 'texas-holdem'));
       assert.deepEqual(
@@ -23,7 +23,7 @@ describe('visual suite selection and account isolation', () => {
         (sum, scenario) => sum + (scenario.snapshotStates?.length || 1), 0,
       );
       assert.equal(screenshots(texas), 366);
-      assert.equal(screenshots(app), scope === 'core' ? 120 : 306);
+      assert.equal(screenshots(app), scope === 'core' ? 492 : 678);
       assert.equal(screenshots(app) + screenshots(texas), screenshots(all));
     });
   }

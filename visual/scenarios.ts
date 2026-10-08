@@ -39,6 +39,7 @@ import { pages as texasHoldemPages } from './cases/texas-holdem/scenarios';
 import { pages as clubPages } from './cases/club/scenarios';
 import { pages as accountPages } from './cases/account/scenarios';
 import { pages as walletPages } from './cases/wallet/scenarios';
+import { pages as gameRecordPages } from './cases/game-record/scenarios';
 import { pages as helpPages } from './cases/help/scenarios';
 import { getVisualSuite, selectVisualSuite } from './visual-suite';
 
@@ -61,6 +62,8 @@ export const CORE_PAGE_LABELS = new Set([
   'signed_in_texas_panels',
   'signed_in_texas_hall',
   'signed_in_texas_records_v2',
+  'signed_in_game_records_legacy',
+  'signed_in_game_records_v2',
   'hall',
   'search_sign_in_prompt',
   'guest_private_room',
@@ -90,6 +93,7 @@ export const SIGNED_IN_PAGES: GroupedPageDef[] = [
   ...withGroup('club', clubPages),
   ...withGroup('account', accountPages),
   ...withGroup('wallet', walletPages),
+  ...withGroup('game-record', gameRecordPages),
   ...withGroup('help', helpPages),
 ];
 

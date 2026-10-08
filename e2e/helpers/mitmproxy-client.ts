@@ -18,7 +18,7 @@ export class Mitmproxy {
     this.server = `http://127.0.0.1:${port}`;
   }
 
-  command<T = ProxyStatus>(endpoint: string, payload?: unknown): Promise<T> {
+  command<T = ProxyStatus>(endpoint: string, payload?: unknown, timeoutMs = 5_000): Promise<T> {
     return new Promise((resolve, reject) => {
       const body = payload === undefined ? undefined : JSON.stringify(payload);
       const req = request({
@@ -49,7 +49,7 @@ export class Mitmproxy {
         });
       });
       req.on('error', reject);
-      req.setTimeout(5_000, () => req.destroy(new Error('mitmproxy 控制请求超时')));
+      req.setTimeout(timeoutMs, () => req.destroy(new Error('mitmproxy 控制请求超时')));
       req.end(body);
     });
   }

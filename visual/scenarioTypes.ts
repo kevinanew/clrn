@@ -86,7 +86,7 @@ export type VisualScenario = {
   fixedTexts: FixedTextRule[];
   /** 仅用于「出现与否本身不定」的元素（如新版本提示），display:none 摘除 */
   hideSelectors: string[];
-  /** 一个真实房间流程连续采集的多张截图；缺省只采集 label 本身。 */
+  /** 同一业务流程连续采集的多张截图；缺省只采集 label 本身。 */
   snapshotStates?: string[];
 };
 
@@ -151,4 +151,4 @@ export type SignedInPageDef = {
   viewports?: ViewportLabel[];
 };
 
-export type ScenarioGroup = 'hall' | 'auth' | 'message' | 'private-room' | 'texas-holdem' | 'club' | 'account' | 'wallet' | 'help';
+export type ScenarioGroup = 'hall' | 'auth' | 'message' | 'private-room' | 'texas-holdem' | 'club' | 'account' | 'wallet' | 'game-record' | 'help';

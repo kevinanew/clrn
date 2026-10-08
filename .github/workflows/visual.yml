@@ -70,17 +70,18 @@ jobs:
         working-directory: visual
         run: pnpm install --frozen-lockfile
       - uses: actions/setup-python@v5
-        if: matrix.suite == 'texas'
         with:
           python-version: '3.12'
-      - name: Install mitmproxy for Texas
-        if: matrix.suite == 'texas'
+      - name: Install mitmproxy
         run: |
           python -m venv e2e/.venv
           e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
       - name: Check Texas proxy isolation and replay
         if: matrix.suite == 'texas' && matrix.locale == 'zh-Hans'
         run: e2e/.venv/bin/python -m unittest discover -s visual/cases/texas-holdem/mitmproxy -v
+      - name: Check game record proxy isolation and fixtures
+        if: matrix.suite == 'app' && matrix.locale == 'zh-Hans'
+        run: e2e/.venv/bin/python -m unittest discover -s visual/cases/game-record/mitmproxy -v
       - name: Check visual suite
         if: matrix.locale == 'zh-Hans' && (matrix.suite == 'app' || inputs.suite == 'texas')
         working-directory: visual

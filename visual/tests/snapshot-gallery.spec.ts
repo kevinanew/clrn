@@ -5,7 +5,11 @@ import { pathToFileURL } from 'node:url';
 test('截图索引支持模块选择、组合搜索和空结果恢复', async ({ page }) => {
   await page.goto(pathToFileURL(path.resolve(__dirname, '../snapshots/index.html')).href);
   const sections = page.locator('.module-section:visible');
-  await expect(sections).toHaveCount(9);
+  await expect(sections).toHaveCount(10);
+  await page.getByRole('button', { name: /^我的战绩/ }).click();
+  await expect(sections).toHaveCount(1);
+  await expect(sections).toHaveAttribute('data-group', 'game-record');
+  await expect(page.locator('article:visible')).toHaveCount(372);
 
   await page.getByRole('button', { name: /^德州牌桌/ }).click();
   await expect(sections).toHaveCount(1);
@@ -25,7 +29,7 @@ test('截图索引支持模块选择、组合搜索和空结果恢复', async ({
   const allModules = page.getByRole('button', { name: /^全部模块/ });
   await allModules.focus();
   await page.keyboard.press('Enter');
-  await expect(sections).toHaveCount(9);
+  await expect(sections).toHaveCount(10);
   await expect(allModules).toHaveAttribute('aria-pressed', 'true');
 });
 
