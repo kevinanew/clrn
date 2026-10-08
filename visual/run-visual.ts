@@ -164,10 +164,10 @@ async function main(): Promise<void> {
     console.log(`线上视觉测试地址: ${visualBaseUrl}`);
     const playwrightArgs = ['exec', 'playwright', 'test'];
     if (action === 'reference') {
-      // 只重写有显著视觉差异的基准。截图断言不再使用按面积放宽的比例容差：
-      // 任意超过 threshold 的像素都会触发更新；仅忽略 Docker Chromium 产生的
-      // 1–4 级 RGB 抗锯齿舍入噪声，避免 `all` 每轮把肉眼不可见差异写回文件。
-      playwrightArgs.push('--update-snapshots=changed');
+      // 德州重写每张所选基准，确保低于对比容差的旧弹幕/倒计时也被替换。
+      // App 继续只更新有显著差异的截图。
+      playwrightArgs.push(getVisualSuite() === 'texas'
+        ? '--update-snapshots=all' : '--update-snapshots=changed');
     } else if (action === 'approve') {
       // approve：只接受上次 test 里真正 diff/失败的场景为新基准，未变化的不动
       playwrightArgs.push('--update-snapshots');
