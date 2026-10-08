@@ -4615,7 +4615,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-desktop-signed-in-zhajinhua-game-blind-cards.png",
-      "sha256": "2dbcbb1a92c9e643c5c6d73f0134d19ff27a9088381201d357dc942cb94acb5e"
+      "sha256": "d89753c06882e53d7d97090f34d298abee2a79cb820f16c17b146ff4e917ebf7"
     },
     {
       "label": "zh-Hans_desktop_signed_in_zhajinhua_game_seen_cards",
@@ -4660,7 +4660,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-desktop-signed-in-zhajinhua-game-seen-cards.png",
-      "sha256": "45c242a90d5415c07d4b284181b919ce5b99e1e9d4a15ed0434af7c626839afb"
+      "sha256": "b4ac06e730c6b3005e9e6de9ba767adca85855a055d575096475c06e11e995da"
     },
     {
       "label": "zh-Hans_desktop_signed_in_zhajinhua_game_quick_raise",
@@ -4705,7 +4705,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-desktop-signed-in-zhajinhua-game-quick-raise.png",
-      "sha256": "e364130c1aacadac33cb940f57f80840f21174a307d1e5363d6f9e7a47a15953"
+      "sha256": "3ac19614e28abff7896702ea7f7502de11508846d553d8a1a33c1f94a840467e"
     },
     {
       "label": "zh-Hans_desktop_signed_in_zhajinhua_game_accurate_raise",
@@ -4750,7 +4750,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-desktop-signed-in-zhajinhua-game-accurate-raise.png",
-      "sha256": "1ed1ae30864be098a7716c222fe07cea66c332de742326738c82204b74ee4dc5"
+      "sha256": "71c3f0ed389718a5f47b937da255b45ce6abce2defc331c5c5470c094db01d17"
     },
     {
       "label": "zh-Hans_desktop_signed_in_zhajinhua_game_challenge_select",
@@ -4795,7 +4795,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-desktop-signed-in-zhajinhua-game-challenge-select.png",
-      "sha256": "c3be7a040a8b272acba421fc195e8a0018f7fe598386715b9e0c972c4acedf7d"
+      "sha256": "a2bf7da2105da091c23edbd5e0c23a9f9defdad30917ec93a6a6ab403cd08284"
     },
     {
       "label": "zh-Hans_desktop_signed_in_zhajinhua_game_opponent_turn",
@@ -4840,7 +4840,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-desktop-signed-in-zhajinhua-game-opponent-turn.png",
-      "sha256": "dbe13b71eb8d3ba7b713cee220e7791ce5a74672c6730919f39b5c19c7b98b6e"
+      "sha256": "ba20060f0dd0136d67552345f891089e1a8c45963ea13c00ba9b0c0b89ca35fa"
     },
     {
       "label": "zh-Hans_desktop_signed_in_zhajinhua_game_showdown",
@@ -4885,7 +4885,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-desktop-signed-in-zhajinhua-game-showdown.png",
-      "sha256": "addae972cb183fa5a0fb4674ff89891289f59ba2c1f1cdcd987a6232da61efb4"
+      "sha256": "91fbefd9ea961d8bd26ef7d2f5cb3996bf76ef41081cec8aac45be151ed8bc6d"
     },
     {
       "label": "zh-Hans_desktop_signed_in_zhajinhua_game_settlement",
@@ -4930,7 +4930,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-desktop-signed-in-zhajinhua-game-settlement.png",
-      "sha256": "4ec1a40fd57e6e14c2e04e4035ac4a599abd9eaae6e4806f5f7a1db37c440899"
+      "sha256": "0d3ce3b2912f2556be89f29a1043c58b74ea96828bf6623ae442aeb0874d2866"
     },
     {
       "label": "zh-Hans_desktop_signed_in_club",
@@ -10059,7 +10059,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-mobile-signed-in-zhajinhua-game-blind-cards.png",
-      "sha256": "f77b5cd9816ecdf5a19aae8fc86dfb1f0db66ae640de5311d4f5437a41d958e0"
+      "sha256": "78d5131d66741a6dae2aa7b53b4201702b61c08e6c22e91032cc587737152c3a"
     },
     {
       "label": "zh-Hans_mobile_signed_in_zhajinhua_game_seen_cards",
@@ -10104,7 +10104,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-mobile-signed-in-zhajinhua-game-seen-cards.png",
-      "sha256": "24eb211c9ec55131a904e9befd431928d7a201d8720df3027083e144ada7af3e"
+      "sha256": "806f8c1a705001161d9dd85f4dc07437f04297687eecb4dc9ca9ccfe15ab4444"
     },
     {
       "label": "zh-Hans_mobile_signed_in_zhajinhua_game_quick_raise",
@@ -10149,7 +10149,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-mobile-signed-in-zhajinhua-game-quick-raise.png",
-      "sha256": "c5484159e71279e52e891e2944aba9ef41709f6736f836ab749874a3fcbe983c"
+      "sha256": "fba77ab29a3cdac3d46af52230cdd68e94ade8a041009d1d8ae7975a73820b63"
     },
     {
       "label": "zh-Hans_mobile_signed_in_zhajinhua_game_accurate_raise",
@@ -10194,7 +10194,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-mobile-signed-in-zhajinhua-game-accurate-raise.png",
-      "sha256": "9abd1b0f190270f7e0540fbcffd4afb01b02061726021f38c1a24207317fcac0"
+      "sha256": "e4c427efad5961654cd8ac37b707351d20b0bcb833dba7f12b84d6874cd53ee3"
     },
     {
       "label": "zh-Hans_mobile_signed_in_zhajinhua_game_challenge_select",
@@ -10239,7 +10239,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-mobile-signed-in-zhajinhua-game-challenge-select.png",
-      "sha256": "de23b4ff8b684b45f112e5fbf9b9acc400fa60c88f71f367a690fa21f0321609"
+      "sha256": "b1789ee67a44c458551ae44c1b76bbe3b166b1ce22a603a380b597402d0a51da"
     },
     {
       "label": "zh-Hans_mobile_signed_in_zhajinhua_game_opponent_turn",
@@ -10284,7 +10284,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-mobile-signed-in-zhajinhua-game-opponent-turn.png",
-      "sha256": "7ec6406e3d591fc4f99898dcd3100d3662dfce9e3286961e9312f750cd51fb13"
+      "sha256": "8566299cd3e6ba9dcaf8de7dc6221e032e0a70de364cbec23d21769bc9798e84"
     },
     {
       "label": "zh-Hans_mobile_signed_in_zhajinhua_game_showdown",
@@ -10329,7 +10329,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-mobile-signed-in-zhajinhua-game-showdown.png",
-      "sha256": "6a49c61e5f16597ef3dcad14f1e77718346913454659661ac4c3a51ea35854c6"
+      "sha256": "b726362e9bf5c21bd6100166a6563c082d024de2792ef68a1e2d0a431aa94e7c"
     },
     {
       "label": "zh-Hans_mobile_signed_in_zhajinhua_game_settlement",
@@ -10374,7 +10374,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hans-mobile-signed-in-zhajinhua-game-settlement.png",
-      "sha256": "00881532ad2ccd61eb3ffcbfb0db8d032efd8898f1f67d15f6d98b757bd9ddb7"
+      "sha256": "3995980c06c8edca64c53fd4a903287dd7ca27520e6bdc1251a4aa2d7afef2ad"
     },
     {
       "label": "zh-Hans_mobile_signed_in_club",
@@ -15847,7 +15847,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-desktop-signed-in-zhajinhua-game-blind-cards.png",
-      "sha256": "b93deb375be24530907874cdccadd432a03cdb81a4c1c7936f083a0ab3271915"
+      "sha256": "ff55301d00e41e915b299615a812dc137c47348efb7c83c35c4958b3893c0ec7"
     },
     {
       "label": "zh-Hant_desktop_signed_in_zhajinhua_game_seen_cards",
@@ -15892,7 +15892,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-desktop-signed-in-zhajinhua-game-seen-cards.png",
-      "sha256": "a9b08d9cb0c96a895d22733120199d0327578f63e335bcb2b3f46f783c5679cf"
+      "sha256": "2b55f3230158c652dd8ab1cd6de5b5aba99a3b2e2e8a64851f464dd222236c70"
     },
     {
       "label": "zh-Hant_desktop_signed_in_zhajinhua_game_quick_raise",
@@ -15937,7 +15937,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-desktop-signed-in-zhajinhua-game-quick-raise.png",
-      "sha256": "30e1ca215eb831849a519b16f2fdce038e048e6e7123e16dfa6afd27b4de7e88"
+      "sha256": "500cb25c33bea9977b27abf5a2db72ff126f636eee5d230e9669afa5f310be40"
     },
     {
       "label": "zh-Hant_desktop_signed_in_zhajinhua_game_accurate_raise",
@@ -15982,7 +15982,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-desktop-signed-in-zhajinhua-game-accurate-raise.png",
-      "sha256": "ab2efb2770aa48ad55ebcb7d5ddfeb80f6ed74cc9f07f68d2b4fd27288f61af9"
+      "sha256": "8851f8fe18cd2d571983e59ff2259a45dad6a29f06d6c7d98477cbec551ddddd"
     },
     {
       "label": "zh-Hant_desktop_signed_in_zhajinhua_game_challenge_select",
@@ -16027,7 +16027,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-desktop-signed-in-zhajinhua-game-challenge-select.png",
-      "sha256": "732278bdb0b32cefa6429c6036ff7258f05f5d511057cdb71d0bf39fc4ec728f"
+      "sha256": "03924c98c4cf688bf69c44d7271044fb43a4b81dc856164ccff8d8cfc9e1855e"
     },
     {
       "label": "zh-Hant_desktop_signed_in_zhajinhua_game_opponent_turn",
@@ -16072,7 +16072,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-desktop-signed-in-zhajinhua-game-opponent-turn.png",
-      "sha256": "409aea6196b68515138df1025938f325379eb80ad34295e66f3ab9ad06261608"
+      "sha256": "a0133f875162b9d2f44c6d255355746ac018bce0bb2e1718df9f177228c29d64"
     },
     {
       "label": "zh-Hant_desktop_signed_in_zhajinhua_game_showdown",
@@ -16117,7 +16117,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-desktop-signed-in-zhajinhua-game-showdown.png",
-      "sha256": "57b1b918a4a011e4113cf80ddc612ac64c40bbe1be220b9e9ff1d25a0f55e1d8"
+      "sha256": "4d4551786dc4532bd300470268680772e426690bfd98bc745d9a6877b0144e35"
     },
     {
       "label": "zh-Hant_desktop_signed_in_zhajinhua_game_settlement",
@@ -16162,7 +16162,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-desktop-signed-in-zhajinhua-game-settlement.png",
-      "sha256": "75331b4fbbd0633c899e832c5d590ea322b036cbc3445b4297424ecaeeb9144d"
+      "sha256": "1f574971e076438ca2aad625aa253a91e865c648fb60bc107d69ecca2b142b9c"
     },
     {
       "label": "zh-Hant_desktop_signed_in_club",
@@ -21291,7 +21291,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-mobile-signed-in-zhajinhua-game-blind-cards.png",
-      "sha256": "abbdef8cec1b036523d0307c95f138cfcff6bf3ba3b209e40208a63c4379a732"
+      "sha256": "b54e7c8784d16069083aa5644439632c17a004538c0038bb086aaaf857c6ede7"
     },
     {
       "label": "zh-Hant_mobile_signed_in_zhajinhua_game_seen_cards",
@@ -21336,7 +21336,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-mobile-signed-in-zhajinhua-game-seen-cards.png",
-      "sha256": "98e3d5320db8099c073f37d1f19d72ccfddc887616850353d5d528353fbb569a"
+      "sha256": "7b98d1acb573e0e1bbf3bf30787fee32db7e6f7877efb0efeaa156b0c969d2f7"
     },
     {
       "label": "zh-Hant_mobile_signed_in_zhajinhua_game_quick_raise",
@@ -21381,7 +21381,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-mobile-signed-in-zhajinhua-game-quick-raise.png",
-      "sha256": "933ba10c11f85d13b9f7044557c98e912bb135988d2f170bf48068720e4519f0"
+      "sha256": "68e848bb5a5069ceefb7440fdb1f2f76edb057d6a875eb352e20077255c2f821"
     },
     {
       "label": "zh-Hant_mobile_signed_in_zhajinhua_game_accurate_raise",
@@ -21426,7 +21426,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-mobile-signed-in-zhajinhua-game-accurate-raise.png",
-      "sha256": "0cd13c5d0fb768a21341f1791c2ac90e3b59f4f811d97d9ba8821d4ae092243d"
+      "sha256": "e21062839bf7312c1546f1dead6739dd791c080273fd821d19bf01ddae531ba0"
     },
     {
       "label": "zh-Hant_mobile_signed_in_zhajinhua_game_challenge_select",
@@ -21471,7 +21471,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-mobile-signed-in-zhajinhua-game-challenge-select.png",
-      "sha256": "9fc8dbc0b7b2993aa65b2a9313be23580f3502a4a653c214a8fffb958d1549e5"
+      "sha256": "916249a93f69b0475876721786da0ce64a7bfe00005bf551d356b043f6f48235"
     },
     {
       "label": "zh-Hant_mobile_signed_in_zhajinhua_game_opponent_turn",
@@ -21516,7 +21516,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-mobile-signed-in-zhajinhua-game-opponent-turn.png",
-      "sha256": "65c41d905b4946cd5395e379bd35025acff243e185b4dd424e665f783cbc3823"
+      "sha256": "ab0fa775fdc5128e9afedf3ba2d2a9558721fd6457b95242f547ca8c4278930e"
     },
     {
       "label": "zh-Hant_mobile_signed_in_zhajinhua_game_showdown",
@@ -21561,7 +21561,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-mobile-signed-in-zhajinhua-game-showdown.png",
-      "sha256": "4d3038a6dc126bd8cd053b7078ff537533680a1f2bdb4032e19dfc5bdab210ad"
+      "sha256": "d0024ff4871bf9af75d40132282393f6cd916415c781b8c472ecbb94a05ad6dc"
     },
     {
       "label": "zh-Hant_mobile_signed_in_zhajinhua_game_settlement",
@@ -21606,7 +21606,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/zh-Hant-mobile-signed-in-zhajinhua-game-settlement.png",
-      "sha256": "8d781cfcf3bdf4d37f12015063a21eb5638bbdece0052a236da56575dfcb85d6"
+      "sha256": "a2c8c6a8f51c08045b1b343c98baadec3b80dc30b6405acc28bdaaf4a414a9bc"
     },
     {
       "label": "zh-Hant_mobile_signed_in_club",
@@ -27079,7 +27079,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-desktop-signed-in-zhajinhua-game-blind-cards.png",
-      "sha256": "38f7fa5c1664e3fc6565ba2b1a2489aca8a256a1daefbdfb497da6a4010ba499"
+      "sha256": "a29e3a408e0c69b74465836cac099b1442945ff7689e81b6b1ada2177df6b746"
     },
     {
       "label": "en_desktop_signed_in_zhajinhua_game_seen_cards",
@@ -27124,7 +27124,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-desktop-signed-in-zhajinhua-game-seen-cards.png",
-      "sha256": "e5258720217491d75a057bfca0937124aef2ce466043712bd35a06b839915bce"
+      "sha256": "d8be347b1172c60adfe13cdaf631795a49e48c12b28585c519725a5c41e34cad"
     },
     {
       "label": "en_desktop_signed_in_zhajinhua_game_quick_raise",
@@ -27169,7 +27169,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-desktop-signed-in-zhajinhua-game-quick-raise.png",
-      "sha256": "f1af28fa5162b89e674957c6a4d073ee6ffad59a47bba2ebbe1a58a03b9f1a7a"
+      "sha256": "2ebdbd81a324c4086396cd5153547919bd65a4f2f46b9459beee921717533ac8"
     },
     {
       "label": "en_desktop_signed_in_zhajinhua_game_accurate_raise",
@@ -27214,7 +27214,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-desktop-signed-in-zhajinhua-game-accurate-raise.png",
-      "sha256": "8e1c1cf8b056c476185d078df77b7312ba1af5bcd2cb904593a0e11761942b90"
+      "sha256": "efba7bacd7c1eaeca6451f4a4508258593d1ed22e92d11a65eaa02c26154594e"
     },
     {
       "label": "en_desktop_signed_in_zhajinhua_game_challenge_select",
@@ -27259,7 +27259,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-desktop-signed-in-zhajinhua-game-challenge-select.png",
-      "sha256": "d35a3c39db46dc802258f6404a8f22a9d0c8779fdbf52051ee2aa80f606ad6fa"
+      "sha256": "90c7c15966e1130d0479f45accd7c1e12b1a9cf78ad8896d47984686c8d464a9"
     },
     {
       "label": "en_desktop_signed_in_zhajinhua_game_opponent_turn",
@@ -27304,7 +27304,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-desktop-signed-in-zhajinhua-game-opponent-turn.png",
-      "sha256": "353504fd3babab2746da35436afca27ef985dd1177cd50e7f6a371a291e898ab"
+      "sha256": "4f1ffdb92cc5a0fc47cbf8ebb95b792eee0f999efa77b1169d145bc085e81fdf"
     },
     {
       "label": "en_desktop_signed_in_zhajinhua_game_showdown",
@@ -27349,7 +27349,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-desktop-signed-in-zhajinhua-game-showdown.png",
-      "sha256": "2413df59703206fd617ff1e92905922a8a59ac50b85ab5fdc707efdc600ca3bd"
+      "sha256": "afe351220748db231dce8d78160b4fac1cbca2ea038f8610c01fad2642916dae"
     },
     {
       "label": "en_desktop_signed_in_zhajinhua_game_settlement",
@@ -27394,7 +27394,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-desktop-signed-in-zhajinhua-game-settlement.png",
-      "sha256": "f902b73dad0fd50a55a5792af42ed77f4c7023ad8fe4f34782463a0f12ed35cb"
+      "sha256": "957f6dafb57324c0a6d8604c310589598c887294b857c31e737512f42d7c13f8"
     },
     {
       "label": "en_desktop_signed_in_club",
@@ -32523,7 +32523,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-mobile-signed-in-zhajinhua-game-blind-cards.png",
-      "sha256": "277d8a5134708c42ac12e25fa367cae501ebfb8a6f10da5540c93c3d6a536cf6"
+      "sha256": "ef94d0b9508cd6d45bbec35d76152a1533daee23d73b825991d40f24123c7e03"
     },
     {
       "label": "en_mobile_signed_in_zhajinhua_game_seen_cards",
@@ -32568,7 +32568,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-mobile-signed-in-zhajinhua-game-seen-cards.png",
-      "sha256": "8bca638a2b096deb66f2af665d0c27bc869953ac40ff364b3d21f8714dc5ca7d"
+      "sha256": "91a0e1db625ff5d3b43a9566c3fe4c7413b14095e6abe7b809b219a2b1b3a1d5"
     },
     {
       "label": "en_mobile_signed_in_zhajinhua_game_quick_raise",
@@ -32613,7 +32613,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-mobile-signed-in-zhajinhua-game-quick-raise.png",
-      "sha256": "0220ba8935d0141fa56c432a9d42a9277b9edafe6e29794cacdd7d2e92fb7c7d"
+      "sha256": "d5fec0734fc10923b1a90d2cd399d415e4347f72bb240a7c47702ca13d843ec8"
     },
     {
       "label": "en_mobile_signed_in_zhajinhua_game_accurate_raise",
@@ -32658,7 +32658,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-mobile-signed-in-zhajinhua-game-accurate-raise.png",
-      "sha256": "e1631d14c15af6b9253b79f4a3ca6942543863c9e4a521e002bf718a674c45ea"
+      "sha256": "0a56c92f5362aa898ee79079e7cddf8efb77035480162be2113bee49417028e9"
     },
     {
       "label": "en_mobile_signed_in_zhajinhua_game_challenge_select",
@@ -32703,7 +32703,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-mobile-signed-in-zhajinhua-game-challenge-select.png",
-      "sha256": "7f9ff00234f8241fc102bdaf76991cf770f3f7b3c36fd6e9610c0e44eb0ed0fe"
+      "sha256": "506e603f7d71ce45146b0fe368dff4f85adc969a3b5e94fbcdda7c816a8b8d5a"
     },
     {
       "label": "en_mobile_signed_in_zhajinhua_game_opponent_turn",
@@ -32748,7 +32748,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-mobile-signed-in-zhajinhua-game-opponent-turn.png",
-      "sha256": "279b2e521a73f76ae4826ef50afc4afcbb9e862d9c27fdce86eefe5c7a5bf05e"
+      "sha256": "034561b4f740f0fdc3b47e9e8492a3cc7ec66aeda10d0bc3c81bbee2443728c0"
     },
     {
       "label": "en_mobile_signed_in_zhajinhua_game_showdown",
@@ -32793,7 +32793,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-mobile-signed-in-zhajinhua-game-showdown.png",
-      "sha256": "3409797dcf028b59765cc3b809389036801b2f2d8a8cfb55745650401885d3f8"
+      "sha256": "655a01f18d7cdf29b6d45cca5709ebe08909eb3e1c97cc72e8b51e2a24a0add1"
     },
     {
       "label": "en_mobile_signed_in_zhajinhua_game_settlement",
@@ -32838,7 +32838,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/zhajinhua/snapshots/en-mobile-signed-in-zhajinhua-game-settlement.png",
-      "sha256": "699928ff943ec1cff0ca1b10c8edcfdc0ad5ff8047e5ea3c0636f233a7e9584d"
+      "sha256": "354436ad933260c51932afdaa6b6e83e927f25e7c5c45ed60ddcb23141edb2cd"
     },
     {
       "label": "en_mobile_signed_in_club",
