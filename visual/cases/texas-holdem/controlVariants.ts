@@ -52,9 +52,11 @@ export async function captureControls(page: Page, scenario: VisualScenario, prox
   const x = thumbBox!.x + thumbBox!.width / 2;
   await page.mouse.move(x, thumbBox!.y + thumbBox!.height / 2);
   await page.mouse.down();
-  await page.mouse.move(x, trackBox!.y + 2, { steps: 8 });
+  // 游戏层有 CSS 缩放，真实拖动越过轨道上端，让控件按自身边界钳制到最大值。
+  await page.mouse.move(x, Math.max(1, thumbBox!.y + thumbBox!.height / 2 - trackBox!.height * 2), { steps: 8 });
   await page.mouse.up();
   await advance(page);
+  await expect(visible(page, 'raise-bet-display-text')).toHaveText('1000');
   await expect(visible(page, 'raise-bet-all-in-button')).toBeVisible();
   await snapshot('raise_maximum');
   const topThumb = await thumb.boundingBox();
