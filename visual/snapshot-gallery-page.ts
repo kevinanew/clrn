@@ -17,6 +17,7 @@ const MODULE_NAMES: Record<ScenarioGroup, string> = {
   message: '消息',
   'private-room': '私人房',
   'texas-holdem': '德州牌桌',
+  zhajinhua: '拼三张牌桌',
   club: '俱乐部',
   account: '个人账号',
   wallet: '钱包与记录',

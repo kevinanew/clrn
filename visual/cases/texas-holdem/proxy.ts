@@ -30,7 +30,7 @@ export async function withTexasProxy<T>(task: (proxy: TexasProxy) => Promise<T>)
   }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });
 }
 
-export function texasProxyOptions(proxy: TexasProxy): BrowserContextOptions {
+export function texasProxyOptions(proxy: { server: string }): BrowserContextOptions {
   return {
     proxy: { server: proxy.server, bypass: '<-loopback>' },
     ignoreHTTPSErrors: true,

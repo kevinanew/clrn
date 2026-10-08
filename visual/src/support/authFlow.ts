@@ -35,6 +35,15 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
       continue;
     }
 
+    // LaunchScreen 的代理初始化错误使用取消/重试弹窗；取消会绕过初始化，
+    // 必须点最后一个「重试」按钮。持续失败仍由整体 deadline 明确终止。
+    const startupRetry = page.locator('[data-testid="alert-custom-button"]:visible').last();
+    if (await startupRetry.isVisible().catch(() => false)) {
+      await startupRetry.click({ timeout: 3000, noWaitAfter: true }).catch(() => undefined);
+      await page.waitForTimeout(400);
+      continue;
+    }
+
     await page.waitForTimeout(400);
   }
 

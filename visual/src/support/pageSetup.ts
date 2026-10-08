@@ -65,11 +65,11 @@ export async function fixNavigatorLanguage(context: BrowserContext): Promise<voi
   await context.addInitScript(() => {
     try {
       Object.defineProperty(Navigator.prototype, 'language', {
-        get: () => 'en-US',
+        get() { return 'en-US'; },
         configurable: true,
       });
       Object.defineProperty(Navigator.prototype, 'languages', {
-        get: () => ['en-US', 'en'],
+        get() { return ['en-US', 'en']; },
         configurable: true,
       });
     } catch {
@@ -152,7 +152,7 @@ export async function setupContextForScenario(
   await fixNavigatorLanguage(context);
   await disableAnimations(context);
   await mockVisualNetworkDependencies(context, {
-    realPrivateRoom: scenario.group === 'texas-holdem',
+    realPrivateRoom: scenario.group === 'texas-holdem' || scenario.group === 'zhajinhua',
     useMitmproxy: options.useMitmproxy,
     recordFixtures: scenario.group === 'game-record',
   });

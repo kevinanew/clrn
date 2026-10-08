@@ -151,4 +151,4 @@ export type SignedInPageDef = {
   viewports?: ViewportLabel[];
 };
 
-export type ScenarioGroup = 'hall' | 'auth' | 'message' | 'private-room' | 'texas-holdem' | 'club' | 'account' | 'wallet' | 'game-record' | 'help';
+export type ScenarioGroup = 'hall' | 'auth' | 'message' | 'private-room' | 'texas-holdem' | 'zhajinhua' | 'club' | 'account' | 'wallet' | 'game-record' | 'help';

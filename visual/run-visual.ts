@@ -140,10 +140,10 @@ async function main(): Promise<void> {
     runPnpm(['install', '--frozen-lockfile']);
   }
 
-  // 两套测试各自采集账号登录态；all 也不能让 App 的登录流量经过德州代理。
+  // 三套测试各自采集账号登录态；all 也不能让 App 的登录流量经过德州代理。
   if (getVisualSuite() === 'all') {
     let ranSuite = false;
-    for (const suite of ['app', 'texas'] as const) {
+    for (const suite of ['app', 'texas', 'zhajinhua'] as const) {
       const selected = selectScenariosByLabel(
         buildScenarios({ ...process.env, VISUAL_SUITE: suite }), process.env.VISUAL_FILTER,
       );
@@ -152,7 +152,7 @@ async function main(): Promise<void> {
       const result = spawnSync('pnpm', ['exec', 'tsx', 'run-visual.ts', action], {
         stdio: 'inherit', cwd: VISUAL_DIR,
         env: { ...process.env, VISUAL_SUITE: suite, VISUAL_SKIP_VISUAL_INSTALL: 'true',
-          VISUAL_SKIP_SUPPORT_TESTS: suite === 'texas' ? 'true' : process.env.VISUAL_SKIP_SUPPORT_TESTS },
+          VISUAL_SKIP_SUPPORT_TESTS: suite !== 'app' ? 'true' : process.env.VISUAL_SKIP_SUPPORT_TESTS },
       });
       if (result.status !== 0) throw new Error(`${suite} 视觉测试失败（退出码 ${result.status ?? 1}）`);
     }
@@ -164,9 +164,9 @@ async function main(): Promise<void> {
     console.log(`线上视觉测试地址: ${visualBaseUrl}`);
     const playwrightArgs = ['exec', 'playwright', 'test'];
     if (action === 'reference') {
-      // 德州重写每张所选基准，确保低于对比容差的旧弹幕/倒计时也被替换。
+      // 牌桌重写每张所选基准，确保低于对比容差的旧弹幕/倒计时也被替换。
       // App 继续只更新有显著差异的截图。
-      playwrightArgs.push(getVisualSuite() === 'texas'
+      playwrightArgs.push(getVisualSuite() !== 'app'
         ? '--update-snapshots=all' : '--update-snapshots=changed');
     } else if (action === 'approve') {
       // approve：只接受上次 test 里真正 diff/失败的场景为新基准，未变化的不动
@@ -199,7 +199,7 @@ async function main(): Promise<void> {
         ? [...playwrightArgs, `--grep=${exactScenarioGrep(selectedScenarios.map(scenario => scenario.label))}`]
         : playwrightArgs;
       const needsAuthState = selectedScenarios.some((scenario) => scenario.signIn);
-      const needsMitmproxy = selectedScenarios.some(scenario => scenario.group === 'texas-holdem');
+      const needsMitmproxy = selectedScenarios.some(scenario => scenario.group === 'texas-holdem' || scenario.group === 'zhajinhua');
       const { count: shardCount, start: startShard } = getVisualShardConfig(
         action,
         selectedScenarios.length,
