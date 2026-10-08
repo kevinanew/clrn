@@ -56,7 +56,12 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
   await snapshot('alert_insufficient_balance');
   await click(page, 'common-alert-button-cancel');
   await proxy.configureUI({ rpcError: 'auth' });
+  await proxy.replayTexas(room, events([{ event: 'new_game', game_id: 'visual-fixed-game',
+    settings: { small_blind: 1, big_blind: 2, ante: 0 } }]));
+  await advance(page);
   await table(page, proxy, room, self);
+  await expect(visible(page, 'texas-holdem-show-hand-card-button')).toBeHidden();
+  await expect(visible(page, 'texas-holdem-show-remain-community-card-button')).toBeHidden();
   await click(page, 'texas-holdem-operation-button-call');
   await expect(visible(page, 'common-alert-button-quit')).toBeVisible();
   await expect(visible(page, 'common-alert-title')).toHaveText({
