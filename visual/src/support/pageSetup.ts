@@ -65,11 +65,11 @@ export async function fixNavigatorLanguage(context: BrowserContext): Promise<voi
   await context.addInitScript(() => {
     try {
       Object.defineProperty(Navigator.prototype, 'language', {
-        get: () => 'en-US',
+        get() { return 'en-US'; },
         configurable: true,
       });
       Object.defineProperty(Navigator.prototype, 'languages', {
-        get: () => ['en-US', 'en'],
+        get() { return ['en-US', 'en']; },
         configurable: true,
       });
     } catch {
@@ -100,18 +100,19 @@ export async function disableAnimations(context: BrowserContext): Promise<void> 
         text-rendering: geometricPrecision !important;
       }
     `;
-    const inject = () => {
-      const parent = document.head || document.documentElement;
-      if (!parent || document.getElementById(id)) {
-        return;
-      }
-      const style = document.createElement('style');
-      style.id = id;
-      style.textContent = css;
-      parent.appendChild(style);
+    // 对象方法不会被 tsx 插入外部 __name 助手，可独立序列化到浏览器。
+    const hooks = {
+      inject() {
+        const parent = document.head || document.documentElement;
+        if (!parent || document.getElementById(id)) return;
+        const style = document.createElement('style');
+        style.id = id;
+        style.textContent = css;
+        parent.appendChild(style);
+      },
     };
-    inject();
-    document.addEventListener('DOMContentLoaded', inject);
+    hooks.inject();
+    document.addEventListener('DOMContentLoaded', hooks.inject);
   });
 }
 
@@ -165,7 +166,7 @@ export async function setupContextForScenario(
   await fixNavigatorLanguage(context);
   await disableAnimations(context);
   await mockVisualNetworkDependencies(context, {
-    realPrivateRoom: scenario.group === 'texas-holdem',
+    realPrivateRoom: scenario.group === 'texas-holdem' || scenario.group === 'zhajinhua',
     useMitmproxy: options.useMitmproxy,
   });
 
