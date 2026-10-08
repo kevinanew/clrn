@@ -46,6 +46,7 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
     { event: 'all_in_show_hole_card', players: [{ player_id: REPLAY_PLAYER_IDS[0], hole_card: ['kh', 'ks'] }] },
   ]));
   await expect(visible(page, 'texas-holdem-player-action-all_in')).toBeVisible();
+  await page.clock.runFor(1500);
   await snapshot('all_in');
   await proxy.replayTexas(roomId, events([{ event: 'showdown', players: [
     { player_id: self, hole_card: ['as', 'ad'], best_cards: ['as', 'ad', 'ah', 'kd', 'qs'],
@@ -53,12 +54,14 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
     { player_id: REPLAY_PLAYER_IDS[0], hole_card: ['kh', 'ks'], best_cards: ['kh', 'ks', 'kd', 'ah', 'qs'],
       hand_strength: 'three_of_a_kind', strength_cards: ['kh', 'ks', 'kd'], is_max_strength: false },
   ] }]));
+  await page.clock.runFor(1500);
   await snapshot('showdown');
   await proxy.replayTexas(roomId, events([{ event: 'settlement', players: [
     { player_id: self, net: 180, prize: 180, stack: 1180 },
     { player_id: REPLAY_PLAYER_IDS[0], net: -960, prize: 0, stack: 0 },
   ] }]));
   await expect(visible(page, `texas-holdem-player-container-${self}`)).toContainText('1180');
+  await page.clock.runFor(1500);
   await snapshot('settlement');
 
   const openProfile = async (player: string) => {
@@ -80,6 +83,8 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   await visible(page, 'PlayerStatisticComponent_Item_1').click();
   await expect(visible(page, 'toastText1')).toContainText(/主动投钱|主動投錢|actively investing/);
   await snapshot('statistics_help');
+  await page.clock.runFor(6000);
+  await expect(visible(page, 'toastText1')).toBeHidden();
   await visible(page, 'player-profile-report-button').click();
   await expect(visible(page, 'report-field-input')).toBeVisible();
   await snapshot('report');

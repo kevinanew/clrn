@@ -58,7 +58,8 @@ const common: Omit<SignedInPageDef, 'label' | 'snapshotStates'> = {
 export const pages: SignedInPageDef[] = [
   { ...common, label: 'signed_in_texas_pre_game', snapshotStates: [...PRE_GAME_STATES] },
   { ...common, label: 'signed_in_texas_optional_pre_game', snapshotStates: [...OPTIONAL_PRE_GAME_STATES] },
-  { ...common, label: 'signed_in_texas_game', snapshotStates: [...GAME_STATES] },
+  { ...common, label: 'signed_in_texas_game', snapshotStates: [...GAME_STATES],
+    fixedTexts: [...(common.fixedTexts || []), { selector: '[data-testid="player-profile-id"]', text: 'ID: 00000000' }] },
   { ...common, label: 'signed_in_texas_panels', snapshotStates: [...PANEL_STATES] },
   { ...common, label: 'signed_in_texas_hall', snapshotStates: [...HALL_STATES] },
   { ...common, label: 'signed_in_texas_records_v2', snapshotStates: [...RECORD_STATES] },

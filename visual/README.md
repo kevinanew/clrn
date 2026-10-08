@@ -167,7 +167,7 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的德州任务也会�
 ```bash
 cd visual
 pnpm run test          # 简中 226 张
-pnpm run test:all      # 全部语言 384 张
+pnpm run test:all      # 全部语言 678 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
@@ -218,7 +218,7 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 | --- | --- |
 | `zh-Hans`（默认） | 日常线上（226 张）；push CI 再叠加 `VISUAL_SCOPE=core`（164 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 384 张（GitHub Actions 定时任务） |
+| `all` | 全量 678 张（GitHub Actions 定时任务） |
 
 环境变量 `VISUAL_SCOPE`：
 

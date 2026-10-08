@@ -36,6 +36,11 @@ async function closePopup(page: Page, button: string, marker: string): Promise<v
 /** React Navigation 的游戏层有时相对视口偏移 ±4px；截图前归零。 */
 async function alignGameToViewport(page: Page): Promise<void> {
   const game = visible(page, 'run-game-view');
+  // 浏览器点击底部控件可能自动滚动导航祖先；牌谱内部滚动保持原位置。
+  await game.evaluate(node => {
+    for (let parent = node.parentElement; parent; parent = parent.parentElement) parent.scrollTop = 0;
+    window.scrollTo(0, 0);
+  });
   const { measuredTop, declaration } = await game.evaluate(node => {
     const element = node as HTMLElement;
     return {
