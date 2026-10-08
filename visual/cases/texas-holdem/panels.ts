@@ -82,6 +82,7 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await proxy.replayTexas(roomId, { stream: 'room_message', payload: { action: 'text', content: {
     from_user_id: REPLAY_PLAYER_IDS[0], from_user_nickname: 'Player1', text: 'Good hand!',
   } } });
+  await expect(visible(page, 'barrage_text')).toHaveText('Player1: Good hand!');
   await click(page, 'texas-holdem-chat-button');
   await click(page, '-in-game-chat-message-tab');
   await expect(page.locator('[data-testid^="in-game-chat-phrase-"]:visible').first()).toBeVisible();
