@@ -19,8 +19,7 @@ import {
   mockVisualNetworkDependencies,
 } from './support/pageSetup';
 import { runWithContext } from './support/runWithContext';
-import { visualProxyOptions, withVisualProxy } from './support/mitmproxy';
-import { type Mitmproxy } from '../../e2e/helpers/mitmproxy-client';
+import { texasProxyOptions, withTexasProxy, type TexasProxy } from '../cases/texas-holdem/proxy';
 
 import { visualBaseUrl as baseUrl } from '../target';
 const username = VISUAL_TEST_USERNAME;
@@ -61,10 +60,10 @@ const TUTORIAL_COMPLETE_KEYS = [
 async function createAuthContext(
   browser: import('@playwright/test').Browser,
   storageEntries?: Record<string, string>,
-  proxy?: Mitmproxy,
+  proxy?: TexasProxy,
 ) {
   const context = await browser.newContext({
-    ...(proxy ? visualProxyOptions(proxy) : {}),
+    ...(proxy ? texasProxyOptions(proxy) : {}),
     viewport: { width: 1440, height: 900 },
     locale: 'en-US',
     storageState: storageEntries
@@ -139,7 +138,7 @@ function persistAuthState(entries: Record<string, string>) {
 async function validateCapturedAuthState(
   browser: import('@playwright/test').Browser,
   entries: Record<string, string>,
-  proxy?: Mitmproxy,
+  proxy?: TexasProxy,
 ): Promise<Record<string, string>> {
   const context = await createAuthContext(browser, entries, proxy);
 
@@ -164,7 +163,7 @@ async function validateCapturedAuthState(
   });
 }
 
-async function captureAuthState(proxy?: Mitmproxy): Promise<void> {
+async function captureAuthState(proxy?: TexasProxy): Promise<void> {
   const browser = await chromium.launch({ args: BROWSER_LAUNCH_ARGS });
 
   try {
@@ -211,7 +210,7 @@ async function captureAuthState(proxy?: Mitmproxy): Promise<void> {
 
 async function main(): Promise<void> {
   if (process.env.VISUAL_AUTH_USES_MITMPROXY === 'true') {
-    await withVisualProxy(captureAuthState);
+    await withTexasProxy(captureAuthState);
   } else {
     await captureAuthState();
   }

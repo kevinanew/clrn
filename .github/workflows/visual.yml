@@ -17,6 +17,15 @@ on:
         type: choice
         options: [all, app, texas]
         default: all
+      mode:
+        description: 'compare 对比；reference 生成 Linux 基准供审查下载'
+        type: choice
+        options: [compare, reference]
+        default: compare
+      filter:
+        description: '可选场景 label 正则（生成新基准时可只选新增场景）'
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -49,6 +58,7 @@ jobs:
       VISUAL_SCOPE: ${{ (github.event_name == 'schedule' || inputs.full) && 'full' || 'core' }}
       VISUAL_SKIP_SUPPORT_TESTS: ${{ matrix.locale != 'zh-Hans' || matrix.suite != 'app' }}
       VISUAL_WORKERS: '1'
+      VISUAL_FILTER: ${{ inputs.filter || '' }}
     steps:
       - name: Check out visual tests
         uses: actions/checkout@v4
@@ -68,13 +78,16 @@ jobs:
         run: |
           python -m venv e2e/.venv
           e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
+      - name: Check Texas proxy isolation and replay
+        if: matrix.suite == 'texas' && matrix.locale == 'zh-Hans'
+        run: e2e/.venv/bin/python -m unittest discover -s visual/cases/texas-holdem/mitmproxy -v
       - name: Check visual suite
         if: matrix.locale == 'zh-Hans' && (matrix.suite == 'app' || inputs.suite == 'texas')
         working-directory: visual
         run: |
           pnpm run typecheck
-          pnpm run test:scenarios
-      - name: Compare screenshots
+          if [ '${{ inputs.mode }}' != reference ]; then pnpm run test:scenarios; fi
+      - name: Run visual suite
         working-directory: visual
         env:
           VISUAL_SUITE: ${{ matrix.suite }}
@@ -90,7 +103,18 @@ jobs:
             echo '::error::VISUAL_TEXAS_USERNAME 不得包含空白字符。'
             exit 1
           fi
-          pnpm run test:ci
+          if [ '${{ inputs.mode }}' = reference ]; then
+            pnpm exec tsx run-visual.ts reference
+          else
+            pnpm run test:ci
+          fi
+      - name: Upload reference screenshots for review
+        if: success() && inputs.mode == 'reference'
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-${{ matrix.suite }}-${{ matrix.locale }}-reference
+          path: visual/cases/*/snapshots/*.png
+          if-no-files-found: error
       - name: Upload failure report
         if: failure()
         uses: actions/upload-artifact@v4

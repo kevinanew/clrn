@@ -1,13 +1,21 @@
 import { type Page } from '@playwright/test';
-import { expect, test, visualProxyOptions } from '../../src/support/mitmproxy';
+import { expect, test, texasProxyOptions } from './proxy';
 import { buildScenarios, type VisualScenario } from '../../scenarios';
 import { visualBaseUrl } from '../../target';
 import { buildStorageStateForScenario, setupContextForScenario } from '../../src/support/pageSetup';
 import { ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
 import { preparePage } from '../../src/support/preparePage';
-import { createTexasRoom, deleteTexasRoom } from './room';
+import { createTexasRoom, deleteTexasRoom, enterTexasRoom } from './room';
 import { OPTIONAL_PRE_GAME_STATES, PRE_GAME_STATES } from './scenarios';
 import { appliedGameTranslation, gameViewportCorrection } from './viewportAlignment';
+import { captureGameplay } from './gameplay';
+import { capturePanels } from './panels';
+import { captureHall } from './hall';
+import config from '../../playwright.config';
+
+// 德州语音弹窗只检查界面，使用浏览器的虚拟麦克风，不读取开发机设备。
+test.use({ launchOptions: { ...config.use?.launchOptions,
+  args: [...(config.use?.launchOptions?.args || []), '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] } });
 
 const visible = (page: Page, id: string) => page.locator(`[data-testid="${id}"]:visible`).last();
 
@@ -129,28 +137,54 @@ async function captureOptionalPreGame(page: Page, scenario: VisualScenario): Pro
 for (const scenario of buildScenarios().filter(item => item.group === 'texas-holdem')) {
   test(scenario.label, async ({ browser, mitmproxy }) => {
     const context = await browser.newContext({
-      ...visualProxyOptions(mitmproxy),
+      ...texasProxyOptions(mitmproxy),
       viewport: scenario.viewport,
       locale: 'en-US',
       deviceScaleFactor: 1,
       storageState: buildStorageStateForScenario(scenario, visualBaseUrl),
     });
     const page = await context.newPage();
+    page.on('pageerror', error => console.error(`TEXAS PAGE ERROR > ${error.message}`));
     let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     try {
       await setupContextForScenario(context, scenario, page, { useMitmproxy: true });
+      if (['signed_in_texas_game', 'signed_in_texas_panels', 'signed_in_texas_hall'].includes(scenario.pageLabel)) {
+        await page.clock.install({ time: Date.now() });
+      }
+      if (scenario.pageLabel === 'signed_in_texas_panels') {
+        await context.grantPermissions(['microphone']);
+      }
       await page.goto(scenario.path);
       await preparePage(page, scenario);
       const proxyStatus = await mitmproxy.status();
       expect(proxyStatus.proxiedRequests, '德州浏览器流量应经过 mitmproxy').toBeGreaterThan(0);
       console.log(`MITMPROXY > requests=${proxyStatus.proxiedRequests}, stabilized=${proxyStatus.stabilizedRequests}`);
       const optional = scenario.pageLabel === 'signed_in_texas_optional_pre_game';
+      if (scenario.pageLabel === 'signed_in_texas_hall') await mitmproxy.configureHallView();
       room = await createTexasRoom(page, created => { room = created; }, optional);
-      if (optional) await captureOptionalPreGame(page, scenario);
+      if (scenario.pageLabel === 'signed_in_texas_game') {
+        await waitForGameConnection(page);
+        await captureGameplay(page, scenario, mitmproxy, room.roomId, capture);
+      } else if (scenario.pageLabel === 'signed_in_texas_panels') {
+        await waitForGameConnection(page);
+        await capturePanels(page, scenario, mitmproxy, room.roomId, capture);
+      } else if (scenario.pageLabel === 'signed_in_texas_hall') {
+        await enterTexasRoom(page, room);
+        await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+        await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
+        await captureHall(page, scenario, mitmproxy, room.roomId, capture);
+      } else if (optional) await captureOptionalPreGame(page, scenario);
       else await capturePreGame(page, scenario);
+    } catch (error) {
+      await page.screenshot({ path: test.info().outputPath('failure.png') }).catch(() => undefined);
+      throw error;
     } finally {
       try {
-        if (room) await deleteTexasRoom(page, room);
+        try {
+          await mitmproxy.releaseTexas();
+        } finally {
+          if (room) await deleteTexasRoom(page, room);
+        }
       } finally {
         await context.close();
       }

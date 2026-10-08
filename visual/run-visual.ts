@@ -5,6 +5,7 @@ import { visualBaseUrl } from './target';
 import fs from 'fs';
 import path from 'path';
 import { exactScenarioGrep, getVisualShardConfig, selectScenariosByLabel } from './run-visual-config';
+import { getVisualSuite } from './visual-suite';
 import {
   buildScenarios,
   getActiveLocales,
@@ -137,6 +138,26 @@ async function main(): Promise<void> {
   if (!isEnvTrue('VISUAL_SKIP_VISUAL_INSTALL')) {
     console.log('正在安装视觉回归测试依赖...');
     runPnpm(['install', '--frozen-lockfile']);
+  }
+
+  // 两套测试各自采集账号登录态；all 也不能让 App 的登录流量经过德州代理。
+  if (getVisualSuite() === 'all') {
+    let ranSuite = false;
+    for (const suite of ['app', 'texas'] as const) {
+      const selected = selectScenariosByLabel(
+        buildScenarios({ ...process.env, VISUAL_SUITE: suite }), process.env.VISUAL_FILTER,
+      );
+      if (selected.length === 0) continue;
+      ranSuite = true;
+      const result = spawnSync('pnpm', ['exec', 'tsx', 'run-visual.ts', action], {
+        stdio: 'inherit', cwd: VISUAL_DIR,
+        env: { ...process.env, VISUAL_SUITE: suite, VISUAL_SKIP_VISUAL_INSTALL: 'true',
+          VISUAL_SKIP_SUPPORT_TESTS: suite === 'texas' ? 'true' : process.env.VISUAL_SKIP_SUPPORT_TESTS },
+      });
+      if (result.status !== 0) throw new Error(`${suite} 视觉测试失败（退出码 ${result.status ?? 1}）`);
+    }
+    if (!ranSuite) throw new Error('VISUAL_FILTER 没有匹配任何场景');
+    return;
   }
 
   try {
