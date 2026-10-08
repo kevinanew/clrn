@@ -131,11 +131,12 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await click(page, 'texas-holdem-show-hand-card-button');
   await proxy.replayTexas(roomId, events([{ event: 'publish_hole_card', player_id: self,
     public_hole_card: ['as', 'ad'] }]));
-  await expect.poll(async () => {
-    await page.clock.runFor(250);
-    return visible(page, `texas-holdem-player-container-${self}`)
-      .locator('[data-testid="player_card_name_text"]').allTextContents();
-  }, { timeout: 30_000 }).toEqual(['as', 'ad']);
+  const published = visible(page, `texas-holdem-player-container-${self}`)
+    .locator('[data-testid="texas-holdem-player-hole-cards"]');
+  await expect(published).toBeVisible();
+  await expect(published.locator('[data-testid="sprite-image-container"]')).toHaveCount(2);
+  await expect(published.locator('[data-testid="poker-text-letter"]')).toHaveText(['a', 'a']);
+  await expect(published.locator('[data-testid="poker-text-suit"]')).toHaveText(['♠', '♦']);
   await snapshot('show_cards');
   await restore(page, proxy, roomId, self, 'flop');
   await menu('exit');
