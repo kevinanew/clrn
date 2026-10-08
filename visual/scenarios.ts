@@ -308,17 +308,16 @@ function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef):
 }
 
 export function buildScenarios(env: NodeJS.ProcessEnv = process.env): VisualScenario[] {
+  const suite = getVisualSuite(env);
   const locales = getActiveLocales(env);
   const scenarios = locales.flatMap((locale) =>
     VIEWPORTS.flatMap((viewport) => buildLocaleViewportScenarios(locale, viewport)),
   );
 
-  if (env.VISUAL_SCOPE === 'core') {
-    return selectVisualSuite(
-      scenarios.filter((scenario) => CORE_PAGE_LABELS.has(scenario.pageLabel)), getVisualSuite(env),
-    );
-  }
-  return selectVisualSuite(scenarios, getVisualSuite(env));
+  const scopedScenarios = env.VISUAL_SCOPE === 'core'
+    ? scenarios.filter(scenario => CORE_PAGE_LABELS.has(scenario.pageLabel))
+    : scenarios;
+  return selectVisualSuite(scopedScenarios, suite);
 }
 
 /** 指定视口下的页面数（登录支线与部分静态子页仅 mobile） */

@@ -14,8 +14,9 @@ export const VISUAL_DEVICE_ID = 'a7f3c2e8-4d61-4b0a-9c5e-7f2d1e3a8b46';
  * 因此每次运行都是同一个测试用户；staging 数据清零后会自动重新注册。
  * 可用 VISUAL_USERNAME / VISUAL_PASSWORD 环境变量覆盖。
  */
-export const VISUAL_TEST_USERNAME = getVisualTestAccount().username;
-export const VISUAL_TEST_PASSWORD = getVisualTestAccount().password;
+const visualTestAccount = getVisualTestAccount();
+export const VISUAL_TEST_USERNAME = visualTestAccount.username;
+export const VISUAL_TEST_PASSWORD = visualTestAccount.password;
 
 export type LocaleCode = 'zh-Hans' | 'zh-Hant' | 'en';
 

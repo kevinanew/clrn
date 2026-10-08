@@ -11,5 +11,8 @@ export function getVisualSuite(env: NodeJS.ProcessEnv = process.env): VisualSuit
 /** 以功能组划分，建房表单仍属于应用，只有真实德州牌桌属于 texas。 */
 export function selectVisualSuite<T extends { group: string }>(scenarios: T[], suite: VisualSuite): T[] {
   if (suite === 'all') return scenarios;
-  return scenarios.filter(scenario => (scenario.group === 'texas-holdem') === (suite === 'texas'));
+  return scenarios.filter(scenario => {
+    const isTexasTable = scenario.group === 'texas-holdem';
+    return suite === 'texas' ? isTexasTable : !isTexasTable;
+  });
 }
