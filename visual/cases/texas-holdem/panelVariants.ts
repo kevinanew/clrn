@@ -33,8 +33,12 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
   await expect(visible(page, 'in-game-chat-audio-message-0')).toBeVisible();
   await snapshot('chat_audio_history');
   const barrageSwitch = visible(page, 'in-game-chat-barrage-switch');
-  if (await barrageSwitch.locator('input[type="checkbox"]').isChecked()) await click(page, 'in-game-chat-barrage-switch');
-  await expect(barrageSwitch.locator('input[type="checkbox"]')).not.toBeChecked();
+  // 聊天弹幕开关用图片按钮呈现，初始为开启；点击后应切换到关闭图标。
+  const barrageIcon = barrageSwitch.locator('img');
+  const enabledIcon = await barrageIcon.getAttribute('src');
+  expect(enabledIcon).toBeTruthy();
+  await click(page, 'in-game-chat-barrage-switch');
+  await expect(barrageIcon).not.toHaveAttribute('src', enabledIcon!);
   await snapshot('chat_barrage_off');
   await click(page, 'in-game-chat-mask');
   await proxy.configureUI({ rpcError: 'retry' });
