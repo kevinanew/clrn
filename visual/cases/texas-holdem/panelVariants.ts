@@ -59,7 +59,9 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
   await table(page, proxy, room, self);
   await click(page, 'texas-holdem-operation-button-call');
   await expect(visible(page, 'common-alert-button-quit')).toBeVisible();
-  await expect(visible(page, 'common-alert-title')).toContainText(/认证|認證|Authentication/i);
+  await expect(visible(page, 'common-alert-title')).toHaveText({
+    'zh-Hans': '身份验证失败', 'zh-Hant': '身份驗證失敗', en: 'Authentication failed',
+  }[scenario.locale.code]);
   await snapshot('alert_authentication_failed');
   done();
 }
