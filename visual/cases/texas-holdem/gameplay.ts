@@ -5,6 +5,7 @@ import type { VisualScenario } from '../../scenarioTypes';
 import { events, REPLAY_PLAYER_IDS, type Street } from './replayData';
 import { GAME_STATES } from './scenarios';
 import { closeMask, freezeClock, restore as restoreReplay } from './replay';
+import { checkFlopCardFaces, checkMobilePlayerAction } from './renderingChecks';
 
 const visible = (page: Page, id: string) => page.locator(`[data-testid="${id}"]:visible`).last();
 type Capture = (page: Page, scenario: VisualScenario, state: string) => Promise<void>;
@@ -27,6 +28,10 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   };
   for (const street of ['preflop', 'flop', 'turn', 'river'] as const) {
     await restore(street);
+    if (street === 'flop') {
+      await checkFlopCardFaces(page, self);
+      if (scenario.viewport.label === 'mobile') await checkMobilePlayerAction(page);
+    }
     await snapshot(street);
   }
   await visible(page, 'texas-holdem-operation-button-raise').click();
