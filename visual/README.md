@@ -185,9 +185,11 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 - 每次运行固定一个 worker，桌面、手机和各语言顺序执行。
 - 同一账号再次登录会作废旧凭据，即使 deviceId 相同也如此。功能、弱网、视觉 CI
-  共用 `h5-staging-test-account` 并发组；本机测试也应避免与 CI 或人工登录重叠。
-- test/reference/approve 均按语言分片，每批默认最多 3 个场景；简中全量为 30 批，
-  核心为 9 批。分片之间重新采集登录态，场景只注入已有缓存，不自行回退登录。
+  中的应用任务共用 `h5-staging-test-account` 并发组；德州任务用独立账号和
+  `h5-staging-texas-test-account` 并发组，两部分可并行，本机也应避免重复登录同一账号。
+- test/reference/approve 均按语言分片，每批默认最多 3 个场景；拆分后每种语言的应用
+  全量为 34 批、核心为 14 批，德州为 2 批。分片之间重新采集登录态，
+  场景只注入已有缓存，不自行回退登录。
 - `VISUAL_TEST_SHARDS` / `VISUAL_REFERENCE_SHARDS` 可调整批数（1–80）；
   `VISUAL_REFERENCE_START_SHARD` 可从指定分片恢复 reference。
 - 每批使用新的浏览器进程释放资源；无需重启任何应用服务器。
@@ -215,8 +217,12 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 [视觉工作流](../.github/workflows/visual.yml) 在非 `release` 分支的视觉代码或工作流变更后，
 访问线上并检查简中核心 66 张截图；每日及手动 `full` 运行三种语言的完整场景。
-各语言顺序运行，不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
-三语言 CI 中，类型检查、场景配置测试和浏览器辅助测试只在简中任务运行一次；
+CI 按「应用 app」和「德州 texas」拆为独立任务并行执行；每套内部各语言仍顺序执行。
+应用覆盖核心 40 张 / 全量 102 张，德州覆盖 26 张，各任务分别保存失败报告。
+不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
+手动触发可用 `suite` 选择 `all`、`app` 或 `texas`，只重跑所需部分。
+类型检查和场景配置测试只在简中应用任务运行一次（仅跑德州时由简中德州任务执行）；
+浏览器辅助测试属于应用，只在简中应用任务运行；
 本机运行 `test`、`reference` 或 `approve` 仍会执行浏览器辅助测试。
 结果反映运行时已部署版本，不代表测试仓库提交已部署到应用。
 
@@ -224,6 +230,28 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
 因此已从执行清单移除。历史图片保留，不计入当前 384 张有效截图。
 新德州用例只覆盖等待开始和无需开局的弹层，不点击开始游戏。
+
+### 分别运行与账号隔离
+
+```bash
+cd visual
+pnpm run test:app                 # 简中应用页面
+pnpm run test:texas               # 简中真实德州牌桌
+VISUAL_SUITE=texas pnpm run test:all # 德州三种语言
+```
+
+`VISUAL_SUITE` 默认为 `all`，保留完整本机测试入口。按功能组划分用例，
+应用的德州建房表单仍属 `app`，进入真实牌桌的用例才属 `texas`；
+`VISUAL_SCOPE`、语言和 label 过滤可与它叠加使用。
+
+应用默认账号为 `laiwanvisual01`，单独的德州测试默认使用 `laiwanvisualtexas01`；
+两者沿用固定 staging 测试密码和现有 UI 的首次自动注册机制，随后复用账号。
+德州余额不足时仅允许为本轮使用的这两个固定测试账号通过既有 `TESTING_API_TOKEN`
+补钻，任意自定义账号不会自动补钻；新建房间仍在用例结束时解散。
+CI 可通过仓库 Variable `VISUAL_TEXAS_USERNAME` 和 Secret `VISUAL_TEXAS_PASSWORD`
+覆盖德州凭据，自定义账号需预先备足建房钻石。若改回应用默认账号，自动恢复
+与应用、功能和 E2E 的互斥，避免并发登录作废凭据。
+本机覆盖凭据仍用 `VISUAL_USERNAME` / `VISUAL_PASSWORD`。
 
 ## 工作原理
 

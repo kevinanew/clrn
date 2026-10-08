@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { canTopUpVisualAccount } from '../../test-account';
 
 type RoomSession = { roomId: string; apiOrigin: string; authorization: string };
 type Account = { userId: string; username: string; authorization: string };
@@ -33,9 +34,8 @@ async function readDiamondBalance(page: Page, account: Account): Promise<number>
 
 async function ensureRoomBalance(page: Page, account: Account): Promise<void> {
   if (await readDiamondBalance(page, account) >= 10) return;
-  if (account.username !== 'laiwanvisual01' || process.env.VISUAL_USERNAME?.trim()
-    && process.env.VISUAL_USERNAME.trim() !== 'laiwanvisual01') {
-    throw new Error('仅允许为默认视觉测试账号 laiwanvisual01 自动补钻');
+  if (!canTopUpVisualAccount(account.username)) {
+    throw new Error('仅允许为本轮使用的固定视觉测试账号自动补钻');
   }
   const token = process.env.TESTING_API_TOKEN?.trim();
   if (!token) throw new Error('账号不足 10 钻；需要 TESTING_API_TOKEN 为 staging 测试账号补钻');

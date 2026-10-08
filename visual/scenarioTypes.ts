@@ -1,3 +1,5 @@
+import { getVisualTestAccount } from './test-account';
+
 export const LANGUAGE_STORAGE_KEY = 'app.language.code.key';
 
 /**
@@ -12,8 +14,8 @@ export const VISUAL_DEVICE_ID = 'a7f3c2e8-4d61-4b0a-9c5e-7f2d1e3a8b46';
  * 因此每次运行都是同一个测试用户；staging 数据清零后会自动重新注册。
  * 可用 VISUAL_USERNAME / VISUAL_PASSWORD 环境变量覆盖。
  */
-export const VISUAL_TEST_USERNAME = process.env.VISUAL_USERNAME || 'laiwanvisual01';
-export const VISUAL_TEST_PASSWORD = process.env.VISUAL_PASSWORD || 'visual2026test';
+export const VISUAL_TEST_USERNAME = getVisualTestAccount().username;
+export const VISUAL_TEST_PASSWORD = getVisualTestAccount().password;
 
 export type LocaleCode = 'zh-Hans' | 'zh-Hant' | 'en';
 

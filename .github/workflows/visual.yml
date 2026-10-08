@@ -12,24 +12,31 @@ on:
         description: 'Run all locales and scenarios'
         type: boolean
         default: false
+      suite:
+        description: 'all 两部分；app 应用；texas 德州'
+        type: choice
+        options: [all, app, texas]
+        default: all
 
 permissions:
   contents: read
 
-concurrency:
-  group: h5-staging-test-account
-  cancel-in-progress: false
-  queue: max
-
 jobs:
   visual:
+    name: ${{ matrix.suite == 'texas' && '德州' || '应用' }} (${{ matrix.locale }})
     runs-on: ubuntu-latest
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      max-parallel: 1
       matrix:
+        suite: ${{ fromJSON(inputs.suite == 'app' && '["app"]' || inputs.suite == 'texas' && '["texas"]' || '["app","texas"]') }}
         locale: ${{ fromJSON((github.event_name == 'schedule' || inputs.full) && '["zh-Hans","zh-Hant","en"]' || '["zh-Hans"]') }}
+    # 同套测试的语言/轮次互斥；德州用独立账号，与应用及功能/E2E 可并行。
+    # 显式改回应用账号时恢复跨工作流互斥。
+    concurrency:
+      group: ${{ matrix.suite == 'texas' && vars.VISUAL_TEXAS_USERNAME != 'laiwanvisual01' && 'h5-staging-texas-test-account' || 'h5-staging-test-account' }}
+      cancel-in-progress: false
+      queue: max
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-jammy
     env:
@@ -39,7 +46,7 @@ jobs:
       VISUAL_BASE_URL: https://h5.page.shafayouxi.org/
       VISUAL_LOCALES: ${{ matrix.locale }}
       VISUAL_SCOPE: ${{ (github.event_name == 'schedule' || inputs.full) && 'full' || 'core' }}
-      VISUAL_SKIP_SUPPORT_TESTS: ${{ matrix.locale != 'zh-Hans' }}
+      VISUAL_SKIP_SUPPORT_TESTS: ${{ matrix.locale != 'zh-Hans' || matrix.suite != 'app' }}
       VISUAL_WORKERS: '1'
     steps:
       - name: Check out visual tests
@@ -52,7 +59,7 @@ jobs:
         working-directory: visual
         run: pnpm install --frozen-lockfile
       - name: Check visual suite
-        if: matrix.locale == 'zh-Hans'
+        if: matrix.locale == 'zh-Hans' && (matrix.suite == 'app' || inputs.suite == 'texas')
         working-directory: visual
         run: |
           pnpm run typecheck
@@ -60,13 +67,25 @@ jobs:
       - name: Compare screenshots
         working-directory: visual
         env:
+          VISUAL_SUITE: ${{ matrix.suite }}
+          VISUAL_USERNAME: ${{ matrix.suite == 'texas' && vars.VISUAL_TEXAS_USERNAME || '' }}
+          VISUAL_PASSWORD: ${{ matrix.suite == 'texas' && secrets.VISUAL_TEXAS_PASSWORD || '' }}
           TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
-        run: pnpm run test:ci
+        run: |
+          if [ -n "$VISUAL_USERNAME" ] && [ "$VISUAL_USERNAME" != laiwanvisualtexas01 ] && [ -z "$VISUAL_PASSWORD" ]; then
+            echo '::error::自定义德州账号必须配置 VISUAL_TEXAS_PASSWORD Secret。'
+            exit 1
+          fi
+          if [ "$VISUAL_USERNAME" != "$(printf '%s' "$VISUAL_USERNAME" | tr -d '[:space:]')" ]; then
+            echo '::error::VISUAL_TEXAS_USERNAME 不得包含空白字符。'
+            exit 1
+          fi
+          pnpm run test:ci
       - name: Upload failure report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: visual-${{ matrix.locale }}-failure-report
+          name: visual-${{ matrix.suite }}-${{ matrix.locale }}-failure-report
           path: |
             visual/playwright-report/
             visual/test-results/
