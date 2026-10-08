@@ -4,11 +4,8 @@
 `src/texas_holdem_react_native/main/MainScreen.js` 及其引用组件整理界面。
 截图反映运行时的部署版本；源码中存在组件不等于部署版本有可用入口。
 
-当前已提交的基准为每视口 61 张，共 366 张。新增 33 个状态的用例已加入清单，
-但 198 张新基准尚未生成，不计作已完成的视觉覆盖。采集仍需解决 staging 连接波动、
-测试账号现存等待牌局和补钻凭据缺失；完整性检查会保持失败，直到所有图片补齐。
-
-补齐后的目标为每种语言 desktop/mobile 两个视口、每视口 94 张，共 564 张德州基准图。
+当前基准为每种语言 desktop/mobile 两个视口、每视口 94 张，共 564 张德州基准图。
+本轮补齐 33 个状态及其 198 张 Linux 基准，全部纳入核心 CI。
 三种语言为 `zh-Hans`、`zh-Hant`、`en`。场景清单以 [scenarios.ts](scenarios.ts) 为准，
 新增状态必须同时提供六张 Linux 基准图，完整性测试会检查缺失和多余图片。
 
@@ -35,9 +32,9 @@
 | 自动补充筹码、合伙作弊举报 | auto_rebuy、pair_play_report |
 | 下一手猜牌、猜牌结果、升级 | prediction、prediction_result、level_up |
 
-以下为本轮新增用例，均待生成六张 Linux 基准图：
+以下为本轮新增用例，每个状态均有六张 Linux 基准图：
 
-| 源码界面 / 数据状态 | 待采集截图状态 |
+| 源码界面 / 数据状态 | 截图状态 |
 | --- | --- |
 | 过牌、仅全下、全下与跟注、大小盲倍数快捷加注、禁用快捷按钮 | `controls`: check、all_in_only、all_in_call、shortcut_blinds、shortcut_disabled |
 | 预选按钮及三种选中状态 | auto_buttons、auto_fold_selected、auto_call_selected、auto_check_selected；opponent_turn 也断言预选按钮实际显示 |
