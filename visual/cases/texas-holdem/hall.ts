@@ -58,6 +58,11 @@ export async function captureHall(page: Page, scenario: VisualScenario, proxy: T
     result: { net: 10, currency_name: 'coin' } }]));
   await expect(visible(page, 'bet-next-hand-result-background')).toBeVisible();
   await snapshot('prediction_result');
+  // 用新一局事件清空上局猜牌和查看公共牌状态，再恢复下一局牌桌。
+  await proxy.replayTexas(roomId, events([{ event: 'new_game', game_id: 'visual-fixed-game',
+    settings: { small_blind: 1, big_blind: 2, ante: 0 } }]));
+  await advance(page);
+  await expect(visible(page, 'bet-next-hand-button')).toBeHidden();
   await restore(page, proxy, roomId, self, 'river');
   await click(page, 'texas-holdem-operation-button-call');
   await expect(visible(page, 'level-up-title')).toContainText('6');

@@ -109,7 +109,7 @@ jobs:
             pnpm run test:ci
           fi
       - name: Upload reference screenshots for review
-        if: success() && inputs.mode == 'reference'
+        if: always() && !cancelled() && inputs.mode == 'reference'
         uses: actions/upload-artifact@v4
         with:
           name: visual-${{ matrix.suite }}-${{ matrix.locale }}-reference
