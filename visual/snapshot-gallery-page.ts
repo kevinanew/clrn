@@ -1,4 +1,5 @@
 import type { LocaleCode, ScenarioGroup, ViewportDef } from './scenarioTypes';
+import { viewerMarkup, viewerScript, viewerStyles } from './snapshot-gallery-viewer';
 
 type GalleryPage = {
   label: string;
@@ -43,7 +44,7 @@ function renderCard(page: GalleryPage): string {
   return `<article data-label="${escape(page.label)}" data-search="${escape(searchableText)}">
     <h3>${escape(page.label)}</h3>
     <p class="card-meta">${locale} · ${viewport} · ${auth} · ${page.viewport.width} × ${page.viewport.height}</p>
-    <a href="${escape(page.file)}"><img loading="lazy" src="${escape(page.file)}" alt="${escape(page.label)} 页面截图"></a>
+    <a class="snapshot-link" href="${escape(page.file)}" aria-label="查看截图 ${escape(page.label)}"><img loading="lazy" src="${escape(page.file)}" alt="${escape(page.label)} 页面截图"></a>
     <details><summary>查看页面入口</summary><code>${escape(page.navigation.join(' → ') || '大厅')}</code></details>
   </article>`;
 }
@@ -96,6 +97,8 @@ export function renderSnapshotGallery(pages: GalleryPage[]): string {
     code { display: block; margin-top: 8px; font-size: 12px; }
     [hidden] { display: none !important; }
     #empty { padding: 28px; background: white; border-radius: 8px; }
+    .snapshot-link { display: block; cursor: zoom-in; }
+    ${viewerStyles.trim()}
     @media (max-width: 760px) {
       header { padding: 20px 16px; }
       .layout { grid-template-columns: 1fr; padding: 16px; gap: 20px; }
@@ -109,7 +112,7 @@ export function renderSnapshotGallery(pages: GalleryPage[]): string {
   <header>
     <h1>来玩 H5 页面截图索引</h1>
     <p>${pages.length} 张当前基准 · ${modules.length} 个模块 · <a href="manifest.json">页面清单与 SHA-256</a></p>
-    <p>先选择功能模块，再搜索页面、语言或视口。点击截图可查看原图。</p>
+    <p>先选择功能模块，再搜索页面、语言或视口。点击截图放大查看，支持缩放、拖动和方向键切图。</p>
     <p>截图中的易变文本使用固定值；德州场景会真实建房并在截图后解散。</p>
   </header>
   <div class="layout">
@@ -133,6 +136,7 @@ export function renderSnapshotGallery(pages: GalleryPage[]): string {
       </section>`).join('\n      ')}
     </main>
   </div>
+  ${viewerMarkup.trim()}
   <script>
     const filter = document.querySelector('#filter');
     const sections = Array.from(document.querySelectorAll('.module-section'));
@@ -166,6 +170,7 @@ export function renderSnapshotGallery(pages: GalleryPage[]): string {
       updateGallery();
     }));
     filter.addEventListener('input', updateGallery);
+    ${viewerScript.trim()}
   </script>
 </body>
 </html>\n`;
