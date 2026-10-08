@@ -10,7 +10,11 @@ export async function checkFlopCardFaces(page: Page): Promise<void> {
     has: page.getByTestId('player_card_name_text').filter({ hasText: /^(as|ad)$/ }),
   });
   await expect(handCards.getByTestId('player_card_name_text')).toHaveText(['as', 'ad']);
-  const handFronts = handCards.getByTestId('card-flip-side-b');
+  // 恢复牌局时 A 面直接显示已知手牌；实时发牌翻开后由 B 面显示。
+  const handFronts = handCards.locator(
+    '[data-testid="card-flip"][data-side="0"] > [data-testid="card-flip-side-a"], '
+    + '[data-testid="card-flip"][data-side="1"] > [data-testid="card-flip-side-b"]',
+  );
   await expect(handFronts).toHaveCount(2);
   for (const front of await handFronts.all()) await expect(front).toHaveCSS('opacity', '1');
   const holeFaces = handFronts.getByTestId('sprite-image-content');
