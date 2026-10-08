@@ -1,5 +1,6 @@
 services:
   visual:
+    init: true
     build:
       context: ..
       dockerfile: visual/Dockerfile

@@ -2,7 +2,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
-const STARTUP_TIMEOUT_MS = 20_000;
+const STARTUP_TIMEOUT_MS = 90_000;
 const STARTUP_POLL_MS = 100;
 const SHUTDOWN_TIMEOUT_MS = 2_000;
 const MAX_DIAGNOSTIC_LENGTH = 8_000;
@@ -62,7 +62,8 @@ export class MitmdumpProcess {
   }
 }
 
-export function startMitmdump(port: number, directory: string, token: string): MitmdumpProcess {
+export function startMitmdump(port: number, directory: string, token: string,
+  addonPath = path.resolve(__dirname, '../mitmproxy/network_faults.py')): MitmdumpProcess {
   const executable = process.env.MITMDUMP_PATH || process.env.E2E_MITMDUMP_PATH
     || path.resolve(__dirname, '../.venv/bin/mitmdump');
   const child = spawn(executable, [
@@ -72,7 +73,7 @@ export function startMitmdump(port: number, directory: string, token: string): M
     '--set', 'connection_strategy=lazy',
     '--set', 'flow_detail=0',
     '--set', 'termlog_verbosity=error',
-    '-s', path.resolve(__dirname, '../mitmproxy/network_faults.py'),
+    '-s', addonPath,
   ], {
     env: { ...process.env, MITMPROXY_CONTROL_TOKEN: token },
     stdio: ['ignore', 'pipe', 'pipe'],

@@ -21,13 +21,14 @@ async function unusedPort(): Promise<number> {
 }
 
 /** 测试结束或失败时先停止代理，再删除临时证书。 */
-export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>): Promise<T> {
+export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>,
+  options: { addonPath?: string } = {}): Promise<T> {
   const directory = await mkdtemp(path.join(tmpdir(), 'test-mitmproxy-'));
   const token = randomBytes(32).toString('hex');
   try {
     const port = await unusedPort();
     const proxy = new Mitmproxy(port, token);
-    const proxyProcess = startMitmdump(port, directory, token);
+    const proxyProcess = startMitmdump(port, directory, token, options.addonPath);
     try {
       await proxyProcess.waitUntilReady(() => proxy.status());
       return await task(proxy);

@@ -1,13 +1,23 @@
 import { type Page } from '@playwright/test';
-import { expect, test, visualProxyOptions } from '../../src/support/mitmproxy';
+import { writeFileSync } from 'node:fs';
+import { expect, test, texasProxyOptions } from './proxy';
 import { buildScenarios, type VisualScenario } from '../../scenarios';
 import { visualBaseUrl } from '../../target';
 import { buildStorageStateForScenario, setupContextForScenario } from '../../src/support/pageSetup';
 import { ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
 import { preparePage } from '../../src/support/preparePage';
-import { createTexasRoom, deleteTexasRoom } from './room';
+import { createTexasRoom, deleteTexasRoom, enterTexasRoom } from './room';
 import { OPTIONAL_PRE_GAME_STATES, PRE_GAME_STATES } from './scenarios';
 import { appliedGameTranslation, gameViewportCorrection } from './viewportAlignment';
+import { captureGameplay } from './gameplay';
+import { capturePanels } from './panels';
+import { captureHall } from './hall';
+import { captureNewRecords } from './records';
+import config from '../../playwright.config';
+
+// 德州语音弹窗只检查界面，使用浏览器的虚拟麦克风，不读取开发机设备。
+test.use({ launchOptions: { ...config.use?.launchOptions,
+  args: [...(config.use?.launchOptions?.args || []), '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] } });
 
 const visible = (page: Page, id: string) => page.locator(`[data-testid="${id}"]:visible`).last();
 
@@ -26,6 +36,11 @@ async function closePopup(page: Page, button: string, marker: string): Promise<v
 /** React Navigation 的游戏层有时相对视口偏移 ±4px；截图前归零。 */
 async function alignGameToViewport(page: Page): Promise<void> {
   const game = visible(page, 'run-game-view');
+  // 浏览器点击底部控件可能自动滚动导航祖先；牌谱内部滚动保持原位置。
+  await game.evaluate(node => {
+    for (let parent = node.parentElement; parent; parent = parent.parentElement) parent.scrollTop = 0;
+    window.scrollTo(0, 0);
+  });
   const { measuredTop, declaration } = await game.evaluate(node => {
     const element = node as HTMLElement;
     return {
@@ -129,28 +144,68 @@ async function captureOptionalPreGame(page: Page, scenario: VisualScenario): Pro
 for (const scenario of buildScenarios().filter(item => item.group === 'texas-holdem')) {
   test(scenario.label, async ({ browser, mitmproxy }) => {
     const context = await browser.newContext({
-      ...visualProxyOptions(mitmproxy),
+      ...texasProxyOptions(mitmproxy),
       viewport: scenario.viewport,
       locale: 'en-US',
       deviceScaleFactor: 1,
       storageState: buildStorageStateForScenario(scenario, visualBaseUrl),
     });
     const page = await context.newPage();
+    page.on('pageerror', error => console.error(`TEXAS PAGE ERROR > ${error.message}`));
     let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     try {
       await setupContextForScenario(context, scenario, page, { useMitmproxy: true });
+      if (['signed_in_texas_game', 'signed_in_texas_panels', 'signed_in_texas_hall', 'signed_in_texas_records_v2'].includes(scenario.pageLabel)) {
+        await page.clock.install({ time: Date.now() });
+      }
+      if (scenario.pageLabel === 'signed_in_texas_records_v2') await mitmproxy.configureNewRecords(true);
+      if (scenario.pageLabel === 'signed_in_texas_panels') {
+        await context.grantPermissions(['microphone']);
+      }
       await page.goto(scenario.path);
       await preparePage(page, scenario);
+      if (scenario.pageLabel === 'signed_in_texas_records_v2') {
+        await expect.poll(() => page.evaluate(() => localStorage.getItem('use.new.game.record.key'))).toBe('true');
+      }
       const proxyStatus = await mitmproxy.status();
       expect(proxyStatus.proxiedRequests, '德州浏览器流量应经过 mitmproxy').toBeGreaterThan(0);
       console.log(`MITMPROXY > requests=${proxyStatus.proxiedRequests}, stabilized=${proxyStatus.stabilizedRequests}`);
       const optional = scenario.pageLabel === 'signed_in_texas_optional_pre_game';
-      room = await createTexasRoom(page, created => { room = created; }, optional);
-      if (optional) await captureOptionalPreGame(page, scenario);
+      if (scenario.pageLabel === 'signed_in_texas_hall') await mitmproxy.configureHallView();
+      room = await createTexasRoom(page, created => {
+        room = created;
+        // 不记录凭据；强制中断时仍可从失败 artifact 核实本轮创建的 UUID。
+        writeFileSync(test.info().outputPath('created-room.json'), JSON.stringify({
+          roomId: created.roomId, apiOrigin: created.apiOrigin,
+        }));
+      }, optional);
+      if (scenario.pageLabel === 'signed_in_texas_game') {
+        await waitForGameConnection(page);
+        await captureGameplay(page, scenario, mitmproxy, room.roomId, capture);
+      } else if (scenario.pageLabel === 'signed_in_texas_panels') {
+        await waitForGameConnection(page);
+        await capturePanels(page, scenario, mitmproxy, room.roomId, capture);
+      } else if (scenario.pageLabel === 'signed_in_texas_hall') {
+        await enterTexasRoom(page, room);
+        await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+        await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
+        await captureHall(page, scenario, mitmproxy, room.roomId, capture);
+      } else if (scenario.pageLabel === 'signed_in_texas_records_v2') {
+        await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+        await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
+        await captureNewRecords(page, scenario, mitmproxy, room.roomId, capture);
+      } else if (optional) await captureOptionalPreGame(page, scenario);
       else await capturePreGame(page, scenario);
+    } catch (error) {
+      await page.screenshot({ path: test.info().outputPath('failure.png') }).catch(() => undefined);
+      throw error;
     } finally {
       try {
-        if (room) await deleteTexasRoom(page, room);
+        try {
+          await mitmproxy.releaseTexas();
+        } finally {
+          if (room) await deleteTexasRoom(room);
+        }
       } finally {
         await context.close();
       }

@@ -18,9 +18,9 @@ export class Mitmproxy {
     this.server = `http://127.0.0.1:${port}`;
   }
 
-  private control(endpoint: string, scenario?: ProxyScenario | null): Promise<ProxyStatus> {
+  command<T = ProxyStatus>(endpoint: string, payload?: unknown): Promise<T> {
     return new Promise((resolve, reject) => {
-      const body = scenario === undefined ? undefined : JSON.stringify({ scenario });
+      const body = payload === undefined ? undefined : JSON.stringify(payload);
       const req = request({
         hostname: '127.0.0.1',
         port: this.port,
@@ -49,24 +49,24 @@ export class Mitmproxy {
         });
       });
       req.on('error', reject);
-      req.setTimeout(1_000, () => req.destroy(new Error('mitmproxy 控制请求超时')));
+      req.setTimeout(5_000, () => req.destroy(new Error('mitmproxy 控制请求超时')));
       req.end(body);
     });
   }
 
   status(): Promise<ProxyStatus> {
-    return this.control('status');
+    return this.command('status');
   }
 
   inject(scenario: FaultScenario): Promise<ProxyStatus> {
-    return this.control('scenario', scenario);
+    return this.command('scenario', { scenario });
   }
 
   stabilizeVisualNetwork(): Promise<ProxyStatus> {
-    return this.control('scenario', 'visual-stable');
+    return this.command('scenario', { scenario: 'visual-stable' });
   }
 
   clear(): Promise<ProxyStatus> {
-    return this.control('scenario', null);
+    return this.command('scenario', { scenario: null });
   }
 }

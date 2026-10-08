@@ -1,4 +1,5 @@
-import { expect, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect } from './proxy';
 import { canTopUpVisualAccount } from '../../test-account';
 
 type RoomSession = { roomId: string; apiOrigin: string; authorization: string };
@@ -91,18 +92,24 @@ export async function createTexasRoom(
   return room;
 }
 
+/** 只为本用例创建的私人房建立真实观察者连接。 */
+export async function enterTexasRoom(page: Page, room: RoomSession): Promise<void> {
+  const response = await page.request.put(`${room.apiOrigin}/v10/texas_holdem/room/${room.roomId}/enter`, {
+    headers: { Authorization: room.authorization }, data: { client_support: ['time_based_rules'] },
+    timeout: 15_000,
+  });
+  const body = await response.json();
+  expect(response.ok() && body?.ok === true, '大厅显示夹具使用当前私人房的真实观察者连接').toBe(true);
+  await response.dispose();
+}
+
 /** 只删除本用例创建响应中的 UUID；即使截图失败也执行。 */
-export async function deleteTexasRoom(page: Page, room: RoomSession): Promise<void> {
-  const blindsOpen = await page.locator('[data-testid="raise-blind-detail"]:visible')
-    .isVisible().catch(() => false);
-  if (!blindsOpen && await page.locator('[data-testid="run-game-view"]:visible').isVisible().catch(() => false)) {
-    await page.locator('[data-testid="menu-button"]:visible').last().click().catch(() => undefined);
-    await page.locator('[data-testid="drawer-menu-item-exit"]:visible').last().click().catch(() => undefined);
-  }
-  const response = await page.request.delete(`${room.apiOrigin}/v1/room/${room.roomId}`, {
-    headers: { Authorization: room.authorization }, timeout: 15_000,
+export async function deleteTexasRoom(room: RoomSession): Promise<void> {
+  // 清理直连，不依赖可能已退出的代理和浏览器 context。
+  const response = await fetch(`${room.apiOrigin}/v1/room/${room.roomId}`, {
+    method: 'DELETE', headers: { Authorization: room.authorization },
+    redirect: 'error', signal: AbortSignal.timeout(15_000),
   });
   const body = await response.json().catch(() => null);
-  expect(response.ok() && body?.ok === true, '本次新建德州房间应成功解散').toBe(true);
-  await response.dispose();
+  expect(response.ok && body?.ok === true, '本次新建德州房间应成功解散').toBe(true);
 }

@@ -6,7 +6,9 @@
 
 德州视觉用例及其登录态采集使用独立的 `mitmdump`，浏览器流量经过本机代理。
 节点列表和节点健康检查由代理返回固定响应，业务数据的截图 fixture 保持原有规则。
-代理复用 `../e2e/helpers/mitmproxy-*.ts` 与 `../e2e/mitmproxy/`，只需要视觉目录的 Node 依赖。
+App 及其登录态采集直连。德州代理脚本位于 `cases/texas-holdem/mitmproxy/`，
+只复用 `../e2e/helpers/mitmproxy-*.ts` 的进程与控制客户端，完全独立于 E2E 故障脚本。
+以后增加 zhajinhua 时应新增该玩法自己的代理目录和 fixture，不混入 App 或德州脚本。
 Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的德州任务也会安装。
 已有镜像需先执行 `docker compose build visual`，再执行 `pnpm run test:texas`。
 每例结束后停止代理并删除临时 CA，不保存网络 flow 或请求正文。
@@ -99,9 +101,9 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的德州任务也会�
 手机号登录/选区号/用户协议/隐私政策）只保留 mobile 视口**，
 其余页面覆盖双视口（对应 `cases/<功能>/scenarios.ts` 的 `viewports` 字段控制）。
 
-- 全量（`VISUAL_LOCALES=all`）= (mobile 75 页 + desktop 27 页 + 每视口 13 张德州图) × 3 语言 = **384 张**（318 个场景）
-- 默认仅简中 = **128 张**（106 个场景）
-- 核心范围（`VISUAL_SCOPE=core`）= mobile 23 页 + desktop 17 页 + 每视口 13 张德州图 = **66 张**（44 个场景）
+- 全量（`VISUAL_LOCALES=all`）= (mobile 75 页 + desktop 27 页 + 每视口 61 张德州图) × 3 语言 = **672 张**（342 个场景）
+- 默认仅简中 = **224 张**（114 个场景）
+- 核心范围（`VISUAL_SCOPE=core`）= mobile 23 页 + desktop 17 页 + 每视口 61 张德州图 = **162 张**（52 个场景）
   （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、游客牌局登录提示、搜索登录提示、登录后大厅/消息/私人局/俱乐部/我的/商城）
 
 ### 易变内容固定填充（不用隐藏遮罩）
@@ -122,7 +124,8 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的德州任务也会�
 - 第二账号加入房间及创建俱乐部的**提交**流程：会改动 staging 数据；德州建房场景会精确解散本次房间
 - 忘记密码后续流程：需要真实邮箱/短信验证码
 - 账号安全验证码输入、真正改密/注销提交：会改动 staging 账号（绑手机/邮箱/改密/注销仅截表单或提示首屏）
-- 游戏开局及俱乐部详情/成员：依赖对局/俱乐部数据（测试账号为空；club API 已 mock 空列表）
+- 俱乐部详情/成员：依赖俱乐部数据（测试账号为空；club API 已 mock 空列表）
+- 德州 RTC、猜牌记录等当前无法通过 UI 到达的源码界面，原因见[德州覆盖清单](cases/texas-holdem/COVERAGE.md)
 - MatchTexasHoldem 独立匹配页：需浮动匹配态才能进入；大厅内嵌匹配区已覆盖
 - 意见反馈第三方列表内容：UserReport 远端会变，已在 `pageSetup` mock 成空白页，只回归导航壳与标题栏
 
@@ -163,8 +166,8 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的德州任务也会�
 
 ```bash
 cd visual
-pnpm run test          # 简中 128 张
-pnpm run test:all      # 全部语言 384 张
+pnpm run test          # 简中 224 张
+pnpm run test:all      # 全部语言 672 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
@@ -199,7 +202,7 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
   中的应用任务共用 `h5-staging-test-account` 并发组；德州任务用独立账号和
   `h5-staging-texas-test-account` 并发组，两部分可并行，本机也应避免重复登录同一账号。
 - test/reference/approve 均按语言分片，每批默认最多 3 个场景；拆分后每种语言的应用
-  全量为 34 批、核心为 14 批，德州为 2 批。分片之间重新采集登录态，
+  全量为 34 批、核心为 14 批，德州为 4 批。分片之间重新采集登录态，
   场景只注入已有缓存，不自行回退登录。
 - `VISUAL_TEST_SHARDS` / `VISUAL_REFERENCE_SHARDS` 可调整批数（1–80）；
   `VISUAL_REFERENCE_START_SHARD` 可从指定分片恢复 reference。
@@ -213,25 +216,29 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 | 值 | 用途 |
 | --- | --- |
-| `zh-Hans`（默认） | 日常线上（128 张）；push CI 再叠加 `VISUAL_SCOPE=core`（66 张） |
+| `zh-Hans`（默认） | 日常线上（224 张）；push CI 再叠加 `VISUAL_SCOPE=core`（162 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 384 张（GitHub Actions 定时任务） |
+| `all` | 全量 672 张（GitHub Actions 定时任务） |
 
 环境变量 `VISUAL_SCOPE`：
 
 | 值 | 用途 |
 | --- | --- |
 | `full`（默认） | 运行完整页面集合；未设置时也使用此范围 |
-| `core` | 核心页面及本轮新增页面；简中共 66 张 |
+| `core` | 核心页面及本轮新增页面；简中共 162 张 |
 
 ## CI
 
 [视觉工作流](../.github/workflows/visual.yml) 在非 `release` 分支的视觉代码或工作流变更后，
-访问线上并检查简中核心 66 张截图；每日及手动 `full` 运行三种语言的完整场景。
+访问线上并检查简中核心 162 张截图；每日及手动 `full` 运行三种语言的完整场景。
 CI 按「应用 app」和「德州 texas」拆为独立任务并行执行；每套内部各语言仍顺序执行。
-应用覆盖核心 40 张 / 全量 102 张，德州覆盖 26 张，各任务分别保存失败报告。
+应用覆盖核心 40 张 / 全量 102 张，德州每种语言覆盖 122 张，各任务分别保存失败报告。
 不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 手动触发可用 `suite` 选择 `all`、`app` 或 `texas`，只重跑所需部分。
+手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
+不会自动提交图片；`filter` 可只选新增场景。生成新图片时跳过依赖已有图片的完整性检查，
+失败时的 reference artifact 可能不完整，需先修复并跑通；提交后 `mode=compare` 和 push CI
+会执行完整检查和截图对比。
 类型检查和场景配置测试只在简中应用任务运行一次（仅跑德州时由简中德州任务执行）；
 浏览器辅助测试属于应用，只在简中应用任务运行；
 本机运行 `test`、`reference` 或 `approve` 仍会执行浏览器辅助测试。
@@ -239,8 +246,10 @@ CI 按「应用 app」和「德州 texas」拆为独立任务并行执行；每�
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
 原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
-因此已从执行清单移除。历史图片保留，不计入当前 384 张有效截图。
-新德州用例只覆盖等待开始和无需开局的弹层，不点击开始游戏。
+因此已从执行清单移除。历史图片保留，不计入当前 672 张有效截图。
+德州通过 mitmproxy 回放固定牌局和弹窗数据，所有入口仍由实际 UI 点击打开。
+覆盖清单、协议和当前源码限制见 [COVERAGE.md](cases/texas-holdem/COVERAGE.md)。
+服务端房间保持等待状态，回放房间的操作 RPC 被代理隔离，每例精确解散本次真实创建的房间。
 
 ### 分别运行与账号隔离
 
@@ -254,6 +263,7 @@ VISUAL_SUITE=texas pnpm run test:all # 德州三种语言
 `VISUAL_SUITE` 默认为 `all`，保留完整本机测试入口。按功能组划分用例，
 应用的德州建房表单仍属 `app`，进入真实牌桌的用例才属 `texas`；
 `VISUAL_SCOPE`、语言和 label 过滤可与它叠加使用。
+`all` 会分别启动 App、德州子进程，各自采集登录态；App 的登录采集也保持直连。
 
 应用默认账号为 `laiwanvisual01`，单独的德州测试默认使用 `laiwanvisualtexas01`；
 两者沿用固定 staging 测试密码和现有 UI 的首次自动注册机制，随后复用账号。
@@ -303,7 +313,7 @@ visual 专用的认证校验、mock、等待、重试、稳定化及截图判定
 | `cases/runScenario.ts` | 各功能共用的截图执行流程 |
 | `playwright.config.ts` | Playwright 配置（阈值、串行执行） |
 | `src/support/` | context 设置 / 页面准备 / 登录流程 |
-| `src/support/mitmproxy.ts` | 德州代理 fixture、登录态采集与浏览器代理配置 |
+| `cases/texas-holdem/proxy.ts`、`mitmproxy/` | 德州独立代理 fixture、HTTP 数据与 WebSocket 回放 |
 | `src/captureAuthState.ts` | 运行开头的一次性登录态采集 |
 | `run-visual.ts` | Docker/CI 入口（test / reference / approve） |
 | `snapshots/` | 汇总索引与清单（由 `pnpm run gallery` 生成） |

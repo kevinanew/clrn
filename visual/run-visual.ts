@@ -5,6 +5,7 @@ import { visualBaseUrl } from './target';
 import fs from 'fs';
 import path from 'path';
 import { exactScenarioGrep, getVisualShardConfig, selectScenariosByLabel } from './run-visual-config';
+import { getVisualSuite } from './visual-suite';
 import {
   buildScenarios,
   getActiveLocales,
@@ -139,14 +140,34 @@ async function main(): Promise<void> {
     runPnpm(['install', '--frozen-lockfile']);
   }
 
+  // 两套测试各自采集账号登录态；all 也不能让 App 的登录流量经过德州代理。
+  if (getVisualSuite() === 'all') {
+    let ranSuite = false;
+    for (const suite of ['app', 'texas'] as const) {
+      const selected = selectScenariosByLabel(
+        buildScenarios({ ...process.env, VISUAL_SUITE: suite }), process.env.VISUAL_FILTER,
+      );
+      if (selected.length === 0) continue;
+      ranSuite = true;
+      const result = spawnSync('pnpm', ['exec', 'tsx', 'run-visual.ts', action], {
+        stdio: 'inherit', cwd: VISUAL_DIR,
+        env: { ...process.env, VISUAL_SUITE: suite, VISUAL_SKIP_VISUAL_INSTALL: 'true',
+          VISUAL_SKIP_SUPPORT_TESTS: suite === 'texas' ? 'true' : process.env.VISUAL_SKIP_SUPPORT_TESTS },
+      });
+      if (result.status !== 0) throw new Error(`${suite} 视觉测试失败（退出码 ${result.status ?? 1}）`);
+    }
+    if (!ranSuite) throw new Error('VISUAL_FILTER 没有匹配任何场景');
+    return;
+  }
+
   try {
     console.log(`线上视觉测试地址: ${visualBaseUrl}`);
     const playwrightArgs = ['exec', 'playwright', 'test'];
     if (action === 'reference') {
-      // 只重写有显著视觉差异的基准。截图断言不再使用按面积放宽的比例容差：
-      // 任意超过 threshold 的像素都会触发更新；仅忽略 Docker Chromium 产生的
-      // 1–4 级 RGB 抗锯齿舍入噪声，避免 `all` 每轮把肉眼不可见差异写回文件。
-      playwrightArgs.push('--update-snapshots=changed');
+      // 德州重写每张所选基准，确保低于对比容差的旧弹幕/倒计时也被替换。
+      // App 继续只更新有显著差异的截图。
+      playwrightArgs.push(getVisualSuite() === 'texas'
+        ? '--update-snapshots=all' : '--update-snapshots=changed');
     } else if (action === 'approve') {
       // approve：只接受上次 test 里真正 diff/失败的场景为新基准，未变化的不动
       playwrightArgs.push('--update-snapshots');
