@@ -41,6 +41,9 @@ export async function captureHallVariants(page: Page, scenario: VisualScenario, 
   await advance(page);
   await expect(visible(page, 'bet-next-hand-result-amount')).toHaveText('-10');
   await snapshot('prediction_loss');
+  // 让上一条结果的三秒隐藏计时器结束，避免它提前收起新的结果。
+  await page.clock.runFor(3500);
+  await expect(visible(page, 'bet-next-hand-result-amount')).toBeHidden();
   await proxy.replayTexas(room, events([{ event: 'settlement_hand_prediction', result: { net: 20, currency_name: 'diamond' } }]));
   await advance(page);
   await expect(visible(page, 'bet-next-hand-result-amount')).toHaveText('+20');
