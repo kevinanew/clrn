@@ -76,8 +76,15 @@ test.describe('H5 弱网行为', () => {
     expect(requestsBeforeRetry).toBeGreaterThan(0);
 
     await page.locator('[data-testid="club-list-retry-button"]').click();
+    await expect(page.locator('[data-testid="club-list-load-error"]')).not.toBeVisible();
     await expect.poll(async () => (await mitmproxy.status()).interceptedRequests)
       .toBeGreaterThan(requestsBeforeRetry);
+    // A hit means the retry has started, not that all fallback requests finished.
+    // Keep faults active until the UI returns to its retryable error state.
+    await expect(page.locator('[data-testid="club-list-load-error"]')).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.locator('[data-testid="club-list-retry-button"]')).toBeVisible();
     await mitmproxy.clear();
     const recovered = page.waitForResponse(response => {
       const url = new URL(response.url());
