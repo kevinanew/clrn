@@ -8,7 +8,7 @@ import { runtime } from './helpers/environment';
 export default defineConfig({
   testDir: './',
   testMatch: /.*\.spec\.ts/,
-  testIgnore: '**/cases/**',
+  testIgnore: ['**/cases/**', '**/.venv/**'],
   outputDir: './test-results',
   fullyParallel: true,
   workers: runtime.workers,

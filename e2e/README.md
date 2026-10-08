@@ -12,11 +12,14 @@
 cd e2e
 npm ci
 npx playwright install chromium # 本机首次安装或升级 Playwright 时执行
+python3.12 -m venv .venv # 弱网测试需要 Python 3.12+ 和 mitmproxy
+.venv/bin/python -m pip install -r mitmproxy/requirements.txt
 
 export E2E_STAGING_URL='https://h5.page.shafayouxi.org/' # 默认值，可省略
 
 npm run test:smoke
 npm run test:network-resilience
+npm run test:mitmproxy # 无需访问 staging 的代理集成检查
 npm test # 冒烟、弱网和测试余额 helper 回归
 npm run test:functional # cases/ 下的 TypeScript 用户场景
 npm run report
@@ -38,12 +41,25 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 - `E2E_RETRIES`：失败重试次数，默认 `1`。
 - `E2E_EXPECT_BUILD_SHA`：至少 7 位的提交 SHA 前缀。
 - `E2E_TEST_USERNAME` / `E2E_TEST_PASSWORD`：弱网俱乐部场景的 staging 测试账号。
+- `E2E_MITMDUMP_PATH`：已有 mitmdump 可执行文件的路径；默认 `e2e/.venv/bin/mitmdump`
+  （Windows 为 `.venv/Scripts/mitmdump.exe`）。
 
 ## 覆盖范围
 
 冒烟测试覆盖 `E2E_STAGING_URL` 指定的 staging 站点，以及 `https://h5.laiwan.life/`、`https://h5.laiwanpai.com/` 和 `https://h5.goplay360.com/`，检查 HTTP 状态、标题、应用根节点和首屏内容。设置 `E2E_EXPECT_BUILD_SHA` 后还会验证 `meta[name="build-version"]`。
 
 弱网测试覆盖大厅接口超时、登录接口失败和俱乐部列表接口失败后的降级与重试 UI，并确认俱乐部重试会再次发出请求。失败 trace 保存在 `test-results/`，HTML 报告保存在 `playwright-report/`。
+
+弱网流量经过真实 mitmproxy，不使用 Playwright route 模拟网络故障。
+每例自动启动独立的 `mitmdump`，仅监听本机随机端口；大厅首个请求延迟 12 秒后断连，
+后续回退请求直接断连，登录和俱乐部目标接口直接断连。故障仅匹配 staging API，
+放行 CORS 预检及其他请求；大厅和俱乐部解除故障后会检查真实接口恢复。
+登录失败场景由代理返回“用户名已存在”，保留原用例分支并避免自动注册，再断开登录接口。
+代理控制接口使用每例随机 token，故障命中次数通过该接口断言。
+代理 CA 和私钥存放在系统临时目录，结束时删除；只有弱网与代理集成测试的浏览器上下文
+忽略证书错误，不修改系统证书信任。代理不保存 flow 或输出请求正文，避免记录登录凭据。
+本机可运行 `.venv/bin/python -m unittest discover -s mitmproxy -p 'test_*.py'`
+验证故障范围、首次延迟、控制认证和清除故障。
 
 ## 测试资产边界
 
@@ -54,7 +70,7 @@ Production E2E 仅允许不会修改用户资产和业务数据的只读检查�
 
 ## CI
 
-先在 GitHub 仓库 Settings → Secrets and variables → Actions → Variables 中设置 `E2E_STAGING_URL`。`.github/workflows/e2e.yml` 在 `master` push 或手动触发时，将这个仓库变量传给测试，并使用 Playwright `v1.59.1-jammy` 镜像执行 `npm ci` 和 `npm test`。变量缺失时使用默认线上 staging；非 HTTPS 或非 staging 域名会直接报错。失败时上传 trace 与 HTML 报告。镜像版本与本目录 `package-lock.json` 锁定的 Playwright `1.59.1` 一致。测试访问已部署站点，push 触发的结果反映当时站点状态，不代表当前提交已经部署。可在部署后手动运行工作流，并用 `E2E_EXPECT_BUILD_SHA` 本地验证指定版本。
+先在 GitHub 仓库 Settings → Secrets and variables → Actions → Variables 中设置 `E2E_STAGING_URL`。`.github/workflows/e2e.yml` 在 `e2e/**` 或工作流文件 push 变更及手动触发时，将这个仓库变量传给测试，并使用 Playwright `v1.59.1-jammy` 镜像执行 `npm ci`、安装 Python 3.12 与锁定的 mitmproxy，再运行代理检查和 `npm test`。变量缺失时使用默认线上 staging；非 HTTPS 或非 staging 域名会直接报错。失败时上传 trace 与 HTML 报告。镜像版本与本目录 `package-lock.json` 锁定的 Playwright `1.59.1` 一致。测试访问已部署站点，push 触发的结果反映当时站点状态，不代表当前提交已经部署。可在部署后手动运行工作流，并用 `E2E_EXPECT_BUILD_SHA` 本地验证指定版本。
 
 部署说明见 [应用仓库的 Web 文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/web/README.md)。
 
