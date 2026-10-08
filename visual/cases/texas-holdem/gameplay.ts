@@ -84,7 +84,14 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   await expect(visible(page, 'toastText1')).toContainText(/主动投钱|主動投錢|actively investing/);
   await snapshot('statistics_help');
   await page.clock.runFor(6000);
-  await expect(visible(page, 'toastText1')).toBeHidden();
+  // Toast 退场后仍保留 DOM，用实际视口交集判断提示已经移出画面。
+  await expect.poll(async () => {
+    await page.clock.runFor(250);
+    return visible(page, 'toastText1').evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      return rect.bottom <= 0 || rect.top >= innerHeight;
+    });
+  }, { timeout: 30_000, intervals: [100, 250, 500] }).toBe(true);
   await visible(page, 'player-profile-report-button').click();
   await expect(visible(page, 'report-field-input')).toBeVisible();
   await snapshot('report');
