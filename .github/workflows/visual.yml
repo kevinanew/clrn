@@ -87,6 +87,7 @@ jobs:
         working-directory: visual
         run: |
           pnpm run typecheck
+          pnpm run test:gallery
           if [ '${{ inputs.mode }}' != reference ]; then pnpm run test:scenarios; fi
       - name: Run visual suite
         working-directory: visual

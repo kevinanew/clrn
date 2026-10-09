@@ -13,6 +13,7 @@
     "approve": "docker compose run --rm -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_SUITE -e VISUAL_TEST_SHARDS -e TESTING_API_TOKEN visual approve",
     "report": "tsx open-report.ts",
     "gallery": "node --import tsx snapshot-gallery.ts",
+    "test:gallery": "node --import tsx --test snapshot-gallery.test.ts",
     "test:scenarios": "node --import tsx --test target.test.ts scenarios.test.ts scenarioPages.test.ts snapshotLocations.test.ts run-visual-config.test.ts run-visual-isolation.test.ts docker-env.test.ts src/support/runWithContext.test.ts src/support/pageSetup.test.ts cases/texas-holdem/viewportAlignment.test.ts cases/texas-holdem/roomCleanup.test.ts visual-suite.test.ts cases/game-record/matrix.test.ts",
     "lint": "node ../lint-lines.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
