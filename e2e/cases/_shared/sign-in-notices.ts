@@ -42,6 +42,10 @@ export async function installSignInNoticeHandler(page: Page): Promise<void> {
         const cancel = page.getByTestId('alert-custom-button').filter({ visible: true })
           .filter({ hasText: /^(?:取消|Cancel)$/ });
         await expect(cancel).toHaveCount(1);
+        // 提示可能在抽奖等业务弹层下方；先让案例正常关闭上层，再处理它。
+        const onTop = await cancel.click({ trial: true, timeout: 1_000 })
+          .then(() => true).catch(() => false);
+        if (!onTop) return;
         await cancel.click();
         handledRelief = true;
         // alert 会复用节点显示下一个提示，只等待当前救济金内容消失。
@@ -49,6 +53,9 @@ export async function installSignInNoticeHandler(page: Page): Promise<void> {
       } else if (!handledClubNotice && clubNotice.test(content)) {
         const confirm = await unique(page, 'alert-custom-button');
         await expect(confirm).toHaveText('好的');
+        const onTop = await confirm.click({ trial: true, timeout: 1_000 })
+          .then(() => true).catch(() => false);
+        if (!onTop) return;
         await confirm.click();
         handledClubNotice = true;
         await expect(message.filter({ hasText: clubNotice })).not.toBeVisible();
@@ -61,7 +68,8 @@ export async function installSignInNoticeHandler(page: Page): Promise<void> {
         return;
       }
     }
-  });
+    // 只等待已操作的提示内容消失；下层提示仍可见时，上层业务操作必须继续。
+  }, { noWaitAfter: true });
 }
 
 /**

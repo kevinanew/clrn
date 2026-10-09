@@ -167,3 +167,34 @@ test('取消救济金后节点立即复用为业务错误，保留错误并允�
   await page.getByTestId('alert-custom-button').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
+
+test('救济金在业务面板下方时先正常关闭面板，再取消救济金', async ({ page }) => {
+  await page.setContent(`
+    <button id="target">大厅</button><p id="result"></p>
+    <div id="relief" style="position:fixed;inset:0;background:white;z-index:10">
+      <p data-testid="alert-message-text">3000个免费的金币，请收下</p>
+      <button data-testid="alert-custom-button">取消</button>
+      <button data-testid="alert-custom-button">确认</button>
+    </div>
+    <div id="panel" style="position:fixed;inset:0;background:white;z-index:20">
+      <button id="close-panel">关闭抽奖面板</button>
+    </div>
+  `);
+  await page.evaluate(() => {
+    document.getElementById('close-panel')!.addEventListener('click', () => {
+      document.getElementById('panel')!.remove();
+    });
+    document.querySelectorAll('[data-testid="alert-custom-button"]')[0].addEventListener('click', () => {
+      document.getElementById('relief')!.remove();
+    });
+    document.getElementById('target')!.addEventListener('click', () => {
+      document.getElementById('result')!.textContent = '回到大厅';
+    });
+  });
+  await installSignInNoticeHandler(page);
+  await expect(page.locator('#close-panel')).toBeVisible();
+  await page.locator('#close-panel').click();
+  await page.locator('#target').click();
+  await expect(page.locator('#result')).toHaveText('回到大厅');
+  await expect(page.locator('#panel, #relief')).toHaveCount(0);
+});

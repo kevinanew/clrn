@@ -42,7 +42,7 @@ export async function signIn(page: Page, credentials = {
 }
 
 /**
- * 携带当前会话访问账号接口，读取状态码并释放响应。
+ * 携带当前会话读取状态码，仅重试连接重置，失败诊断不包含认证头。
  * @param page - 执行操作的 Playwright 页面。
  * @param session - 当前登录会话的接口地址和认证信息。
  */
@@ -50,6 +50,11 @@ export async function accountStatus(page: Page, session: Session): Promise<numbe
   const response = await page.request.get(session.accountUrl, {
     headers: { Authorization: session.authorization },
     timeout: 15_000,
+    // Playwright 只对 ECONNRESET 重试；200、401 等 HTTP 响应保持原样。
+    maxRetries: 2,
+  }).catch(() => {
+    // APIRequestContext 的原始错误包含请求头，不能直接写入测试报告。
+    throw new Error('账号会话状态读取失败：网络请求未完成');
   });
   const status = response.status();
   await response.dispose();
