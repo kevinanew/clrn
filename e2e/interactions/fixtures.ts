@@ -1,6 +1,7 @@
 import { type BrowserContext, test as base, expect, type Page } from '@playwright/test';
 import { environment } from '../helpers/environment';
 import { gotoDeployedSite, initializePage } from '../helpers/page';
+import { signIn } from '../cases/_shared/auth';
 
 const baseURL = process.env.E2E_INTERACTION_BASE_URL || environment.stagingUrl;
 type StorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
@@ -71,20 +72,8 @@ export const test = base.extend<object, { accountState: StorageState }>({
         await prepare(context);
         const page = await context.newPage();
         await openApp(page, false);
-        await page.getByTestId('hall-sign-in-button').click();
-        await page.getByTestId('username-or-email-sign-in-button').click();
-        await page
-          .locator('input[data-testid="username-input"], [data-testid="username-input"] input')
-          .first()
-          .fill(environment.testUsername);
-        await page
-          .locator('input[data-testid="password-input"], [data-testid="password-input"] input')
-          .first()
-          .fill(environment.testPassword);
-        await page.locator('#username-or-email-submit-button').click();
-        await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible({
-          timeout: 60_000,
-        });
+        // 复用仅定位可见表单的真实登录流程，阻断账号缺失时的自动注册。
+        await signIn(page);
         await dismissWelcome(page);
         state = await context.storageState();
       } finally {

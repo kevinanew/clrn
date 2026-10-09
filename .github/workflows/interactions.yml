@@ -5,6 +5,8 @@ on:
     paths:
       - 'e2e/interactions/**'
       - 'e2e/helpers/**'
+      - 'e2e/cases/_shared/auth.ts'
+      - 'e2e/cases/_shared/page.ts'
       - 'e2e/interactions.config.ts'
       - 'e2e/freshchat.config.ts'
       - 'e2e/package*.json'
