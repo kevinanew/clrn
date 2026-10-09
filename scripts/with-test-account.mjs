@@ -51,9 +51,11 @@ async function run() {
   if (!Array.isArray(accounts) || !accounts.length
     || accounts.some(account => typeof account.username !== 'string' || !account.username
       || typeof account.password !== 'string' || !account.password
+      // H5 密码框最多接收 20 个字符；更长的密码虽然可走 API 登录，界面会截断。
+      || account.password.length > 20 || /[\r\n\0]/.test(account.password)
       || typeof account.userId !== 'string' || !account.userId)
     || new Set(accounts.map(account => account.username.toLowerCase())).size !== accounts.length) {
-    throw new Error('测试账号池为空、配置不完整或包含重复用户名');
+    throw new Error('测试账号池为空、配置不完整、密码不兼容 H5 或包含重复用户名');
   }
 
   // 自定义账号池也使用旁边的 locks；共享账号时必须指定相同的账号池文件。

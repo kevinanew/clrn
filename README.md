@@ -38,6 +38,7 @@ node ../scripts/with-test-account.mjs -- pnpm run test:ci
 每组测试都应通过该脚本启动，同一轮内部仍保持现有测试的登录与 worker 策略。
 
 账号凭据只保存在 Git 元数据目录 `clrn-test-accounts/accounts.json`，不提交。
+当前两组账号均使用独立的 16 位密码；H5 密码输入框上限为 20 位，分配器会拒绝超长密码。
 可通过 `CLRN_TEST_ACCOUNT_POOL` 指定其他账号池文件；共用账号必须共用同一文件，
 占用锁保存在其旁边的 `locks/`。池用完时明确报错，不复用正在被占用的账号。
 进程被 SIGKILL 强制终止会留下占用锁，确认对应测试已结束后再删除该目录。

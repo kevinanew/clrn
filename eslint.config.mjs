@@ -36,6 +36,56 @@ export default [
     },
   },
   {
+    // 浏览器脚本依次内嵌同一 HTML；仅声明本文件实际引用的共享变量。
+    files: ['visual/snapshot-gallery-browser.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: {
+        localeNames: 'readonly',
+        displayPageName: 'readonly',
+        moduleNames: 'readonly',
+        syncGallerySelection: 'readonly',
+      },
+    },
+  },
+  {
+    // 浏览器脚本依次内嵌同一 HTML；仅声明本文件实际引用的共享变量。
+    files: ['visual/snapshot-gallery-keyboard-browser.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: {
+        byId: 'readonly',
+        galleryRecords: 'readonly',
+        snapshotDetailsMarkup: 'readonly',
+        displayPageName: 'readonly',
+        variantLabel: 'readonly',
+        moduleButtons: 'readonly',
+        selectedModule: 'writable',
+        resetFilters: 'readonly',
+      },
+    },
+  },
+  {
+    // 浏览器脚本依次内嵌同一 HTML；仅声明本文件实际引用的共享变量。
+    files: ['visual/snapshot-gallery-viewer-browser.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: {
+        galleryRecords: 'readonly',
+        html: 'readonly',
+        localeNames: 'readonly',
+        displayPageName: 'readonly',
+        pageMeta: 'readonly',
+        selectGalleryLink: 'readonly',
+        getGalleryItems: 'readonly',
+        keyboardLinks: 'writable',
+        byId: 'readonly',
+        rows: 'writable',
+        setGalleryVariant: 'readonly',
+      },
+    },
+  },
+  {
     files: ['**/*.{ts,tsx,mts,cts}'],
     languageOptions: { parser: tseslint.parser },
     plugins: { '@typescript-eslint': tseslint.plugin },

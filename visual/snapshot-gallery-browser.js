@@ -1,282 +1,255 @@
-const filter = document.querySelector('#filter');
-const sections = Array.from(document.querySelectorAll('.module-section'));
-const buttons = Array.from(document.querySelectorAll('[data-module]'));
-let selectedModule = '';
+// 生成图库时嵌入同一脚本；跨文件引用的变量由 ESLint 配置显式声明。
+/* exported byId, html, variantLabel, pageMeta, galleryRecords, moduleButtons, selectedModule, rows, readState, getGalleryItems, snapshotDetailsMarkup, setGalleryVariant, updateGallery, resetFilters */
+/**
+ * 按 ID 获取图库页面的控件。
+ * @param id - 控件在 HTML 中的 ID。
+ */
+const byId = id => document.getElementById(id);
+/**
+ * 将场景名称转换为忽略大小写和分隔符的搜索文本。
+ * @param value - 需要填入表单或转义的原始字符串。
+ */
+const normalize = value => value.toLowerCase().replace(/[_-]/g, ' ');
+/**
+ * 转义插入图库 HTML 的文字，避免名称被解析为标签。
+ * @param value - 需要填入表单或转义的原始字符串。
+ */
+const html = value => String(value).replace(/[&<>"']/g, char => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+})[char]);
+/**
+ * 生成语言、设备及分辨率的版本说明。
+ * @param page - 待展示或分组的截图元数据。
+ */
+const variantLabel = page => (localeNames[page.locale] || page.locale) + ' · ' +
+  (page.viewport.label === 'mobile' ? '手机' : '电脑') + ' · ' + page.viewport.width + ' × ' + page.viewport.height;
+/**
+ * 生成版本与登录状态的说明。
+ * @param page - 待展示或分组的截图元数据。
+ */
+const pageMeta = page => variantLabel(page) + ' · ' + (page.signedIn ? '已登录' : '游客');
+const galleryRecords = JSON.parse(byId('gallery-data').textContent).map((page, id) => ({
+  ...page, id, key: JSON.stringify([page.group, page.page, page.signedIn]),
+  search: normalize([displayPageName(page.page), page.label, page.page, page.file, moduleNames[page.group],
+    localeNames[page.locale], page.locale === 'en' ? '英文' : '', page.viewport.label,
+    variantLabel(page), pageMeta(page), page.viewport.width + 'x' + page.viewport.height,
+    ...page.navigation].join(' ')),
+}));
+const moduleButtons = Array.from(document.querySelectorAll('[data-module]'));
+const fields = ['filter', 'locale', 'device', 'resolution', 'auth', 'view-mode', 'thumbnail-size'];
+const defaults = { 'view-mode': 'pages', 'thumbnail-size': '300' };
+const selectedVariants = new Map();
+let selectedModule = '', rows = [], matched = [];
+
+/** 从 URL 片段恢复筛选项，并在必要时展开筛选栏。 */
+function readState() {
+  const params = new URLSearchParams(location.hash.slice(1));
+  fields.forEach(id => {
+    const field = byId(id), value = params.get(id) ?? defaults[id] ?? '';
+    field.value = field.tagName === 'INPUT' || Array.from(field.options).some(option => option.value === value) ? value : defaults[id] || '';
+  });
+  selectedModule = moduleButtons.some(button => button.dataset.module === params.get('module')) ? params.get('module') : '';
+  if (!window.matchMedia('(max-width: 760px)').matches || fields.some(id =>
+    id !== 'filter' && byId(id).value !== (defaults[id] || ''))) {
+    byId('gallery').querySelector('.toolbar').classList.add('filters-open');
+    byId('toggle-filters').setAttribute('aria-expanded', 'true');
+  }
+}
+
+/** 将非默认筛选项写入 URL，供刷新或分享时恢复。 */
+function saveState() {
+  const params = new URLSearchParams();
+  fields.forEach(id => {
+    const value = byId(id).value;
+    if (value !== (defaults[id] || '')) params.set(id, value);
+  });
+  if (selectedModule) params.set('module', selectedModule);
+  const hash = params.toString();
+  if (location.hash.slice(1) === hash) return;
+  const url = new URL(location.href);
+  url.hash = hash;
+  try { history.replaceState(null, '', url.href); } catch { location.replace(url.href); }
+}
+
+/**
+ * 判断截图是否同时满足版本筛选与所有搜索词。
+ * @param page - 待展示或分组的截图元数据。
+ * @param terms - 需要同时匹配的搜索词。
+ */
+function matches(page, terms) {
+  return (!byId('locale').value || page.locale === byId('locale').value) &&
+    (!byId('device').value || page.viewport.label === byId('device').value) &&
+    (!byId('resolution').value || page.viewport.width + 'x' + page.viewport.height === byId('resolution').value) &&
+    (!byId('auth').value || (page.signedIn ? 'signed-in' : 'guest') === byId('auth').value) &&
+    terms.every(term => page.search.includes(term));
+}
+
+/**
+ * 优先使用用户选择的版本，否则选择简体手机版本。
+ * @param variants - 同一页面的候选版本。
+ * @param key - 保存用户版本选择的截图分组键。
+ */
+function preferred(variants, key) {
+  const selected = variants.find(page => page.id === selectedVariants.get(key));
+  return selected || variants.slice().sort((a, b) =>
+    (a.locale === 'zh-Hans' ? 0 : 2) + (a.viewport.label === 'mobile' ? 0 : 1) -
+    (b.locale === 'zh-Hans' ? 0 : 2) - (b.viewport.label === 'mobile' ? 0 : 1))[0];
+}
+
+/**
+ * 按页面、语言或设备的浏览模式组织截图行。
+ * @param pages - 待处理的页面定义或截图元数据清单。
+ */
+function buildRows(pages) {
+  const mode = byId('view-mode').value, groups = new Map();
+  pages.forEach(page => {
+    const suffix = mode === 'screenshots' ? page.id : mode === 'languages' ?
+      JSON.stringify(page.viewport) : mode === 'devices' ? page.locale : '';
+    const key = page.key + ':' + suffix;
+    if (!groups.has(key)) groups.set(key, { key, group: page.group, variants: [] });
+    groups.get(key).variants.push(page);
+  });
+  return Object.keys(moduleNames).flatMap(group => Array.from(groups.values()).filter(row => row.group === group));
+}
+
+/**
+ * 取得当前浏览模式下该行需要展示的截图。
+ * @param row - 已分组的截图行及其版本。
+ */
+function rowItems(row) {
+  return byId('view-mode').value === 'pages' ? [preferred(row.variants, row.key)] : row.variants;
+}
+// 连续浏览当前筛选结果；图片由浏览器按需加载。
+/** 按图库顺序返回当前可浏览的截图 ID。 */
+function getGalleryItems() { return rows.flatMap(rowItems).map(page => page.id); }
+
+/**
+ * 生成单张截图的预览链接与版本说明。
+ * @param page - 待展示或分组的截图元数据。
+ * @param caption - 是否显示版本标题。
+ */
+function snapshotMarkup(page, caption = false) {
+  return '<div class="snapshot-item" data-id="' + page.id + '" data-label="' + html(page.label) + '">' +
+    (caption ? '<p class="variant-caption">' + html(variantLabel(page)) + '</p>' : '') +
+    '<a class="snapshot-link" aria-keyshortcuts="Enter Space" href="' + html(page.file) + '" aria-label="查看截图 ' + html(page.label) + '">' +
+    '<img loading="lazy" decoding="async" src="' + html(page.file) + '" alt="' + html(page.label) + ' 页面截图"></a>' +
+    '<p class="card-meta">' + html(pageMeta(page)) + '</p></div>';
+}
+
+/**
+ * 生成截图原始名称和操作路径的详情。
+ * @param page - 待展示或分组的截图元数据。
+ */
+function snapshotDetailsMarkup(page) {
+  return '原始名称：' + html(page.label) + '<br>操作路径：' + html(page.navigation.join(' → ') || '大厅');
+}
+
+/**
+ * 切换卡片展示的版本并同步键盘选择。
+ * @param card - 当前截图所在的卡片元素。
+ * @param page - 待展示或分组的截图元数据。
+ */
+function setGalleryVariant(card, page) {
+  selectedVariants.set(card.dataset.row, page.id);
+  card.dataset.label = page.label;
+  const select = card.querySelector('.variant-select');
+  if (select) select.value = String(page.id);
+  card.querySelector('.variants').innerHTML = snapshotMarkup(page);
+  syncGallerySelection();
+}
+
+/**
+ * 生成包含版本选择与详情的截图卡片。
+ * @param row - 已分组的截图行及其版本。
+ */
+function cardMarkup(row) {
+  const variants = rowItems(row), page = variants[0], grouped = byId('view-mode').value === 'pages';
+  const switcher = grouped && row.variants.length > 1 ?
+    '<label class="card-version-label">版本 <kbd aria-hidden="true">W</kbd><select class="variant-select" aria-keyshortcuts="W Shift+W" aria-label="切换 ' + html(page.page) + ' 的版本">' + row.variants.map(variant =>
+      '<option value="' + variant.id + '"' + (variant.id === page.id ? ' selected' : '') + '>' +
+      html(variantLabel(variant)) + '</option>').join('') + '</select></label>' : '';
+  return '<article data-row="' + html(row.key) + '" data-label="' + html(page.label) + '">' +
+    '<h3 title="' + html(page.page) + '">' + html(displayPageName(page.page)) + '</h3><div class="variants">' +
+    variants.map(variant => snapshotMarkup(variant, !grouped && variants.length > 1)).join('') + '</div>' + switcher +
+    '<div class="card-bottom"><details><summary aria-keyshortcuts="T">截图详情 <kbd aria-hidden="true">T</kbd></summary><code>' +
+    snapshotDetailsMarkup(page) + '</code></details><span>' + row.variants.length +
+    ' 个版本</span></div></article>';
+}
+
+/** 绘制模块分组和计数，保存筛选并恢复键盘选择。 */
+function renderGallery() {
+  const restoreFocus = Boolean(document.activeElement.closest?.('#gallery-sections article'));
+  byId('gallery-sections').innerHTML = Object.entries(moduleNames).map(([group, name]) => {
+    const groupRows = rows.filter(row => row.group === group);
+    if (!groupRows.length) return '';
+    const total = new Set(matched.filter(page => page.group === group).map(page => page.key)).size;
+    return '<section class="module-section" data-group="' + group + '" aria-labelledby="module-' + group + '">' +
+      '<div class="module-heading"><h2 id="module-' + group + '">' + name + '</h2><span>' + total +
+      ' 个页面</span></div><div class="cards">' + groupRows.map(cardMarkup).join('') + '</div></section>';
+  }).join('');
+  byId('gallery').classList.toggle('comparison', ['languages', 'devices'].includes(byId('view-mode').value));
+  byId('gallery').style.setProperty('--preview-height', byId('thumbnail-size').value + 'px');
+  const total = new Set(matched.map(page => page.key)).size;
+  byId('count').textContent = total + ' 个页面 · ' + matched.length + ' 张截图';
+  byId('empty').hidden = rows.length !== 0;
+  byId('view-hint').textContent = {
+    pages: '同一页面只显示一张图，下方可切换版本',
+    languages: byId('locale').value ? '选择「全部语言」可并排对照不同语言' : '同一个页面，不同语言放在一起看',
+    devices: byId('device').value || byId('resolution').value ? '选择「全部设备 / 分辨率」可并排对照' : '同一个页面，手机和电脑放在一起看',
+    screenshots: '每种语言、每种设备都单独显示一张图',
+  }[byId('view-mode').value];
+  saveState();
+  syncGallerySelection(restoreFocus);
+}
 
 /** 根据模块与搜索词筛选截图卡片，更新各模块计数和空结果提示。 */
 function updateGallery() {
-  const terms = filter.value.trim().toLowerCase().split(/[\s,，]+/).filter(Boolean);
-  let visibleCards = 0;
-  let visibleModules = 0;
-  sections.forEach(section => {
-    const moduleSelected = !selectedModule || section.dataset.group === selectedModule;
-    let sectionCount = 0;
-    section.querySelectorAll('article').forEach(card => {
-      const searchableText = card.dataset.search.toLowerCase();
-      card.hidden = !moduleSelected || !terms.every(term => searchableText.includes(term));
-      if (!card.hidden) sectionCount++;
-    });
-    section.hidden = sectionCount === 0;
-    section.querySelector('[data-module-count]').textContent = sectionCount + ' 张';
-    visibleCards += sectionCount;
-    if (sectionCount > 0) visibleModules++;
+  const terms = byId('filter').value.trim().split(/[\s,，]+/).filter(Boolean).map(normalize);
+  const candidates = galleryRecords.filter(page => matches(page, terms));
+  moduleButtons.forEach(button => {
+    const group = button.dataset.module;
+    const count = new Set(candidates.filter(page => !group || page.group === group).map(page => page.key)).size;
+    button.querySelector('.module-total').textContent = count;
+    button.setAttribute('aria-pressed', String(group === selectedModule));
+    button.tabIndex = group === selectedModule ? 0 : -1;
   });
-  document.querySelector('#count').textContent = '显示 ' + visibleCards + ' 张 · ' + visibleModules + ' 个模块';
-  document.querySelector('#empty').hidden = visibleCards !== 0;
+  matched = candidates.filter(page => !selectedModule || page.group === selectedModule);
+  rows = buildRows(matched);
+  renderGallery();
+  if (window.scrollY > byId('gallery').offsetTop) byId('gallery').scrollIntoView({ block: 'start' });
 }
 
-buttons.forEach(button => button.addEventListener('click', () => {
+/** 恢复默认筛选，清除版本选择并重新绘制图库。 */
+function resetFilters() {
+  fields.forEach(id => { byId(id).value = defaults[id] || ''; });
+  selectedModule = '';
+  selectedVariants.clear();
+  updateGallery();
+}
+moduleButtons.forEach(button => button.addEventListener('click', () => {
   selectedModule = button.dataset.module;
-  buttons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
   updateGallery();
 }));
-filter.addEventListener('input', updateGallery);
-const viewer = document.querySelector('#viewer');
-const stage = document.querySelector('#viewer-stage');
-const image = document.querySelector('#viewer-image');
-const message = document.querySelector('#viewer-message');
-/**
- * 按名称定位截图查看器中的操作控件。
- * @param name - 查看器控件的名称后缀。
- */
-const control = name => document.querySelector('#viewer-' + name);
-let items = [], current = 0, opener, previousOverflow;
-let scale = 1, fitScale = 1, offsetX = 0, offsetY = 0, mode = 'fit';
-const pointers = new Map();
-
-/**
- * 设置操作按钮可用状态，被禁用按钮持有焦点时转移到关闭按钮。
- * @param name - 待设置的查看器按钮名称。
- * @param disabled - 按钮是否禁用。
- */
-function setDisabled(name, disabled) {
-  const button = control(name);
-  const wasFocused = document.activeElement === button;
-  button.disabled = disabled;
-  if (disabled && wasFocused) control('close').focus();
-}
-
-/** 限制图片平移范围并绘制缩放位置，同步缩放比例和按钮状态。 */
-function paint() {
-  const maxX = Math.max(0, (image.naturalWidth * scale - stage.clientWidth) / 2 + 16);
-  const maxY = Math.max(0, (image.naturalHeight * scale - stage.clientHeight) / 2 + 16);
-  offsetX = Math.max(-maxX, Math.min(maxX, offsetX));
-  offsetY = Math.max(-maxY, Math.min(maxY, offsetY));
-  image.style.transform = 'translate(calc(-50% + ' + offsetX + 'px), calc(-50% + ' + offsetY + 'px)) scale(' + scale + ')';
-  stage.dataset.draggable = String(maxX > 0 || maxY > 0);
-  control('zoom').textContent = Math.round(scale * 100) + '%';
-  control('fit').setAttribute('aria-pressed', String(mode === 'fit'));
-  control('actual').setAttribute('aria-pressed', String(mode === 'actual'));
-  setDisabled('out', image.hidden || scale <= Math.min(fitScale, 0.1));
-  setDisabled('in', image.hidden || scale >= 4);
-  setDisabled('fit', image.hidden);
-  setDisabled('actual', image.hidden);
-}
-
-/** 根据容器与图片原始尺寸计算适应窗口的缩放比例。 */
-function measure() {
-  fitScale = Math.min(1, Math.max(1, stage.clientWidth - 32) / image.naturalWidth,
-    Math.max(1, stage.clientHeight - 32) / image.naturalHeight);
-}
-
-/**
- * 切换适应窗口或原始像素模式，并清空此前的拖动位移。
- * @param nextMode - 缩放模式：fit 为适应窗口，actual 为原始像素。
- */
-function reset(nextMode = 'fit') {
-  if (image.hidden) return;
-  measure();
-  mode = nextMode;
-  scale = mode === 'actual' ? 1 : fitScale;
-  offsetX = offsetY = 0;
-  paint();
-}
-
-/**
- * 围绕给定坐标缩放图片，在允许范围内保留缩放中心。
- * @param nextScale - 期望的图片缩放倍数。
- * @param x - 相对查看器容器的缩放中心横坐标。
- * @param y - 相对查看器容器的缩放中心纵坐标。
- */
-function zoom(nextScale, x = stage.clientWidth / 2, y = stage.clientHeight / 2) {
-  if (image.hidden) return;
-  const before = scale;
-  scale = Math.max(Math.min(fitScale, 0.1), Math.min(4, nextScale));
-  offsetX = (offsetX - x + stage.clientWidth / 2) * scale / before + x - stage.clientWidth / 2;
-  offsetY = (offsetY - y + stage.clientHeight / 2) * scale / before + y - stage.clientHeight / 2;
-  mode = 'manual';
-  paint();
-}
-
-/** 释放全部触摸指针捕获并重置拖动状态。 */
-function clearPointers() {
-  pointers.forEach((_, id) => {
-    if (stage.hasPointerCapture(id)) stage.releasePointerCapture(id);
-  });
-  pointers.clear();
-  stage.dataset.dragging = 'false';
-}
-
-/**
- * 加载当前筛选结果中的指定截图，更新标题、下载链接和导航状态。
- * @param index - 当前筛选结果中的截图索引。
- */
-function show(index) {
-  current = index;
-  clearPointers();
-  const item = items[current];
-  const card = item.closest('article');
-  control('title').textContent = control('title').title = card.dataset.label;
-  control('position').textContent = (current + 1) + ' / ' + items.length + ' · 当前筛选结果';
-  control('meta').textContent = card.querySelector('.card-meta').textContent;
-  control('original').href = control('download').href = item.href;
-  setDisabled('prev', current === 0);
-  setDisabled('next', current === items.length - 1);
-  image.hidden = true;
-  message.hidden = false;
-  message.textContent = '正在加载图片…';
-  image.alt = card.dataset.label + ' 页面截图';
-  scale = 1;
-  offsetX = offsetY = 0;
-  mode = 'fit';
-  paint();
-  image.src = item.href;
-}
-
-image.addEventListener('load', () => {
-  if (!viewer.open) return;
-  image.hidden = false;
-  message.hidden = true;
-  reset();
+byId('filter').addEventListener('input', () => updateGallery());
+fields.filter(id => id !== 'filter').forEach(id => byId(id).addEventListener('change', () => updateGallery()));
+byId('reset-filters').addEventListener('click', resetFilters);
+byId('empty-reset').addEventListener('click', () => { resetFilters(); byId('filter').focus(); });
+byId('toggle-filters').addEventListener('click', () => {
+  const open = byId('gallery').querySelector('.toolbar').classList.toggle('filters-open');
+  byId('toggle-filters').setAttribute('aria-expanded', String(open));
 });
-image.addEventListener('error', () => {
-  image.hidden = true;
-  message.hidden = false;
-  message.textContent = '图片加载失败，请尝试打开原图，或切换到其他截图。';
-  paint();
+byId('gallery-sections').addEventListener('change', event => {
+  if (!event.target.matches('.variant-select')) return;
+  const card = event.target.closest('article'), page = galleryRecords[Number(event.target.value)];
+  setGalleryVariant(card, page);
 });
-
-document.querySelectorAll('.snapshot-link').forEach(link => {
-  link.addEventListener('click', event => {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    opener = link;
-    items = Array.from(document.querySelectorAll('article:not([hidden]) .snapshot-link'));
-    previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    viewer.showModal();
-    show(items.indexOf(link));
-  });
-});
-
-/**
- * 在当前筛选结果内切换截图，边界外的操作保持当前图片。
- * @param delta - 相对当前截图的索引增量。
- */
-function navigate(delta) {
-  const next = current + delta;
-  if (next >= 0 && next < items.length) show(next);
-}
-control('prev').addEventListener('click', () => navigate(-1));
-control('next').addEventListener('click', () => navigate(1));
-control('in').addEventListener('click', () => zoom(scale * 1.25));
-control('out').addEventListener('click', () => zoom(scale / 1.25));
-control('fit').addEventListener('click', () => reset());
-control('actual').addEventListener('click', () => reset('actual'));
-control('close').addEventListener('click', () => viewer.close());
-viewer.addEventListener('click', event => { if (event.target === viewer) viewer.close(); });
-viewer.addEventListener('close', () => {
-  clearPointers();
-  document.body.style.overflow = previousOverflow;
-  opener?.focus({ preventScroll: true });
-});
-viewer.addEventListener('keydown', event => {
-  if (event.ctrlKey || event.metaKey || event.altKey) return;
-  if (event.key === 'Tab') {
-    const focusable = Array.from(viewer.querySelectorAll('button:not([disabled]), a[href]'));
-    const first = focusable[0], last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-    return;
-  }
-  const actions = {
-    /** 按左方向键切换到上一张截图。 */
-    ArrowLeft: () => navigate(-1),
-    /** 按右方向键切换到下一张截图。 */
-    ArrowRight: () => navigate(1),
-    /** 按加号键放大当前截图。 */
-    '+': () => zoom(scale * 1.25),
-    /** 按等号键放大当前截图，兼容无需 Shift 的键盘操作。 */
-    '=': () => zoom(scale * 1.25),
-    /** 按减号键缩小当前截图。 */
-    '-': () => zoom(scale / 1.25),
-    /** 按数字零恢复适应窗口模式。 */
-    '0': () => reset(),
-    /** 按数字一恢复原始像素比例。 */
-    '1': () => reset('actual'),
-  };
-  if (actions[event.key]) { event.preventDefault(); actions[event.key](); }
-});
-
-stage.addEventListener('wheel', event => {
-  event.preventDefault();
-  const rect = stage.getBoundingClientRect();
-  const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1);
-  zoom(scale * Math.exp(-Math.max(-100, Math.min(100, delta)) * 0.002),
-    event.clientX - rect.left, event.clientY - rect.top);
-}, { passive: false });
-stage.addEventListener('dblclick', () => reset(Math.abs(scale - 1) < 0.01 ? 'fit' : 'actual'));
-stage.addEventListener('pointerdown', event => {
-  if (image.hidden || event.button !== 0) return;
-  pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-  stage.setPointerCapture(event.pointerId);
-  stage.dataset.dragging = 'true';
-});
-stage.addEventListener('pointermove', event => {
-  if (!pointers.has(event.pointerId)) return;
-  const before = Array.from(pointers.values());
-  const last = pointers.get(event.pointerId);
-  pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-  const after = Array.from(pointers.values());
-  if (before.length === 2) {
-    /**
-     * 计算两根触摸指针的距离，用于双指缩放。
-     * @param points - 两根触摸指针的坐标。
-     */
-    const distance = points => Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
-    /**
-     * 计算两根触摸指针的中点，作为双指缩放中心。
-     * @param points - 两根触摸指针的坐标。
-     */
-    const midpoint = points => ({ x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 });
-    const start = midpoint(before), end = midpoint(after), rect = stage.getBoundingClientRect();
-    if (distance(before) > 0) zoom(scale * distance(after) / distance(before), start.x - rect.left, start.y - rect.top);
-    offsetX += end.x - start.x;
-    offsetY += end.y - start.y;
-  } else if (before.length === 1) {
-    offsetX += event.clientX - last.x;
-    offsetY += event.clientY - last.y;
-  }
-  paint();
-});
-/**
- * 移除已结束或取消的指针，并更新查看器拖动标记。
- * @param event - 结束、取消或失去捕获的指针事件。
- */
-function endPointer(event) {
-  pointers.delete(event.pointerId);
-  stage.dataset.dragging = String(pointers.size > 0);
-}
-stage.addEventListener('pointerup', endPointer);
-stage.addEventListener('pointercancel', endPointer);
-stage.addEventListener('lostpointercapture', endPointer);
-new ResizeObserver(() => {
-  if (!viewer.open || image.hidden) return;
-  measure();
-  if (mode === 'fit') reset(); else paint();
-}).observe(stage);
+byId('gallery-sections').addEventListener('error', event => {
+  if (event.target.tagName !== 'IMG') return;
+  const link = event.target.closest('.snapshot-link');
+  event.target.hidden = true;
+  const hint = document.createElement('span');
+  hint.className = 'image-error';
+  hint.textContent = '预览加载失败，点击查看原图';
+  link.append(hint);
+}, true);
+window.addEventListener('hashchange', () => { readState(); updateGallery(); });

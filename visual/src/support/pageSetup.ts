@@ -8,6 +8,7 @@ import type { BrowserContext, BrowserContextOptions, Page } from '@playwright/te
 import fs from 'fs';
 import path from 'path';
 import { LANGUAGE_STORAGE_KEY, type VisualScenario } from '../../scenarioTypes';
+import { mockDailyBonusWallet } from '../../cases/hall/walletPresentation';
 import {
   FIXED_COUNTRY_PHONE_CODE,
   USER_COUNTRY_CODE_STORAGE_KEY,
@@ -182,6 +183,7 @@ export async function setupContextForScenario(
     useMitmproxy: options.useMitmproxy,
     recordFixtures: scenario.group === 'game-record',
   });
+  if (scenario.pageLabel === 'signed_in_daily_bonus') await mockDailyBonusWallet(context);
 
   await context.addInitScript(
     ({ locale, langKey, deviceId }: { locale: string; langKey: string; deviceId: string }) => {

@@ -126,6 +126,18 @@ test('同一用户名的大小写变体不能作为两个账号分配', { timeou
   assert.match(result.stderr, /重复用户名/);
 });
 
+test('超过 H5 输入长度的密码在启动测试前被拒绝且不泄露', async t => {
+  const { pool } = await fixture(t, ['parallel01']);
+  const password = 'SensitivePasswordTooLong';
+  await writeFile(pool, JSON.stringify({ accounts: [{ username: 'parallel01', password, userId: 'mock-user' }] }));
+  const run = launch(t, pool, [process.execPath, '-e', 'console.log("SHOULD_NOT_START")']);
+  const result = await run.finished;
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /密码不兼容 H5/);
+  assert.ok(!result.stderr.includes(password));
+  assert.ok(!result.stdout.includes('SHOULD_NOT_START'));
+});
+
 test('30 个并发任务使用 30 个不同账号，第 31 个任务不能复用', { timeout: 30000 }, async t => {
   const usernames = Array.from({ length: 30 }, (_, index) => `parallel${String(index + 1).padStart(2, '0')}`);
   const { directory, pool } = await fixture(t, usernames);

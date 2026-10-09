@@ -85,7 +85,7 @@ AUTH-007、CLUB-001、CLUB-002、PRIVATE-001 标记为 `@creates-data`，不计�
 `TESTING_API_TOKEN` 的相邻部署文件读取正常，不能把此问题误诊为 token 缺失。
 
 截图基准与真实业务测试分开：视觉用例固定易变内容和部分接口数据，不能替代后端结果验证。
-页面索引见 [visual/snapshots/index.html](../../visual/snapshots/index.html)，
+页面索引见 [visual/gallery/index.html](../../visual/gallery/index.html)，
 可用 `cd visual && npm run gallery` 重新生成当前场景清单。
 
 ### 本地执行结果
