@@ -12,6 +12,8 @@ for (const currency of ['coin', 'diamond'] as const) {
     const valid = { ...statement, currency_name: currency };
     const body = { ok: true, result: { currency_name: currency, statements: [valid] } };
     expect(await readStatements(response(body), currency)).toEqual([valid]);
+    const nullableMemo = { ...valid, memo: null };
+    expect(await readStatements(response({ ...body, result: { ...body.result, statements: [nullableMemo] } }), currency)).toEqual([nullableMemo]);
     const localized = { ...valid, currency_name: currency === 'coin' ? '金币' : '钻石' };
     expect(await readStatements(response({ ...body, result: { ...body.result, statements: [localized] } }), currency)).toEqual([localized]);
     expect(await readStatements(response({ ...body, result: { ...body.result, statements: [] } }), currency)).toEqual([]);
@@ -23,7 +25,7 @@ for (const currency of ['coin', 'diamond'] as const) {
       ...[null, {}, { ...valid, currency_name: other },
         { ...valid, currency_name: currency === 'coin' ? '钻石' : '金币' }, { ...valid, amount: 'NaN' },
         { ...valid, balance: null }, { ...valid, event: 'unknown' },
-        { ...valid, create_at: 'invalid' }, { ...valid, memo: null },
+        { ...valid, create_at: 'invalid' }, { ...valid, memo: 42 }, { ...valid, memo: undefined },
         { ...valid, statement_id: '' }].map(item => ({ ...body, result: { ...body.result, statements: [item] } })),
     ]) {
       await expect(readStatements(response(invalid), currency)).rejects.toThrow();

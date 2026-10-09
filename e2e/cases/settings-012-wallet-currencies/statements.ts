@@ -7,7 +7,7 @@ export type Statement = {
   balance: string;
   event: 'deposit' | 'withdraw';
   create_at: string;
-  memo: string;
+  memo: string | null;
   statement_id: string;
 };
 
@@ -27,9 +27,10 @@ export async function readStatements(response: Response, currency: Currency): Pr
       balance: expect.stringMatching(/^-?\d+(?:\.\d+)?$/),
       event: expect.stringMatching(/^(deposit|withdraw)$/),
       create_at: expect.any(String),
-      memo: expect.any(String),
       statement_id: expect.stringMatching(/\S/),
     });
+    // 后端 show_detail 保留合法的空备注；缺失字段或其他类型仍明确失败。
+    expect(statement.memo === null || typeof statement.memo === 'string', '流水备注应为字符串或 null').toBe(true);
     expect(Number.isFinite(Date.parse(statement.create_at)), '流水时间应可解析').toBe(true);
   }
   return statements;
