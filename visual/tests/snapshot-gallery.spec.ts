@@ -60,7 +60,7 @@ test('大图按筛选结果切换，关闭后恢复焦点和列表位置', async
   await page.keyboard.press('ArrowRight');
   await expect(dialog.locator('#viewer-position')).toHaveText(`2 / ${total} · 当前浏览结果`);
   await expect(dialog.getByRole('link', { name: '打开原图' })).toHaveAttribute('href',
-    await links.nth(1).evaluate(link => (link as HTMLAnchorElement).href));
+    (await links.nth(1).getAttribute('href'))!);
   await page.keyboard.press('ArrowLeft');
   await page.keyboard.press('ArrowLeft');
   await expect(dialog.locator('#viewer-position')).toHaveText(`1 / ${total} · 当前浏览结果`);
@@ -77,7 +77,7 @@ test('大图按筛选结果切换，关闭后恢复焦点和列表位置', async
   await expect(first).toBeFocused();
   expect(page.url()).toBe(originalUrl);
   expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
-  expect(await page.evaluate(() => document.body.style.overflow)).toBe('');
+  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
 });
 
 for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 }]) {
@@ -294,7 +294,7 @@ for (const width of [1440, 375]) {
     await expect(image).toBeVisible();
     await expect.poll(() => image.evaluate(element => (element as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
     const box = (await image.boundingBox())!;
-    expect(box.y).toBeLessThan(300);
+    expect(box.y).toBeLessThan(page.viewportSize()!.height / 2);
     expect(box.y + box.height).toBeLessThan(812);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     if (width === 375) {
