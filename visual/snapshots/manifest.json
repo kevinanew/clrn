@@ -4555,7 +4555,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-desktop-signed-in-texas-table-states-full-table.png",
-      "sha256": "6b2c15f0978c91be292047e70c7d7f5233b23828805241d00c0bb14b90a6bf02"
+      "sha256": "6c9006da1c489f1032dc92a096136e7fde754b9659795eb523cafc0da8ac68c7"
     },
     {
       "label": "zh-Hans_desktop_signed_in_texas_table_states_reserved_seat",
@@ -12988,7 +12988,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-mobile-signed-in-texas-table-states-full-table.png",
-      "sha256": "4e590e2a51472dc429d671efff1c3d971cfc6a960040a963a7ca2f9a432d4d98"
+      "sha256": "55fdae1541f7b0fda0ce409b6b9bee7773e684d67e37ad358e0a5780b3fdde06"
     },
     {
       "label": "zh-Hans_mobile_signed_in_texas_table_states_reserved_seat",
@@ -21765,7 +21765,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-desktop-signed-in-texas-table-states-full-table.png",
-      "sha256": "a0484fbb4018241c625ad6b23f83a01202c724441bea320bad5556d0ad125c84"
+      "sha256": "e3972be82057628e557ad4bb0c084843e2fbc998634c5a26e60f87494380391e"
     },
     {
       "label": "zh-Hant_desktop_signed_in_texas_table_states_reserved_seat",
@@ -30198,7 +30198,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-mobile-signed-in-texas-table-states-full-table.png",
-      "sha256": "fba79a9897354fca7e2e9d87fa9c0de2b0b2ebce9ba2565bfac485dbf8b50b13"
+      "sha256": "2811125b5429df821c8a1bf5d4a2227f24e1220c6279335bf814d3e764b6f2eb"
     },
     {
       "label": "zh-Hant_mobile_signed_in_texas_table_states_reserved_seat",
@@ -38975,7 +38975,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-desktop-signed-in-texas-table-states-full-table.png",
-      "sha256": "f4e7c2f2b2cdafff444acf20a05023ff370cf7da6d78ca79c17a1b50533cda19"
+      "sha256": "bdfc5d291e0dc1cfd467a5e8cc5cb8036c015fa9a742fcdacf130531c2de8bee"
     },
     {
       "label": "en_desktop_signed_in_texas_table_states_reserved_seat",
@@ -47408,7 +47408,7 @@
       ],
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-mobile-signed-in-texas-table-states-full-table.png",
-      "sha256": "7b81ac7d771811fc5af61e9b0e727a9b9d10f03ac834dd0427fdfb9207944363"
+      "sha256": "010d430b95a06a7a6ff3c6e952e945dfdd809cbc757e9fcc5b2de520c8cdcee2"
     },
     {
       "label": "en_mobile_signed_in_texas_table_states_reserved_seat",
