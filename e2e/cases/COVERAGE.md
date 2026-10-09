@@ -143,3 +143,32 @@ AUTH-007 改用 `POST /public/v10/user/register/username_password/testing` 和
 ### 2026-10-01 俱乐部成员回归补充
 
 CLUB-004 使用两个动态测试账号和真实申请、审批接口准备成员，增加 Issue #6792 的真实页面回归：先移除一人，选中另一人后取消编辑，再次编辑并移除第二人；每次核对删除响应、页面人数和服务端成员列表。失败时尝试移除本例账号并核对最终成员列表。俱乐部本身仍保留在 staging，创建类案例只在 `scope=all` 或显式运行该案例时执行。桌面、手机各一项已在本地 staging 通过；弱网 3 项和一个已有账号只读案例也通过，提交后的 CI 结果仍需单独核对。CLUB-005 的旧搜索定位未生成 DOM 元素，改为实际可见卡片定位；本轮真实运行到 `PUT /v1/share_link/generate` 时返回 HTTP 404，未将邀请流程记为通过。
+
+## 2026-10-09 应用仓库补充案例迁入
+
+应用仓库经 agent-browser 探索后新增的 27 个业务场景，按本仓库实际断言删除 13 个重复场景，剩余 14 个场景迁入本仓库。按既有案例规范新增 12 个案例目录（PRIVATE-005 包含三种玩法），桌面／手机共 28 项。沿用现有 staging 白名单、已有账号 fixture、串行执行及关闭网络 trace 的配置；自动 existing CI 包含这些不创建数据的案例。
+
+| 案例 | 新增行为 | 场景数 |
+| --- | --- | --- |
+| [AUTH-011](auth-011-username-password-boundaries/README.md) | 用户名规范化和输入长度上限 | 1 |
+| [SETTINGS-007](settings-007-password-boundaries/README.md) | 修改密码长度边界 | 1 |
+| [CLUB-006](club-006-create-form-boundaries/README.md) | 创建俱乐部表单反向校验 | 1 |
+| [SETTINGS-008](settings-008-language-cancel/README.md) | 语言预览取消 | 1 |
+| [SETTINGS-009](settings-009-text-faq/README.md) | 文字 FAQ 答案 | 1 |
+| [SETTINGS-010](settings-010-coin-mall-entry/README.md) | 金币余额进入商城 | 1 |
+| [SETTINGS-011](settings-011-mall-categories/README.md) | 金币与钻石商品切换 | 1 |
+| [SETTINGS-012](settings-012-wallet-currencies/README.md) | 钱包流水币种切换 | 1 |
+| [MESSAGE-002](message-002-buy-in-tabs/README.md) | 带入通知处理状态切换 | 1 |
+| [PRIVATE-004](private-004-room-number-validation/README.md) | 私人房号输入限制 | 1 |
+| [PRIVATE-005](private-005-buy-in-audit-toggle/README.md) | 三种玩法带入审核开关 | 3 |
+| [HALL-005](hall-005-search-clear-state/README.md) | 清空搜索恢复默认引导 | 1 |
+
+删除的重复场景包括游客五标签门禁、登录与刷新、找回邮箱校验、昵称／签名取消、注销返回、语言确认保存、下载帮助、通知空态、订单／礼品卡浏览和退出刷新；基础表单及建房规则的重复断言也未再次迁入。
+
+所有新增测试均通过真实页面及接口验证，不提交改密、俱乐部／牌局创建、加入房间或支付。金币入口的历史错页属于应用行为问题，测试保留默认金币分类的预期；仅该断言标为预期失败，其他准备和余额断言仍按普通失败处理。应用修复后 unexpected pass 会要求移除标记。历史 26/28 通过是迁移前应用仓库的结果，不能当作本次 clrn 验证结果。
+
+### 迁入后的本地验证
+
+首次串行执行 28 项：24 项通过、4 项失败。其中两项是已确认的金币入口产品错页，另外两项是迁移时提前检查未挂载金币内容的时序问题。后者已将唯一性检查移到真实分类点击之后。修改后的两个商城案例共 4 项复测运行成功：商品切换桌面／手机两项实际通过，金币入口桌面／手机两项为已确认产品故障的预期失败，不能记作业务通过。其余 24 项没有修改测试行为。
+
+严格 TypeScript、`npm run lint`（每文件最多 400 行）及 `git diff --check` 通过。`test:functional:existing -- --list` 为 106 项、35 个案例文件，含本次新增 28 项。提交后的完整 CI 结果单独核对。
