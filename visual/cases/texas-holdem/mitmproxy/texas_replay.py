@@ -6,6 +6,7 @@ from mitmproxy import ctx
 
 UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 PLAYER_IDS = [f"00000000-0000-4000-8000-{index:012d}" for index in range(1, 5)]
+TABLE_PLAYER_IDS = [f"00000000-0000-4000-8000-{index:012d}" for index in range(1, 9)]
 
 
 class TexasReplay:
@@ -16,6 +17,7 @@ class TexasReplay:
         self.replayed_messages = 0
         self.self_id = None
         self.created_room_id = None
+        self.ui_states = None
 
     def arm_created_room(self, room_id, self_id):
         self.room_id = self.created_room_id = room_id
@@ -46,6 +48,7 @@ class TexasReplay:
         self.room_id = None
         self.self_id = None
         self.created_room_id = None
+        self.ui_states = None
 
     def is_replay_publication(self, frame):
         result = frame.get('result')
@@ -136,11 +139,18 @@ class TexasReplay:
             return True
         body = data.get('json') or {}
         action = body.get('action_url') if isinstance(body, dict) else None
-        return data['path'] == '/v3/pay_action/do' and data.get('method') == 'POST' and isinstance(action, dict) and (
-            action.get('method') == 'PUT' and action.get('room_id') == self.room_id and action.get('path') ==
-            '/v10/texas_holdem/room/$room_id$/game/$game_id$/check_community_card')
+        if data['path'] != '/v3/pay_action/do' or data.get('method') != 'POST' or not isinstance(action, dict):
+            return False
+        allowed = (
+            ('PUT', '/v10/texas_holdem/room/$room_id$/game/$game_id$/check_community_card'),
+            ('POST', '/v10/texas_holdem/room/$room_id$/game/$game_id$/operating_time'),
+        )
+        return action.get('room_id') == self.room_id and (action.get('method'), action.get('path')) in allowed
 
     def rpc_result(self, frame):
+        error = self.ui_states.rpc_result(frame) if self.ui_states else None
+        if error is not None:
+            return error
         path = frame['params']['data']['path']
         if path.startswith(f'/v1/chat_room/{self.room_id}/'):
             return {'ok': True, 'result': {
@@ -155,14 +165,14 @@ class TexasReplay:
 
     def profile(self, player_id):
         return {"user_id": player_id, "nickname": "TestPlayer" if player_id == self.self_id else
-                f"Player{PLAYER_IDS.index(player_id) + 1}", "avatar_path": "", "gender": "male",
+                f"Player{TABLE_PLAYER_IDS.index(player_id) + 1}", "avatar_path": "", "gender": "male",
                 "bio": "TestPlayer", "user_level": {"App:coin": {"level": 5, "progress": 0.5}},
                 "last_used_nickname": ""}
 
     def http_fixture(self, path, body=b""):
         if not self.room_id:
             return None
-        identifiers = [*PLAYER_IDS, self.self_id]
+        identifiers = [*TABLE_PLAYER_IDS, self.self_id]
         if path == '/v10/profile/users':
             requested = json.loads(body).get('users', [])
             if requested and all(identifier in identifiers for identifier in requested):

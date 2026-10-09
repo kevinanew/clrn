@@ -102,9 +102,12 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的牌桌任务也会�
 手机号登录/选区号/用户协议/隐私政策）只保留 mobile 视口**，
 其余页面覆盖双视口（对应 `cases/<功能>/scenarios.ts` 的 `viewports` 字段控制）。
 
-- 全量（`VISUAL_LOCALES=all`）= (mobile 75 页 + desktop 27 页 + 每视口 61 张德州图 + 每视口 26 张拼三张图) × 3 语言 = **828 张**（354 个场景）
-- 默认仅简中 = **276 张**（118 个场景）
-- 核心范围（`VISUAL_SCOPE=core`）= mobile 23 页 + desktop 17 页 + 每视口 61 张德州图 + 每视口 26 张拼三张图 = **214 张**（56 个场景）
+本轮新增 33 个德州状态，均已提供三语言、双视口的 198 张 Linux 基准。
+当前共有 1026 张有效基准，完整性检查和图库按以下清单生成。
+
+- 全量（`VISUAL_LOCALES=all`）= (mobile 75 页 + desktop 27 页 + 每视口 94 张德州图 + 每视口 26 张拼三张图) × 3 语言 = **1026 张**（378 个场景）
+- 默认仅简中 = **342 张**（126 个场景）
+- 核心范围（`VISUAL_SCOPE=core`）= mobile 23 页 + desktop 17 页 + 每视口 94 张德州图 + 每视口 26 张拼三张图 = **280 张**（64 个场景）
   （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、游客牌局登录提示、搜索登录提示、登录后大厅/消息/私人局/俱乐部/我的/商城）
 
 ### 易变内容固定填充（不用隐藏遮罩）
@@ -168,8 +171,8 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的牌桌任务也会�
 
 ```bash
 cd visual
-pnpm run test          # 简中 276 张
-pnpm run test:all      # 全部语言 828 张
+pnpm run test          # 简中 342 张
+pnpm run test:all      # 全部语言 1026 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
@@ -221,23 +224,23 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 | 值 | 用途 |
 | --- | --- |
-| `zh-Hans`（默认） | 日常线上（276 张）；push CI 再叠加 `VISUAL_SCOPE=core`（214 张） |
+| `zh-Hans`（默认） | 日常线上（342 张）；push CI 再叠加 `VISUAL_SCOPE=core`（280 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 828 张（GitHub Actions 定时任务） |
+| `all` | 全量 1026 张（GitHub Actions 定时任务） |
 
 环境变量 `VISUAL_SCOPE`：
 
 | 值 | 用途 |
 | --- | --- |
 | `full`（默认） | 运行完整页面集合；未设置时也使用此范围 |
-| `core` | 核心页面及本轮新增页面；简中共 214 张 |
+| `core` | 核心页面及本轮新增页面；简中共 280 张 |
 
 ## CI
 
 [视觉工作流](../.github/workflows/visual.yml) 在非 `release` 分支的视觉代码或工作流变更后，
-访问线上并检查简中核心 214 张截图；每日及手动 `full` 运行三种语言的完整场景。
+访问线上并检查简中核心 280 张截图；每日及手动 `full` 运行三种语言的完整场景。
 CI 按「应用 app」「德州 texas」和「拼三张 zhajinhua」拆为独立任务并行执行；每套内部各语言仍顺序执行。
-应用覆盖核心 40 张 / 全量 102 张，德州每种语言覆盖 122 张，拼三张覆盖 52 张，各任务分别保存失败报告。
+应用覆盖核心 40 张 / 全量 102 张，德州每种语言覆盖 188 张，拼三张覆盖 52 张，各任务分别保存失败报告。
 不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 手动触发可用 `suite` 选择 `all`、`app`、`texas` 或 `zhajinhua`，只重跑所需部分。
 手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
@@ -251,7 +254,7 @@ CI 按「应用 app」「德州 texas」和「拼三张 zhajinhua」拆为独立
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
 原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
-因此已从执行清单移除。历史图片保留，不计入当前 828 张有效截图。
+因此已从执行清单移除。历史图片保留，不计入当前 1026 张有效截图。
 德州通过 mitmproxy 回放固定牌局和弹窗数据，所有入口仍由实际 UI 点击打开。
 覆盖清单、协议和当前源码限制见 [COVERAGE.md](cases/texas-holdem/COVERAGE.md)。
 服务端房间保持等待状态，回放房间的操作 RPC 被代理隔离，每例精确解散本次真实创建的房间。

@@ -8,7 +8,9 @@ export const advance = (page: Page) => page.clock.runFor(1200);
 
 export async function freezeClock(page: Page): Promise<void> {
   const now = await page.evaluate(() => Date.now());
-  await page.clock.pauseAt(now + 1000);
+  // CDP 在繁忙的 Linux runner 上可能排队数秒，给暂停命令保留足够提前量。
+  // pauseAt 跳过期间仅触发一次到期计时器；随后恢复消息重设牌局倒计时。
+  await page.clock.pauseAt(now + 60_000);
 }
 
 export async function click(page: Page, id: string): Promise<void> {
