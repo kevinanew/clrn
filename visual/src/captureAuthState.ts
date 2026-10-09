@@ -21,6 +21,9 @@ import {
 import { runWithContext } from './support/runWithContext';
 import { texasProxyOptions, withTexasProxy, type TexasProxy } from '../cases/texas-holdem/proxy';
 
+import { withZhajinhuaProxy, type ZhajinhuaProxy } from '../cases/zhajinhua/proxy';
+import { getVisualSuite } from '../visual-suite';
+
 import { visualBaseUrl as baseUrl } from '../target';
 const username = VISUAL_TEST_USERNAME;
 const password = VISUAL_TEST_PASSWORD;
@@ -60,7 +63,7 @@ const TUTORIAL_COMPLETE_KEYS = [
 async function createAuthContext(
   browser: import('@playwright/test').Browser,
   storageEntries?: Record<string, string>,
-  proxy?: TexasProxy,
+  proxy?: TexasProxy | ZhajinhuaProxy,
 ) {
   const context = await browser.newContext({
     ...(proxy ? texasProxyOptions(proxy) : {}),
@@ -138,7 +141,7 @@ function persistAuthState(entries: Record<string, string>) {
 async function validateCapturedAuthState(
   browser: import('@playwright/test').Browser,
   entries: Record<string, string>,
-  proxy?: TexasProxy,
+  proxy?: TexasProxy | ZhajinhuaProxy,
 ): Promise<Record<string, string>> {
   const context = await createAuthContext(browser, entries, proxy);
 
@@ -163,7 +166,7 @@ async function validateCapturedAuthState(
   });
 }
 
-async function captureAuthState(proxy?: TexasProxy): Promise<void> {
+async function captureAuthState(proxy?: TexasProxy | ZhajinhuaProxy): Promise<void> {
   const browser = await chromium.launch({ args: BROWSER_LAUNCH_ARGS });
 
   try {
@@ -173,15 +176,27 @@ async function captureAuthState(proxy?: TexasProxy): Promise<void> {
       try {
         console.log(`AUTH STATE > 采集尝试 ${attempt}/${MAX_CAPTURE_ATTEMPTS}`);
         const page = await context.newPage();
+        // 仅记录认证接口路径与状态，不输出凭据、请求正文或 token。
+        page.on('response', response => {
+          const pathname = new URL(response.url()).pathname;
+          if (/\/user\/(login|register|username\/is_existed)/.test(pathname)) {
+            void response.json().then(body => {
+              console.log(`AUTH HTTP > ${response.status()} ${pathname} ok=${String(body?.ok)} error_type=${String(body?.error_type || '')}`);
+            }).catch(() => console.log(`AUTH HTTP > ${response.status()} ${pathname}`));
+          }
+        });
         await page.goto(baseUrl, { waitUntil: 'load', timeout: 120000 });
+        console.log('AUTH STATE > 页面加载完成');
         await ensureAppReadyPastStaging(page);
+        console.log('AUTH STATE > 大厅已就绪');
         await page
-          .waitForFunction(() => !document.querySelector('[role="progressbar"]'), {
+          .waitForFunction(() => !document.querySelector('[role="progressbar"]'), undefined, {
             timeout: 60000,
           })
           .catch(() => undefined);
 
         await ensureSignedIn(page, { username, password });
+        console.log('AUTH STATE > UI 登录完成，验证注入态');
         const entries = await collectLocalStorageEntries(page);
         const validatedEntries = await validateCapturedAuthState(browser, entries, proxy);
         persistAuthState(validatedEntries);
@@ -210,7 +225,8 @@ async function captureAuthState(proxy?: TexasProxy): Promise<void> {
 
 async function main(): Promise<void> {
   if (process.env.VISUAL_AUTH_USES_MITMPROXY === 'true') {
-    await withTexasProxy(captureAuthState);
+    if (getVisualSuite() === 'zhajinhua') await withZhajinhuaProxy(captureAuthState);
+    else await withTexasProxy(captureAuthState);
   } else {
     await captureAuthState();
   }

@@ -12,7 +12,7 @@ class RoomView:
         self.self_id = None
 
     def configure(self, mode):
-        if mode not in (None, 'hall', 'record-v2'):
+        if mode not in (None, 'hall', 'record-v2', 'guest'):
             raise ValueError('Unknown room view')
         self.mode, self.room_id, self.self_id = mode, None, None
 
@@ -43,6 +43,10 @@ class RoomView:
                 result['building_type'] = 'hall'
                 result.setdefault('game_config', {})['prediction_currency'] = 'coin'
                 result['game_config']['currency'] = 'coin'
+                flow.response.content = json.dumps(body).encode()
+            if self.mode == 'guest' and flow.request.method == 'GET' and self.room_id and path == f'/v1/room/{self.room_id}':
+                result['creator_id'] = '00000000-0000-4000-8000-000000000001'
+                result['admin_ids'] = []
                 flow.response.content = json.dumps(body).encode()
         except (ValueError, TypeError, AttributeError):
             return

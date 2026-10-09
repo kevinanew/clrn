@@ -29,7 +29,7 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   for (const street of ['preflop', 'flop', 'turn', 'river'] as const) {
     await restore(street);
     if (street === 'flop') {
-      await checkFlopCardFaces(page, self);
+      await checkFlopCardFaces(page);
       if (scenario.viewport.label === 'mobile') await checkMobilePlayerAction(page);
     }
     await snapshot(street);
@@ -45,6 +45,12 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   await visible(page, 'screen-mask-touch-to-close').evaluate(node => (node as HTMLElement).click());
 
   await restore('river', true);
+  // 恢复对手计时不会切换操作面板，需真实 switch_player 消息才能显示预选操作。
+  await proxy.replayTexas(roomId, events([{ event: 'switch_player', player_id: REPLAY_PLAYER_IDS[0],
+    valid_bets: { call: { amount: 20 } } }]));
+  await page.clock.runFor(1200);
+  await expect(visible(page, 'texas-holdem-operation-button-raise')).toBeHidden();
+  await expect(page.getByText(/看或弃|看或棄|Check\/Fold/i).last()).toBeVisible();
   await snapshot('opponent_turn');
   await proxy.replayTexas(roomId, events([
     { event: 'all_in', player_id: REPLAY_PLAYER_IDS[0], amount: 960, stack: 0 },

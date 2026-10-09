@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 
-test('all 入口将 App 和德州交给独立进程，过滤后不运行空套件', () => {
+test('all 入口将 App、德州和拼三张交给独立进程，过滤后不运行空套件', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'visual-run-isolation-'));
   const log = path.join(directory, 'runs.jsonl');
   // 捕获子进程启动边界，不访问 staging、不采集真实凭据。
@@ -29,12 +29,15 @@ require('node:fs').appendFileSync(process.env.VISUAL_ISOLATION_LOG,
     };
     const all = run('');
     assert.equal(all.result.status, 0, all.result.stderr);
-    assert.deepEqual(all.children.map(child => child.suite), ['app', 'texas']);
-    assert.deepEqual(all.children.map(child => child.skipSupport), ['false', 'true']);
+    assert.deepEqual(all.children.map(child => child.suite), ['app', 'texas', 'zhajinhua']);
+    assert.deepEqual(all.children.map(child => child.skipSupport), ['false', 'true', 'true']);
     assert.ok(all.children.every(child => child.args.join(' ') === 'exec tsx run-visual.ts test'));
     const texas = run('signed_in_texas_game$');
     assert.equal(texas.result.status, 0, texas.result.stderr);
     assert.deepEqual(texas.children.map(child => child.suite), ['texas']);
+    const zhajinhua = run('signed_in_zhajinhua_game$');
+    assert.equal(zhajinhua.result.status, 0, zhajinhua.result.stderr);
+    assert.deepEqual(zhajinhua.children.map(child => child.suite), ['zhajinhua']);
     const missing = run('never-a-scenario');
     assert.equal(missing.result.status, 1);
     assert.equal(missing.children.length, 0);
