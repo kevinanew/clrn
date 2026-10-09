@@ -8,6 +8,11 @@ const userId = '11111111-2222-4333-8444-555555555555';
 test.afterEach(() => { globalThis.fetch = originalFetch; });
 
 test('测试注册使用专用请求头和用户名密码，不发送设备信息且禁止重定向', async () => {
+  /**
+   * 校验测试接口请求地址与参数，并返回预设成功响应。
+   * @param url - 要访问的站点或本机服务地址。
+   * @param options - 本次操作的可选配置。
+   */
   globalThis.fetch = async (url, options) => {
     expect(url).toBe('https://api.shafayouxi.org/public/v10/user/register/username_password/testing');
     expect(options?.method).toBe('POST');
@@ -21,6 +26,7 @@ test('测试注册使用专用请求头和用户名密码，不发送设备信�
 
 test('空 token 在发送请求前失败', async () => {
   let calls = 0;
+  /** 记录意外网络调用并抛错，验证无效配置会在请求前被拒绝。 */
   globalThis.fetch = async () => { calls++; throw new Error('不应请求'); };
   await expect(createTestingAccount(credentials, '  ')).rejects.toThrow('缺少 TESTING_API_TOKEN');
   expect(calls).toBe(0);
@@ -29,6 +35,7 @@ test('空 token 在发送请求前失败', async () => {
 for (const status of [401, 404, 500]) {
   test(`注册 HTTP ${status} 明确失败且不重试`, async () => {
     let calls = 0;
+    /** 返回预设 HTTP 或业务响应，验证失败场景不重试且不泄露正文。 */
     globalThis.fetch = async () => { calls++; return new Response('sensitive', { status }); };
     await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow(`创建 staging 测试账号失败（HTTP ${status}）`);
     expect(calls).toBe(1);
@@ -41,11 +48,14 @@ test('拒绝业务失败、错误账号及非法 JSON，错误不包含凭据', 
     { ok: true, result: { user_id: userId, username: 'another' } },
     { ok: true, result: { user_id: 'invalid', username: credentials.username } },
   ]) {
+    /** 返回预设 HTTP 或业务响应，验证失败场景不重试且不泄露正文。 */
     globalThis.fetch = async () => Response.json(body);
     await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow('业务响应不符合预期');
   }
+  /** 返回无法解析的 JSON，验证接口格式错误会明确失败。 */
   globalThis.fetch = async () => new Response('invalid-json');
   await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow('无效 JSON');
+  /** 模拟携带敏感信息的请求异常，验证对外错误不会泄露凭据。 */
   globalThis.fetch = async () => { throw new Error('sensitive-token'); };
   await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow('创建 staging 测试账号请求失败；不会自动重试');
 });

@@ -1,11 +1,19 @@
 import { expect, openApp, test } from './fixtures';
 import { drag, scroll, scrollToItem } from './gestures';
 
-/** 生成独立的已处理申请，只替换分页接口数据，不替换列表及其滚动实现。 */
+/**
+ * 生成独立的已处理申请，只替换分页接口数据，不替换列表及其滚动实现。
+ * @param start - 本批申请昵称与标识的起始序号。
+ * @param count - 要生成的申请数量。
+ */
 function applications(start: number, count: number) {
   return Array.from(
     { length: count },
-    /** 生成唯一申请标识和可见昵称。 */ (_, index) => ({
+    /**
+     * 生成唯一申请标识和可见昵称。
+     * @param _ - Array.from 传入的空元素，不参与数据生成。
+     * @param index - 当前申请在本批数据中的索引。
+     */ (_, index) => ({
       application_id: `interaction-${start + index}`,
       status: 'approve',
       amount: 100,
@@ -19,19 +27,28 @@ function applications(start: number, count: number) {
   );
 }
 
-test('横向手势切换申请标签，触底按游标追加且末页停止请求', /** 验证横滑与分页的可见结果及请求次数。 */ async ({
+test('横向手势切换申请标签，触底按游标追加且末页停止请求', /**
+ * 验证横滑与分页的可见结果及请求次数。
+ * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
+ */ async ({
   page,
   isMobile,
 }) => {
   const cursors: (string | null)[] = [];
   await page.route(
     '**/applications/pending',
-    /** 返回未处理空列表。 */ (route) =>
+    /**
+     * 返回未处理空列表。
+     * @param route - 当前拦截到的请求，用于提供场景响应。
+     */ (route) =>
       route.fulfill({ json: { ok: true, result: { applications: [], next_page: null } } }),
   );
   await page.route(
     '**/applications/processed**',
-    /** 按真实游标返回两页数据。 */ async (route) => {
+    /**
+     * 按真实游标返回两页数据。
+     * @param route - 当前拦截到的请求，用于提供场景响应。
+     */ async (route) => {
       const cursor = new URL(route.request().url()).searchParams.get('next_page');
       cursors.push(cursor);
       expect([null, 'interaction-page-2']).toContain(cursor);

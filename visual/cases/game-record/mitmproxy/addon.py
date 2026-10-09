@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import parse_qs, urlsplit
 from mitmproxy import http
-from data import CLUB, HOUSE, PLAYER, PREFIX, all_records, detail, records, replay, rooms, round_data, settlements
+from data import CLUB, HOUSE, PLAYER, all_records, detail, records, replay, rooms, round_data, settlements
 
 CONTROL_HOST = 'test-mitmproxy.invalid'
 PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com'

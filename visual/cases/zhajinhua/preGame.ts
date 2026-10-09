@@ -4,8 +4,17 @@ import { expect } from './proxy';
 import { capture, click, closeMask, menu, stabilizeSeatGuides, visible } from './capture';
 import { PRE_GAME_STATES } from './scenarios';
 
+/**
+ * 截取开局前的牌桌、菜单、设置及入座相关状态。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ */
 export async function capturePreGame(page: Page, scenario: VisualScenario): Promise<void> {
   let index = 0;
+  /**
+   * 推进页面动效并按当前场景标签保存指定状态的截图。
+   * @param state - 用于截图文件名的场景状态。
+   */
   const snapshot = async (state: typeof PRE_GAME_STATES[number]) => {
     expect(state).toBe(PRE_GAME_STATES[index++]);
     await capture(page, scenario, state);

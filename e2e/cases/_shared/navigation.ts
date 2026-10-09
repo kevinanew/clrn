@@ -1,7 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { unique } from './page';
 
-/** 只确认已核实的后台提示；创建后多个刷新请求可能依次产生排队提示。 */
+/**
+ * 只确认已核实的后台提示；创建后多个刷新请求可能依次产生排队提示。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param testId - 目标元素的测试标记。
+ * @param maximumNotices - 本次点击最多处理的遮挡通知数量。
+ */
 export async function clickWithBackgroundClubNotice(page: Page, testId: string, maximumNotices = 1): Promise<void> {
   if (!Number.isInteger(maximumNotices) || maximumNotices < 1 || maximumNotices > 3) {
     throw new Error('已知后台提示的确认上限必须为1～3');
@@ -30,11 +35,19 @@ export async function clickWithBackgroundClubNotice(page: Page, testId: string, 
   await (await unique(page, testId)).click();
 }
 
+/**
+ * 通过导航栏返回上一页，并处理可能遮挡点击的俱乐部通知。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function goBack(page: Page): Promise<void> {
   await clickWithBackgroundClubNotice(page, 'navigation-bar-back-image');
 }
 
-/** 设置列表使用虚拟化；先通过滚动挂载折线下的入口，再检查唯一性。 */
+/**
+ * 设置列表使用虚拟化；先通过滚动挂载折线下的入口，再检查唯一性。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param id - 目标控件的测试标记。
+ */
 export async function openSettingsItem(page: Page, id: string): Promise<void> {
   await (await unique(page, 'settings-list')).hover();
   for (let n = 0; n < 12 && !(await page.getByTestId(id).count()); n++) {

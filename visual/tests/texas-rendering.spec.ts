@@ -4,7 +4,12 @@ import { REPLAY_PLAYER_IDS } from '../cases/texas-holdem/replayData';
 
 const face = '<div data-testid="sprite-image-content" style="width:40px;height:60px;opacity:1"></div>';
 
-/** 使用与真实 PlayerCard 一致的翻牌两面和牌名标记。 */
+/**
+ * 使用与真实 PlayerCard 一致的翻牌两面和牌名标记。
+ * @param name - 固定牌面标识。
+ * @param content - 测试牌面内嵌的 HTML 内容。
+ * @param side - 手牌在牌桌中的左右位置。
+ */
 function handCard(name: string, content = face, side = 0): string {
   return `<div data-testid="player_card">
     <div data-testid="card-flip" data-side="${side}">

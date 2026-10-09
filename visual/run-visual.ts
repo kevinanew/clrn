@@ -33,10 +33,15 @@ if (!process.env.VISUAL_LOCALES) {
 
 process.chdir(VISUAL_DIR);
 
+/**
+ * 判断环境变量是否启用显式布尔开关。
+ * @param name - 需要读取的环境变量名。
+ */
 function isEnvTrue(name: string): boolean {
   return process.env[name] === 'true';
 }
 
+/** 确认视觉任务在 Docker 或 CI 中执行，只有显式允许时才使用宿主机。 */
 function ensureDockerOrCi(): void {
   if (isEnvTrue('VISUAL_ALLOW_HOST')) {
     return;
@@ -54,6 +59,7 @@ function ensureDockerOrCi(): void {
   }
 }
 
+/** 确保基准更新使用 Linux 渲染环境，避免不同平台字体污染截图。 */
 function ensureLinuxForBaselineUpdate(): void {
   if (action !== 'reference' && action !== 'approve') {
     return;
@@ -71,6 +77,11 @@ function ensureLinuxForBaselineUpdate(): void {
 ensureDockerOrCi();
 ensureLinuxForBaselineUpdate();
 
+/**
+ * 在指定工作目录执行 pnpm，并在子进程失败时中止当前任务。
+ * @param args - 传给子进程或浏览器初始化脚本的参数。
+ * @param cwd - 子进程使用的工作目录。
+ */
 function runPnpm(args: string[], cwd = VISUAL_DIR): void {
   const result = spawnSync('pnpm', args, {
     stdio: 'inherit',
@@ -89,6 +100,7 @@ function runPnpm(args: string[], cwd = VISUAL_DIR): void {
  * 减少 staging 登录凭据在长轮次中失效对后续场景的影响。
  * 采集器内部会重试 staging 瞬时失败；仍失败则中止本轮。
  * 并行场景不能各自回退 UI 登录，否则同一账号重复登录会互相作废 token。
+ * @param useMitmproxy - 是否让登录态采集经过本轮专用代理。
  */
 function captureAuthState(useMitmproxy: boolean): void {
   const authStatePath = path.join(VISUAL_DIR, 'auth-state.json');
@@ -132,6 +144,7 @@ function getSelectedScenarios(): ReturnType<typeof buildScenarios> {
   return selectScenariosByLabel(buildScenarios(), process.env.VISUAL_FILTER);
 }
 
+/** 按套件和分片启动视觉任务，为每批场景采集登录态并传递失败结果。 */
 async function main(): Promise<void> {
   console.log(`VISUAL_LOCALES=${process.env.VISUAL_LOCALES}`);
 

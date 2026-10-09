@@ -7,10 +7,22 @@ import { GAME_STATES } from './scenarios';
 import { closeMask, freezeClock, restore as restoreReplay } from './replay';
 import { checkFlopCardFaces, checkMobilePlayerAction } from './renderingChecks';
 
+/**
+ * 定位当前页面可见的测试元素，排除导航历史中的隐藏副本。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param id - 目标控件的测试标记。
+ */
 const visible = (page: Page, id: string) => page.locator(`[data-testid="${id}"]:visible`).last();
 type Capture = (page: Page, scenario: VisualScenario, state: string) => Promise<void>;
 
-/** 只注入网络消息，所有弹层均由真实可见按钮打开。 */
+/**
+ * 只注入网络消息，所有弹层均由真实可见按钮打开。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param proxy - 本轮独占的代理控制对象。
+ * @param roomId - 接收回放消息的房间 ID。
+ * @param capture - 将页面和场景状态保存为截图的回调。
+ */
 export async function captureGameplay(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   roomId: string, capture: Capture): Promise<void> {
   const self = await page.evaluate(() => JSON.parse(
@@ -18,11 +30,20 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   // 连接成功后控制页面时钟；每步只推进确定时长，固定倒计时和筹码动画。
   await freezeClock(page);
   let index = 0;
+  /**
+   * 推进页面动效并按当前场景标签保存指定状态的截图。
+   * @param state - 用于截图文件名的场景状态。
+   */
   const snapshot = async (state: typeof GAME_STATES[number]) => {
     expect(state).toBe(GAME_STATES[index++]);
     await page.clock.runFor(500);
     await capture(page, scenario, state);
   };
+  /**
+   * 发送固定牌局回放，等待房间订阅和公共牌状态恢复完成。
+   * @param street - 牌局回合：翻牌前、翻牌、转牌或河牌。
+   * @param opponent - 是否轮到对手操作。
+   */
   const restore = async (street: Street, opponent = false) => {
     await restoreReplay(page, proxy, roomId, self, street, opponent);
   };
@@ -75,6 +96,10 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   await page.clock.runFor(1500);
   await snapshot('settlement');
 
+  /**
+   * 打开指定玩家的资料弹窗，并等待统计信息就绪。
+   * @param player - 要打开资料的玩家 ID。
+   */
   const openProfile = async (player: string) => {
     await visible(page, `texas-holdem-player-container-${player}`).click();
     await expect(visible(page, 'player-profile-popup-close')).toBeVisible();

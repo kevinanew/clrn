@@ -1,7 +1,10 @@
 import { expect, openApp, test } from './fixtures';
 import { drag, scroll } from './gestures';
 
-test('大厅滚动后可返回顶部并打开搜索', /** 验证大厅上下滚动和滚动后的点击。 */ async ({
+test('大厅滚动后可返回顶部并打开搜索', /**
+ * 验证大厅上下滚动和滚动后的点击。
+ * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
+ */ async ({
   page,
   isMobile,
 }) => {
@@ -10,22 +13,34 @@ test('大厅滚动后可返回顶部并打开搜索', /** 验证大厅上下滚�
   await expect
     .poll(
       /** 读取实际内容溢出高度。 */ () =>
-        list.evaluate(/** 计算可滚动距离。 */ (el) => el.scrollHeight - el.clientHeight),
+        list.evaluate(/**
+         * 计算可滚动距离。
+         * @param el - 当前查询布局或滚动位置的 DOM 元素。
+         */ (el) => el.scrollHeight - el.clientHeight),
     )
     .toBeGreaterThan(30);
   await scroll(page, list, isMobile);
   await expect
-    .poll(/** 读取实际滚动位置。 */ () => list.evaluate(/** 返回纵向偏移。 */ (el) => el.scrollTop))
+    .poll(/** 读取实际滚动位置。 */ () => list.evaluate(/**
+     * 返回纵向偏移。
+     * @param el - 当前查询布局或滚动位置的 DOM 元素。
+     */ (el) => el.scrollTop))
     .toBeGreaterThan(30);
   await scroll(page, list, isMobile, -1);
   await expect
-    .poll(/** 读取实际滚动位置。 */ () => list.evaluate(/** 返回纵向偏移。 */ (el) => el.scrollTop))
+    .poll(/** 读取实际滚动位置。 */ () => list.evaluate(/**
+     * 返回纵向偏移。
+     * @param el - 当前查询布局或滚动位置的 DOM 元素。
+     */ (el) => el.scrollTop))
     .toBeLessThan(5);
   await page.getByTestId('hall-search-button').click();
   await expect(page.getByTestId('club-search-input')).toBeVisible();
 });
 
-test('选择玩法弹层关闭后仍能打开建房表单并拖动滑块', /** 验证弹层正常关闭及滑块拖动的数值变化。 */ async ({
+test('选择玩法弹层关闭后仍能打开建房表单并拖动滑块', /**
+ * 验证弹层正常关闭及滑块拖动的数值变化。
+ * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
+ */ async ({
   page,
   isMobile,
 }) => {
@@ -73,16 +88,25 @@ test('选择玩法弹层关闭后仍能打开建房表单并拖动滑块', /** �
   await expect(value).toHaveText(`${min} / ${Number(min) * 2}`);
 });
 
-test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /** 验证故障恢复后重新请求并恢复页面操作。 */ async ({
+test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /**
+ * 验证故障恢复后重新请求并恢复页面操作。
+ * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
+ */ async ({
   page,
 }) => {
   await openApp(page);
   let failing = true;
   let requests = 0;
   await page.route(
-    /** 仅拦截当前用户的俱乐部列表请求。 */ (url) =>
+    /**
+     * 仅拦截当前用户的俱乐部列表请求。
+     * @param url - 请求地址，用于限定当前用户的俱乐部列表接口。
+     */ (url) =>
       url.pathname === '/v10/club' && url.searchParams.has('user_id'),
-    /** 注入故障，恢复后返回成功空列表。 */ async (route) => {
+    /**
+     * 注入故障，恢复后返回成功空列表。
+     * @param route - 当前拦截到的请求，用于提供场景响应。
+     */ async (route) => {
       requests += 1;
       if (failing) {
         await route.abort('failed');
@@ -96,7 +120,10 @@ test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /** �
   const failedRequests = requests;
   failing = false;
   const recovered = page.waitForResponse(
-    /** 等待重试接口成功响应。 */ (response) => {
+    /**
+     * 等待重试接口成功响应。
+     * @param response - 待判断是否属于成功重试的网络响应。
+     */ (response) => {
       const url = new URL(response.url());
       return url.pathname === '/v10/club' && url.searchParams.has('user_id') && response.ok();
     },
@@ -118,14 +145,20 @@ test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /** �
   await expect(input).toHaveValue('交互回归');
 });
 
-test('大厅接口失败后点击重试恢复页面操作', /** 验证重试真正重新请求并关闭错误提示。 */ async ({
+test('大厅接口失败后点击重试恢复页面操作', /**
+ * 验证重试真正重新请求并关闭错误提示。
+ * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
+ */ async ({
   page,
 }) => {
   let failing = true;
   let requests = 0;
   await page.route(
     '**/public/v1/hall_matching/available.json',
-    /** 按当前故障阶段返回失败或成功。 */ async (route) => {
+    /**
+     * 按当前故障阶段返回失败或成功。
+     * @param route - 当前拦截到的请求，用于提供场景响应。
+     */ async (route) => {
       requests += 1;
       if (failing) {
         await route.abort('failed');
@@ -139,7 +172,10 @@ test('大厅接口失败后点击重试恢复页面操作', /** 验证重试真�
   const failedRequests = requests;
   failing = false;
   const recovered = page.waitForResponse(
-    /** 等待大厅重试接口成功响应。 */ (response) =>
+    /**
+     * 等待大厅重试接口成功响应。
+     * @param response - 待判断是否属于成功重试的网络响应。
+     */ (response) =>
       new URL(response.url()).pathname === '/public/v1/hall_matching/available.json' &&
       response.ok(),
   );

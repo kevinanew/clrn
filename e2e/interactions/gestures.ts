@@ -2,7 +2,13 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 type Point = { x: number; y: number };
 
-/** 通过浏览器输入系统拖动；触屏发送完整触摸序列，不修改 DOM 或调用业务回调。 */
+/**
+ * 通过浏览器输入系统拖动；触屏发送完整触摸序列，不修改 DOM 或调用业务回调。
+ * @param page - 执行交互的 Playwright 页面。
+ * @param from - 拖动起点的视口坐标。
+ * @param to - 拖动终点的视口坐标。
+ * @param touch - 是否通过触屏输入执行手势。
+ */
 export async function drag(page: Page, from: Point, to: Point, touch: boolean): Promise<void> {
   const session = touch ? await page.context().newCDPSession(page) : null;
   try {
@@ -41,13 +47,22 @@ export async function drag(page: Page, from: Point, to: Point, touch: boolean): 
   }
 }
 
-/** 在容器可见区域输入滚轮或触摸滑动，方向表示内容的滚动方向。 */
+/**
+ * 在容器可见区域输入滚轮或触摸滑动，方向表示内容的滚动方向。
+ * @param page - 执行交互的 Playwright 页面。
+ * @param container - 接收滚动输入的可见列表容器。
+ * @param touch - 是否通过触屏输入执行手势。
+ * @param direction - 内容滚动方向，正数向下，负数向上。
+ */
 export async function scroll(
   page: Page,
   container: Locator,
   touch: boolean,
   direction = 1,
 ): Promise<void> {
+  // 原始滚轮和 CDP 触摸不会触发 locator handler；先确认容器未被弹窗遮挡。
+  // trial 不会点击列表，也不会触发条目业务操作。
+  await container.click({ trial: true });
   const box = await container.boundingBox();
   if (!box) {
     throw new Error('滚动容器必须有布局区域');
@@ -71,7 +86,13 @@ export async function scroll(
   await page.waitForTimeout(300);
 }
 
-/** 只通过真实输入寻找首屏外的条目，兼容尚未挂载的虚拟列表单元。 */
+/**
+ * 只通过真实输入寻找首屏外的条目，兼容尚未挂载的虚拟列表单元。
+ * @param page - 执行交互的 Playwright 页面。
+ * @param container - 接收滚动输入的可见列表容器。
+ * @param target - 需要通过实际滚动带入视口的目标条目。
+ * @param touch - 是否通过触屏输入执行手势。
+ */
 export async function scrollToItem(
   page: Page,
   container: Locator,
@@ -81,7 +102,10 @@ export async function scrollToItem(
   for (let attempt = 0; attempt < 18; attempt += 1) {
     if (await target.count()) {
       const inside = await target.evaluate(
-        /** 检查目标是否完全进入视口。 */ (el) => {
+        /**
+         * 检查目标是否完全进入视口。
+         * @param el - 当前查询布局或滚动位置的 DOM 元素。
+         */ (el) => {
           const rect = el.getBoundingClientRect();
           return rect.top >= 60 && rect.bottom <= innerHeight + 1;
         },
@@ -94,7 +118,10 @@ export async function scrollToItem(
     await scroll(page, container, touch);
   }
   const metrics = await container.evaluate(
-    /** 记录滚动范围和已挂载内容，区分列表停止渲染与目标定位错误。 */ (el) => ({
+    /**
+     * 记录滚动范围和已挂载内容，区分列表停止渲染与目标定位错误。
+     * @param el - 当前查询布局或滚动位置的 DOM 元素。
+     */ (el) => ({
       scrollTop: el.scrollTop,
       clientHeight: el.clientHeight,
       scrollHeight: el.scrollHeight,

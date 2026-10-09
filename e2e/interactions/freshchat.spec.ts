@@ -2,16 +2,26 @@ import type { Page } from '@playwright/test';
 import { expect, openApp, test } from './fixtures';
 import { scrollToItem } from './gestures';
 
-/** 只读取真实 SDK 状态，不替换 SDK 或通过脚本打开、关闭窗口。 */
+/**
+ * 只读取真实 SDK 状态，不替换 SDK 或通过脚本打开、关闭窗口。
+ * @param page - 执行交互的 Playwright 页面。
+ * @param method - 要查询的 SDK 状态：isLoaded 或 isOpen。
+ */
 async function widgetState(page: Page, method: 'isLoaded' | 'isOpen'): Promise<boolean> {
   return page.evaluate(
-    /** 查询 Freshchat 的加载或展开状态。 */ (name) =>
+    /**
+     * 查询 Freshchat 的加载或展开状态。
+     * @param name - 浏览器中调用的 Freshchat 状态方法名。
+     */ (name) =>
       Reflect.get(window, 'fcWidget')?.[name]() === true,
     method,
   );
 }
 
-test('在线客服打开真实 Freshchat，可输入草稿、关闭并再次打开', /** 验证客服入口到真实第三方聊天界面的完整交互。 */ async ({
+test('在线客服打开真实 Freshchat，可输入草稿、关闭并再次打开', /**
+ * 验证客服入口到真实第三方聊天界面的完整交互。
+ * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
+ */ async ({
   page,
   isMobile,
 }) => {

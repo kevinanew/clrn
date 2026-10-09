@@ -15,3 +15,7 @@ visual/.visual-reference.lock/
 
 # ttyctl local runtime data (agent-writable)
 .ttyctl/
+
+# 仓库检查依赖和缓存
+node_modules/
+.ruff_cache/

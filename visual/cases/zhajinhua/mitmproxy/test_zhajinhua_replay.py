@@ -6,6 +6,7 @@ from unittest.mock import patch
 from mitmproxy import websocket
 from wsproto.frame_protocol import Opcode
 from mitmproxy import connection, http
+from zhajinhua_replay import ZhajinhuaReplay, PLAYER_IDS
 with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
     from addon import ZhajinhuaVisualProxy
 
@@ -18,7 +19,6 @@ def flow(url, method='GET', body=b'', token=None):
     if token:
         result.request.headers['X-E2E-Control-Token'] = token
     return result
-from zhajinhua_replay import ZhajinhuaReplay, PLAYER_IDS
 
 ROOM = '11111111-1111-4111-8111-111111111111'
 OTHER = '22222222-2222-4222-8222-222222222222'

@@ -64,6 +64,10 @@ export const PAGE_NAME_PARTS: Record<string, string> = {
   picker: '选择玩法', form: '表单', advanced: '高级设置', match: '匹配', slot: '抽奖',
 };
 
+/**
+ * 按最长匹配词组转换场景标识，保留无法识别的名称。
+ * @param label - 场景完整标签。
+ */
 export function displayPageName(label: string): string {
   const guest = label.startsWith('guest_');
   const words = label.replace(/^(signed_in_|guest_)/, '').split('_');

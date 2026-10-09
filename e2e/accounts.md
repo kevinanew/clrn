@@ -2,7 +2,18 @@
 
 本页是测试账号的统一入口。以下账号只用于 **staging**（Web：<https://h5.shafayouxi.org/>）；不要用它操作 production 数据。
 
-## 现有账号
+## 并行测试账号池
+
+本机使用 30 个既有账号，CI 另有 30 个专用账号。全部 60 个用户名及获取方式登记在
+[PRD 账号清单](https://github.com/kevinanew/laiwan_prd/blob/master/docs/测试与维护仓库.html#test-account-pool)。
+本机凭据维护在 Git 共同元数据目录的 `clrn-test-accounts/accounts.json`，CI 凭据维护在
+`CLRN_CI_TEST_ACCOUNTS` Actions Secret，恢复备份为同目录下的 `ci-accounts.json`；凭据文件权限为 0600。
+
+本机功能、视觉、交互和 Freshchat 测试通过 `node ../scripts/with-test-account.mjs -- <测试命令>`
+取得独占账号。CI 由各工作流分配账号并通过账号级并发组互斥，不同账号可以同时运行。
+密码目前为独立的 16 位，H5 输入框上限为 20 位；密码变更后同步凭据文件，CI 还需更新 Secret。
+
+## 兼容默认账号
 
 | 用途 | 用户名 | 密码 | 已确认的权限与数据 | 使用位置 |
 | --- | --- | --- | --- | --- |
@@ -27,6 +38,7 @@
 
 ## 维护
 
-- 账号或密码变更时，同步修改本页、`visual/test-account.ts` 与 `e2e/helpers/environment.ts` 的默认值；更适合保密的凭据只放在本地环境变量或 CI 密钥中，本页只写获取方式。
+- 账号池凭据变更时，更新本机凭据文件及对应的 CI Secret，公开用户名统一维护在 PRD。
+- 兼容默认账号变更时，同步修改本页、`visual/test-account.ts` 与 `e2e/helpers/environment.ts` 的默认值；新的私人凭据只保存获取方式。
 - 俱乐部、资产、会员等可变数据应使用专用 staging 账号，避免影响视觉回归的固定账号。
 - 每次使用专用账号前，先核对本页的权限和数据状态；失败时更新状态与最后核查日期。

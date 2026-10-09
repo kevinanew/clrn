@@ -41,9 +41,11 @@ test('startup proxy failures retry initialization before entering the hall', asy
     </div>
   `);
   await page.evaluate(() => {
+    /** 记录取消按钮已被点击，验证启动提示的处理分支。 */
     document.getElementById('cancel')!.onclick = () => {
       document.body.dataset.cancelled = 'true';
     };
+    /** 模拟重试成功后挂载大厅，验证启动提示能恢复应用。 */
     document.getElementById('retry')!.onclick = () => {
       document.body.innerHTML = '<div data-testid="hall-screen">Hall</div>';
     };

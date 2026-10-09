@@ -44,6 +44,7 @@ test('站点导航在退避后重试可恢复的网络错误', async () => {
   let attempts = 0;
   const attemptStartedAt: number[] = [];
   const page = {
+    /** 模拟两次临时导航失败和第三次成功，记录重试次数及时间。 */
     goto: async () => {
       attemptStartedAt.push(Date.now());
       attempts += 1;
@@ -55,7 +56,9 @@ test('站点导航在退避后重试可恢复的网络错误', async () => {
           'Navigation to "https://h5.laiwanpai.com/" is interrupted by another navigation to "chrome-error://chromewebdata/"',
         );
       }
-      return { ok: () => true } as Response;
+      return {
+        /** 返回测试响应的预设 HTTP 成功状态。 */
+        ok: () => true } as Response;
     },
   } as unknown as Page;
 

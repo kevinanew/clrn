@@ -5,7 +5,10 @@ import { galleryStyles } from './snapshot-gallery-styles';
 import { galleryScript } from './snapshot-gallery-script';
 import { viewerMarkup, viewerScript, viewerStyles } from './snapshot-gallery-viewer';
 
-/** 所有数据与交互内嵌，直接用 file:// 打开即可筛选、对照和连续浏览。 */
+/**
+ * 所有数据与交互内嵌，直接用 file:// 打开即可筛选、对照和连续浏览。
+ * @param pages - 要展示的截图元数据，包含所有语言和设备版本。
+ */
 export function renderSnapshotGallery(pages: GalleryPage[]): string {
   const modules = Object.entries(MODULE_NAMES).filter(([group]) => pages.some(page => page.group === group));
   const locales = [...new Set(pages.map(page => page.locale))];
@@ -13,6 +16,11 @@ export function renderSnapshotGallery(pages: GalleryPage[]): string {
   const pageCount = new Set(pages.map(pageKey)).size;
   const records = JSON.stringify(pages.map(({ label, page, group, locale, viewport, signedIn, navigation, file }) =>
     ({ label, page, group, locale, viewport, signedIn, navigation, file }))).replace(/</g, '\\u003c');
+  /**
+   * 生成带可读名称的安全筛选下拉选项。
+   * @param values - 下拉框候选值。
+   * @param label - 将候选值转换为可读标题的函数。
+   */
   const options = (values: string[], label: (value: string) => string) => values.map(value =>
     `<option value="${escapeHtml(value)}">${escapeHtml(label(value))}</option>`).join('');
 

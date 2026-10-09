@@ -1,6 +1,11 @@
 import { expect, type Page } from '@playwright/test';
 import { environment } from './environment';
 
+/**
+ * 确认页面标题、应用根节点与首屏内容均已就绪。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param siteUrl - 待校验的部署站点地址。
+ */
 export async function expectSiteReady(page: Page, siteUrl: string): Promise<void> {
   await expect(page).toHaveTitle(/来玩/);
   await expect(page.locator('#root')).toBeVisible();
@@ -24,6 +29,11 @@ export async function expectSiteReady(page: Page, siteUrl: string): Promise<void
     .toBeTruthy();
 }
 
+/**
+ * 校验页面构建版本元数据，并核对指定提交是否已部署。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param siteUrl - 待校验的部署站点地址。
+ */
 export async function expectBuildVersion(page: Page, siteUrl: string): Promise<void> {
   const buildVersion = await page.locator('meta[name="build-version"]').getAttribute('content');
   expect(buildVersion, `${siteUrl} 应提供 build-version`).toMatch(

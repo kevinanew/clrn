@@ -21,10 +21,18 @@ export const LOCALE_NAMES: Record<string, string> = {
   'zh-Hans': '简体中文', 'zh-Hant': '繁体中文', en: 'English',
 };
 
+/**
+ * 生成区分模块、页面和登录状态的页面分组键。
+ * @param page - 待展示或分组的截图元数据。
+ */
 export function pageKey(page: GalleryPage): string {
   return JSON.stringify([page.group, page.page, page.signedIn]);
 }
 
+/**
+ * 转义页面文字中的 HTML 特殊字符。
+ * @param value - 需要填入表单或转义的原始字符串。
+ */
 export function escapeHtml(value: string): string {
   const entities: Record<string, string> = {
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',

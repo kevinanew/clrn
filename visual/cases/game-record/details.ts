@@ -3,8 +3,16 @@ import { expect } from './proxy';
 import { back, click, reopen, row, scrollList, visible } from './ui';
 import type { RecordProxy } from './proxy';
 
+/**
+ * 依次截取私人房与俱乐部战绩的概览、玩家信息和回放详情。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param version - 战绩页面版本：legacy 或 v2。
+ * @param snapshot - 按状态名保存当前场景截图的回调。
+ * @param proxy - 本轮独占的代理控制对象。
+ */
 export async function captureDetails(page: Page, version: 'legacy' | 'v2',
   snapshot: (state: string) => Promise<void>, proxy: RecordProxy): Promise<void> {
+  /** 按新旧战绩页面版本定位回放标签。 */
   const replayTab = () => version === 'legacy' ? visible(page, 'replay-tab-button')
     : page.getByRole('tab').filter({ hasText: /Replay|回放/i });
   for (const [name, prefix] of [['Private Texas', 'private'], ['Club Cards', 'club']] as const) {

@@ -10,6 +10,11 @@ const backAccessibilityLabels = {
   en: 'Back',
 };
 
+/**
+ * 为单个视觉场景创建隔离上下文，准备页面并执行截图后清理资源。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param browser - 用于创建隔离上下文的浏览器实例。
+ */
 export async function runVisualScenario(scenario: VisualScenario, browser: Browser): Promise<void> {
     const context = await browser.newContext({
       viewport: { width: scenario.viewport.width, height: scenario.viewport.height },

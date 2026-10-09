@@ -60,6 +60,12 @@ const TUTORIAL_COMPLETE_KEYS = [
   'create.room.screen.tutorial.complete.key',
 ];
 
+/**
+ * 创建采集或验证登录态的隔离上下文，预置统一语言和网络稳定配置。
+ * @param browser - 用于创建隔离上下文的浏览器实例。
+ * @param storageEntries - 可选的已采集 localStorage 缓存。
+ * @param proxy - 本轮独占的代理控制对象。
+ */
 async function createAuthContext(
   browser: import('@playwright/test').Browser,
   storageEntries?: Record<string, string>,
@@ -89,6 +95,8 @@ async function createAuthContext(
   // 登录态采集与场景必须使用同一套启动网络 mock；否则采集会在代理选址阶段
   // 随机命中 server_load_offline 节点，尚未显示登录入口就失败。
   await mockVisualNetworkDependencies(context, { useMitmproxy: Boolean(proxy) });
+  // 测试账号必须预先存在；缺失时明确失败，禁止 UI 静默注册替代账号。
+  await context.route('**/public/v*/user/register/**', route => route.abort('blockedbyclient'));
   await context.addInitScript(
     ({
       device,
@@ -110,6 +118,10 @@ async function createAuthContext(
   return context;
 }
 
+/**
+ * 读取登录后的 localStorage，移除场景语言并固定国家码。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 async function collectLocalStorageEntries(page: import('@playwright/test').Page) {
   const entries: Record<string, string> = await page.evaluate(() => {
     const all: Record<string, string> = {};
@@ -127,6 +139,10 @@ async function collectLocalStorageEntries(page: import('@playwright/test').Page)
   return entries;
 }
 
+/**
+ * 保存本轮已验证的登录缓存，供同一分片的视觉场景注入。
+ * @param entries - 待注入或保存的 localStorage 键值。
+ */
 function persistAuthState(entries: Record<string, string>) {
   fs.writeFileSync(
     AUTH_STATE_PATH,
@@ -138,6 +154,12 @@ function persistAuthState(entries: Record<string, string>) {
   );
 }
 
+/**
+ * 将采集缓存注入全新上下文，验证登录成立并读取补齐后的缓存。
+ * @param browser - 用于创建隔离上下文的浏览器实例。
+ * @param entries - 待注入或保存的 localStorage 键值。
+ * @param proxy - 本轮独占的代理控制对象。
+ */
 async function validateCapturedAuthState(
   browser: import('@playwright/test').Browser,
   entries: Record<string, string>,
@@ -166,6 +188,10 @@ async function validateCapturedAuthState(
   });
 }
 
+/**
+ * 采集并验证一次共享登录态，失败时在新上下文重试，结束后关闭浏览器。
+ * @param proxy - 本轮独占的代理控制对象。
+ */
 async function captureAuthState(proxy?: TexasProxy | ZhajinhuaProxy): Promise<void> {
   const browser = await chromium.launch({ args: BROWSER_LAUNCH_ARGS });
 
@@ -223,6 +249,7 @@ async function captureAuthState(proxy?: TexasProxy | ZhajinhuaProxy): Promise<vo
   }
 }
 
+/** 根据当前套件选择专用代理或直连方式，执行登录态采集。 */
 async function main(): Promise<void> {
   if (process.env.VISUAL_AUTH_USES_MITMPROXY === 'true') {
     if (getVisualSuite() === 'zhajinhua') await withZhajinhuaProxy(captureAuthState);

@@ -10,6 +10,10 @@ import { pageKey, type GalleryPage } from './snapshot-gallery-model';
 const manifest = JSON.parse(readFileSync(path.join(__dirname, 'gallery/manifest.json'), 'utf8'));
 const pages: GalleryPage[] = manifest.pages;
 
+/**
+ * 读取生成 HTML 内的截图 JSON 数据供断言使用。
+ * @param source - 待检查的生成 HTML。
+ */
 function embeddedData(source: string): GalleryPage[] {
   return JSON.parse(source.match(/<script id="gallery-data" type="application\/json">([\s\S]*?)<\/script>/)![1]);
 }
@@ -55,7 +59,7 @@ test('页面名称可读，原始场景名保持不变且仍可搜索', () => {
 });
 
 test('场景文本无法终止内嵌数据脚本，特殊字符无损保存', () => {
-  const value = '</script><script>throw new Error("unexpected")</script>&\"\'';
+  const value = '</script><script>throw new Error("unexpected")</script>&"\'';
   const source = renderSnapshotGallery([{ ...pages[0], label: value, page: value, navigation: [value], file: value }]);
   assert.equal((source.match(/<script[\s>]/g) || []).length, 2);
   assert.equal(embeddedData(source)[0].label, value);

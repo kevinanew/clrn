@@ -1,7 +1,10 @@
 import type { Page } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
 
-/** 暂停并隐藏视频，避免播放帧不定 */
+/**
+ * 暂停并隐藏视频，避免播放帧不定
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function stabilizeVideos(page: Page): Promise<void> {
   await page.evaluate(async () => {
     document.querySelectorAll('[data-testid="video-background-image"]').forEach((el) => {
@@ -19,6 +22,7 @@ export async function stabilizeVideos(page: Page): Promise<void> {
       videos.map(
         (video) =>
           new Promise<void>((resolve) => {
+            /** 暂停页面视频并固定播放位置，消除动态帧造成的截图变化。 */
             const stabilize = () => {
               video.pause();
               video.autoplay = false;
@@ -45,7 +49,10 @@ export async function stabilizeVideos(page: Page): Promise<void> {
   });
 }
 
-/** backdrop-filter 在 Docker Chromium 下渲染有随机噪点，直接关掉 */
+/**
+ * backdrop-filter 在 Docker Chromium 下渲染有随机噪点，直接关掉
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function stabilizeBackdropFilter(page: Page): Promise<void> {
   await page.evaluate(() => {
     document.querySelectorAll('*').forEach((el) => {
@@ -75,6 +82,7 @@ export async function stabilizeBackdropFilter(page: Page): Promise<void> {
  * （desktop 实测 x=.46875、y=.140625）。Skia 对小数坐标的中文抗锯齿偶尔会有
  * 1 级灰度舍入差，导致同一容器内十几个像素漂移。把容器左上角平移到最近的整数
  * 像素，保留文字与布局，只消除栅格化的非确定性。
+ * @param page - 执行操作的 Playwright 页面。
  */
 export async function alignPersonalHouseTitlesToDevicePixels(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -99,6 +107,8 @@ export async function alignPersonalHouseTitlesToDevicePixels(page: Page): Promis
  * 不能只改一次 DOM：测速、版本检查等异步 MobX 更新可能在页面就绪后触发 React
  * 重渲染，把固定值覆盖回真实值。MutationObserver 会在这些 DOM 变化进入下一帧绘制前
  * 重新应用规则，确保 toHaveScreenshot 的两次稳定截图看到相同内容。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
  */
 export async function applyContentStabilizers(page: Page, scenario: VisualScenario): Promise<void> {
   if (scenario.fixedTexts.length === 0 && scenario.hideSelectors.length === 0) {
@@ -113,6 +123,7 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
       fixedTexts: Array<{ selector: string; text: string }>;
       hideSelectors: string[];
     }) => {
+      /** 写入场景固定文案并隐藏动态元素，在 DOM 更新后重新应用。 */
       const apply = () => {
         fixedTexts.forEach(({ selector, text }) => {
           document.querySelectorAll(selector).forEach((el) => {
@@ -162,7 +173,10 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
   );
 }
 
-/** 等待页面图片并拒绝缺失的同源构建资源，避免 reference 接受缺图页面。 */
+/**
+ * 等待页面图片并拒绝缺失的同源构建资源，避免 reference 接受缺图页面。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
   await page.evaluate(async () => {
     const images = Array.from(document.images);
@@ -172,7 +186,9 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
         .map(
           (img) =>
             new Promise<void>((resolve) => {
+              /** 结束图片加载等待，让稳定化流程继续执行。 */
               img.onload = () => resolve();
+              /** 结束图片加载等待；后续统一检测并报告缺失图片。 */
               img.onerror = () => resolve();
               setTimeout(resolve, 10000);
             }),
@@ -209,9 +225,15 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
  *
  * SpriteImage 通过在完整图集上平移来显示指定牌面；覆盖 sprite-image-view 的宽度会
  * 让平移坐标与画布尺寸失配，牌面因此被裁切或出现在错误位置。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param width - 预期的页面宽度，单位为像素。
  */
 export async function lockPageWidth(page: Page, width: number): Promise<void> {
   await page.evaluate((viewportWidth: number) => {
+    /**
+     * 固定元素宽度及最大宽度，防止内容溢出改变截图视口。
+     * @param el - 需要固定宽度的 DOM 元素。
+     */
     const lock = (el: HTMLElement) => {
       el.style.setProperty('overflow-x', 'hidden', 'important');
       el.style.setProperty('max-width', `${viewportWidth}px`, 'important');

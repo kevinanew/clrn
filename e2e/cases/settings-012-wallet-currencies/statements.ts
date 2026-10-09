@@ -11,6 +11,11 @@ export type Statement = {
   statement_id: string;
 };
 
+/**
+ * 校验真实钱包流水响应的结构和币种，并返回交易记录。
+ * @param response - 需要校验的 HTTP 响应。
+ * @param currency - 本次查询的币种代码。
+ */
 export async function readStatements(response: Response, currency: Currency): Promise<Statement[]> {
   expect(response.ok(), `${currency} 流水 HTTP 应成功`).toBe(true);
   const body = await response.json();
@@ -36,6 +41,11 @@ export async function readStatements(response: Response, currency: Currency): Pr
   return statements;
 }
 
+/**
+ * 核对流水列表中的真实交易或空态，兼容虚拟列表只挂载首条记录。
+ * @param list - 钱包流水列表定位器。
+ * @param statements - 真实接口返回并通过校验的流水记录。
+ */
 export async function expectStatementList(list: Locator, statements: Statement[]): Promise<void> {
   await expect(list).toBeInViewport();
   const rows = list.getByTestId('CurrencyTransactionRecordItem_container');
@@ -49,6 +59,10 @@ export async function expectStatementList(list: Locator, statements: Statement[]
   const statement = statements[0];
   const date = await list.evaluate((_, value) => {
     const date = new Date(value);
+    /**
+     * 将日期分量补齐为两位数字，与页面时间格式保持一致。
+     * @param part - 需要补零的日期或时间分量。
+     */
     const pad = (part: number) => String(part).padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   }, statement.create_at);

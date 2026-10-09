@@ -14,7 +14,8 @@ export default defineConfig({
     baseURL: process.env.E2E_INTERACTION_BASE_URL || environment.stagingUrl,
     actionTimeout: 15_000,
     navigationTimeout: 60_000,
-    trace: 'retain-on-failure',
+    // 账号池密码通过真实登录请求发送，保留页面截图但不将网络凭据写入 trace。
+    trace: 'off',
     screenshot: 'only-on-failure',
     locale: 'zh-CN',
     launchOptions: {

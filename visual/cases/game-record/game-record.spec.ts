@@ -11,6 +11,12 @@ import type { Page } from '@playwright/test';
 const pagedRoomNames = Array.from({ length: 17 }, (_, index) =>
   `Paged Texas ${String(index + 1).padStart(2, '0')}`);
 
+/**
+ * 验证战绩勾选、全选和分数统计，并截取各选择状态。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param version - 战绩页面版本：legacy 或 v2。
+ * @param snapshot - 按状态名保存当前场景截图的回调。
+ */
 async function selections(page: Page, version: 'legacy' | 'v2',
   snapshot: (state: string) => Promise<void>): Promise<void> {
   const header = version === 'legacy' ? 'header-right-button' : 'navigation-bar-right-button';
@@ -18,6 +24,11 @@ async function selections(page: Page, version: 'legacy' | 'v2',
   const score = visible(page, 'record-sum-score-text');
   await expect(score).toHaveText('0');
   await snapshot('select_none');
+  /**
+   * 按页面版本定位指定记录的选择按钮。
+   * @param key - 固定战绩记录的标识。
+   * @param index - 旧版页面中记录的顺序位置。
+   */
   const select = (key: string, index: number) => version === 'v2'
     ? visible(page, `select-record-visual-record-${key}-button`)
     : visible(page, 'select-status-button').nth(index);
@@ -52,6 +63,12 @@ async function selections(page: Page, version: 'legacy' | 'v2',
   await snapshot('select_cancel');
 }
 
+/**
+ * 验证侧滑删除、确认、取消及错误反馈，并记录对应截图。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param version - 战绩页面版本：legacy 或 v2。
+ * @param snapshot - 按状态名保存当前场景截图的回调。
+ */
 async function deletion(page: Page, version: 'legacy' | 'v2',
   snapshot: (state: string) => Promise<void>): Promise<void> {
   await swipe(page, row(page, 'Private Texas', version));
@@ -76,6 +93,12 @@ async function deletion(page: Page, version: 'legacy' | 'v2',
   await back(page);
 }
 
+/**
+ * 验证旧版战绩的成功删除、删除失败及列表结束状态。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param proxy - 本轮独占的代理控制对象。
+ * @param snapshot - 按状态名保存当前场景截图的回调。
+ */
 async function legacyEnd(page: Page, proxy: RecordProxy,
   snapshot: (state: string) => Promise<void>): Promise<void> {
   await scrollList(page, false);

@@ -3,6 +3,7 @@ import { environment } from '../../helpers/environment';
 import { accountStatus, signIn, type Session } from './auth';
 import { openHall, prepareContext, unique } from './page';
 import { readDiamondBalance } from './provision';
+import { installSignInNoticeHandler } from './sign-in-notices';
 
 export type SignedInAccount = Session & { username: string; diamondBalance: number };
 
@@ -11,6 +12,11 @@ export const test = base.extend<{
   /** 兼容旧只读案例；新案例使用 signedInAccount，避免暗示注册新账号。 */
   newAccount: SignedInAccount;
 }>({
+  /**
+   * 登录既有只读测试账号并校验会话与钱包，禁止注册缺失账号。
+   * @param fixtures - Playwright 注入的依赖，提供当前页面、上下文或已有代理。
+   * @param use - 将准备好的 fixture 交给案例使用的回调。
+   */
   signedInAccount: async ({ page, context }, use) => {
     let account: SignedInAccount;
     try {
@@ -31,29 +37,16 @@ export const test = base.extend<{
       await page.close().catch(() => undefined);
       throw new Error('已有 staging 只读账号登录或会话/钱包检查失败；未注册新账号');
     }
-    const message = page.getByTestId('alert-message-text').filter({ visible: true });
-    // 此后台错误可能晚于登录返回；只允许用户确认一次，其他内容明确失败。
-    // locator handler 在操作受遮挡时执行，网络 alert 也会先于隐私“同意”处理。
-    await page.addLocatorHandler(message, async () => {
-      await expect(message).toHaveCount(1);
-      await expect(message).toHaveText(/^\d+\s+v10\/club\?user_id=[\w-]+\s+网络有点问题，请重试$/);
-      const confirm = await unique(page, 'alert-custom-button');
-      await expect(confirm).toHaveText('好的');
-      base.info().annotations.push({
-        type: 'staging-background-error',
-        description: '后台 v10/club 列表请求出现网络提示；用户确认一次后继续只读浏览。',
-      });
-      await confirm.click();
-    }, { times: 1 });
-    const privacy = page.getByTestId('privacy-popup-modal').filter({ visible: true });
-    if (await privacy.count()) {
-      await expect(await unique(page, 'privacy-popup-title')).toHaveText('用户隐私策略概要');
-      await (await unique(page, 'privacy-popup-agree')).click();
-      await expect(privacy).not.toBeVisible();
-    }
+    // 提示可能晚于登录返回；在后续操作前取消救济金，不改变账号资产。
+    await installSignInNoticeHandler(page);
     await (await unique(page, 'hall-search-button')).click({ trial: true });
     await use(account);
   },
+  /**
+   * 提供本轮创建或恢复的测试账号，交给案例执行并验证会话归属。
+   * @param fixtures - Playwright 注入的依赖，提供当前页面、上下文或已有代理。
+   * @param use - 将准备好的 fixture 交给案例使用的回调。
+   */
   newAccount: async ({ signedInAccount }, use) => {
     await use(signedInAccount);
   },

@@ -21,7 +21,8 @@ export default defineConfig({
     ...devices['Desktop Chrome'],
     actionTimeout: 15_000,
     navigationTimeout: 45_000,
-    trace: 'retain-on-failure',
+    // 真实 CI 账号的登录请求包含私有密码，不能将网络 trace 写入报告。
+    trace: 'off',
     launchOptions: {
       args: [
         // CI 容器里以 root 运行，且默认 /dev/shm 只有 64M，

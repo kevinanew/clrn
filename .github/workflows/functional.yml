@@ -2,7 +2,7 @@ name: H5 线上功能案例
 
 on:
   push:
-    paths: ['e2e/**', '.github/workflows/functional.yml']
+    paths: ['e2e/**', 'scripts/*ci*', '.github/workflows/functional.yml']
   workflow_dispatch:
     inputs:
       scope:
@@ -14,23 +14,38 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: h5-staging-test-account
-  cancel-in-progress: false
-  queue: max
-
 jobs:
+  account:
+    runs-on: ubuntu-latest
+    outputs:
+      account: ${{ steps.plan.outputs.account }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: plan
+        run: node scripts/plan-ci-accounts.mjs functional
   functional:
+    needs: account
+    concurrency:
+      group: h5-staging-account-${{ needs.account.outputs.account }}
+      cancel-in-progress: false
+      queue: max
     runs-on: ubuntu-latest
     timeout-minutes: 20
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-jammy
     env:
       E2E_STAGING_URL: ${{ vars.E2E_STAGING_URL }}
-      E2E_CREATION_USERNAME: ${{ secrets.E2E_CREATION_USERNAME }}
-      E2E_CREATION_PASSWORD: ${{ secrets.E2E_CREATION_PASSWORD }}
       TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
     steps:
+      - uses: actions/checkout@v4
+      - name: 注入本任务独占的 CI 账号
+        env:
+          CLRN_CI_ACCOUNT: ${{ needs.account.outputs.account }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS }}
+        run: node scripts/configure-ci-account.mjs
       - name: 检查测试注册及创建场景配置
         if: github.event_name == 'workflow_dispatch' && (inputs.scope == 'all' || inputs.scope == 'registration')
         shell: sh
@@ -42,12 +57,11 @@ jobs:
           fi
           for name in $names; do
             if ! printenv "$name" | grep -q .; then
-              echo "::error::缺少 Actions Secret: $name；请配置独立 staging 创建账号及共用测试接口 token。"
+              echo "::error::缺少 $name；请检查 CI 账号池及 TESTING_API_TOKEN Secret。"
               missing=1
             fi
           done
           exit "$missing"
-      - uses: actions/checkout@v4
       - name: 安装测试依赖
         working-directory: e2e
         run: npm ci
@@ -64,7 +78,9 @@ jobs:
           elif [ "$FUNCTIONAL_SCOPE" = registration ]; then
             npm run test:functional:registration
           else
-            npm run test:functional:existing
+            # 已有账号只读案例允许网络瞬态故障重试一次，失败的断言仍会再次执行。
+            # 注册／创建场景维持零重试，避免重复创建数据。
+            npm run test:functional:existing -- --retries=1
           fi
       - name: 上传失败报告
         if: failure()

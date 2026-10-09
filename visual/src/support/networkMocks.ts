@@ -10,6 +10,7 @@ export const USER_COUNTRY_CODE_STORAGE_KEY = 'app.user.country.code.key';
 /**
  * mock 按 IP 取国家码接口，并固定 localStorage 区号。
  * 登录首页会请求该接口覆盖缓存；采集登录态与各场景都必须 mock，否则本地/CI 出口 IP 不一致会漂基线。
+ * @param context - 首次导航前配置的浏览器上下文。
  */
 export async function mockFixedCountryCode(context: BrowserContext): Promise<void> {
   await context.route(/\/public\/v10\/profile\/country/, async (route) => {
@@ -31,7 +32,10 @@ export async function mockFixedCountryCode(context: BrowserContext): Promise<voi
   );
 }
 
-/** 维护提醒与视觉场景无关；staging 对测试账号返回 401 会触发全局登出 */
+/**
+ * 维护提醒与视觉场景无关；staging 对测试账号返回 401 会触发全局登出
+ * @param context - 首次导航前配置的浏览器上下文。
+ */
 export async function mockRoomDisallowRuleReminder(context: BrowserContext): Promise<void> {
   await context.route(/\/v2\/room\/disallow-rule\/reminder(?:\?|$)/, (route) =>
     route.fulfill({
@@ -51,6 +55,7 @@ const VISUAL_PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com';
  * 固定远端代理列表。真实 metadata 会返回多个节点，其中失效节点也可能被下面的
  * 健康检查 mock 误判为可用，随后业务 API 才报 ERR_CONNECTION_CLOSED。
  * 视觉测试仍访问 staging 数据，但始终经由同一个已验证节点，避免随机换 host。
+ * @param context - 首次导航前配置的浏览器上下文。
  */
 async function mockProxyMetadata(context: BrowserContext): Promise<void> {
   await context.route(/\/public\/v13\/metadata\/servers(?:\?|$)/, (route) =>
@@ -72,6 +77,7 @@ async function mockProxyMetadata(context: BrowserContext): Promise<void> {
 /**
  * 固定代理节点健康检查。只有 VISUAL_PROXY_HOST 返回正常；其余本地候选节点明确
  * 返回不可用，保证启动测速与后台 metadata 刷新都不会随机选中已断连的节点。
+ * @param context - 首次导航前配置的浏览器上下文。
  */
 async function mockProxyHealthChecks(context: BrowserContext): Promise<void> {
   await context.route(/\/node\/v1\/status(?:\?|$)/, (route) => {
@@ -93,7 +99,8 @@ async function mockProxyHealthChecks(context: BrowserContext): Promise<void> {
  * 固定大厅公共牌局与可用版本：
  * - 牌局接口失败会把 "--" 占位符写进基准图
  * - available.json 默认 10s 超时，HallScreen 会在失败后弹「取消 / 重试」全局 Alert；
- *   Alert 可能在已经切到其它 tab 后才出现，污染任意登录场景
+ * Alert 可能在已经切到其它 tab 后才出现，污染任意登录场景
+ * @param context - 首次导航前配置的浏览器上下文。
  */
 async function mockHallMatchingGames(context: BrowserContext): Promise<void> {
   await context.route(/\/public\/v1\/hall_matching\/available\.json(?:\?|$)/, (route) =>
@@ -122,8 +129,18 @@ async function mockHallMatchingGames(context: BrowserContext): Promise<void> {
   );
 }
 
-/** 固定登录账号的俱乐部、私人房与钱包数据，避免 staging 账号状态进入基准图 */
+/**
+ * 固定登录账号的俱乐部、私人房与钱包数据，避免 staging 账号状态进入基准图
+ * @param context - 首次导航前配置的浏览器上下文。
+ * @param realPrivateRoom - 是否保留真实私人房接口，而非返回固定房间数据。
+ * @param recordFixtures - 是否由战绩代理提供俱乐部与战绩数据。
+ */
 async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom = false, recordFixtures = false): Promise<void> {
+  /**
+   * 将固定业务结果包装为成功 API 响应，交给 Playwright 路由返回。
+   * @param route - 需要返回固定响应的 Playwright 路由。
+   * @param result - 固定业务响应中的 result 数据。
+   */
   const fulfill = (route: Parameters<Parameters<BrowserContext['route']>[1]>[0], result: unknown) =>
     route.fulfill({
       status: 200,
@@ -239,6 +256,8 @@ async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom
  *
  * 登录态采集会在场景开始前单独创建 context；它若跳过代理 metadata / 健康检查
  * mock，就会在应用启动阶段随机选中不可用的 staging 节点，根本无法进入登录页。
+ * @param context - 首次导航前配置的浏览器上下文。
+ * @param options - realPrivateRoom 保留真实建房接口；useMitmproxy 使用专用代理；recordFixtures 保留战绩代理提供的数据。
  */
 export async function mockVisualNetworkDependencies(
   context: BrowserContext,
