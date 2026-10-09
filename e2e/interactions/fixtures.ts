@@ -2,7 +2,7 @@ import { type BrowserContext, test as base, expect, type Page } from '@playwrigh
 import { environment } from '../helpers/environment';
 import { gotoDeployedSite, initializePage } from '../helpers/page';
 import { signIn } from '../cases/_shared/auth';
-import { clickAfterSignInNotices } from '../cases/_shared/sign-in-notices';
+import { clickAfterSignInNotices, installSignInNoticeHandler } from '../cases/_shared/sign-in-notices';
 
 const baseURL = process.env.E2E_INTERACTION_BASE_URL || environment.stagingUrl;
 type StorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
@@ -119,10 +119,11 @@ export const test = base.extend<object, { accountState: StorageState }>({
 
 test.beforeEach(
   /**
-   * 每个场景安装独立接口边界。
+   * 每个场景安装独立接口边界，并处理复用会话后延迟出现的登录提示。
    * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
-   */ async ({ context }) => {
+   */ async ({ context, page }) => {
     await prepare(context);
+    await installSignInNoticeHandler(page);
   },
 );
 

@@ -60,6 +60,9 @@ export async function scroll(
   touch: boolean,
   direction = 1,
 ): Promise<void> {
+  // 原始滚轮和 CDP 触摸不会触发 locator handler；先确认容器未被弹窗遮挡。
+  // trial 不会点击列表，也不会触发条目业务操作。
+  await container.click({ trial: true });
   const box = await container.boundingBox();
   if (!box) {
     throw new Error('滚动容器必须有布局区域');
