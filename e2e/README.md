@@ -1,6 +1,6 @@
 # 来玩 H5 E2E
 
-弱网测试使用 staging 测试账号。账号及权限记录在 [应用仓库的测试账号文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/testing/accounts.md)。
+弱网测试使用 staging 测试账号。账号及权限记录在 [测试账号与权限](accounts.md)。
 
 这是一个自包含的 npm 子项目，只通过 URL、DOM、`data-testid`、localStorage key、HTTP API 路径和环境变量测试已部署的 staging / production H5。它不构建应用，也不依赖仓库根目录的依赖、配置或源代码。
 
@@ -122,3 +122,10 @@ scope=all 预检三个 Secret，scope=registration 仅预检 TESTING_API_TOKEN�
 2026-10-09 从应用仓库迁入去重后的 14 个补充业务场景（桌面／手机 28 项），
 沿用以上已有账号及串行执行约定，不再维护独立 business 套件。
 金币入口的已知产品错页保留预期失败回归，细节见 [SETTINGS-010](cases/settings-010-coin-mall-entry/README.md)。
+
+## 滚动、触屏与 Freshchat 回归
+
+应用仓库的剩余交互与客服套件已统一迁入本目录。运行 `npm run test:interactions`
+覆盖桌面和触屏的 16 项测试（含 2 项客服）；`npm run test:freshchat` 可单独运行客服。
+独立配置保持单 worker，CI 与其他同账号测试排队，默认 `npm test` 不重复收集交互套件。
+详细范围、本地构建目标覆盖及第三方网络限制见 [交互与 Freshchat 说明](INTERACTIONS.md)。
