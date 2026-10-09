@@ -28,7 +28,7 @@ export async function signIn(page: Page, credentials = {
   if (!response.ok()) {
     // 登录失败时关闭密码表单，避免 Playwright 的错误上下文保存输入值。
     await page.close();
-    throw new Error(`真实登录请求失败，HTTP ${response.status()}`);
+    throw new Error(`真实登录请求失败（HTTP ${response.status()}，节点 ${new URL(response.url()).hostname}）`);
   }
   await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible({ timeout: 60_000 });
   const session = await page.evaluate(() => {
