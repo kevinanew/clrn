@@ -15,6 +15,9 @@ export function restoreTable(self: string, street: Street, opponentTurn = false,
   const others = options.full ? Array.from({ length: 8 }, (_, index) =>
     `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`) : REPLAY_PLAYER_IDS;
   const players = options.observer ? others : [self, ...others];
+  const positions = options.full
+    ? ['BTN', 'SB', 'BB', 'UTG', 'MP1', 'MP2', 'MP3', 'HJ', 'CO']
+    : ['D', 'SB', 'BB', 'UTG', 'CO'];
   const status = {
     state: 'gaming', operating_seconds: 120, remain_seconds: 3600,
     settings: { small_blind: 1, big_blind: 2, ante: 0 },
@@ -24,11 +27,11 @@ export function restoreTable(self: string, street: Street, opponentTurn = false,
     pots: options.pots || (street === 'preflop' ? [6] : [120, 60]),
     seats: Array.from({ length: 9 }, (_, index) => ({
       number: index + 1, state: index < players.length ? 'occupied' : 'empty',
-      position: ['D', 'SB', 'BB', 'UTG', 'CO'][index] || '', reserve: {},
+      position: positions[index] || '', reserve: {},
       player: index < players.length ? {
         player_id: players[index], seat_number: index + 1, stack: 1000 - index * 40,
         buy_in: 1000, is_leave: false, is_playing: true,
-        position: ['D', 'SB', 'BB', 'UTG', 'CO'][index],
+        position: positions[index],
         last_action: { name: index === 3 ? 'fold' : 'call', amount: 20 },
         public_hole_card: [], hole_card: [],
       } : null,

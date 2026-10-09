@@ -27,6 +27,16 @@ export async function captureTableStates(page: Page, scenario: VisualScenario, p
   await clearHand();
   await table(page, proxy, room, self, { full: true });
   await expect(page.locator('[data-testid^="texas-holdem-player-container-"]:visible')).toHaveCount(9);
+  // 当前行动玩家的容器 ID 带 -operating 后缀。
+  const dealer = page.locator(`[data-testid^="texas-holdem-player-container-${self}"]:visible`).last();
+  await expect(dealer.getByText('BTN', { exact: true })).toBeVisible();
+  await expect(dealer.getByText('D', { exact: true })).toBeVisible();
+  for (const [index, position] of ['SB', 'BB', 'UTG', 'MP1', 'MP2', 'MP3', 'HJ', 'CO'].entries()) {
+    const playerId = `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`;
+    const sign = visible(page, `texas-holdem-player-container-${playerId}`)
+      .getByText(position, { exact: true });
+    await expect(sign).toBeVisible();
+  }
   await snapshot('full_table');
   // 真实离桌消息移除额外玩家，再恢复五人牌桌，避免旧实体残留。
   await proxy.replayTexas(room, events(Array.from({ length: 4 }, (_, index) => ({ event: 'stand_up',
