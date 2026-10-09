@@ -3,6 +3,11 @@ import { expect, test } from '../_shared/read-account-fixture';
 import { unique } from '../_shared/page';
 import { goBack } from '../_shared/navigation';
 
+/**
+ * 从大厅打开设置项，使用可见元素避免点到历史页面。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param id - 目标控件的测试标记。
+ */
 async function openSetting(page: Page, id: string) {
   const list = await unique(page, 'settings-list');
   await list.hover();

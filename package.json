@@ -1,19 +1,31 @@
 {
-  "name": "clrn-test-account-tools",
+  "name": "clrn",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=24"
   },
   "scripts": {
-    "lint": "eslint scripts eslint.config.mjs --max-warnings=0",
-    "test": "node --test scripts/*.test.mjs",
-    "check": "npm run lint && npm test"
+    "lint": "npm run lint:js && npm run lint:python && npm run lint:shell && npm run lint:workflows && npm run lint:lines",
+    "test": "node scripts/test-local.mjs",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "lint:js": "eslint . --max-warnings=0",
+    "lint:python": "uvx --from ruff==0.15.12 ruff check .",
+    "lint:shell": "node scripts/lint-shell.mjs",
+    "lint:workflows": "uvx --from actionlint-py==1.7.12.25 --with shellcheck-py==0.11.0.1 actionlint -pyflakes= -ignore 'unexpected key \"queue\" for \"concurrency\" section'",
+    "lint:lines": "node lint-lines.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.61.1",
+    "@types/node": "22.15.30",
     "eslint": "10.12.0",
     "eslint-plugin-jsdoc": "63.0.0",
-    "eslint-plugin-tsdoc": "0.5.4"
+    "eslint-plugin-tsdoc": "0.5.4",
+    "globals": "17.13.0",
+    "tsx": "4.20.3",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.1"
   }
 }

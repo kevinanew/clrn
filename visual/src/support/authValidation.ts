@@ -29,6 +29,7 @@ type SignInValidationOptions = {
 /**
  * 从应用持久化的 UserAttribute 原始数据中读取账户校验所需字段。缺少 user_id、
  * access_token 或 token_type 都不能构成可验证的登录态，也不应发起账户请求。
+ * @param page - 执行操作的 Playwright 页面。
  */
 async function readPersistedAuth(page: Page): Promise<PersistedAuth | null> {
   return page
@@ -64,6 +65,10 @@ async function readPersistedAuth(page: Page): Promise<PersistedAuth | null> {
     .catch(() => null);
 }
 
+/**
+ * 读取持久化认证缓存并确认它包含完整用户身份。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function isSignedIn(page: Page): Promise<boolean> {
   return Boolean(await readPersistedAuth(page));
 }
@@ -72,6 +77,7 @@ export async function isSignedIn(page: Page): Promise<boolean> {
  * 账户接口只说明 token 在请求瞬间有效，不能说明 RN Web 已接受注入缓存。应用启动时
  * 仍可能有迟到的鉴权请求清除 localStorage；须在大厅的真实登录态连续稳定后才允许
  * 截图。这里保留账户校验，而不是退回到只看 UI，避免旧 UI 残留掩盖失效 token。
+ * @param page - 执行操作的 Playwright 页面。
  */
 async function waitForRestoredAppSignIn(page: Page): Promise<'signedIn' | 'signedOut'> {
   const deadline = Date.now() + 30000;
@@ -112,6 +118,8 @@ async function waitForRestoredAppSignIn(page: Page): Promise<'signedIn' | 'signe
  * 使用 Playwright request context 调用只读账户接口验证持久化 token。只有 2xx 且
  * 请求完成后缓存仍与发起请求时一致才可放行。401 或等待期间缓存被清除表示登出；
  * 网络错误、超时、限流及服务端/未知响应都必须明确终止视觉场景。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param options - 本次操作的可选配置。
  */
 export async function waitForSignInState(
   page: Page,

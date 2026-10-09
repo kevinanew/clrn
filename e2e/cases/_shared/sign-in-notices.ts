@@ -1,7 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { unique } from './page';
 
-/** 用真实按钮处理登录后的已知提示，其他弹层仍会使测试失败。 */
+/**
+ * 用真实按钮处理登录后的已知提示，其他弹层仍会使测试失败。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param testId - 目标元素的测试标记。
+ */
 export async function clickAfterSignInNotices(page: Page, testId: string): Promise<void> {
   let handledClubNotice = false;
   let handledPrivacy = false;

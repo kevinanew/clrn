@@ -3,7 +3,7 @@ name: H5 Visual Regression
 on:
   push:
     branches-ignore: [release]
-    paths: ['visual/**', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', '.github/workflows/visual.yml']
+    paths: ['visual/**', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', 'scripts/*ci*', '.github/workflows/visual.yml']
   schedule:
     - cron: '12 22 * * *'
   workflow_dispatch:
@@ -31,20 +31,32 @@ permissions:
   contents: read
 
 jobs:
+  accounts:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: plan
+        env:
+          CI_VISUAL_SUITE: ${{ inputs.suite || 'all' }}
+          CI_VISUAL_FULL: ${{ github.event_name == 'schedule' || inputs.full }}
+        run: node scripts/plan-ci-accounts.mjs visual
   visual:
+    needs: accounts
     name: ${{ matrix.suite == 'texas' && '德州' || matrix.suite == 'zhajinhua' && '拼三张' || '应用' }} (${{ matrix.locale }})
     # Python 工具缓存需与 Jammy 容器使用相同的 glibc 基线。
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      matrix:
-        suite: ${{ fromJSON(inputs.suite == 'app' && '["app"]' || inputs.suite == 'texas' && '["texas"]' || inputs.suite == 'zhajinhua' && '["zhajinhua"]' || '["app","texas","zhajinhua"]') }}
-        locale: ${{ fromJSON((github.event_name == 'schedule' || inputs.full) && '["zh-Hans","zh-Hant","en"]' || '["zh-Hans"]') }}
-    # 同套测试的语言/轮次互斥；两种玩法各用独立账号，与应用及功能/E2E 可并行。
-    # 显式改回应用账号时恢复跨工作流互斥。
+      matrix: ${{ fromJSON(needs.accounts.outputs.matrix) }}
+    # 每个套件和语言独占一个账号；跨工作流选中同一账号时由 GitHub 排队。
     concurrency:
-      group: ${{ (matrix.suite == 'app' || (matrix.suite == 'texas' && vars.VISUAL_TEXAS_USERNAME == 'laiwanvisual01') || (matrix.suite == 'zhajinhua' && vars.VISUAL_ZHAJINHUA_USERNAME == 'laiwanvisual01')) && 'h5-staging-test-account' || ((matrix.suite == 'texas' && (!vars.VISUAL_TEXAS_USERNAME || vars.VISUAL_TEXAS_USERNAME == 'laiwanvisualtexas01')) || (matrix.suite == 'zhajinhua' && vars.VISUAL_ZHAJINHUA_USERNAME == 'laiwanvisualtexas01')) && 'h5-staging-texas-test-account' || format('h5-staging-{0}-account', matrix.suite == 'texas' && (vars.VISUAL_TEXAS_USERNAME || 'laiwanvisualtexas01') || matrix.suite == 'zhajinhua' && (vars.VISUAL_ZHAJINHUA_USERNAME || 'laiwanvisualzjh01') || 'laiwanvisual01') }}
+      group: h5-staging-account-${{ matrix.account }}
       cancel-in-progress: false
       queue: max
     container:
@@ -62,6 +74,11 @@ jobs:
     steps:
       - name: Check out visual tests
         uses: actions/checkout@v4
+      - name: 注入本任务独占的 CI 账号
+        env:
+          CLRN_CI_ACCOUNT: ${{ matrix.account }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS }}
+        run: node scripts/configure-ci-account.mjs
       - name: Install package managers
         run: |
           corepack enable
@@ -92,19 +109,8 @@ jobs:
         working-directory: visual
         env:
           VISUAL_SUITE: ${{ matrix.suite }}
-          VISUAL_USERNAME: ${{ matrix.suite == 'texas' && vars.VISUAL_TEXAS_USERNAME || matrix.suite == 'zhajinhua' && vars.VISUAL_ZHAJINHUA_USERNAME || '' }}
-          VISUAL_PASSWORD: ${{ matrix.suite == 'texas' && secrets.VISUAL_TEXAS_PASSWORD || matrix.suite == 'zhajinhua' && secrets.VISUAL_ZHAJINHUA_PASSWORD || '' }}
           TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
         run: |
-          default_username='${{ matrix.suite == 'texas' && 'laiwanvisualtexas01' || matrix.suite == 'zhajinhua' && 'laiwanvisualzjh01' || 'laiwanvisual01' }}'
-          if [ -n "$VISUAL_USERNAME" ] && [ "$VISUAL_USERNAME" != "$default_username" ] && [ -z "$VISUAL_PASSWORD" ]; then
-            echo '::error::自定义玩法账号必须配置对应的 VISUAL_*_PASSWORD Secret。'
-            exit 1
-          fi
-          if [ "$VISUAL_USERNAME" != "$(printf '%s' "$VISUAL_USERNAME" | tr -d '[:space:]')" ]; then
-            echo '::error::VISUAL_*_USERNAME 不得包含空白字符。'
-            exit 1
-          fi
           if [ '${{ inputs.mode }}' = reference ]; then
             pnpm exec tsx run-visual.ts reference
           else

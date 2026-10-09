@@ -4,6 +4,11 @@ import { openLoginForm, unique } from './page';
 
 export type Session = { userId: string; accountUrl: string; authorization: string };
 
+/**
+ * 从用户名表单登录既有测试账号并返回会话，禁止自动注册缺失账号。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param credentials - 登录凭据，包含 username 用户名和 password 密码。
+ */
 export async function signIn(page: Page, credentials = {
   username: environment.testUsername,
   password: environment.testPassword,
@@ -36,6 +41,11 @@ export async function signIn(page: Page, credentials = {
   };
 }
 
+/**
+ * 携带当前会话访问账号接口，读取状态码并释放响应。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param session - 当前登录会话的接口地址和认证信息。
+ */
 export async function accountStatus(page: Page, session: Session): Promise<number> {
   const response = await page.request.get(session.accountUrl, {
     headers: { Authorization: session.authorization },

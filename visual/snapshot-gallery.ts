@@ -14,7 +14,15 @@ const scenarios = buildScenarios().flatMap(scenario =>
   })) ?? [scenario]);
 const directory = path.join(__dirname, 'snapshots');
 // Playwright 对 snapshot 参数中的下划线进行文件名清洗。
+/**
+ * 将场景标签转换为截图文件名。
+ * @param label - 场景完整标签。
+ */
 const filename = (label: string) => `${label.replace(/_/g, '-')}.png`;
+/**
+ * 生成对应场景在 Playwright 基准目录中的截图路径。
+ * @param scenario - 待定位基准截图的场景配置。
+ */
 const snapshotFile = (scenario: (typeof scenarios)[number]) =>
   `../cases/${scenario.group}/snapshots/${filename(scenario.label)}`;
 const missing = scenarios.filter(scenario => !existsSync(path.join(directory, snapshotFile(scenario))));

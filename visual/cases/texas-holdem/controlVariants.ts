@@ -5,6 +5,14 @@ import { CONTROL_STATES } from './scenarios';
 import { advance, click, closeMask, freezeClock, selfId, visible } from './replay';
 import { autoButtons, sequence, table, type Capture } from './variantSupport';
 
+/**
+ * 截取德州操作按钮、加注滑杆和快捷操作的不同状态。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param proxy - 本轮独占的代理控制对象。
+ * @param room - 本轮创建并负责清理的房间信息或 ID。
+ * @param capture - 将页面和场景状态保存为截图的回调。
+ */
 export async function captureControls(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   room: string, capture: Capture) {
   const self = await selfId(page);
@@ -50,6 +58,11 @@ export async function captureControls(page: Page, scenario: VisualScenario, prox
   const thumbBox = await thumb.boundingBox();
   expect(trackBox && thumbBox).toBeTruthy();
   const x = thumbBox!.x + thumbBox!.width / 2;
+  /**
+   * 分步移动按住的鼠标并推进时钟，让 PanResponder 正确累计拖动位移。
+   * @param fromY - 拖动起点的纵坐标。
+   * @param toY - 拖动终点的纵坐标。
+   */
   const moveHeldPointer = async (fromY: number, toY: number) => {
     for (let step = 1; step <= 8; step++) {
       // PanResponder 按事件时间累计位移；冻结时钟下每一步必须有新的时间戳。

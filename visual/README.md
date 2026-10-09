@@ -204,13 +204,12 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 ### 串行、分片与重试
 
-- 每次运行固定一个 worker，桌面、手机和各语言顺序执行。
+- 每个任务固定一个 worker，桌面和手机顺序执行；CI 各语言使用不同账号，可同时执行。
 - 同账号同时创建相同配置的 `TestRoom` 会触发 staging 的重复牌局限制；
-  本机也应串行运行真实建房用例，避免多进程并行采集。
-- 同一账号再次登录会作废旧凭据，即使 deviceId 相同也如此。功能、弱网、视觉 CI
-  中的应用任务共用 `h5-staging-test-account` 并发组；德州任务用独立账号和
-  `h5-staging-texas-test-account` 并发组；拼三张用 `h5-staging-laiwanvisualzjh01-account`。
-  三部分可并行，自定义玩法账号按用户名互斥，本机也应避免重复登录同一账号。
+  本机并行任务应使用根目录账号池启动脚本，为各任务分配不同账号。
+- 同一账号再次登录会作废旧凭据，即使 deviceId 相同也如此。CI 使用 30 个专用账号，
+  套件／语言矩阵的九个任务各用一个账号；跨工作流以 `h5-staging-account-<用户名>` 互斥。
+  不同账号可并行，选中同一账号的任务排队；本机账号池与 CI 账号池分开。
 - test/reference/approve 均按语言分片，每批默认最多 3 个场景；拆分后每种语言的应用
   全量为 36 批、核心为 15 批，德州为 7 批、拼三张为 2 批。分片之间重新采集登录态，
   场景只注入已有缓存，不自行回退登录。
@@ -278,15 +277,16 @@ VISUAL_SUITE=texas pnpm run test:all # 德州三种语言
 
 应用默认账号为 `laiwanvisual01`，单独的德州测试默认使用 `laiwanvisualtexas01`；
 拼三张默认使用 `laiwanvisualzjh01`；三者沿用固定 staging 测试密码，随后通过 UI 登录复用账号。
-新账号可由 UI 自动注册；遇到同 IP 注册限制时，使用既有 E2E 的
-`createTestingAccount` 工具和 `TESTING_API_TOKEN` 一次性预注册，再按相同流程采集登录态。
-本轮拼三张账号已用该工具预注册；管理 token 不发送给浏览器。
-牌桌账号余额不足时仅允许为本轮使用的这三个固定测试账号通过既有 `TESTING_API_TOKEN`
+账号应预先存在，登录态采集会阻断 UI 自动注册；缺失时明确失败。
+确需新增账号时使用既有 E2E 的 `createTestingAccount` 和 `TESTING_API_TOKEN` 一次性注册，
+在 PRD 登记后复用；管理 token 不发送给浏览器。
+牌桌账号余额不足时允许为本轮使用的这三个固定账号或 GitHub Actions 专用池账号通过 `TESTING_API_TOKEN`
 补钻，任意自定义账号不会自动补钻；新建房间仍在用例结束时解散。
-CI 可通过仓库 Variable `VISUAL_TEXAS_USERNAME` 和 Secret `VISUAL_TEXAS_PASSWORD`
-覆盖德州凭据；拼三张使用 `VISUAL_ZHAJINHUA_USERNAME` / `VISUAL_ZHAJINHUA_PASSWORD`，自定义账号需预先备足建房钻石。若改回应用默认账号，自动恢复
-与应用、功能和 E2E 的互斥，避免并发登录作废凭据。
+CI 从 `CLRN_CI_TEST_ACCOUNTS` Secret 为每个任务注入 `VISUAL_USERNAME` / `VISUAL_PASSWORD`，
+使用 30 个 CI 专用账号。旧 `VISUAL_TEXAS_*` / `VISUAL_ZHAJINHUA_*` CI 覆盖配置不再使用。
 本机覆盖凭据仍用 `VISUAL_USERNAME` / `VISUAL_PASSWORD`。
+账号页中的昵称、展示用户名和注册日期固定为既有视觉基准值，避免账号池轮转改变截图；
+真实会话、认证缓存和受保护接口仍属于本轮分配的账号。
 
 登录采集通过 `tsx` 运行，注入浏览器的脚本必须能独立序列化；
 `src/support/pageSetup.test.ts` 在独立执行环境检查语言固定和禁动画脚本，

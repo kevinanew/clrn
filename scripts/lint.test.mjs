@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { ESLint } from 'eslint';
+import { sourceFiles } from './source-files.mjs';
 
 const repository = dirname(dirname(fileURLToPath(import.meta.url)));
 const eslint = new ESLint({ cwd: repository });
@@ -67,4 +68,22 @@ test('参数缺少说明时 lint 失败', async () => {
     missingParameter(1);
   `);
   assert.ok(messages.some(message => message.ruleId === 'jsdoc/require-param'));
+});
+
+test('E2E 和视觉 TypeScript 同样强制函数与形参的 TSDoc', async () => {
+  for (const filePath of ['e2e/lint-probe.ts', 'visual/src/lint-probe.ts']) {
+    const [missingDoc] = await eslint.lintText('function probe(value: string) { return value; } probe("test");', { filePath });
+    assert.ok(missingDoc.messages.some(message => message.ruleId === 'jsdoc/require-jsdoc'), filePath);
+    const [missingParam] = await eslint.lintText('/** 返回参数。 */ function probe(value: string) { return value; } probe("test");', { filePath });
+    assert.ok(missingParam.messages.some(message => message.ruleId === 'jsdoc/require-param'), filePath);
+    const [valid] = await eslint.lintText('/** 返回凭据。\n * @param credentials - 包含 username 和 password 的登录凭据。\n */ function probe(credentials: { username: string; password: string }) { return credentials; } probe({username:"u",password:"p"});', { filePath });
+    assert.deepEqual(valid.messages, []);
+  }
+});
+
+test('全部 JavaScript 和 TypeScript 源文件均在 ESLint 覆盖范围内', async () => {
+  const files = sourceFiles().filter(file => /\.(?:[cm]?[jt]sx?)$/.test(file));
+  assert.ok(files.some(file => file.startsWith('e2e/')));
+  assert.ok(files.some(file => file.startsWith('visual/')));
+  for (const file of files) assert.equal(await eslint.isPathIgnored(file), false, file);
 });

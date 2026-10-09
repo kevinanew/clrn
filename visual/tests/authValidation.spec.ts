@@ -8,6 +8,10 @@ const COMPLETE_AUTH = {
   api_token: { access_token: 'valid-token', token_type: 'Bearer' },
 };
 
+/**
+ * 启动本机认证测试服务，返回独立地址和异步关闭方法。
+ * @param handler - 处理本机测试请求并生成响应的函数。
+ */
 async function startTestServer(
   handler: (request: IncomingMessage, response: ServerResponse) => void,
 ): Promise<{ origin: string; close: () => Promise<void> }> {
@@ -23,6 +27,7 @@ async function startTestServer(
   const { port } = server.address() as AddressInfo;
   return {
     origin: `http://127.0.0.1:${port}`,
+    /** 关闭本机测试资源，供测试验证清理时机及错误传播。 */
     close: () =>
       new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve())),
@@ -30,10 +35,20 @@ async function startTestServer(
   };
 }
 
+/**
+ * 打开本机认证测试页面，为缓存与界面状态断言建立同源环境。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param origin - 允许使用的页面来源。
+ */
 async function openAuthFixture(page: Page, origin: string): Promise<void> {
   await page.goto(origin);
 }
 
+/**
+ * 在测试页面写入指定认证缓存，用于验证完整或无效会话。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param auth - 需要写入的完整或无效认证缓存。
+ */
 async function setPersistedAuth(page: Page, auth: unknown = COMPLETE_AUTH): Promise<void> {
   await page.evaluate(
     ({ storageKey, value }) => window.localStorage.setItem(storageKey, JSON.stringify(value)),

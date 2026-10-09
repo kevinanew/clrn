@@ -6,6 +6,14 @@ import { events, REPLAY_PLAYER_IDS } from './replayData';
 import { advance, click, freezeClock, selfId, visible } from './replay';
 import { sequence, table, type Capture } from './variantSupport';
 
+/**
+ * 截取德州牌桌人数、手牌展示和桌面状态的补充场景。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param proxy - 本轮独占的代理控制对象。
+ * @param room - 本轮创建并负责清理的房间信息或 ID。
+ * @param capture - 将页面和场景状态保存为截图的回调。
+ */
 export async function captureTableStates(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   room: string, capture: Capture) {
   const self = await selfId(page);
@@ -18,6 +26,7 @@ export async function captureTableStates(page: Page, scenario: VisualScenario, p
   await expect(visible(page, 'texas-holdem-self-seated-marker')).toBeHidden();
   await expect(visible(page, 'texas-holdem-operation-button-raise')).toBeHidden();
   await snapshot('observer');
+  /** 发送新牌局事件并等待旧手牌清空。 */
   const clearHand = async () => {
     await proxy.replayTexas(room, events([{ event: 'new_game', game_id: 'visual-fixed-game',
       settings: { small_blind: 1, big_blind: 2, ante: 0 } }]));

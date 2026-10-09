@@ -2,7 +2,10 @@ import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import { REPLAY_PLAYER_IDS } from './replayData';
 
-/** 翻牌圈必须显示三张公共牌和本人两张手牌，精灵图加载完成后才能截图。 */
+/**
+ * 翻牌圈必须显示三张公共牌和本人两张手牌，精灵图加载完成后才能截图。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function checkFlopCardFaces(page: Page): Promise<void> {
   const communityFaces = page.locator('[data-testid="community_card"] [data-testid="sprite-image-content"]');
   // 本人未摊牌的手牌由桌面 PlayerCard 渲染，头像旁的手牌只用于公开牌。
@@ -28,7 +31,10 @@ export async function checkFlopCardFaces(page: Page): Promise<void> {
   }
 }
 
-/** 使用真实回放玩家检查手机端动作提示与昵称的纵向间距。 */
+/**
+ * 使用真实回放玩家检查手机端动作提示与昵称的纵向间距。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function checkMobilePlayerAction(page: Page): Promise<void> {
   const player = page.getByTestId(`texas-holdem-player-container-${REPLAY_PLAYER_IDS[0]}`);
   const nickname = player.getByTestId('adaptable-text-web').filter({ hasText: /^Player1$/ });

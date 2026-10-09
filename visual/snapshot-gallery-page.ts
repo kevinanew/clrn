@@ -1,5 +1,5 @@
 import type { LocaleCode, ScenarioGroup, ViewportDef } from './scenarioTypes';
-import { viewerMarkup, viewerScript, viewerStyles } from './snapshot-gallery-viewer';
+import { viewerMarkup, galleryScript, viewerStyles } from './snapshot-gallery-viewer';
 
 type GalleryPage = {
   label: string;
@@ -31,6 +31,10 @@ const LOCALE_NAMES: Record<LocaleCode, string> = {
   en: '英文',
 };
 
+/**
+ * 转义 HTML 特殊字符，安全插入截图画廊的文本与属性。
+ * @param value - 需要填入表单或转义的原始字符串。
+ */
 function escape(value: string): string {
   const entities: Record<string, string> = {
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -38,6 +42,10 @@ function escape(value: string): string {
   return value.replace(/[&<>"']/g, character => entities[character]);
 }
 
+/**
+ * 将页面的截图元数据渲染为画廊卡片。
+ * @param page - 待渲染的页面标题与截图元数据。
+ */
 function renderCard(page: GalleryPage): string {
   const locale = LOCALE_NAMES[page.locale];
   const viewport = page.viewport.label === 'mobile' ? '手机' : '桌面';
@@ -51,7 +59,10 @@ function renderCard(page: GalleryPage): string {
   </article>`;
 }
 
-/** 按模块生成索引；筛选脚本内嵌，使本地打开 HTML 时也能直接使用。 */
+/**
+ * 按模块生成索引；筛选脚本内嵌，使本地打开 HTML 时也能直接使用。
+ * @param pages - 待处理的页面定义或截图元数据清单。
+ */
 export function renderSnapshotGallery(pages: GalleryPage[]): string {
   const modules = Object.entries(MODULE_NAMES).map(([group, name]) => ({
     group,
@@ -140,39 +151,7 @@ export function renderSnapshotGallery(pages: GalleryPage[]): string {
   </div>
   ${viewerMarkup.trim()}
   <script>
-    const filter = document.querySelector('#filter');
-    const sections = Array.from(document.querySelectorAll('.module-section'));
-    const buttons = Array.from(document.querySelectorAll('[data-module]'));
-    let selectedModule = '';
-
-    function updateGallery() {
-      const terms = filter.value.trim().toLowerCase().split(/[\\s,，]+/).filter(Boolean);
-      let visibleCards = 0;
-      let visibleModules = 0;
-      sections.forEach(section => {
-        const moduleSelected = !selectedModule || section.dataset.group === selectedModule;
-        let sectionCount = 0;
-        section.querySelectorAll('article').forEach(card => {
-          const searchableText = card.dataset.search.toLowerCase();
-          card.hidden = !moduleSelected || !terms.every(term => searchableText.includes(term));
-          if (!card.hidden) sectionCount++;
-        });
-        section.hidden = sectionCount === 0;
-        section.querySelector('[data-module-count]').textContent = sectionCount + ' 张';
-        visibleCards += sectionCount;
-        if (sectionCount > 0) visibleModules++;
-      });
-      document.querySelector('#count').textContent = '显示 ' + visibleCards + ' 张 · ' + visibleModules + ' 个模块';
-      document.querySelector('#empty').hidden = visibleCards !== 0;
-    }
-
-    buttons.forEach(button => button.addEventListener('click', () => {
-      selectedModule = button.dataset.module;
-      buttons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-      updateGallery();
-    }));
-    filter.addEventListener('input', updateGallery);
-    ${viewerScript.trim()}
+    ${galleryScript.trim()}
   </script>
 </body>
 </html>\n`;

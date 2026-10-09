@@ -5,6 +5,11 @@ const RETRYABLE_NAVIGATION_ERRORS =
   /(?:page\.goto: Timeout \d+ms exceeded|net::ERR_(?:CONNECTION_(?:ABORTED|CLOSED|RESET)|NETWORK_CHANGED|TIMED_OUT)|is interrupted by another navigation to "chrome-error:\/\/chromewebdata\/")/;
 const RETRY_DELAY_MS = 1_000;
 
+/**
+ * 打开部署站点并处理首次 staging 确认提示。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param url - 要访问的站点或本机服务地址。
+ */
 export async function gotoDeployedSite(page: Page, url: string): Promise<Response | null> {
   // 一次原始请求加两次重试：短暂断连可以恢复，持续故障仍会在同一用例中失败。
   const maximumAttempts = 3;
@@ -29,6 +34,10 @@ export async function gotoDeployedSite(page: Page, url: string): Promise<Respons
   throw new Error(`无法导航到 ${url}`);
 }
 
+/**
+ * 为新浏览器上下文预置语言与新手引导标记。
+ * @param context - 首次导航前配置的浏览器上下文。
+ */
 export async function initializePage(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     window.localStorage.setItem('app.language.code.key', 'zh-Hans');
@@ -37,6 +46,10 @@ export async function initializePage(context: BrowserContext): Promise<void> {
   });
 }
 
+/**
+ * 打开部署站点，处理 staging 提示并等待大厅就绪。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function openHall(page: Page): Promise<void> {
   await page.goto(environment.stagingUrl, { waitUntil: 'domcontentloaded' });
   await page
@@ -48,12 +61,20 @@ export async function openHall(page: Page): Promise<void> {
   await dismissAppAlert(page);
 }
 
+/**
+ * 从登录入口切换到用户名和密码登录表单。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function openUsernameLogin(page: Page): Promise<void> {
   await page.locator('[data-testid="hall-sign-in-button"]').click({ timeout: 30_000 });
   await page.locator('[data-testid="username-or-email-sign-in-button"]').click({ timeout: 30_000 });
   await expect(page.locator('[data-testid="username-input"]')).toBeVisible();
 }
 
+/**
+ * 使用环境配置的账号从真实界面登录，并等待大厅认证状态成立。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function signIn(page: Page): Promise<void> {
   await openUsernameLogin(page);
   await page
@@ -78,6 +99,10 @@ export async function signIn(page: Page): Promise<void> {
   await dismissAppAlert(page);
 }
 
+/**
+ * 关闭当前应用提示弹窗，避免遮挡后续操作。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 async function dismissAppAlert(page: Page): Promise<void> {
   await page
     .locator('[data-testid="alert-ok-button"]')

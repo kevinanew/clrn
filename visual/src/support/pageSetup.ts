@@ -29,7 +29,12 @@ type AuthStateArgs = {
   countryCode: string;
 };
 
-function injectAuthState({ entries, langKey, countryKey, countryCode }: AuthStateArgs): void {
+/**
+ * 在应用初始化前写入共享认证缓存，保留场景语言并固定国家码。
+ * @param args - 包含 entries 缓存、语言键 langKey、国家码键 countryKey 和固定区号 countryCode 的注入配置。
+ */
+function injectAuthState(args: AuthStateArgs): void {
+  const { entries, langKey, countryKey, countryCode } = args;
   Object.entries(entries).forEach(([key, value]) => {
     if (key !== langKey) {
       window.localStorage.setItem(key, value);
@@ -38,6 +43,10 @@ function injectAuthState({ entries, langKey, countryKey, countryCode }: AuthStat
   window.localStorage.setItem(countryKey, countryCode);
 }
 
+/**
+ * 构建浏览器初始化脚本所需的认证缓存和存储键参数。
+ * @param entries - 待注入或保存的 localStorage 键值。
+ */
 function buildAuthStateArgs(entries: Record<string, string>): AuthStateArgs {
   return {
     entries,
@@ -60,15 +69,20 @@ function readAuthStateEntries(): Record<string, string> | null {
   }
   return null;
 }
-/** Docker/Linux 下 Chromium 可能上报 en-US@posix，Intl / react-native-localize 会直接抛错白屏 */
+/**
+ * 将 Chromium 的 `en-US@posix` 语言值规范化，避免 Intl 或 react-native-localize 抛错。
+ * @param context - 首次导航前配置的浏览器上下文。
+ */
 export async function fixNavigatorLanguage(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     try {
       Object.defineProperty(Navigator.prototype, 'language', {
+        /** 返回固定浏览器语言值，避免平台语言后缀影响国际化组件。 */
         get() { return 'en-US'; },
         configurable: true,
       });
       Object.defineProperty(Navigator.prototype, 'languages', {
+        /** 返回固定浏览器语言值，避免平台语言后缀影响国际化组件。 */
         get() { return ['en-US', 'en']; },
         configurable: true,
       });
@@ -82,7 +96,8 @@ export async function fixNavigatorLanguage(context: BrowserContext): Promise<voi
  * 禁用动画：
  * - CSS animation/transition（配合 toHaveScreenshot 的 animations: 'disabled'）
  * - 标记 __VISUAL_REGRESSION__，供业务侧跳过 RN Animated / setTimeout 驱动的动效
- *   （例如大厅 Slot 横幅每 4s 的 random spinTo，CSS 关不住）
+ * （例如大厅 Slot 横幅每 4s 的 random spinTo，CSS 关不住）
+ * @param context - 首次导航前配置的浏览器上下文。
  */
 export async function disableAnimations(context: BrowserContext): Promise<void> {
   // 使用原始浏览器脚本，避免 tsx 为嵌套具名函数注入 __name 后无法序列化。
@@ -105,7 +120,11 @@ export async function disableAnimations(context: BrowserContext): Promise<void> 
 /** 采集态里与登录无关、可安全复用的缓存键（主题等；国家码已由 mockFixedCountryCode 固定） */
 const SAFE_CACHE_KEYS = ['app.theme.id.key'];
 
-/** 在 BrowserContext 创建阶段预置 localStorage，确保早于应用 bundle 初始化 */
+/**
+ * 在 BrowserContext 创建阶段预置 localStorage，确保早于应用 bundle 初始化
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param baseUrl - 应用入口，用于确定 localStorage 所属来源。
+ */
 export function buildStorageStateForScenario(
   scenario: VisualScenario,
   baseUrl: string,
@@ -143,6 +162,13 @@ export function buildStorageStateForScenario(
   };
 }
 
+/**
+ * 在首次导航前配置场景语言、设备标识、认证缓存和网络依赖。
+ * @param context - 首次导航前配置的浏览器上下文。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param options - useMitmproxy 指定是否由专用代理处理网络依赖。
+ */
 export async function setupContextForScenario(
   context: BrowserContext,
   scenario: VisualScenario,

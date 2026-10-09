@@ -1,20 +1,8 @@
-name: Test account tools
+name: Repository checks
 
 on:
   push:
-    paths:
-      - 'scripts/**'
-      - 'eslint.config.mjs'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/account-tools.yml'
   pull_request:
-    paths:
-      - 'scripts/**'
-      - 'eslint.config.mjs'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/account-tools.yml'
   workflow_dispatch:
 
 permissions:
@@ -29,5 +17,6 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+      - uses: astral-sh/setup-uv@v7
       - run: npm ci
       - run: npm run check

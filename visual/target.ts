@@ -1,4 +1,7 @@
-/** 视觉回归只访问已部署的 staging，不依赖应用源码或本地服务器。 */
+/**
+ * 视觉回归只访问已部署的 staging，不依赖应用源码或本地服务器。
+ * @param env - 环境配置，默认读取当前进程。
+ */
 export function readVisualUrl(env: NodeJS.ProcessEnv = process.env): string {
   const url = new URL(env.VISUAL_BASE_URL || 'https://h5.page.shafayouxi.org/');
   const stagingHosts = ['h5.page.shafayouxi.org', 'h5.shafayouxi.org'];

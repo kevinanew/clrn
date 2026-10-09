@@ -11,6 +11,11 @@ export const test = base.extend<{
   /** 兼容旧只读案例；新案例使用 signedInAccount，避免暗示注册新账号。 */
   newAccount: SignedInAccount;
 }>({
+  /**
+   * 登录既有只读测试账号并校验会话与钱包，禁止注册缺失账号。
+   * @param fixtures - Playwright 注入的依赖，提供当前页面、上下文或已有代理。
+   * @param use - 将准备好的 fixture 交给案例使用的回调。
+   */
   signedInAccount: async ({ page, context }, use) => {
     let account: SignedInAccount;
     try {
@@ -54,6 +59,11 @@ export const test = base.extend<{
     await (await unique(page, 'hall-search-button')).click({ trial: true });
     await use(account);
   },
+  /**
+   * 提供本轮创建或恢复的测试账号，交给案例执行并验证会话归属。
+   * @param fixtures - Playwright 注入的依赖，提供当前页面、上下文或已有代理。
+   * @param use - 将准备好的 fixture 交给案例使用的回调。
+   */
   newAccount: async ({ signedInAccount }, use) => {
     await use(signedInAccount);
   },

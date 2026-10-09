@@ -23,6 +23,10 @@ describe('visual suite selection and account isolation', () => {
         [...app, ...texas, ...zhajinhua].map(scenario => scenario.label).sort(),
         all.map(scenario => scenario.label).sort(),
       );
+      /**
+       * 汇总场景截图数量，展开游戏场景包含的多个状态。
+       * @param scenarios - 当前候选视觉场景清单。
+       */
       const screenshots = (scenarios: typeof all) => scenarios.reduce(
         (sum, scenario) => sum + (scenario.snapshotStates?.length || 1), 0,
       );
@@ -37,7 +41,12 @@ describe('visual suite selection and account isolation', () => {
     for (const suite of ['app', 'texas', 'zhajinhua'] as const) {
       const routes: RegExp[] = [];
       const context = {
+        /** 忽略初始化脚本注册，仅验证场景网络路由配置。 */
         addInitScript: async () => {},
+        /**
+         * 收集注册的正则路由，验证游戏场景是否保留真实房间接口。
+         * @param matcher - 待登记的网络路由匹配器。
+         */
         route: async (matcher: unknown) => { if (matcher instanceof RegExp) routes.push(matcher); },
       } as unknown as BrowserContext;
       const scenario = buildScenarios({ VISUAL_SUITE: suite, VISUAL_LOCALES: 'zh-Hans' })
@@ -75,5 +84,10 @@ describe('visual suite selection and account isolation', () => {
     assert.ok(!canTopUpVisualAccount('laiwanvisualtexas01', {}));
     assert.ok(!canTopUpVisualAccount('custom', { VISUAL_USERNAME: 'custom' }));
     assert.ok(!canTopUpVisualAccount('laiwanvisual01', { VISUAL_USERNAME: 'custom' }));
+    const ciAccount = 'clrnci26100901';
+    assert.ok(canTopUpVisualAccount(ciAccount, { GITHUB_ACTIONS: 'true', VISUAL_USERNAME: ciAccount }));
+    assert.ok(!canTopUpVisualAccount(ciAccount, { VISUAL_USERNAME: ciAccount }));
+    assert.ok(!canTopUpVisualAccount('clrnci26100902', { GITHUB_ACTIONS: 'true', VISUAL_USERNAME: ciAccount }));
+    assert.ok(!canTopUpVisualAccount('custom', { GITHUB_ACTIONS: 'true', VISUAL_USERNAME: 'custom' }));
   });
 });
