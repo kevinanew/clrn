@@ -19,6 +19,7 @@
     "open-report.ts",
     "snapshot-gallery.ts",
     "snapshot-gallery-page.ts",
+    "snapshot-gallery.test.ts",
     "playwright.config.ts",
     "scenarios.ts",
     "scenarios.test.ts",

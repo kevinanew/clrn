@@ -1,63 +1,20 @@
-import type { LocaleCode, ScenarioGroup, ViewportDef } from './scenarioTypes';
+import type { GalleryPage } from './snapshot-gallery-model';
+import { escapeHtml, LOCALE_NAMES, MODULE_NAMES, pageKey } from './snapshot-gallery-model';
+import { galleryKeyboardMarkup } from './snapshot-gallery-keyboard';
+import { galleryStyles } from './snapshot-gallery-styles';
+import { galleryScript } from './snapshot-gallery-script';
 import { viewerMarkup, viewerScript, viewerStyles } from './snapshot-gallery-viewer';
 
-type GalleryPage = {
-  label: string;
-  group: ScenarioGroup;
-  locale: LocaleCode;
-  viewport: ViewportDef;
-  signedIn: boolean;
-  navigation: string[];
-  file: string;
-};
-
-const MODULE_NAMES: Record<ScenarioGroup, string> = {
-  hall: '大厅',
-  auth: '登录与认证',
-  message: '消息',
-  'private-room': '私人房',
-  'texas-holdem': '德州牌桌',
-  zhajinhua: '拼三张牌桌',
-  club: '俱乐部',
-  account: '个人账号',
-  wallet: '钱包与记录',
-  'game-record': '我的战绩',
-  help: '帮助与下载',
-};
-
-const LOCALE_NAMES: Record<LocaleCode, string> = {
-  'zh-Hans': '简体中文',
-  'zh-Hant': '繁体中文',
-  en: '英文',
-};
-
-function escape(value: string): string {
-  const entities: Record<string, string> = {
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  };
-  return value.replace(/[&<>"']/g, character => entities[character]);
-}
-
-function renderCard(page: GalleryPage): string {
-  const locale = LOCALE_NAMES[page.locale];
-  const viewport = page.viewport.label === 'mobile' ? '手机' : '桌面';
-  const auth = page.signedIn ? '已登录' : '游客';
-  const searchableText = `${page.label} ${MODULE_NAMES[page.group]} ${locale} ${viewport} ${auth}`;
-  return `<article data-label="${escape(page.label)}" data-search="${escape(searchableText)}">
-    <h3>${escape(page.label)}</h3>
-    <p class="card-meta">${locale} · ${viewport} · ${auth} · ${page.viewport.width} × ${page.viewport.height}</p>
-    <a class="snapshot-link" href="${escape(page.file)}" aria-label="查看截图 ${escape(page.label)}"><img loading="lazy" src="${escape(page.file)}" alt="${escape(page.label)} 页面截图"></a>
-    <details><summary>查看页面入口</summary><code>${escape(page.navigation.join(' → ') || '大厅')}</code></details>
-  </article>`;
-}
-
-/** 按模块生成索引；筛选脚本内嵌，使本地打开 HTML 时也能直接使用。 */
+/** 所有数据与交互内嵌，直接用 file:// 打开即可筛选、对照和连续浏览。 */
 export function renderSnapshotGallery(pages: GalleryPage[]): string {
-  const modules = Object.entries(MODULE_NAMES).map(([group, name]) => ({
-    group,
-    name,
-    pages: pages.filter(page => page.group === group),
-  })).filter(module => module.pages.length > 0);
+  const modules = Object.entries(MODULE_NAMES).filter(([group]) => pages.some(page => page.group === group));
+  const locales = [...new Set(pages.map(page => page.locale))];
+  const resolutions = [...new Set(pages.map(page => `${page.viewport.width}x${page.viewport.height}`))];
+  const pageCount = new Set(pages.map(pageKey)).size;
+  const records = JSON.stringify(pages.map(({ label, page, group, locale, viewport, signedIn, navigation, file }) =>
+    ({ label, page, group, locale, viewport, signedIn, navigation, file }))).replace(/</g, '\\u003c');
+  const options = (values: string[], label: (value: string) => string) => values.map(value =>
+    `<option value="${escapeHtml(value)}">${escapeHtml(label(value))}</option>`).join('');
 
   return `<!doctype html>
 <html lang="zh-CN">
@@ -65,115 +22,58 @@ export function renderSnapshotGallery(pages: GalleryPage[]): string {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>来玩 H5 页面截图索引</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; background: #f4f5f7; color: #17202a; font: 16px/1.5 system-ui; }
-    header { padding: 28px 32px 20px; background: white; border-bottom: 1px solid #dfe3e9; }
-    h1 { margin: 0 0 8px; font-size: 28px; }
-    header p { margin: 6px 0; }
-    a { color: #1558a8; }
-    .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 28px; padding: 24px 32px; }
-    nav { position: sticky; top: 24px; align-self: start; }
-    nav h2 { margin: 0 0 12px; font-size: 16px; }
-    .module-buttons { display: flex; flex-direction: column; gap: 6px; }
-    button { font: inherit; cursor: pointer; }
-    .module-button { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid transparent; border-radius: 6px; background: transparent; text-align: left; }
-    .module-button:hover { background: #e6ebf2; }
-    .module-button[aria-pressed="true"] { background: #1558a8; color: white; }
-    button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid #4a90d9; outline-offset: 3px; }
-    .module-total { font-size: 13px; align-self: center; }
-    .toolbar label { display: block; font-weight: 600; margin-bottom: 8px; }
-    input { width: min(100%, 680px); padding: 12px; border: 1px solid #acb8c7; border-radius: 6px; background: white; font: inherit; }
-    #count { color: #526171; margin: 12px 0 24px; }
-    .module-section { margin-bottom: 36px; }
-    .module-heading { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
-    .module-heading h2 { margin: 0; font-size: 22px; }
-    .module-heading span { color: #526171; font-size: 14px; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 20px; }
-    article { min-width: 0; background: white; padding: 16px; border: 1px solid #e2e6ed; border-radius: 8px; overflow-wrap: anywhere; }
-    h3 { margin: 0; font-size: 14px; }
-    .card-meta { color: #526171; font-size: 13px; margin: 8px 0 12px; }
-    img { width: 100%; max-height: 680px; object-fit: contain; object-position: top; background: #eee; }
-    details { margin-top: 10px; font-size: 13px; }
-    summary { cursor: pointer; color: #1558a8; }
-    code { display: block; margin-top: 8px; font-size: 12px; }
-    [hidden] { display: none !important; }
-    #empty { padding: 28px; background: white; border-radius: 8px; }
-    .snapshot-link { display: block; cursor: zoom-in; }
-    ${viewerStyles.trim()}
-    @media (max-width: 760px) {
-      header { padding: 20px 16px; }
-      .layout { grid-template-columns: 1fr; padding: 16px; gap: 20px; }
-      nav { position: static; }
-      .module-buttons { flex-direction: row; flex-wrap: wrap; }
-      .module-button { border-color: #dfe3e9; background: white; }
-    }
-  </style>
+  <style>${galleryStyles}\n${viewerStyles}</style>
 </head>
 <body>
-  <header>
-    <h1>来玩 H5 页面截图索引</h1>
-    <p>${pages.length} 张当前基准 · ${modules.length} 个模块 · <a href="manifest.json">页面清单与 SHA-256</a></p>
-    <p>先选择功能模块，再搜索页面、语言或视口。点击截图放大查看，支持缩放、拖动和方向键切图。</p>
-    <p>截图中的易变文本使用固定值；德州场景会真实建房并在截图后解散。</p>
+  <header class="page-header">
+    <h1>来玩 H5 截图</h1>
+    <span class="overview">${pageCount} 个页面 · ${pages.length} 张截图 · ${modules.length} 个模块</span>
+    <details id="gallery-about" class="about"><summary aria-keyshortcuts="B">截图说明 <kbd aria-hidden="true">B</kbd></summary><div>
+      <p><a id="manifest-link" href="manifest.json" target="_blank" rel="noopener" aria-keyshortcuts="P">页面清单与 SHA-256 <kbd aria-hidden="true">P</kbd></a></p>
+      <p>截图中的易变文本使用固定值；德州场景会真实建房并在截图后解散。</p>
+      <p>同一页面的不同语言、不同设备放在一起。点击截图放大，支持缩放、拖动和方向键切图。</p>
+    </div></details>
+    <button id="gallery-help" type="button" aria-label="查看快捷键说明" aria-keyshortcuts="Shift+/" aria-haspopup="dialog">快捷键 <kbd aria-hidden="true">?</kbd></button>
   </header>
   <div class="layout">
-    <nav aria-labelledby="module-navigation-title">
-      <h2 id="module-navigation-title">功能模块</h2>
+    <nav aria-label="功能模块">
+      <h2>功能模块 <kbd aria-hidden="true">M</kbd> <kbd aria-hidden="true">[ ]</kbd></h2>
       <div class="module-buttons">
-        <button class="module-button" type="button" data-module="" aria-pressed="true" aria-controls="gallery">全部模块 <span class="module-total">${pages.length}</span></button>
-        ${modules.map(module => `<button class="module-button" type="button" data-module="${escape(module.group)}" aria-pressed="false" aria-controls="gallery">${module.name} <span class="module-total">${module.pages.length}</span></button>`).join('\n        ')}
+        <button class="module-button" type="button" data-module="" aria-pressed="true" aria-controls="gallery">全部模块 <span class="module-total">${pageCount}</span></button>
+        ${modules.map(([group, name]) => `<button class="module-button" type="button" data-module="${group}" aria-pressed="false" aria-controls="gallery">${name} <span class="module-total"></span></button>`).join('\n')}
       </div>
+      <p class="nav-help">↑ ↓ 选择 · Enter 确认<br>数字为匹配的页面数</p>
     </nav>
     <main id="gallery">
       <div class="toolbar">
-        <label for="filter">搜索截图</label>
-        <input id="filter" type="search" placeholder="例如：德州、mobile chat、zh-Hans" aria-describedby="count">
-        <p id="count" role="status">显示 ${pages.length} 张 · ${modules.length} 个模块</p>
+        <div class="search-row">
+          <label class="sr-only" for="filter">搜索截图</label>
+          <div class="search-field"><kbd class="search-key" aria-hidden="true">/</kbd><input id="filter" type="search" placeholder="搜页面名称，比如：聊天、登录、战绩" aria-describedby="count" aria-keyshortcuts="/ Control+K Meta+K" title="/ 或 Ctrl/⌘ + K 搜索，Enter 回到结果，Esc 返回图片"></div>
+          <button id="toggle-filters" type="button" aria-label="筛选与对照" aria-keyshortcuts="F" aria-expanded="false" aria-controls="filter-options">筛选 <kbd aria-hidden="true">F</kbd></button>
+          <button id="reset-filters" class="quiet-button" type="button" aria-label="清除筛选" aria-keyshortcuts="X">清除筛选 <kbd aria-hidden="true">X</kbd></button>
+        </div>
+        <div id="filter-options" class="filter-options">
+          <label>语言 <kbd aria-hidden="true">L</kbd><select id="locale" aria-keyshortcuts="L Shift+L" title="L 切换，Shift + L 反向切换"><option value="">全部语言</option>${options(locales, value => LOCALE_NAMES[value] || value)}</select></label>
+          <label>设备 <kbd aria-hidden="true">V</kbd><select id="device" aria-keyshortcuts="V Shift+V" title="V 切换，Shift + V 反向切换"><option value="">全部设备</option><option value="mobile">手机</option><option value="desktop">电脑</option></select></label>
+          <label>怎么看 <kbd aria-hidden="true">C</kbd><select id="view-mode" aria-keyshortcuts="C Shift+C" title="C 切换，Shift + C 反向切换"><option value="pages">每个页面一张图</option><option value="languages">对比不同语言</option><option value="devices">对比手机和电脑</option><option value="screenshots">查看全部截图</option></select></label>
+          <details class="more-filters"><summary aria-keyshortcuts="E">更多筛选 <kbd aria-hidden="true">E</kbd></summary><div>
+            <label>分辨率 <kbd aria-hidden="true">R</kbd><select id="resolution" aria-keyshortcuts="R Shift+R" title="R 切换，Shift + R 反向切换"><option value="">全部分辨率</option>${options(resolutions, value => value.replace('x', ' × '))}</select></label>
+            <label>登录状态 <kbd aria-hidden="true">A</kbd><select id="auth" aria-keyshortcuts="A Shift+A" title="A 切换，Shift + A 反向切换"><option value="">全部状态</option><option value="signed-in">已登录</option><option value="guest">游客</option></select></label>
+            <label>图片大小 <kbd aria-hidden="true">S</kbd><select id="thumbnail-size" aria-keyshortcuts="S Shift+S" title="S 切换，Shift + S 反向切换"><option value="220">小</option><option value="300" selected>中</option><option value="420">大</option></select></label>
+          </div></details>
+        </div>
+        <div class="result-row"><p id="count" role="status" aria-live="polite"></p><span id="view-hint">同一页面只显示一张图，下方可切换版本</span></div>
+        <div class="keyboard-guide"><span><kbd>← ↑ ↓ →</kbd> 选图 · <kbd>Enter</kbd> 放大 · <kbd>G</kbd> 回到图片 · <kbd>?</kbd> 所有快捷键</span><span id="gallery-selection" class="sr-only" aria-live="polite"></span></div>
       </div>
-      <p id="empty" hidden>没有匹配的截图，请调整模块或搜索词。</p>
-      ${modules.map(module => `<section class="module-section" data-group="${escape(module.group)}" aria-labelledby="module-${escape(module.group)}">
-        <div class="module-heading"><h2 id="module-${escape(module.group)}">${module.name}</h2><span data-module-count>${module.pages.length} 张</span></div>
-        <div class="cards">${module.pages.map(renderCard).join('\n')}</div>
-      </section>`).join('\n      ')}
+      <div id="empty" hidden><h2>没有匹配的截图</h2><p>试试其他关键词，或放宽语言、设备、分辨率筛选。</p><button id="empty-reset" type="button" aria-label="清除所有筛选" aria-keyshortcuts="X">清除所有筛选 <kbd aria-hidden="true">X</kbd></button></div>
+      <div id="gallery-sections"></div>
+      <noscript>请启用 JavaScript 使用筛选与预览，也可以打开 <a href="manifest.json">页面清单</a> 查看原图路径。</noscript>
     </main>
   </div>
+  ${galleryKeyboardMarkup.trim()}
   ${viewerMarkup.trim()}
-  <script>
-    const filter = document.querySelector('#filter');
-    const sections = Array.from(document.querySelectorAll('.module-section'));
-    const buttons = Array.from(document.querySelectorAll('[data-module]'));
-    let selectedModule = '';
-
-    function updateGallery() {
-      const terms = filter.value.trim().toLowerCase().split(/[\\s,，]+/).filter(Boolean);
-      let visibleCards = 0;
-      let visibleModules = 0;
-      sections.forEach(section => {
-        const moduleSelected = !selectedModule || section.dataset.group === selectedModule;
-        let sectionCount = 0;
-        section.querySelectorAll('article').forEach(card => {
-          const searchableText = card.dataset.search.toLowerCase();
-          card.hidden = !moduleSelected || !terms.every(term => searchableText.includes(term));
-          if (!card.hidden) sectionCount++;
-        });
-        section.hidden = sectionCount === 0;
-        section.querySelector('[data-module-count]').textContent = sectionCount + ' 张';
-        visibleCards += sectionCount;
-        if (sectionCount > 0) visibleModules++;
-      });
-      document.querySelector('#count').textContent = '显示 ' + visibleCards + ' 张 · ' + visibleModules + ' 个模块';
-      document.querySelector('#empty').hidden = visibleCards !== 0;
-    }
-
-    buttons.forEach(button => button.addEventListener('click', () => {
-      selectedModule = button.dataset.module;
-      buttons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-      updateGallery();
-    }));
-    filter.addEventListener('input', updateGallery);
-    ${viewerScript.trim()}
-  </script>
+  <script id="gallery-data" type="application/json">${records}</script>
+  <script>${galleryScript}\n${viewerScript}</script>
 </body>
 </html>\n`;
 }

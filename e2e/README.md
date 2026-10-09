@@ -118,3 +118,7 @@ scope=all 预检三个 Secret，scope=registration 仅预检 TESTING_API_TOKEN�
 测试注册与只读案例不使用此余额初始化。测试注册接口不发放奖励。
 
 完整功能线盘点及剩余限制见 [COVERAGE.md](cases/COVERAGE.md)。
+
+2026-10-09 从应用仓库迁入去重后的 14 个补充业务场景（桌面／手机 28 项），
+沿用以上已有账号及串行执行约定，不再维护独立 business 套件。
+金币入口的已知产品错页保留预期失败回归，细节见 [SETTINGS-010](cases/settings-010-coin-mall-entry/README.md)。

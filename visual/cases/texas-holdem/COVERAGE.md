@@ -46,6 +46,8 @@
 | 自动补码开启、已选举报玩家及理由 | `hall_variants`: auto_rebuy_enabled、pair_play_selected |
 | 下注成功、猜牌亏损、钻石结果、加时冷却及提示 | prediction_bet、prediction_loss、prediction_diamond、delay_cooldown、delay_cooldown_alert |
 
+九人满桌按座位回放 BTN、SB、BB、UTG、MP1、MP2、MP3、HJ、CO；截图前逐玩家断言位置标签可见，并检查庄家 D 标记。
+
 ## 代理边界
 
 App 直连，德州只加载本目录 [proxy.ts](proxy.ts) 和 [mitmproxy/addon.py](mitmproxy/addon.py)。

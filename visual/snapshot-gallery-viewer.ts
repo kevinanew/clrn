@@ -1,73 +1,5 @@
 // 内嵌到生成的 HTML，保证 file:// 打开时无需服务器或额外脚本。
-export const viewerStyles = `
-    #viewer { width: calc(100% - 32px); height: calc(100% - 32px); max-width: none; max-height: none; padding: 0; border: 1px solid #394454; border-radius: 12px; background: #111820; color: #f1f5f9; overflow: hidden; }
-    #viewer::backdrop { background: rgb(8 13 20 / 85%); }
-    .viewer-shell { display: flex; flex-direction: column; height: 100%; }
-    .viewer-header { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #394454; }
-    .viewer-heading { flex: 1; min-width: 0; }
-    #viewer-title { font-size: 14px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #viewer-position { color: #b8c6d6; font-size: 12px; margin: 3px 0 0; }
-    .viewer-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-    #viewer button, #viewer a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 8px 12px; border: 1px solid #526171; border-radius: 6px; background: #202c3a; color: #f1f5f9; font-size: 13px; text-decoration: none; }
-    #viewer button:hover, #viewer a:hover { background: #334459; }
-    #viewer button:disabled { opacity: .4; cursor: default; }
-    #viewer button[aria-pressed="true"] { background: #1558a8; border-color: #78b8ff; }
-    #viewer-zoom { min-width: 50px; text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; }
-    #viewer-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; touch-action: none; user-select: none; }
-    #viewer-image { position: absolute; top: 50%; left: 50%; width: auto; max-width: none; max-height: none; object-fit: initial; background: none; transform-origin: center; pointer-events: none; }
-    #viewer-stage[data-draggable="true"] { cursor: grab; }
-    #viewer-stage[data-dragging="true"] { cursor: grabbing; }
-    #viewer-message { position: absolute; inset: 0; display: grid; place-content: center; margin: 0; color: #b8c6d6; text-align: center; padding: 24px; }
-    .viewer-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border-top: 1px solid #394454; }
-    #viewer-meta, .viewer-help { font-size: 12px; color: #b8c6d6; margin: 0; }
-    .viewer-help { margin-top: 3px; }
-    @media (max-width: 760px) {
-      #viewer { width: 100%; height: 100%; height: 100dvh; border: 0; border-radius: 0; }
-      .viewer-header { padding: 8px; gap: 8px; }
-      .viewer-heading { flex-basis: calc(100% - 72px); }
-      .viewer-actions { order: 1; width: 100%; gap: 4px; justify-content: center; }
-      #viewer button, #viewer a { padding: 8px; }
-      .viewer-footer { padding: 8px; flex-wrap: wrap; gap: 6px; }
-      .viewer-help { display: none; }
-    }
-`;
-
-export const viewerMarkup = `
-  <dialog id="viewer" aria-labelledby="viewer-title" aria-describedby="viewer-position">
-    <div class="viewer-shell">
-      <div class="viewer-header">
-        <div class="viewer-heading">
-          <h2 id="viewer-title"></h2>
-          <p id="viewer-position" aria-live="polite"></p>
-        </div>
-        <div class="viewer-actions" role="group" aria-label="图片操作">
-          <button id="viewer-prev" type="button" title="上一张（←）">上一张</button>
-          <button id="viewer-next" type="button" title="下一张（→）">下一张</button>
-          <button id="viewer-out" type="button" aria-label="缩小" title="缩小（-）">−</button>
-          <span id="viewer-zoom" aria-live="polite">100%</span>
-          <button id="viewer-in" type="button" aria-label="放大" title="放大（+）">+</button>
-          <button id="viewer-fit" type="button" aria-pressed="true" title="完整显示图片（0）">适应窗口</button>
-          <button id="viewer-actual" type="button" aria-pressed="false" title="按原始像素显示（1）">1:1</button>
-        </div>
-        <button id="viewer-close" type="button" title="关闭（Esc）" autofocus>关闭</button>
-      </div>
-      <div id="viewer-stage">
-        <img id="viewer-image" alt="" draggable="false" hidden>
-        <p id="viewer-message" aria-live="polite">正在加载图片…</p>
-      </div>
-      <div class="viewer-footer">
-        <div>
-          <p id="viewer-meta"></p>
-          <p class="viewer-help">滚轮缩放 · 放大后拖动 · 双击切换原始大小 · ← → 切图 · Esc 关闭</p>
-        </div>
-        <div class="viewer-actions">
-          <a id="viewer-original" target="_blank" rel="noopener">打开原图</a>
-          <a id="viewer-download" download>下载</a>
-        </div>
-      </div>
-    </div>
-  </dialog>
-`;
+export { viewerStyles, viewerMarkup } from './snapshot-gallery-viewer-ui';
 
 export const viewerScript = String.raw`
     const viewer = document.querySelector('#viewer');
@@ -75,7 +7,7 @@ export const viewerScript = String.raw`
     const image = document.querySelector('#viewer-image');
     const message = document.querySelector('#viewer-message');
     const control = name => document.querySelector('#viewer-' + name);
-    let items = [], current = 0, opener, previousOverflow;
+    let items = [], current = 0, activeId = 0, opener, previousOverflow;
     let scale = 1, fitScale = 1, offsetX = 0, offsetY = 0, mode = 'fit';
     const pointers = new Map();
 
@@ -83,7 +15,7 @@ export const viewerScript = String.raw`
       const button = control(name);
       const wasFocused = document.activeElement === button;
       button.disabled = disabled;
-      if (disabled && wasFocused) control('close').focus();
+      if (disabled && wasFocused) stage.focus({ preventScroll: true });
     }
 
     function paint() {
@@ -96,10 +28,12 @@ export const viewerScript = String.raw`
       control('zoom').textContent = Math.round(scale * 100) + '%';
       control('fit').setAttribute('aria-pressed', String(mode === 'fit'));
       control('actual').setAttribute('aria-pressed', String(mode === 'actual'));
+      control('width').setAttribute('aria-pressed', String(mode === 'width'));
       setDisabled('out', image.hidden || scale <= Math.min(fitScale, 0.1));
       setDisabled('in', image.hidden || scale >= 4);
       setDisabled('fit', image.hidden);
       setDisabled('actual', image.hidden);
+      setDisabled('width', image.hidden);
     }
 
     function measure() {
@@ -111,8 +45,10 @@ export const viewerScript = String.raw`
       if (image.hidden) return;
       measure();
       mode = nextMode;
-      scale = mode === 'actual' ? 1 : fitScale;
-      offsetX = offsetY = 0;
+      scale = mode === 'actual' ? 1 : mode === 'width' ?
+        Math.min(4, Math.max(1, stage.clientWidth - 32) / image.naturalWidth) : fitScale;
+      offsetX = 0;
+      offsetY = mode === 'fit' ? 0 : Math.max(0, (image.naturalHeight * scale - stage.clientHeight) / 2 + 16);
       paint();
     }
 
@@ -134,33 +70,54 @@ export const viewerScript = String.raw`
       stage.dataset.dragging = 'false';
     }
 
-    function show(index) {
+    const viewportKey = page => JSON.stringify(page.viewport);
+    function samePageVariants() {
+      return galleryRecords.filter(page => page.key === galleryRecords[activeId].key);
+    }
+    function updateVersionControls(page) {
+      const variants = samePageVariants();
+      const locales = [...new Set(variants.map(variant => variant.locale))];
+      control('locale').innerHTML = locales.map(locale => '<option value="' + html(locale) + '">' +
+        html(localeNames[locale] || locale) + '</option>').join('');
+      control('locale').value = page.locale;
+      control('locale').disabled = locales.length <= 1;
+      const viewports = [...new Map(variants.filter(variant => variant.locale === page.locale)
+        .map(variant => [viewportKey(variant), variant])).values()];
+      control('viewport').innerHTML = viewports.map(variant => '<option value="' + html(viewportKey(variant)) + '">' +
+        html((variant.viewport.label === 'mobile' ? '手机' : '电脑') + ' · ' + variant.viewport.width +
+          ' × ' + variant.viewport.height) + '</option>').join('');
+      control('viewport').value = viewportKey(page);
+      control('viewport').disabled = viewports.length <= 1;
+    }
+
+    function show(index, variantId = items[index]) {
       current = index;
+      activeId = variantId;
       clearPointers();
-      const item = items[current];
-      const card = item.closest('article');
-      control('title').textContent = control('title').title = card.dataset.label;
-      control('position').textContent = (current + 1) + ' / ' + items.length + ' · 当前筛选结果';
-      control('meta').textContent = card.querySelector('.card-meta').textContent;
-      control('original').href = control('download').href = item.href;
+      const page = galleryRecords[activeId];
+      control('title').textContent = displayPageName(page.page);
+      control('title').title = page.label;
+      control('position').textContent = (current + 1) + ' / ' + items.length + ' · 当前浏览结果' +
+        (activeId !== items[current] ? ' · 同页其他版本' : '');
+      control('meta').textContent = pageMeta(page);
+      control('original').href = control('download').href = page.file;
+      updateVersionControls(page);
       setDisabled('prev', current === 0);
       setDisabled('next', current === items.length - 1);
       image.hidden = true;
       message.hidden = false;
       message.textContent = '正在加载图片…';
-      image.alt = card.dataset.label + ' 页面截图';
-      scale = 1;
+      image.alt = page.label + ' 页面截图';
       offsetX = offsetY = 0;
-      mode = 'fit';
       paint();
-      image.src = item.href;
+      image.src = page.file;
     }
 
     image.addEventListener('load', () => {
       if (!viewer.open) return;
       image.hidden = false;
       message.hidden = true;
-      reset();
+      if (mode === 'manual') { measure(); paint(); } else reset(mode);
     });
     image.addEventListener('error', () => {
       image.hidden = true;
@@ -169,17 +126,36 @@ export const viewerScript = String.raw`
       paint();
     });
 
-    document.querySelectorAll('.snapshot-link').forEach(link => {
-      link.addEventListener('click', event => {
-        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-        event.preventDefault();
-        opener = link;
-        items = Array.from(document.querySelectorAll('article:not([hidden]) .snapshot-link'));
-        previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        viewer.showModal();
-        show(items.indexOf(link));
-      });
+    document.querySelector('#gallery-sections').addEventListener('click', event => {
+      const link = event.target.closest('.snapshot-link');
+      if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      opener = link;
+      selectGalleryLink(link);
+      items = getGalleryItems();
+      const id = Number(link.closest('.snapshot-item').dataset.id);
+      const index = items.indexOf(id);
+      if (index < 0) return;
+      previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      mode = 'fit';
+      scale = 1;
+      control('shortcuts').open = false;
+      viewer.showModal();
+      show(index);
+      stage.focus({ preventScroll: true });
+    });
+    control('locale').addEventListener('change', () => {
+      const page = galleryRecords[activeId];
+      const variants = samePageVariants().filter(variant => variant.locale === control('locale').value);
+      const next = variants.find(variant => viewportKey(variant) === viewportKey(page)) || variants[0];
+      if (next) { show(current, next.id); stage.focus({ preventScroll: true }); }
+    });
+    control('viewport').addEventListener('change', () => {
+      const page = galleryRecords[activeId];
+      const next = samePageVariants().find(variant => variant.locale === page.locale &&
+        viewportKey(variant) === control('viewport').value);
+      if (next) { show(current, next.id); stage.focus({ preventScroll: true }); }
     });
 
     function navigate(delta) {
@@ -192,45 +168,98 @@ export const viewerScript = String.raw`
     control('out').addEventListener('click', () => zoom(scale / 1.25));
     control('fit').addEventListener('click', () => reset());
     control('actual').addEventListener('click', () => reset('actual'));
+    control('width').addEventListener('click', () => reset('width'));
     control('close').addEventListener('click', () => viewer.close());
     viewer.addEventListener('click', event => { if (event.target === viewer) viewer.close(); });
     viewer.addEventListener('close', () => {
       clearPointers();
       document.body.style.overflow = previousOverflow;
-      opener?.focus({ preventScroll: true });
+      const linkFor = id => keyboardLinks.find(link => Number(link.closest('.snapshot-item').dataset.id) === id);
+      let selected = linkFor(activeId);
+      if (!selected && byId('view-mode').value === 'pages') {
+        const row = rows.find(row => row.variants.some(page => page.id === activeId));
+        const card = row && Array.from(byId('gallery-sections').querySelectorAll('article'))
+          .find(card => card.dataset.row === row.key);
+        if (card) {
+          setGalleryVariant(card, galleryRecords[activeId]);
+          selected = linkFor(activeId);
+        }
+      }
+      selected = selected || linkFor(items[current]) || opener;
+      selectGalleryLink(selected, { focus: true, scroll: selected !== opener });
     });
-    viewer.addEventListener('keydown', event => {
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
+    function pan(x, y) {
+      if (image.hidden) return;
+      offsetX += x;
+      offsetY += y;
+      paint();
+    }
+    function cycleVersion(name, reverse) {
+      const select = control(name);
+      if (select.options.length <= 1) return;
+      select.selectedIndex = (select.selectedIndex + (reverse ? -1 : 1) + select.options.length) % select.options.length;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    // 模态框打开时统一接收键盘，避免切换版本或点击图片后焦点变化导致快捷键失效。
+    document.addEventListener('keydown', event => {
+      if (!viewer.open || event.defaultPrevented || event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === 'Tab') {
-        const focusable = Array.from(viewer.querySelectorAll('button:not([disabled]), a[href]'));
+        const focusable = Array.from(viewer.querySelectorAll('button:not([disabled]), select:not([disabled]), a[href], summary, [tabindex="0"]'));
         const first = focusable[0], last = focusable[focusable.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
+        if (!viewer.contains(document.activeElement) || (event.shiftKey && document.activeElement === first)) {
           event.preventDefault();
-          last.focus();
+          (event.shiftKey ? last : first).focus();
         } else if (!event.shiftKey && document.activeElement === last) {
           event.preventDefault();
           first.focus();
         }
         return;
       }
+      if (event.target.closest?.('input, textarea, [contenteditable="true"]')) return;
+      if (event.target.matches?.('select') && ['ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) return;
+      const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
       const actions = {
-        ArrowLeft: () => navigate(-1), ArrowRight: () => navigate(1),
+        ArrowLeft: () => event.shiftKey ? pan(80, 0) : navigate(-1),
+        ArrowRight: () => event.shiftKey ? pan(-80, 0) : navigate(1),
+        ArrowUp: () => pan(0, 80), ArrowDown: () => pan(0, -80),
+        PageUp: () => pan(0, stage.clientHeight * .9), PageDown: () => pan(0, -stage.clientHeight * .9),
+        Home: () => { offsetY = Math.max(0, (image.naturalHeight * scale - stage.clientHeight) / 2 + 16); paint(); },
+        End: () => { offsetY = -Math.max(0, (image.naturalHeight * scale - stage.clientHeight) / 2 + 16); paint(); },
         '+': () => zoom(scale * 1.25), '=': () => zoom(scale * 1.25),
-        '-': () => zoom(scale / 1.25), '0': () => reset(), '1': () => reset('actual'),
+        '-': () => zoom(scale / 1.25), '0': () => reset(), '1': () => reset('actual'), '2': () => reset('width'),
+        l: () => cycleVersion('locale', event.shiftKey), v: () => cycleVersion('viewport', event.shiftKey),
+        o: () => control('original').click(), d: () => control('download').click(),
+        '?': () => { control('shortcuts').open = !control('shortcuts').open; },
+        Escape: () => viewer.close(),
       };
-      if (actions[event.key]) { event.preventDefault(); actions[event.key](); }
+      if (actions[key]) {
+        event.preventDefault();
+        actions[key]();
+        if (viewer.open && event.target.matches?.('select')) stage.focus({ preventScroll: true });
+      }
     });
 
     stage.addEventListener('wheel', event => {
       event.preventDefault();
-      const rect = stage.getBoundingClientRect();
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1);
-      zoom(scale * Math.exp(-Math.max(-100, Math.min(100, delta)) * 0.002),
-        event.clientX - rect.left, event.clientY - rect.top);
+      stage.focus({ preventScroll: true });
+      const factor = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1;
+      if (event.ctrlKey || event.metaKey) {
+        const rect = stage.getBoundingClientRect();
+        const delta = event.deltaY * factor;
+        zoom(scale * Math.exp(-Math.max(-100, Math.min(100, delta)) * 0.002),
+          event.clientX - rect.left, event.clientY - rect.top);
+      } else if (event.shiftKey) {
+        pan(-(event.deltaX || event.deltaY) * factor, 0);
+      } else {
+        pan(-event.deltaX * factor, -event.deltaY * factor);
+      }
     }, { passive: false });
-    stage.addEventListener('dblclick', () => reset(Math.abs(scale - 1) < 0.01 ? 'fit' : 'actual'));
+    stage.addEventListener('dblclick', event => {
+      if (!event.target.closest('button, a, select')) reset(Math.abs(scale - 1) < 0.01 ? 'fit' : 'actual');
+    });
     stage.addEventListener('pointerdown', event => {
-      if (image.hidden || event.button !== 0) return;
+      if (image.hidden || event.button !== 0 || event.target.closest('button, a, select')) return;
+      stage.focus({ preventScroll: true });
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       stage.setPointerCapture(event.pointerId);
       stage.dataset.dragging = 'true';
@@ -264,6 +293,6 @@ export const viewerScript = String.raw`
     new ResizeObserver(() => {
       if (!viewer.open || image.hidden) return;
       measure();
-      if (mode === 'fit') reset(); else paint();
+      if (mode === 'fit' || mode === 'width') reset(mode); else paint();
     }).observe(stage);
 `;

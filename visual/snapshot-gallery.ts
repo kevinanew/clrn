@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { buildScenarios } from './scenarios';
 import { visualBaseUrl } from './target';
@@ -12,7 +12,7 @@ const scenarios = buildScenarios().flatMap(scenario =>
     label: `${scenario.label}_${state}`,
     pageLabel: `${scenario.pageLabel}_${state}`,
   })) ?? [scenario]);
-const directory = path.join(__dirname, 'snapshots');
+const directory = path.join(__dirname, 'gallery');
 // Playwright 对 snapshot 参数中的下划线进行文件名清洗。
 const filename = (label: string) => `${label.replace(/_/g, '-')}.png`;
 const snapshotFile = (scenario: (typeof scenarios)[number]) =>
@@ -38,6 +38,7 @@ const pages = scenarios.map(scenario => {
     sha256: createHash('sha256').update(readFileSync(path.join(directory, file))).digest('hex'),
   };
 });
+mkdirSync(directory, { recursive: true });
 writeFileSync(path.join(directory, 'manifest.json'), JSON.stringify({
   baseUrl: visualBaseUrl,
   scope: process.env.VISUAL_SCOPE || 'full',
@@ -46,4 +47,4 @@ writeFileSync(path.join(directory, 'manifest.json'), JSON.stringify({
   pages,
 }, null, 2) + '\n');
 writeFileSync(path.join(directory, 'index.html'), renderSnapshotGallery(pages));
-console.log(`已生成 ${pages.length} 张截图的索引：snapshots/index.html`);
+console.log(`已生成 ${pages.length} 张截图的索引：gallery/index.html`);
