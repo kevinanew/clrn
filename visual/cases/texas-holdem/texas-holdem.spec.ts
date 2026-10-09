@@ -13,6 +13,10 @@ import { captureGameplay } from './gameplay';
 import { capturePanels } from './panels';
 import { captureHall } from './hall';
 import { captureNewRecords } from './records';
+import { captureControls } from './controlVariants';
+import { captureTableStates } from './tableVariants';
+import { capturePanelVariants } from './panelVariants';
+import { captureHallVariants } from './hallVariants';
 import config from '../../playwright.config';
 
 // 德州语音弹窗只检查界面，使用浏览器的虚拟麦克风，不读取开发机设备。
@@ -152,34 +156,59 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
     });
     const page = await context.newPage();
     page.on('pageerror', error => console.error(`TEXAS PAGE ERROR > ${error.message}`));
+    page.on('response', response => {
+      if (response.status() < 400) return;
+      const url = new URL(response.url());
+      if (url.pathname === '/node/v1/status') return; // 未选节点的 503 是启动夹具。
+      console.error(`TEXAS HTTP ERROR > ${response.status()} ${url.host}${url.pathname}`);
+    });
     let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     try {
       await setupContextForScenario(context, scenario, page, { useMitmproxy: true });
-      if (['signed_in_texas_game', 'signed_in_texas_panels', 'signed_in_texas_hall', 'signed_in_texas_records_v2'].includes(scenario.pageLabel)) {
+      if (!['signed_in_texas_pre_game', 'signed_in_texas_optional_pre_game'].includes(scenario.pageLabel)) {
         await page.clock.install({ time: Date.now() });
       }
       if (scenario.pageLabel === 'signed_in_texas_records_v2') await mitmproxy.configureNewRecords(true);
       if (scenario.pageLabel === 'signed_in_texas_panels') {
         await context.grantPermissions(['microphone']);
       }
+      const requestsBeforeNavigation = (await mitmproxy.status()).proxiedRequests;
       await page.goto(scenario.path);
       await preparePage(page, scenario);
       if (scenario.pageLabel === 'signed_in_texas_records_v2') {
         await expect.poll(() => page.evaluate(() => localStorage.getItem('use.new.game.record.key'))).toBe('true');
       }
       const proxyStatus = await mitmproxy.status();
-      expect(proxyStatus.proxiedRequests, '德州浏览器流量应经过 mitmproxy').toBeGreaterThan(0);
+      expect(proxyStatus.proxiedRequests, '德州浏览器流量应经过 mitmproxy').toBeGreaterThan(requestsBeforeNavigation);
       console.log(`MITMPROXY > requests=${proxyStatus.proxiedRequests}, stabilized=${proxyStatus.stabilizedRequests}`);
       const optional = scenario.pageLabel === 'signed_in_texas_optional_pre_game';
-      if (scenario.pageLabel === 'signed_in_texas_hall') await mitmproxy.configureHallView();
+      if (['signed_in_texas_hall', 'signed_in_texas_hall_variants'].includes(scenario.pageLabel)) await mitmproxy.configureHallView();
+      if (scenario.pageLabel === 'signed_in_texas_table_states') await mitmproxy.configureGuestView();
       room = await createTexasRoom(page, created => {
         room = created;
+        console.log(`TEXAS CREATED ROOM > ${created.roomId}`);
         // 不记录凭据；强制中断时仍可从失败 artifact 核实本轮创建的 UUID。
         writeFileSync(test.info().outputPath('created-room.json'), JSON.stringify({
           roomId: created.roomId, apiOrigin: created.apiOrigin,
         }));
       }, optional);
-      if (scenario.pageLabel === 'signed_in_texas_game') {
+      if (['signed_in_texas_controls', 'signed_in_texas_table_states', 'signed_in_texas_panel_variants', 'signed_in_texas_hall_variants'].includes(scenario.pageLabel)) {
+        if (['signed_in_texas_hall_variants', 'signed_in_texas_table_states'].includes(scenario.pageLabel)) {
+          await enterTexasRoom(page, room);
+        }
+        await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+        await expect.poll(async () => {
+          const retry = visible(page, 'common-alert-button-retry');
+          if (await retry.isVisible()) await retry.click();
+          return !(await visible(page, 'game-splash-screen-bg').isVisible());
+        }, { timeout: 90_000, message: '等待德州加载完成，重试 staging 瞬时连接失败' }).toBe(true);
+        if (['signed_in_texas_controls', 'signed_in_texas_panel_variants'].includes(scenario.pageLabel)) {
+          await waitForGameConnection(page);
+        }
+        const handler = { signed_in_texas_controls: captureControls, signed_in_texas_table_states: captureTableStates,
+          signed_in_texas_panel_variants: capturePanelVariants, signed_in_texas_hall_variants: captureHallVariants }[scenario.pageLabel]!;
+        await handler(page, scenario, mitmproxy, room.roomId, capture);
+      } else if (scenario.pageLabel === 'signed_in_texas_game') {
         await waitForGameConnection(page);
         await captureGameplay(page, scenario, mitmproxy, room.roomId, capture);
       } else if (scenario.pageLabel === 'signed_in_texas_panels') {

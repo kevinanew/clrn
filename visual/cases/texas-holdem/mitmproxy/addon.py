@@ -8,6 +8,7 @@ from texas_replay import PLAYER_IDS, TexasReplay
 from room_view import RoomView
 from game_log import fixture as log_fixture
 from records_v2 import RecordsV2
+from ui_states import UIStates
 
 CONTROL_HOST = 'test-mitmproxy.invalid'
 PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com'
@@ -36,6 +37,7 @@ class TexasVisualProxy:
         self.texas = TexasReplay()
         self.view = RoomView()
         self.records = RecordsV2()
+        self.ui = UIStates()
 
     def control(self, flow):
         if flow.request.headers.get('X-E2E-Control-Token') != self.token:
@@ -50,6 +52,7 @@ class TexasVisualProxy:
                     self.texas.release()
                     self.view.configure(None)
                     self.records.release()
+                    self.ui.release()
                 elif self.scenario == 'visual-stable' and path == '/texas/view':
                     self.view.configure(body.get('mode'))
                 elif self.scenario == 'visual-stable' and path == '/texas/replay':
@@ -58,10 +61,14 @@ class TexasVisualProxy:
                     self.records.configure(body.get('empty'))
                     if self.view.mode != 'record-v2':
                         self.view.configure('record-v2')
+                elif self.scenario == 'visual-stable' and path == '/texas/ui' and self.texas.room_id:
+                    self.ui.configure(body)
+                    self.texas.ui_states = self.ui
                 elif path == '/texas/release':
                     self.texas.release()
                     self.view.configure(None)
                     self.records.release()
+                    self.ui.release()
                 else:
                     raise ValueError('Unknown command')
             elif flow.request.method != 'GET' or path != '/status':
@@ -103,6 +110,14 @@ class TexasVisualProxy:
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
             return
         path = urlsplit(flow.request.path).path
+        try:
+            fixture = self.ui.fixture(flow.request.path, flow.request.method, flow.request.content, self.texas.room_id)
+        except (ValueError, TypeError, AttributeError):
+            return
+        if fixture is not None:
+            respond(flow, {'ok': True, 'result': fixture})
+            self.stabilized_requests += 1
+            return
         fixture = self.records.fixture(path, flow.request.method, self.texas.self_id)
         if fixture is not None:
             respond(flow, {'ok': True, 'result': fixture})

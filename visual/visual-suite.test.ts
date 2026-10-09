@@ -15,7 +15,7 @@ describe('visual suite selection and account isolation', () => {
       const texas = buildScenarios({ ...env, VISUAL_SUITE: 'texas' });
       const zhajinhua = buildScenarios({ ...env, VISUAL_SUITE: 'zhajinhua' });
       assert.equal(zhajinhua.length, 12);
-      assert.equal(texas.length, 36);
+      assert.equal(texas.length, 60);
       assert.equal(app.length, (scope === 'core' ? 44 : 106) * 3);
       assert.ok(app.every(scenario => scenario.group !== 'texas-holdem' && scenario.group !== 'zhajinhua'));
       assert.ok(texas.every(scenario => scenario.group === 'texas-holdem'));
@@ -26,7 +26,7 @@ describe('visual suite selection and account isolation', () => {
       const screenshots = (scenarios: typeof all) => scenarios.reduce(
         (sum, scenario) => sum + (scenario.snapshotStates?.length || 1), 0,
       );
-      assert.equal(screenshots(texas), 366);
+      assert.equal(screenshots(texas), 564);
       assert.equal(screenshots(app), scope === 'core' ? 492 : 678);
       assert.equal(screenshots(zhajinhua), 156);
       assert.equal(screenshots(app) + screenshots(texas) + screenshots(zhajinhua), screenshots(all));

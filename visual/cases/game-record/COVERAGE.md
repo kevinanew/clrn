@@ -37,6 +37,12 @@
 
 ## 当前应用限制
 
+本次测试以当前已部署 UI 为基准，应用显示问题留到后续源码修复。
+新旧版列表侧滑展开时，日期与记录前景一起向左移动，桌面首条日期会在左侧边界被裁切。
+`swipe_delete`、`delete_confirm`、`delete_cancel` 等基准保留当前展开状态，
+不通过隐藏日期、关闭侧滑行或改写图片掩盖这个已知问题。
+后续修复应用日期布局时，应重新生成并审查受影响基准。
+
 新版 controller 没有分页 API，删除接口也未实现，确认删除后实际显示「不能删除」；
 测试记录这一行为，不模拟删除成功。H5 的 React Native RefreshControl 没有可操作的
 下拉刷新实现，因此只测试重新进入页面的数据加载，不把它称为下拉刷新覆盖。
@@ -83,3 +89,11 @@ TypeScript 类型检查和 lint 均通过。
 两轮分页基准生成（[完整分页](https://github.com/kevinanew/clrn/actions/runs/37820933372)、
 [强制重写繁中任务](https://github.com/kevinanew/clrn/actions/runs/37824596468)）提供了正确底部位置的图片。
 复核后仅替换四张繁中分页截图，其余 368 张战绩基准保持不变，总数仍为 372。
+
+最终完整三语言对比（[12 个场景](https://github.com/kevinanew/clrn/actions/runs/37833629243)）
+与 [CI](https://github.com/kevinanew/clrn/actions/runs/37833597209) 均通过，无重试。
+372 张原图的独立视觉审查完成：369 张初审通过，3 张侧滑日期裁切经独立复核确认，
+因此绝对视觉质量审查结论为 `REJECTED`，不将其表述为全量视觉无问题。
+涉及英文桌面新版 `delete_cancel`、简中桌面旧版 `delete_cancel` 和 `delete_confirm`。
+本轮按现有 UI 补充测试，将该应用显示问题保留为上述后续修复项；截图对比通过表示
+测试忠实记录当前界面。
