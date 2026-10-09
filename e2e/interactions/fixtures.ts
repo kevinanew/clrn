@@ -75,7 +75,20 @@ async function dismissWelcome(page: Page): Promise<void> {
   await clickAfterSignInNotices(page, 'hall-tab');
 }
 
-export const test = base.extend<object, { accountState: StorageState }>({
+export const test = base.extend<{ interactionSetup: void }, { accountState: StorageState }>({
+  interactionSetup: [
+    /**
+     * 每个场景安装接口边界和延迟登录提示处理器，覆盖所有导入本 fixture 的文件。
+     * @param fixtures - Playwright 注入的页面和浏览器上下文。
+     * @param use - 初始化完成后执行测试的回调。
+     */ async ({ context, page }, use) => {
+      await prepare(context);
+      await installSignInNoticeHandler(page);
+      await use();
+    },
+    // 共享模块内的 beforeEach 只注册到首次导入的测试文件；自动 fixture 会逐测试执行。
+    { auto: true },
+  ],
   accountState: [
     /**
      * 每个 worker 真实登录一次，继承项目语言配置并在内存中复用会话。
@@ -116,15 +129,5 @@ export const test = base.extend<object, { accountState: StorageState }>({
     await use(accountState);
   },
 });
-
-test.beforeEach(
-  /**
-   * 每个场景安装独立接口边界，并处理复用会话后延迟出现的登录提示。
-   * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
-   */ async ({ context, page }) => {
-    await prepare(context);
-    await installSignInNoticeHandler(page);
-  },
-);
 
 export { expect };

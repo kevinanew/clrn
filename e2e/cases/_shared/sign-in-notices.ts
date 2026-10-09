@@ -35,7 +35,7 @@ export async function installSignInNoticeHandler(page: Page): Promise<void> {
           continue;
         }
       }
-      if (!await message.count() && !await privacy.count()) break;
+      if (!await message.count()) return;
       await expect(message).toHaveCount(1);
       const content = (await message.textContent())?.trim() || '';
       if (!handledRelief && reliefNotice.test(content)) {
@@ -44,11 +44,14 @@ export async function installSignInNoticeHandler(page: Page): Promise<void> {
         await expect(cancel).toHaveCount(1);
         await cancel.click();
         handledRelief = true;
+        // alert 会复用节点显示下一个提示，只等待当前救济金内容消失。
+        await expect(message.filter({ hasText: reliefNotice })).not.toBeVisible();
       } else if (!handledClubNotice && clubNotice.test(content)) {
         const confirm = await unique(page, 'alert-custom-button');
         await expect(confirm).toHaveText('好的');
         await confirm.click();
         handledClubNotice = true;
+        await expect(message.filter({ hasText: clubNotice })).not.toBeVisible();
         test.info().annotations.push({
           type: 'staging-background-error',
           description: '登录后后台俱乐部请求出错，用户确认一次后继续。',
@@ -57,7 +60,6 @@ export async function installSignInNoticeHandler(page: Page): Promise<void> {
         // 保留未知或重复提示，让原操作因弹窗未消失而失败。
         return;
       }
-      await expect(message).not.toBeVisible();
     }
   });
 }
@@ -101,7 +103,7 @@ export async function clickAfterSignInNotices(page: Page, testId: string): Promi
           const confirm = await unique(page, 'alert-custom-button');
           await expect(confirm).toHaveText('好的');
           await confirm.click();
-          await expect(message).not.toBeVisible();
+          await expect(message.filter({ hasText: clubNotice })).not.toBeVisible();
           handledClubNotice = true;
           test.info().annotations.push({ type: 'staging-background-error', description: '登录后后台俱乐部请求出错，用户确认一次后继续。' });
           continue;
@@ -112,7 +114,7 @@ export async function clickAfterSignInNotices(page: Page, testId: string): Promi
             .filter({ hasText: /^(?:取消|Cancel)$/ });
           await expect(cancel).toHaveCount(1);
           await cancel.click();
-          await expect(message).not.toBeVisible();
+          await expect(message.filter({ hasText: reliefNotice })).not.toBeVisible();
           handledRelief = true;
           continue;
         }

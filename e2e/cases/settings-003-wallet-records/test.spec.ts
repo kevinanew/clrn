@@ -11,10 +11,36 @@ test('SETTINGS-003：商城商品、钱包流水、购买记录和礼品卡浏�
     await expect(await unique(page, 'product-amount-0')).toHaveText(/^\d+颗钻石$/);
     await expect(await unique(page, 'product-price-0')).toHaveText(/^¥\d/);
   });
-  await test.step('查看金币流水中的注册奖励并返回商城', async () => {
-    await (await unique(page, 'currency-transaction-record-button')).click();
-    await expect(await unique(page, 'coin-transaction-record-view')).toContainText('注册奖励');
-    await expect(page.getByTestId('CurrencyTransactionRecordItem_amount').filter({ visible: true }).first()).toHaveText(/^[+-]\d/);
+  await test.step('金币和钻石流水与真实接口一致，兼容没有注册奖励的账号', async () => {
+    for (const currency of ['coin', 'diamond']) {
+      // 在点击前监听页面自己的请求；空列表必须有成功响应，不能把加载失败当成空态。
+      const recordsResponse = page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return url.pathname === `/v11/wallet/${signedInAccount.userId}/currency/${currency}/statement`
+          && response.request().method() === 'GET';
+      });
+      if (currency === 'coin') {
+        await (await unique(page, 'currency-transaction-record-button')).click();
+      } else {
+        await (await unique(page, 'currency_transaction_top_tab_bar_diamond')).click();
+      }
+      const response = await recordsResponse;
+      expect(response.ok(), `${currency} 流水接口应成功`).toBe(true);
+      const body = await response.json();
+      expect(body.ok, `${currency} 流水业务响应应成功`).toBe(true);
+      const statements = body.result?.statements;
+      expect(Array.isArray(statements), '流水响应应包含列表').toBe(true);
+      const view = await unique(page, currency === 'coin' ? 'coin-transaction-record-view' : 'account-security-items-list');
+      const amounts = view.getByTestId('CurrencyTransactionRecordItem_amount');
+      if (statements.length === 0) {
+        await expect(amounts).toHaveCount(0);
+      } else {
+        const first = statements[0];
+        expect(['deposit', 'withdraw']).toContain(first.event);
+        await expect(amounts.first()).toHaveText(`${first.event === 'deposit' ? '+' : '-'}${first.amount}`);
+        await expect(view.getByTestId('CurrencyTransactionRecordItem_balance').first()).toContainText(String(first.balance));
+      }
+    }
     await goBack(page);
     await expect(await unique(page, 'diamond-goods-list')).toContainText('颗钻石');
   });

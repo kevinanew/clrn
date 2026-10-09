@@ -143,3 +143,27 @@ for (const privacyOnTop of [true, false]) {
     await expect(page.locator('#privacy, #relief')).toHaveCount(0);
   });
 }
+
+test('取消救济金后节点立即复用为业务错误，保留错误并允许案例主动确认', async ({ page }) => {
+  await page.setContent(`
+    <div role="dialog" style="position:fixed;inset:0;background:white">
+      <p data-testid="alert-message-text">3000个免费的金币，请收下</p>
+      <button data-testid="alert-custom-button">取消</button>
+      <button data-testid="alert-custom-button">确认</button>
+    </div>
+  `);
+  await page.evaluate(() => {
+    document.querySelectorAll('[data-testid="alert-custom-button"]')[0].addEventListener('click', () => {
+      document.querySelector('[data-testid="alert-message-text"]')!.textContent = 'Network Error';
+      document.querySelectorAll('[data-testid="alert-custom-button"]')[0].remove();
+    });
+    document.querySelectorAll('[data-testid="alert-custom-button"]')[1].addEventListener('click', () => {
+      document.querySelector('[role="dialog"]')!.remove();
+    });
+  });
+  await installSignInNoticeHandler(page);
+  await expect(page.getByTestId('alert-message-text').filter({ hasText: '3000个免费的金币' })).not.toBeVisible();
+  await expect(page.getByTestId('alert-message-text')).toHaveText('Network Error');
+  await page.getByTestId('alert-custom-button').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
