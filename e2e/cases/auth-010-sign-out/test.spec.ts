@@ -10,7 +10,9 @@ test('AUTH-010：退出可取消，确认后刷新仍为游客且受保护入口
   await (await unique(page, 'settings-tab')).click();
   await test.step('取消退出保留当前账号', async () => {
     await openSettingsItem(page, 'sign-out');
-    const cancel = page.getByText('取消', { exact: true }).filter({ visible: true });
+    const sheet = page.getByRole('dialog').filter({ has: page.getByText('退出登录', { exact: true }) });
+    await expect(sheet).toHaveCount(1);
+    const cancel = sheet.getByText('取消', { exact: true });
     await expect(cancel).toHaveCount(1);
     await test.info().attach('退出登录确认弹窗', { body: await page.screenshot(), contentType: 'image/png' });
     await cancel.click();
@@ -18,10 +20,12 @@ test('AUTH-010：退出可取消，确认后刷新仍为游客且受保护入口
   });
   await test.step('确认退出后资产和账号入口恢复游客状态', async () => {
     await openSettingsItem(page, 'sign-out');
-    // 动作面板没有独立按钮 testid，排除背景设置列表里的同名项。
-    const confirm = page.getByText('退出登录', { exact: true }).filter({ visible: true });
-    await expect(confirm).toHaveCount(2);
-    await confirm.last().click();
+    // 限定动作面板，避免匹配背景设置列表和延迟出现的登录提示。
+    const sheet = page.getByRole('dialog').filter({ has: page.getByText('退出登录', { exact: true }) });
+    await expect(sheet).toHaveCount(1);
+    const confirm = sheet.getByText('退出登录', { exact: true });
+    await expect(confirm).toHaveCount(1);
+    await confirm.click();
     await expect(await unique(page, 'after-sign-in-see-asset-text')).toHaveText('登录后可查看钻石金币余额');
     await expect(page.getByTestId('username-text').filter({ visible: true })).toHaveCount(0);
   });

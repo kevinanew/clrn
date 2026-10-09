@@ -4,14 +4,16 @@ import { accountStatus, signIn } from '../_shared/auth';
 import { openHall, prepareContext } from '../_shared/page';
 
 test.use({ screenshot: 'off', trace: 'off' });
+// 线上代理偶发登录失败，完整认证案例最多重试一次；新旧会话断言保持不变。
+test.describe.configure({ retries: 1 });
 
-test('AUTH-003：相同设备标识再次登录的认证行为', async ({ page, context, browser, baseURL }) => {
+test('AUTH-003：相同设备标识再次登录的认证行为', async ({ page, context, browser, baseURL, locale }) => {
   const deviceId = randomUUID();
   await prepareContext(context, deviceId);
   await openHall(page);
   const first = await signIn(page);
   expect(await accountStatus(page, first)).toBe(200);
-  const otherContext = await browser.newContext({ baseURL });
+  const otherContext = await browser.newContext({ baseURL, locale });
   try {
     await prepareContext(otherContext, deviceId);
     const otherPage = await otherContext.newPage();

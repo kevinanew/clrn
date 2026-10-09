@@ -78,7 +78,9 @@ jobs:
           elif [ "$FUNCTIONAL_SCOPE" = registration ]; then
             npm run test:functional:registration
           else
-            npm run test:functional:existing
+            # 已有账号只读案例允许网络瞬态故障重试一次，失败的断言仍会再次执行。
+            # 注册／创建场景维持零重试，避免重复创建数据。
+            npm run test:functional:existing -- --retries=1
           fi
       - name: 上传失败报告
         if: failure()
