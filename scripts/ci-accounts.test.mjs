@@ -44,6 +44,15 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
   const output=join(directory,'outputs');
   const environment=join(directory,'environment');
   try {
+    for (const mode of ['e2e', 'functional', 'interactions']) {
+      writeFileSync(output, '');
+      const accountPlan = spawnSync(process.execPath, ['scripts/plan-ci-accounts.mjs', mode], {
+        encoding: 'utf8', env: { ...process.env, GITHUB_RUN_ID: '29', GITHUB_OUTPUT: output },
+      });
+      assert.equal(accountPlan.status, 0, accountPlan.stderr);
+      assert.equal(readFileSync(output, 'utf8'), `account=${allocateCiAccount('29')}\n`);
+    }
+    writeFileSync(output, '');
     const planned=spawnSync(process.execPath,['scripts/plan-ci-accounts.mjs','visual'],{
       encoding:'utf8',env:{...process.env,GITHUB_RUN_ID:'29',GITHUB_OUTPUT:output,CI_VISUAL_FULL:'true'},
     });

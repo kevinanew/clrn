@@ -2,7 +2,7 @@
 
 测试访问已部署的 `https://h5.page.shafayouxi.org/`，不检出应用源码、不构建 Web 包、不启动应用服务器。
 用例与辅助代码使用 TypeScript；截图对比在 Docker/Linux 中运行以保持字体和渲染环境一致。
-测试账号见 [应用仓库账号文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/testing/accounts.md)。
+测试账号见 [测试账号与权限](../e2e/accounts.md)。
 
 德州与拼三张视觉用例及其登录态采集使用独立的 `mitmdump`，浏览器流量经过本机代理。
 节点列表和节点健康检查由代理返回固定响应，业务数据的截图 fixture 保持原有规则。

@@ -16,6 +16,9 @@
 详细范围与已知缺口见 [功能线盘点](e2e/cases/COVERAGE.md)。
 实测同一账号再次登录后旧凭据失效。CI 使用 30 个专用账号，每个任务按运行 ID 分配账号，只有选到同一账号的任务排队；视觉全量矩阵的九个套件／语言任务使用九个不同账号。
 
+滚动、触屏交互及真实 Freshchat 客服回归统一位于 [e2e/interactions](e2e/INTERACTIONS.md)，
+测试账号及权限统一见 [e2e/accounts.md](e2e/accounts.md)。
+
 仓库根目录运行 `npm ci && npm run check` 检查全部代码，详见下方检查说明。
 
 ## 本机并行测试账号池
@@ -71,7 +74,7 @@ GitHub Actions 在每次 push 和 PR 上运行同样的全仓库检查，包含 
 完整凭据由仓库 Actions Secret **`CLRN_CI_TEST_ACCOUNTS`** 维护，结构为 `{ "accounts": [{ "username": "…", "password": "…", "status": "ready" }] }`；Git 中的 `scripts/ci-test-accounts.json` 只维护公开账号名。
 本机恢复备份为 Git 元数据目录中的 `clrn-test-accounts/ci-accounts.json`，权限 0600。
 
-E2E、功能与视觉工作流先规划账号，再以 `h5-staging-account-<用户名>` 作为 job 并发组。
+E2E、功能、交互与 Freshchat、视觉工作流先规划账号，再以 `h5-staging-account-<用户名>` 作为 job 并发组。
 GitHub 在 job 开始前取得账号锁，任务的所有步骤结束后释放；`queue: max` 保留等待任务。
 运行 ID 决定轮转起点，视觉套件与语言使用不同偏移。同一轮九个视觉任务不会重复分配账号；跨轮次选中同一账号时仍需排队，分配器不会查询服务器在线状态。
 不同账号的任务可以并行，实际任务数还受 GitHub runner 配额限制。缺少 Secret 或账号池不完整时直接失败。

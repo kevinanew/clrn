@@ -1,6 +1,6 @@
 # 来玩 H5 E2E
 
-弱网测试使用 staging 测试账号。账号及权限记录在 [应用仓库的测试账号文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/testing/accounts.md)。
+弱网测试使用 staging 测试账号。账号及权限记录在 [测试账号与权限](accounts.md)。
 
 这是一个自包含的 npm 子项目，只通过 URL、DOM、`data-testid`、localStorage key、HTTP API 路径和环境变量测试已部署的 staging / production H5。它不构建应用，也不依赖仓库根目录的依赖、配置或源代码。
 
@@ -48,7 +48,7 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 冒烟测试覆盖 `E2E_STAGING_URL` 指定的 staging 站点，以及 `https://h5.laiwan.life/`、`https://h5.laiwanpai.com/` 和 `https://h5.goplay360.com/`，检查 HTTP 状态、标题、应用根节点和首屏内容。设置 `E2E_EXPECT_BUILD_SHA` 后还会验证 `meta[name="build-version"]`。
 
-弱网测试覆盖大厅接口超时、登录接口失败和俱乐部列表接口失败后的降级与重试 UI，并确认俱乐部重试会再次发出请求。失败 trace 保存在 `test-results/`，HTML 报告保存在 `playwright-report/`。
+弱网测试覆盖大厅接口超时、登录接口失败和俱乐部列表接口失败后的降级与重试 UI，并确认俱乐部重试会再次发出请求。失败页面错误上下文保存在 `test-results/`，HTML 报告保存在 `playwright-report/`。
 
 弱网流量经过真实 mitmproxy，不使用 Playwright route 模拟网络故障。
 每例自动启动独立的 `mitmdump`，仅监听本机随机端口；大厅首个请求延迟 12 秒后断连，
@@ -85,7 +85,7 @@ Production E2E 仅允许不会修改用户资产和业务数据的只读检查�
 每个场景有说明及测试，桌面与手机串行执行，认证用例关闭 trace 和截图。
 
 2026-09-26 实测不同设备再次登录后旧会话账户接口立即返回 401，新会话为 200。
-CI 因此使用 30 个专用账号，功能、弱网与视觉任务按运行 ID 分配账号。
+CI 因此使用 30 个专用账号，功能、弱网、交互与 Freshchat、视觉任务按运行 ID 分配账号。
 每个 job 使用 `h5-staging-account-<用户名>` 并发组，只让同账号任务互斥，其他任务可以同时执行。
 上述工作流/任务均设置 `queue: max`，允许最多 100 个运行排队；仅设置
 `cancel-in-progress: false` 仍会让新运行替换已有的等待任务。
@@ -122,3 +122,10 @@ CI 因此使用 30 个专用账号，功能、弱网与视觉任务按运行 ID 
 2026-10-09 从应用仓库迁入去重后的 14 个补充业务场景（桌面／手机 28 项），
 沿用以上已有账号及串行执行约定，不再维护独立 business 套件。
 金币入口的已知产品错页保留预期失败回归，细节见 [SETTINGS-010](cases/settings-010-coin-mall-entry/README.md)。
+
+## 滚动、触屏与 Freshchat 回归
+
+应用仓库的剩余交互与客服套件已统一迁入本目录。运行 `npm run test:interactions`
+覆盖桌面和触屏的 16 项测试（含 2 项客服）；`npm run test:freshchat` 可单独运行客服。
+独立配置保持单 worker，CI 与其他同账号测试排队，默认 `npm test` 不重复收集交互套件。
+详细范围、本地构建目标覆盖及第三方网络限制见 [交互与 Freshchat 说明](INTERACTIONS.md)。

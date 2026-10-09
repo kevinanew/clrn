@@ -1,0 +1,70 @@
+name: H5 交互与 Freshchat 回归
+
+on:
+  push:
+    paths:
+      - 'e2e/interactions/**'
+      - 'e2e/helpers/**'
+      - 'e2e/cases/_shared/auth.ts'
+      - 'e2e/cases/_shared/page.ts'
+      - 'e2e/interactions.config.ts'
+      - 'e2e/freshchat.config.ts'
+      - 'e2e/package*.json'
+      - 'scripts/*ci*'
+      - '.github/workflows/interactions.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  account:
+    runs-on: ubuntu-latest
+    outputs:
+      account: ${{ steps.plan.outputs.account }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: plan
+        run: node scripts/plan-ci-accounts.mjs interactions
+  interactions:
+    needs: account
+    concurrency:
+      group: h5-staging-account-${{ needs.account.outputs.account }}
+      cancel-in-progress: false
+      queue: max
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+    env:
+      CI: 'true'
+      E2E_STAGING_URL: ${{ vars.E2E_STAGING_URL }}
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v4
+      - name: 注入本任务独占的 CI 账号
+        working-directory: .
+        env:
+          CLRN_CI_ACCOUNT: ${{ needs.account.outputs.account }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS }}
+        run: node scripts/configure-ci-account.mjs
+      - name: 安装测试依赖
+        run: npm ci
+      - name: 运行桌面与触屏交互
+        run: npm run test:interactions -- --grep-invert Freshchat
+      - name: 运行真实 Freshchat 客服
+        run: npm run test:freshchat
+      - name: 上传失败报告
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interactions-failure-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/interactions/
+            e2e/test-results/freshchat/
