@@ -17,3 +17,6 @@
 实测同一账号再次登录后旧凭据失效，因此同账号的 CI 共用一个并发组；视觉德州和拼三张各使用独立固定测试账号，与应用部分并行执行。
 
 运行 `cd visual && pnpm run lint` 或 `cd e2e && npm run lint` 可检查仓库 TypeScript/JavaScript 文件是否超过 400 行；CI 由独立的 lint 工作流在每次 push 时检查一次。
+
+滚动、触屏交互及真实 Freshchat 客服回归统一位于 [e2e/interactions](e2e/INTERACTIONS.md)，
+由独立 GitHub Actions 工作流串行运行。测试账号及权限统一见 [e2e/accounts.md](e2e/accounts.md)。
