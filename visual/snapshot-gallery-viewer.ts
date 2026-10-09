@@ -174,7 +174,18 @@ export const viewerScript = String.raw`
     viewer.addEventListener('close', () => {
       clearPointers();
       document.body.style.overflow = previousOverflow;
-      const selected = keyboardLinks.find(link => Number(link.closest('.snapshot-item').dataset.id) === items[current]) || opener;
+      const linkFor = id => keyboardLinks.find(link => Number(link.closest('.snapshot-item').dataset.id) === id);
+      let selected = linkFor(activeId);
+      if (!selected && byId('view-mode').value === 'pages') {
+        const row = rows.find(row => row.variants.some(page => page.id === activeId));
+        const card = row && Array.from(byId('gallery-sections').querySelectorAll('article'))
+          .find(card => card.dataset.row === row.key);
+        if (card) {
+          setGalleryVariant(card, galleryRecords[activeId]);
+          selected = linkFor(activeId);
+        }
+      }
+      selected = selected || linkFor(items[current]) || opener;
       selectGalleryLink(selected, { focus: true, scroll: selected !== opener });
     });
     function pan(x, y) {

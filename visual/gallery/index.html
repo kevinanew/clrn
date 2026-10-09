@@ -403,6 +403,19 @@
         '<p class="card-meta">' + html(pageMeta(page)) + '</p></div>';
     }
 
+    function snapshotDetailsMarkup(page) {
+      return '原始名称：' + html(page.label) + '<br>操作路径：' + html(page.navigation.join(' → ') || '大厅');
+    }
+
+    function setGalleryVariant(card, page) {
+      selectedVariants.set(card.dataset.row, page.id);
+      card.dataset.label = page.label;
+      const select = card.querySelector('.variant-select');
+      if (select) select.value = String(page.id);
+      card.querySelector('.variants').innerHTML = snapshotMarkup(page);
+      syncGallerySelection();
+    }
+
     function cardMarkup(row) {
       const variants = rowItems(row), page = variants[0], grouped = byId('view-mode').value === 'pages';
       const switcher = grouped && row.variants.length > 1 ?
@@ -413,7 +426,7 @@
         '<h3 title="' + html(page.page) + '">' + html(displayPageName(page.page)) + '</h3><div class="variants">' +
         variants.map(variant => snapshotMarkup(variant, !grouped && variants.length > 1)).join('') + '</div>' + switcher +
         '<div class="card-bottom"><details><summary aria-keyshortcuts="T">截图详情 <kbd aria-hidden="true">T</kbd></summary><code>' +
-        '原始名称：' + html(page.label) + '<br>操作路径：' + html(page.navigation.join(' → ') || '大厅') + '</code></details><span>' + row.variants.length +
+        snapshotDetailsMarkup(page) + '</code></details><span>' + row.variants.length +
         ' 个版本</span></div></article>';
     }
 
@@ -479,10 +492,7 @@
     byId('gallery-sections').addEventListener('change', event => {
       if (!event.target.matches('.variant-select')) return;
       const card = event.target.closest('article'), page = galleryRecords[Number(event.target.value)];
-      selectedVariants.set(card.dataset.row, page.id);
-      card.dataset.label = page.label;
-      card.querySelector('.variants').innerHTML = snapshotMarkup(page);
-      syncGallerySelection();
+      setGalleryVariant(card, page);
     });
     byId('gallery-sections').addEventListener('error', event => {
       if (event.target.tagName !== 'IMG') return;
@@ -519,6 +529,7 @@
       card.dataset.selected = 'true';
       card.querySelectorAll('.variant-select, .card-bottom summary').forEach(control => { control.tabIndex = 0; });
       const record = galleryRecords[selectedGalleryId];
+      card.querySelector('.card-bottom code').innerHTML = snapshotDetailsMarkup(record);
       byId('gallery-selection').textContent = '已选 ' + (keyboardLinks.indexOf(link) + 1) + ' / ' + keyboardLinks.length +
         '：' + displayPageName(record.page) + '，' + variantLabel(record);
       if (focus) link.focus({ preventScroll: true });
@@ -624,7 +635,9 @@
       if (galleryHelpOpener?.isConnected) galleryHelpOpener.focus({ preventScroll: true }); else focusGallerySelection();
     });
     byId('gallery-sections').addEventListener('focusin', event => {
-      const link = event.target.closest('.snapshot-link') || event.target.closest('article')?.querySelector('.snapshot-link');
+      const card = event.target.closest('article');
+      const link = event.target.closest('.snapshot-link') ||
+        (card && selectedGalleryLink?.closest('article') === card ? selectedGalleryLink : card?.querySelector('.snapshot-link'));
       if (link) selectGalleryLink(link);
     });
 
@@ -867,7 +880,18 @@
     viewer.addEventListener('close', () => {
       clearPointers();
       document.body.style.overflow = previousOverflow;
-      const selected = keyboardLinks.find(link => Number(link.closest('.snapshot-item').dataset.id) === items[current]) || opener;
+      const linkFor = id => keyboardLinks.find(link => Number(link.closest('.snapshot-item').dataset.id) === id);
+      let selected = linkFor(activeId);
+      if (!selected && byId('view-mode').value === 'pages') {
+        const row = rows.find(row => row.variants.some(page => page.id === activeId));
+        const card = row && Array.from(byId('gallery-sections').querySelectorAll('article'))
+          .find(card => card.dataset.row === row.key);
+        if (card) {
+          setGalleryVariant(card, galleryRecords[activeId]);
+          selected = linkFor(activeId);
+        }
+      }
+      selected = selected || linkFor(items[current]) || opener;
       selectGalleryLink(selected, { focus: true, scroll: selected !== opener });
     });
     function pan(x, y) {

@@ -98,6 +98,19 @@ export const galleryScript = `
         '<p class="card-meta">' + html(pageMeta(page)) + '</p></div>';
     }
 
+    function snapshotDetailsMarkup(page) {
+      return '原始名称：' + html(page.label) + '<br>操作路径：' + html(page.navigation.join(' → ') || '大厅');
+    }
+
+    function setGalleryVariant(card, page) {
+      selectedVariants.set(card.dataset.row, page.id);
+      card.dataset.label = page.label;
+      const select = card.querySelector('.variant-select');
+      if (select) select.value = String(page.id);
+      card.querySelector('.variants').innerHTML = snapshotMarkup(page);
+      syncGallerySelection();
+    }
+
     function cardMarkup(row) {
       const variants = rowItems(row), page = variants[0], grouped = byId('view-mode').value === 'pages';
       const switcher = grouped && row.variants.length > 1 ?
@@ -108,7 +121,7 @@ export const galleryScript = `
         '<h3 title="' + html(page.page) + '">' + html(displayPageName(page.page)) + '</h3><div class="variants">' +
         variants.map(variant => snapshotMarkup(variant, !grouped && variants.length > 1)).join('') + '</div>' + switcher +
         '<div class="card-bottom"><details><summary aria-keyshortcuts="T">截图详情 <kbd aria-hidden="true">T</kbd></summary><code>' +
-        '原始名称：' + html(page.label) + '<br>操作路径：' + html(page.navigation.join(' → ') || '大厅') + '</code></details><span>' + row.variants.length +
+        snapshotDetailsMarkup(page) + '</code></details><span>' + row.variants.length +
         ' 个版本</span></div></article>';
     }
 
@@ -174,10 +187,7 @@ export const galleryScript = `
     byId('gallery-sections').addEventListener('change', event => {
       if (!event.target.matches('.variant-select')) return;
       const card = event.target.closest('article'), page = galleryRecords[Number(event.target.value)];
-      selectedVariants.set(card.dataset.row, page.id);
-      card.dataset.label = page.label;
-      card.querySelector('.variants').innerHTML = snapshotMarkup(page);
-      syncGallerySelection();
+      setGalleryVariant(card, page);
     });
     byId('gallery-sections').addEventListener('error', event => {
       if (event.target.tagName !== 'IMG') return;

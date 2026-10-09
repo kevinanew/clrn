@@ -52,6 +52,7 @@ export const galleryKeyboardScript = String.raw`
       card.dataset.selected = 'true';
       card.querySelectorAll('.variant-select, .card-bottom summary').forEach(control => { control.tabIndex = 0; });
       const record = galleryRecords[selectedGalleryId];
+      card.querySelector('.card-bottom code').innerHTML = snapshotDetailsMarkup(record);
       byId('gallery-selection').textContent = '已选 ' + (keyboardLinks.indexOf(link) + 1) + ' / ' + keyboardLinks.length +
         '：' + displayPageName(record.page) + '，' + variantLabel(record);
       if (focus) link.focus({ preventScroll: true });
@@ -157,7 +158,9 @@ export const galleryKeyboardScript = String.raw`
       if (galleryHelpOpener?.isConnected) galleryHelpOpener.focus({ preventScroll: true }); else focusGallerySelection();
     });
     byId('gallery-sections').addEventListener('focusin', event => {
-      const link = event.target.closest('.snapshot-link') || event.target.closest('article')?.querySelector('.snapshot-link');
+      const card = event.target.closest('article');
+      const link = event.target.closest('.snapshot-link') ||
+        (card && selectedGalleryLink?.closest('article') === card ? selectedGalleryLink : card?.querySelector('.snapshot-link'));
       if (link) selectGalleryLink(link);
     });
 

@@ -228,6 +228,10 @@ test('同页版本切换、语言对照和设备对照', async ({ page }) => {
   const englishDesktop = await options.filter({ hasText: 'English · 电脑' }).getAttribute('value');
   await page.locator('.variant-select').selectOption(englishDesktop!);
   await expect(page.locator('.snapshot-item')).toHaveAttribute('data-label', 'en_desktop_signed_in_texas_pre_game_chat');
+  await page.locator('.card-bottom summary').click();
+  const record = manifest.pages.find(page => page.label === 'en_desktop_signed_in_texas_pre_game_chat')!;
+  await expect(page.locator('.card-bottom code')).toHaveText(
+    `原始名称：${record.label}操作路径：${record.navigation.join(' → ') || '大厅'}`);
   await page.locator('.snapshot-link').click();
   await expect(page.locator('#viewer-title')).toHaveAttribute('title', 'en_desktop_signed_in_texas_pre_game_chat');
   await expect(page.locator('#viewer-image')).toBeVisible();
@@ -283,6 +287,64 @@ test('大图连续浏览，并可切换同页的语言和设备版本', async ({
   await expect(page.locator('#viewer-title')).toHaveAttribute('title', 'en_desktop_signed_in_texas_pre_game_chat');
   await expect(page.locator('#viewer-image')).toBeVisible();
   await expect(page.locator('#viewer-meta')).toContainText('English · 电脑 · 1440 × 900');
+});
+
+for (const mode of ['pages', 'languages', 'devices', 'screenshots']) {
+  test(`大图切换语言和设备后关闭重开保留最后版本（${mode}）`, async ({ page }) => {
+    await page.goto(pathToFileURL(path.resolve(__dirname, '../gallery/index.html')).href);
+    await page.getByRole('searchbox', { name: '搜索截图' }).fill('pre_game_chat');
+    await page.getByRole('button', { name: /^德州牌桌/ }).click();
+    await page.locator('#view-mode').selectOption(mode);
+    const original = 'en_desktop_signed_in_texas_pre_game_chat';
+    if (mode === 'pages') {
+      const option = page.locator('.variant-select option').filter({ hasText: 'English · 电脑' });
+      await page.locator('.variant-select').selectOption((await option.getAttribute('value'))!);
+    }
+    await page.locator(`.snapshot-item[data-label="${original}"] .snapshot-link`).click();
+    await expect(page.locator('#viewer-image')).toBeVisible();
+    await page.locator('#viewer-locale').selectOption('zh-Hant');
+    const mobile = page.locator('#viewer-viewport option').filter({ hasText: '手机' });
+    await page.locator('#viewer-viewport').selectOption((await mobile.getAttribute('value'))!);
+    const lastViewed = 'zh-Hant_mobile_signed_in_texas_pre_game_chat';
+    await expect(page.locator('#viewer-title')).toHaveAttribute('title', lastViewed);
+    await expect(page.locator('#viewer-image')).toBeVisible();
+    await page.keyboard.press('Escape');
+    const selected = page.locator('.snapshot-link[aria-current="true"]');
+    await expect(selected).toBeFocused();
+    await expect(selected.locator('..')).toHaveAttribute('data-label', lastViewed);
+    const card = selected.locator('xpath=ancestor::article');
+    await card.locator('.card-bottom summary').click();
+    await expect(card.locator('.card-bottom code')).toBeVisible();
+    await expect(card.locator('.card-bottom code')).toContainText(lastViewed);
+    await expect(selected.locator('..')).toHaveAttribute('data-label', lastViewed);
+    if (mode === 'pages') {
+      await expect(page.locator('.variant-select')).toHaveValue((await selected.locator('..').getAttribute('data-id'))!);
+    }
+    await selected.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#viewer-title')).toHaveAttribute('title', lastViewed);
+  });
+}
+
+test('大图中的其他版本被筛选排除时，关闭后保持筛选内的图片', async ({ page }) => {
+  await page.goto(pathToFileURL(path.resolve(__dirname, '../gallery/index.html')).href);
+  await page.getByRole('searchbox', { name: '搜索截图' }).fill('pre_game_chat');
+  await page.getByRole('button', { name: /^德州牌桌/ }).click();
+  await page.locator('#locale').selectOption('zh-Hans');
+  await page.locator('#device').selectOption('mobile');
+  await page.locator('.snapshot-link').click();
+  await page.locator('#viewer-locale').selectOption('en');
+  const desktop = page.locator('#viewer-viewport option').filter({ hasText: '电脑' });
+  await page.locator('#viewer-viewport').selectOption((await desktop.getAttribute('value'))!);
+  await expect(page.locator('#viewer-title')).toHaveAttribute('title', 'en_desktop_signed_in_texas_pre_game_chat');
+  await page.keyboard.press('Escape');
+  const selected = page.locator('.snapshot-link[aria-current="true"]');
+  await expect(selected).toBeFocused();
+  await expect(selected.locator('..')).toHaveAttribute('data-label', 'zh-Hans_mobile_signed_in_texas_pre_game_chat');
+  await expect(page.locator('#locale')).toHaveValue('zh-Hans');
+  await expect(page.locator('#device')).toHaveValue('mobile');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#viewer-title')).toHaveAttribute('title', 'zh-Hans_mobile_signed_in_texas_pre_game_chat');
 });
 
 for (const width of [1440, 375]) {
