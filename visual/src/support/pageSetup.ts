@@ -85,35 +85,21 @@ export async function fixNavigatorLanguage(context: BrowserContext): Promise<voi
  *   （例如大厅 Slot 横幅每 4s 的 random spinTo，CSS 关不住）
  */
 export async function disableAnimations(context: BrowserContext): Promise<void> {
-  await context.addInitScript(() => {
-    (globalThis as typeof globalThis & { __VISUAL_REGRESSION__?: boolean }).__VISUAL_REGRESSION__ =
-      true;
-
+  // 使用原始浏览器脚本，避免 tsx 为嵌套具名函数注入 __name 后无法序列化。
+  await context.addInitScript(`(() => {
+    globalThis.__VISUAL_REGRESSION__ = true;
     const id = 'visual-disable-animations';
-    const css = `
-      *, *::before, *::after {
-        animation: none !important;
-        animation-delay: 0s !important;
-        transition: none !important;
-        scroll-behavior: auto !important;
-        -webkit-font-smoothing: antialiased !important;
-        text-rendering: geometricPrecision !important;
-      }
-    `;
-    // 对象方法不会被 tsx 插入外部 __name 助手，可独立序列化到浏览器。
-    const hooks = {
-      inject() {
-        const parent = document.head || document.documentElement;
-        if (!parent || document.getElementById(id)) return;
-        const style = document.createElement('style');
-        style.id = id;
-        style.textContent = css;
-        parent.appendChild(style);
-      },
+    const inject = () => {
+      const parent = document.head || document.documentElement;
+      if (!parent || document.getElementById(id)) return;
+      const style = document.createElement('style');
+      style.id = id;
+      style.textContent = '*, *::before, *::after { animation: none !important; animation-delay: 0s !important; transition: none !important; scroll-behavior: auto !important; -webkit-font-smoothing: antialiased !important; text-rendering: geometricPrecision !important; }';
+      parent.appendChild(style);
     };
-    hooks.inject();
-    document.addEventListener('DOMContentLoaded', hooks.inject);
-  });
+    inject();
+    document.addEventListener('DOMContentLoaded', inject);
+  })();`);
 }
 
 /** 采集态里与登录无关、可安全复用的缓存键（主题等；国家码已由 mockFixedCountryCode 固定） */
@@ -168,6 +154,7 @@ export async function setupContextForScenario(
   await mockVisualNetworkDependencies(context, {
     realPrivateRoom: scenario.group === 'texas-holdem' || scenario.group === 'zhajinhua',
     useMitmproxy: options.useMitmproxy,
+    recordFixtures: scenario.group === 'game-record',
   });
 
   await context.addInitScript(

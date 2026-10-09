@@ -69,34 +69,34 @@ describe('visual scenarios', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     process.env.VISUAL_SCOPE = 'core';
     const scenarios = buildScenarios();
-    assert.equal(scenarios.length, 64);
-    assert.equal(expectedScenarioCount(), 64);
-    assert.equal(scenarios.filter(s => s.viewport.label === 'mobile').length, 35);
-    assert.equal(scenarios.filter(s => s.viewport.label === 'desktop').length, 29);
+    assert.equal(scenarios.length, 68);
+    assert.equal(expectedScenarioCount(), 68);
+    assert.equal(scenarios.filter(s => s.viewport.label === 'mobile').length, 37);
+    assert.equal(scenarios.filter(s => s.viewport.label === 'desktop').length, 31);
     scenarios.forEach((scenario) => {
       assert.ok(CORE_PAGE_LABELS.has(scenario.pageLabel));
     });
   });
 
-  test('VISUAL_SCOPE=full 在简中生成全部 126 个场景', () => {
+  test('VISUAL_SCOPE=full 在简中生成全部 130 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 126);
-    assert.equal(expectedScenarioCount(), 126);
+    assert.equal(buildScenarios().length, 130);
+    assert.equal(expectedScenarioCount(), 130);
   });
 
-  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 126 个场景', () => {
+  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 130 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     delete process.env.VISUAL_SCOPE;
-    assert.equal(buildScenarios().length, 126);
-    assert.equal(expectedScenarioCount(), 126);
+    assert.equal(buildScenarios().length, 130);
+    assert.equal(expectedScenarioCount(), 130);
   });
 
-  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 378 个场景', () => {
+  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 390 个场景', () => {
     process.env.VISUAL_LOCALES = 'all';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 378);
-    assert.equal(expectedScenarioCount(), 378);
+    assert.equal(buildScenarios().length, 390);
+    assert.equal(expectedScenarioCount(), 390);
   });
 
   test('新增业务页面有对应导航与就绪定位，签到日期固定且不提交业务', () => {

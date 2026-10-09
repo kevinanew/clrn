@@ -21,6 +21,7 @@ const MODULE_NAMES: Record<ScenarioGroup, string> = {
   club: '俱乐部',
   account: '个人账号',
   wallet: '钱包与记录',
+  'game-record': '我的战绩',
   help: '帮助与下载',
 };
 
