@@ -15,3 +15,6 @@ visual/.visual-reference.lock/
 
 # ttyctl local runtime data (agent-writable)
 .ttyctl/
+
+# Root account-tool lint dependencies
+node_modules/
