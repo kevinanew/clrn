@@ -24,7 +24,7 @@ export async function signIn(page: Page, credentials = {
   );
   await (await unique(page, 'sign-in-button')).click();
   const response = await loginResponse;
-  expect(response.ok(), '真实登录请求应成功').toBeTruthy();
+  expect(response.ok(), `真实登录请求应成功（HTTP ${response.status()}，节点 ${new URL(response.url()).hostname}）`).toBeTruthy();
   await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible({ timeout: 60_000 });
   const session = await page.evaluate(() => {
     const raw = localStorage.getItem('save.user.origin.data.from.server.key');
