@@ -6,8 +6,8 @@ import { disableAnimations, fixNavigatorLanguage } from './pageSetup';
 
 async function serializedScript(setup: (context: BrowserContext) => Promise<void>): Promise<string> {
   let source = '';
-  await setup({ addInitScript: async (script: () => void) => {
-    source = `(${script.toString()})()`;
+  await setup({ addInitScript: async (script: string | (() => void)) => {
+    source = typeof script === 'string' ? script : `(${script.toString()})()`;
   } } as unknown as BrowserContext);
   return source;
 }

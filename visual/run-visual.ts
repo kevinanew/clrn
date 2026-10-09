@@ -164,9 +164,11 @@ async function main(): Promise<void> {
     console.log(`线上视觉测试地址: ${visualBaseUrl}`);
     const playwrightArgs = ['exec', 'playwright', 'test'];
     if (action === 'reference') {
-      // 牌桌重写每张所选基准，确保低于对比容差的旧弹幕/倒计时也被替换。
-      // App 继续只更新有显著差异的截图。
-      playwrightArgs.push(getVisualSuite() !== 'app'
+      // 牌桌和独立战绩重写所选基准，避免容差保留旧倒计时或错误的滚动位置。
+      // App 其他生成任务继续只更新有显著差异的截图。
+      const selected = selectScenariosByLabel(buildScenarios(), process.env.VISUAL_FILTER);
+      const recordsOnly = selected.length > 0 && selected.every(scenario => scenario.group === 'game-record');
+      playwrightArgs.push(getVisualSuite() !== 'app' || recordsOnly
         ? '--update-snapshots=all' : '--update-snapshots=changed');
     } else if (action === 'approve') {
       // approve：只接受上次 test 里真正 diff/失败的场景为新基准，未变化的不动

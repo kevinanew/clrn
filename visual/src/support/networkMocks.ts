@@ -123,7 +123,7 @@ async function mockHallMatchingGames(context: BrowserContext): Promise<void> {
 }
 
 /** 固定登录账号的俱乐部、私人房与钱包数据，避免 staging 账号状态进入基准图 */
-async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom = false): Promise<void> {
+async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom = false, recordFixtures = false): Promise<void> {
   const fulfill = (route: Parameters<Parameters<BrowserContext['route']>[1]>[0], result: unknown) =>
     route.fulfill({
       status: 200,
@@ -131,14 +131,17 @@ async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom
       body: JSON.stringify({ ok: true, result }),
     });
 
-  await context.route(
-    (url) => url.pathname === '/v10/club' && url.searchParams.has('user_id'),
-    (route) => fulfill(route, { clubs: [] }),
-  );
-  await context.route(
-    (url) => url.pathname === '/v10/clubs',
-    (route) => fulfill(route, []),
-  );
+  // 战绩用例的俱乐部资料由 mitmproxy 提供。
+  if (!recordFixtures) {
+    await context.route(
+      (url) => url.pathname === '/v10/club' && url.searchParams.has('user_id'),
+      (route) => fulfill(route, { clubs: [] }),
+    );
+    await context.route(
+      (url) => url.pathname === '/v10/clubs',
+      (route) => fulfill(route, []),
+    );
+  }
   if (!realPrivateRoom) {
     await context.route(/\/v10\/house\/user\/[^/?]+(?:\?|$)/, (route) =>
       fulfill(route, {
@@ -239,7 +242,7 @@ async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom
  */
 export async function mockVisualNetworkDependencies(
   context: BrowserContext,
-  options: { realPrivateRoom?: boolean; useMitmproxy?: boolean } = {},
+  options: { realPrivateRoom?: boolean; useMitmproxy?: boolean; recordFixtures?: boolean } = {},
 ): Promise<void> {
   // Freshchat 在线客服脚本是外部第三方资源（web 构建用占位 token），
   // 拉取慢且与视觉测试无关，直接屏蔽。
@@ -252,5 +255,5 @@ export async function mockVisualNetworkDependencies(
   await mockFixedCountryCode(context);
   await mockRoomDisallowRuleReminder(context);
   await mockHallMatchingGames(context);
-  await mockSignedInDynamicState(context, options.realPrivateRoom);
+  await mockSignedInDynamicState(context, options.realPrivateRoom, options.recordFixtures);
 }
