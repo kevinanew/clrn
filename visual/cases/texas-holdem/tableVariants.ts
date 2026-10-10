@@ -47,6 +47,36 @@ export async function captureTableStates(page: Page, scenario: VisualScenario, p
     await expect(sign).toBeVisible();
   }
   await snapshot('full_table');
+  // 九人满桌回放九个底池，覆盖两列五行及最后一个底池的完整显示。
+  const fullTablePots = [90, 80, 70, 60, 50, 40, 30, 20, 10];
+  await table(page, proxy, room, self, { full: true, pots: fullTablePots });
+  await expect(page.locator('[data-testid^="texas-holdem-player-container-"]:visible')).toHaveCount(9);
+  await expect(visible(page, 'texas_holdem_main_pot_amount')).toHaveText('450');
+  const sidePotsList = visible(page, 'texas_holdem_side_pots_list');
+  const sidePotItems = sidePotsList.getByTestId(/^texas_holdem_side_pot_\d+$/);
+  await expect(sidePotItems).toHaveText(fullTablePots.map(String));
+  const sidePotsBounds = await sidePotsList.boundingBox();
+  if (!sidePotsBounds) throw new Error('多底池列表应具有可见的布局区域');
+  const sidePotBounds = [];
+  for (const sidePot of await sidePotItems.all()) {
+    await expect(sidePot).toBeVisible();
+    const bounds = await sidePot.boundingBox();
+    if (!bounds) throw new Error('每个底池都应具有可见的布局区域');
+    expect(bounds.x).toBeGreaterThanOrEqual(sidePotsBounds.x);
+    expect(bounds.y).toBeGreaterThanOrEqual(sidePotsBounds.y);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(sidePotsBounds.x + sidePotsBounds.width);
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(sidePotsBounds.y + sidePotsBounds.height);
+    sidePotBounds.push(bounds);
+  }
+  for (let index = 0; index < sidePotBounds.length; index++) {
+    const bounds = sidePotBounds[index];
+    if (index % 2 === 1) {
+      expect(bounds.y).toBe(sidePotBounds[index - 1].y);
+      expect(bounds.x).toBeGreaterThanOrEqual(sidePotBounds[index - 1].x + sidePotBounds[index - 1].width);
+    }
+    if (index >= 2) expect(bounds.y).toBeGreaterThanOrEqual(sidePotBounds[index - 2].y + sidePotBounds[index - 2].height);
+  }
+  await snapshot('full_table_multiple_pots');
   // 真实离桌消息移除额外玩家，再恢复五人牌桌，避免旧实体残留。
   await proxy.replayTexas(room, events(Array.from({ length: 4 }, (_, index) => ({ event: 'stand_up',
     player_id: `00000000-0000-4000-8000-${String(index + 5).padStart(12, '0')}` }))));
