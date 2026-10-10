@@ -401,3 +401,7 @@ PNG 的 SHA-256。索引与测试共用 `buildScenarios()`，排除历史废弃�
 
 功能回归与截图采集共用默认账号，必须串行运行；功能测试用
 `cd e2e && npm run test:functional:existing` 可排除所有注册和创建场景。
+
+## 修改影响截图对比
+
+[德州九人满桌、多底池对比](comparisons/pots-2026-10-10/README.md) 保存了 `Pots.js` 修改前后的真实牌桌截图、离线对比页和复现脚本。本批为 macOS 审阅图片，未更新正式 Linux 基准或持续集成截图矩阵。
