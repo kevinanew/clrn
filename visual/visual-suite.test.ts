@@ -30,7 +30,7 @@ describe('visual suite selection and account isolation', () => {
       const screenshots = (scenarios: typeof all) => scenarios.reduce(
         (sum, scenario) => sum + (scenario.snapshotStates?.length || 1), 0,
       );
-      assert.equal(screenshots(texas), 564);
+      assert.equal(screenshots(texas), 570);
       assert.equal(screenshots(app), scope === 'core' ? 492 : 678);
       assert.equal(screenshots(zhajinhua), 156);
       assert.equal(screenshots(app) + screenshots(texas) + screenshots(zhajinhua), screenshots(all));
