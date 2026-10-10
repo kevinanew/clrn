@@ -23,6 +23,7 @@ export const PAGE_NAME_PARTS: Record<string, string> = {
   shortcut_blinds: '盲注快捷加注', shortcut_disabled: '快捷加注不可用', auto_buttons: '自动操作',
   auto_fold_selected: '已选择自动弃牌', auto_call_selected: '已选择自动跟注',
   auto_check_selected: '已选择自动过牌', raise_maximum: '最大加注', raise_dragging: '拖动加注金额',
+  full_table_multiple_pots: '满员牌桌多底池',
   full_table: '满员牌桌', reserved_seat: '预留座位', player_disconnected: '玩家断线',
   guest_menu: '游客菜单', applications_pending: '待处理申请', applications_resolved: '已处理申请',
   applications_more: '更多申请', chat_audio_history: '语音聊天记录', chat_barrage_off: '聊天弹幕已关闭',

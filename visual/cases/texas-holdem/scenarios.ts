@@ -44,7 +44,7 @@ export const CONTROL_STATES = [
   'auto_buttons', 'auto_fold_selected', 'auto_call_selected', 'auto_check_selected',
   'raise_maximum', 'raise_dragging', 'accurate_raise_value', 'accurate_raise_minimum_error',
 ] as const;
-export const TABLE_STATES = ['observer', 'full_table', 'reserved_seat', 'player_disconnected', 'guest_menu'] as const;
+export const TABLE_STATES = ['observer', 'full_table', 'full_table_multiple_pots', 'reserved_seat', 'player_disconnected', 'guest_menu'] as const;
 export const PANEL_VARIANT_STATES = [
   'applications_pending', 'applications_resolved', 'applications_more',
   'chat_audio_history', 'chat_barrage_off', 'alert_retry', 'alert_insufficient_balance', 'alert_authentication_failed',
