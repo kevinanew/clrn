@@ -107,7 +107,7 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的全部视觉任务�
 
 主干新增德州状态的 198 张三语言基准与本次战绩的 372 张基准均纳入执行清单。
 
-- 全量（`VISUAL_LOCALES=all`）= 每语言 344 张已有图 + 124 张战绩图，三语言共 **1406 张**（390 个场景）
+- 全量（`VISUAL_LOCALES=all`）= 每语言 344 张已有图 + 124 张战绩图，三语言共 **1404 张**（390 个场景）
 - 默认仅简中 = **468 张**（130 个场景）
 - 核心范围（`VISUAL_SCOPE=core`）= 282 张已有图 + 124 张战绩图 = **406 张**（68 个场景）
   （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、游客牌局登录提示、搜索登录提示、登录后大厅/消息/私人局/俱乐部/我的/商城）
@@ -174,7 +174,7 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的全部视觉任务�
 ```bash
 cd visual
 pnpm run test          # 简中 468 张
-pnpm run test:all      # 全部语言 1406 张
+pnpm run test:all      # 全部语言 1404 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
@@ -227,7 +227,7 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 | --- | --- |
 | `zh-Hans`（默认） | 日常线上（468 张）；push CI 再叠加 `VISUAL_SCOPE=core`（406 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 1406 张（GitHub Actions 定时任务） |
+| `all` | 全量 1404 张（GitHub Actions 定时任务） |
 
 环境变量 `VISUAL_SCOPE`：
 
@@ -255,7 +255,7 @@ CI 按「应用 app」「德州 texas」和「拼三张 zhajinhua」拆为独立
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
 原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
-因此已从执行清单移除。历史图片保留，不计入当前 1406 张有效截图。
+因此已从执行清单移除。历史图片保留，不计入当前 1404 张有效截图。
 德州通过 mitmproxy 回放固定牌局和弹窗数据，所有入口仍由实际 UI 点击打开。
 覆盖清单、协议和当前源码限制见 [COVERAGE.md](cases/texas-holdem/COVERAGE.md)。
 服务端房间保持等待状态，回放房间的操作 RPC 被代理隔离，每例精确解散本次真实创建的房间。

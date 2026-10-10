@@ -2,7 +2,7 @@
   "baseUrl": "https://h5.page.shafayouxi.org/",
   "scope": "full",
   "note": "Linux 视觉基准清单。德州和拼三张场景会真实建房、进入牌桌并解散本次房间；其余页面使用固定文本与视觉接口 fixtures。生成清单不会更新或批准截图。",
-  "count": 1398,
+  "count": 1404,
   "pages": [
     {
       "label": "zh-Hans_desktop_hall",
@@ -4556,6 +4556,59 @@
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-desktop-signed-in-texas-table-states-full-table.png",
       "sha256": "6c9006da1c489f1032dc92a096136e7fde754b9659795eb523cafc0da8ac68c7"
+    },
+    {
+      "label": "zh-Hans_desktop_signed_in_texas_table_states_full_table_multiple_pots",
+      "page": "signed_in_texas_table_states_full_table_multiple_pots",
+      "group": "texas-holdem",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "signedIn": true,
+      "navigation": [
+        "private-room-tab"
+      ],
+      "readySelector": "[data-testid=\"copy-house-number-button\"]",
+      "fixedTexts": [
+        {
+          "selector": "[data-testid=\"texas-holdem-room-id-text\"]",
+          "text": "123456789"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-room-name-text\"]",
+          "text": "TestRoom"
+        },
+        {
+          "selector": "[data-testid^=\"public-leader-board-item-nickname-\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"public-leader-board-container\"] > :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"personal-leader-board-record-container\"] + :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-nickname-text\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"ping-screen-text\"]",
+          "text": "0ms"
+        },
+        {
+          "selector": "[data-testid=\"renew-popup-remain-diamond\"]",
+          "text": "60"
+        }
+      ],
+      "hiddenSelectors": [],
+      "file": "../cases/texas-holdem/snapshots/zh-Hans-desktop-signed-in-texas-table-states-full-table-multiple-pots.png",
+      "sha256": "dfa05e872ea2c902923b55fc64b16be43f45f9edd51153838f6907db385a7e4d"
     },
     {
       "label": "zh-Hans_desktop_signed_in_texas_table_states_reserved_seat",
@@ -12989,6 +13042,59 @@
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hans-mobile-signed-in-texas-table-states-full-table.png",
       "sha256": "55fdae1541f7b0fda0ce409b6b9bee7773e684d67e37ad358e0a5780b3fdde06"
+    },
+    {
+      "label": "zh-Hans_mobile_signed_in_texas_table_states_full_table_multiple_pots",
+      "page": "signed_in_texas_table_states_full_table_multiple_pots",
+      "group": "texas-holdem",
+      "locale": "zh-Hans",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "private-room-tab"
+      ],
+      "readySelector": "[data-testid=\"copy-house-number-button\"]",
+      "fixedTexts": [
+        {
+          "selector": "[data-testid=\"texas-holdem-room-id-text\"]",
+          "text": "123456789"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-room-name-text\"]",
+          "text": "TestRoom"
+        },
+        {
+          "selector": "[data-testid^=\"public-leader-board-item-nickname-\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"public-leader-board-container\"] > :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"personal-leader-board-record-container\"] + :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-nickname-text\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"ping-screen-text\"]",
+          "text": "0ms"
+        },
+        {
+          "selector": "[data-testid=\"renew-popup-remain-diamond\"]",
+          "text": "60"
+        }
+      ],
+      "hiddenSelectors": [],
+      "file": "../cases/texas-holdem/snapshots/zh-Hans-mobile-signed-in-texas-table-states-full-table-multiple-pots.png",
+      "sha256": "0de2cf70ab65d5e7ac8a3b13f0a132bdc2512261d55977b34a9dcd8cbf2d79dc"
     },
     {
       "label": "zh-Hans_mobile_signed_in_texas_table_states_reserved_seat",
@@ -21768,6 +21874,59 @@
       "sha256": "e3972be82057628e557ad4bb0c084843e2fbc998634c5a26e60f87494380391e"
     },
     {
+      "label": "zh-Hant_desktop_signed_in_texas_table_states_full_table_multiple_pots",
+      "page": "signed_in_texas_table_states_full_table_multiple_pots",
+      "group": "texas-holdem",
+      "locale": "zh-Hant",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "signedIn": true,
+      "navigation": [
+        "private-room-tab"
+      ],
+      "readySelector": "[data-testid=\"copy-house-number-button\"]",
+      "fixedTexts": [
+        {
+          "selector": "[data-testid=\"texas-holdem-room-id-text\"]",
+          "text": "123456789"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-room-name-text\"]",
+          "text": "TestRoom"
+        },
+        {
+          "selector": "[data-testid^=\"public-leader-board-item-nickname-\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"public-leader-board-container\"] > :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"personal-leader-board-record-container\"] + :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-nickname-text\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"ping-screen-text\"]",
+          "text": "0ms"
+        },
+        {
+          "selector": "[data-testid=\"renew-popup-remain-diamond\"]",
+          "text": "60"
+        }
+      ],
+      "hiddenSelectors": [],
+      "file": "../cases/texas-holdem/snapshots/zh-Hant-desktop-signed-in-texas-table-states-full-table-multiple-pots.png",
+      "sha256": "cf934a046bc6587e8bb76447629e308c1cc351ef82423cfa37c7436a6cbff8b7"
+    },
+    {
       "label": "zh-Hant_desktop_signed_in_texas_table_states_reserved_seat",
       "page": "signed_in_texas_table_states_reserved_seat",
       "group": "texas-holdem",
@@ -30199,6 +30358,59 @@
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/zh-Hant-mobile-signed-in-texas-table-states-full-table.png",
       "sha256": "2811125b5429df821c8a1bf5d4a2227f24e1220c6279335bf814d3e764b6f2eb"
+    },
+    {
+      "label": "zh-Hant_mobile_signed_in_texas_table_states_full_table_multiple_pots",
+      "page": "signed_in_texas_table_states_full_table_multiple_pots",
+      "group": "texas-holdem",
+      "locale": "zh-Hant",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "private-room-tab"
+      ],
+      "readySelector": "[data-testid=\"copy-house-number-button\"]",
+      "fixedTexts": [
+        {
+          "selector": "[data-testid=\"texas-holdem-room-id-text\"]",
+          "text": "123456789"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-room-name-text\"]",
+          "text": "TestRoom"
+        },
+        {
+          "selector": "[data-testid^=\"public-leader-board-item-nickname-\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"public-leader-board-container\"] > :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"personal-leader-board-record-container\"] + :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-nickname-text\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"ping-screen-text\"]",
+          "text": "0ms"
+        },
+        {
+          "selector": "[data-testid=\"renew-popup-remain-diamond\"]",
+          "text": "60"
+        }
+      ],
+      "hiddenSelectors": [],
+      "file": "../cases/texas-holdem/snapshots/zh-Hant-mobile-signed-in-texas-table-states-full-table-multiple-pots.png",
+      "sha256": "c5e56b19ce74cb941f9a2a9b6bd3f3262da1fa66dbd582793d275c7b709a8fbb"
     },
     {
       "label": "zh-Hant_mobile_signed_in_texas_table_states_reserved_seat",
@@ -38978,6 +39190,59 @@
       "sha256": "bdfc5d291e0dc1cfd467a5e8cc5cb8036c015fa9a742fcdacf130531c2de8bee"
     },
     {
+      "label": "en_desktop_signed_in_texas_table_states_full_table_multiple_pots",
+      "page": "signed_in_texas_table_states_full_table_multiple_pots",
+      "group": "texas-holdem",
+      "locale": "en",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "signedIn": true,
+      "navigation": [
+        "private-room-tab"
+      ],
+      "readySelector": "[data-testid=\"copy-house-number-button\"]",
+      "fixedTexts": [
+        {
+          "selector": "[data-testid=\"texas-holdem-room-id-text\"]",
+          "text": "123456789"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-room-name-text\"]",
+          "text": "TestRoom"
+        },
+        {
+          "selector": "[data-testid^=\"public-leader-board-item-nickname-\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"public-leader-board-container\"] > :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"personal-leader-board-record-container\"] + :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-nickname-text\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"ping-screen-text\"]",
+          "text": "0ms"
+        },
+        {
+          "selector": "[data-testid=\"renew-popup-remain-diamond\"]",
+          "text": "60"
+        }
+      ],
+      "hiddenSelectors": [],
+      "file": "../cases/texas-holdem/snapshots/en-desktop-signed-in-texas-table-states-full-table-multiple-pots.png",
+      "sha256": "9d7d4589433fa21e76a4760341669c6414cbf75e1a8d3798596cd0c5585aa990"
+    },
+    {
       "label": "en_desktop_signed_in_texas_table_states_reserved_seat",
       "page": "signed_in_texas_table_states_reserved_seat",
       "group": "texas-holdem",
@@ -47409,6 +47674,59 @@
       "hiddenSelectors": [],
       "file": "../cases/texas-holdem/snapshots/en-mobile-signed-in-texas-table-states-full-table.png",
       "sha256": "010d430b95a06a7a6ff3c6e952e945dfdd809cbc757e9fcc5b2de520c8cdcee2"
+    },
+    {
+      "label": "en_mobile_signed_in_texas_table_states_full_table_multiple_pots",
+      "page": "signed_in_texas_table_states_full_table_multiple_pots",
+      "group": "texas-holdem",
+      "locale": "en",
+      "viewport": {
+        "label": "mobile",
+        "width": 375,
+        "height": 812
+      },
+      "signedIn": true,
+      "navigation": [
+        "private-room-tab"
+      ],
+      "readySelector": "[data-testid=\"copy-house-number-button\"]",
+      "fixedTexts": [
+        {
+          "selector": "[data-testid=\"texas-holdem-room-id-text\"]",
+          "text": "123456789"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-room-name-text\"]",
+          "text": "TestRoom"
+        },
+        {
+          "selector": "[data-testid^=\"public-leader-board-item-nickname-\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"public-leader-board-container\"] > :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"personal-leader-board-record-container\"] + :last-child",
+          "text": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "selector": "[data-testid=\"texas-holdem-nickname-text\"]",
+          "text": "TestPlayer"
+        },
+        {
+          "selector": "[data-testid=\"ping-screen-text\"]",
+          "text": "0ms"
+        },
+        {
+          "selector": "[data-testid=\"renew-popup-remain-diamond\"]",
+          "text": "60"
+        }
+      ],
+      "hiddenSelectors": [],
+      "file": "../cases/texas-holdem/snapshots/en-mobile-signed-in-texas-table-states-full-table-multiple-pots.png",
+      "sha256": "4bca62c8f7d5aca5da345a34d3b3547ad28c3f9967b606dfdfb19108b68dddc8"
     },
     {
       "label": "en_mobile_signed_in_texas_table_states_reserved_seat",
