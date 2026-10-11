@@ -21,7 +21,7 @@ class RecordsV2Tests(unittest.TestCase):
         path = '/public/v11/game_log/available.json'
         self.assertIsNone(self.records.fixture(path, 'GET', SELF))
         self.records.configure(True)
-        self.assertEqual(self.records.fixture(path, 'GET', None), {'available_url_version': 'v11'})
+        self.assertIsNone(self.records.fixture(path, 'GET', None))
         for method in ('PUT', 'POST', 'DELETE', 'OPTIONS'):
             self.assertIsNone(self.records.fixture(path, method, SELF))
         for invalid in (None, 0, 'true', []):

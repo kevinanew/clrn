@@ -4,17 +4,18 @@ import asyncio
 import json
 import os
 import re
+import sys
+from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 from mitmproxy import http
 from data import CLUB, HOUSE, PLAYER, all_records, detail, records, replay, rooms, round_data, settlements
 
+# mitmdump 将 addon 目录加入 sys.path；三个独立代理共用字段覆盖工具。
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
+from response_overrides import VisualNetwork, is_staging, prepare_profiles, patch_profiles, patch_version  # noqa: E402
+
 CONTROL_HOST = 'test-mitmproxy.invalid'
-PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com'
 MODES = ('empty', 'list', 'no-hands', 'paged', 'list-error', 'detail-error', 'delete-error')
-
-
-def is_staging(host):
-    return host == 'api.shafayouxi.org' or host.endswith('.api.staging.laiwan.shafayouxi.com')
 
 
 def respond(flow, result, status=200, wrapped=True):
@@ -32,6 +33,7 @@ class GameRecordProxy:
     def __init__(self):
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
+        self.network = VisualNetwork()
         self.user_id = None
         self.version = 'legacy'
         self.mode = 'empty'
@@ -93,8 +95,6 @@ class GameRecordProxy:
         data = [record for record in source if record['play_session_id'] not in self.deleted
                 and (self.mode != 'no-hands' or record['all_round_count'] == 0)]
         ids = {record['play_session_id'] for record in all_records()}
-        if path == '/public/v11/game_log/available.json' and method == 'GET':
-            return {'available_url_version': 'v11' if self.version == 'v2' else 'v1'}
         if not user:
             return None
         if path == f'/v10/texas_holdem/user/{user}/game_records' and method == 'GET':
@@ -141,8 +141,8 @@ class GameRecordProxy:
             return {'clubs': [{'id': CLUB, 'club_id': CLUB, 'name': 'Visual Club', 'room_amount': 0}]}
         if path == '/v10/clubs' and method == 'PUT' and body.get('club_ids') == [CLUB]:
             return [{'club_id': CLUB, 'name': 'Visual Club', 'avatar': '', 'room_amount': 0}]
-        if path == '/v10/profile/users' and method == 'PUT' and set(body.get('users', [])) <= {user, PLAYER, HOUSE}:
-            return {player: {'user_id': player, 'nickname': 'Visual Player' if player == user else 'Opponent',
+        if path == '/v10/profile/users' and method == 'PUT' and set(body.get('users', [])) <= {PLAYER, HOUSE}:
+            return {player: {'user_id': player, 'nickname': 'Opponent',
                              'avatarPath': ''} for player in body['users']}
         if path.startswith(f'/v1/game_log/user/{user}/room/') and method == 'DELETE':
             room_id = path.rsplit('/', 1)[-1]
@@ -169,6 +169,20 @@ class GameRecordProxy:
                                 for game_id in game_ids]}
         return None
 
+    def response(self, flow):
+        if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
+            return
+        self.stabilized += self.network.response(flow)
+        if not self.user_id:
+            return
+        path = urlsplit(flow.request.path).path
+        if path == '/v10/profile/users':
+            self.stabilized += patch_profiles(flow, self.user_id, {
+                player: {'user_id': player, 'nickname': 'Opponent', 'avatarPath': ''}
+                for player in (PLAYER, HOUSE)})
+        if flow.request.method == 'GET' and path == '/public/v11/game_log/available.json':
+            self.stabilized += patch_version(flow, 'v11' if self.version == 'v2' else 'v1')
+
     async def request(self, flow):
         if flow.request.host == CONTROL_HOST:
             self.control(flow)
@@ -178,18 +192,9 @@ class GameRecordProxy:
             return
         url = urlsplit(flow.request.path)
         path, method = url.path, flow.request.method
-        if method == 'OPTIONS':
-            respond(flow, {}, 204)
-            flow.response.content = b''
+        if self.user_id and prepare_profiles(flow, self.user_id, (PLAYER, HOUSE)):
             return
-        if path == '/public/v13/metadata/servers' and method == 'GET':
-            respond(flow, {'servers': {PROXY_HOST: '127.0.0.1'}})
-            self.stabilized += 1
-            return
-        if path == '/node/v1/status' and method == 'GET':
-            selected = flow.request.host == PROXY_HOST
-            respond(flow, {'backend_delay': 0, 'server_load': 'normal' if selected else 'unavailable'},
-                    200 if selected else 503, False)
+        if self.network.request(flow):
             self.stabilized += 1
             return
         try:

@@ -72,6 +72,24 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.addon.request(request)
         self.assertEqual(json.loads(request.response.content)['result']['nickname'], 'Player1')
 
+    def test_current_user_is_real_and_mixed_profiles_only_add_virtual_opponents(self):
+        self.addon.replay.room_id, self.addon.replay.self_id = ROOM, SELF
+        for path in (f'/v10/profile/{SELF}', f'/v10/wallet/{SELF}/currency/coin'):
+            request = flow('https://api.shafayouxi.org' + path)
+            self.addon.request(request)
+            self.assertIsNone(request.response)
+        player = PLAYER_IDS[0]
+        request = flow('https://api.shafayouxi.org/v10/profile/users', 'PUT',
+                       json.dumps({'users': [SELF, player]}).encode())
+        self.addon.request(request)
+        self.assertIsNone(request.response)
+        self.assertEqual(request.request.json()['users'], [SELF])
+        real = {'nickname': 'Real name', 'new_field': 42}
+        request.response = http.Response.make(200, json.dumps({'ok': True, 'result': {SELF: real}}).encode())
+        self.addon.response(request)
+        self.assertEqual(request.response.json()['result'][SELF], real)
+        self.assertEqual(request.response.json()['result'][player]['nickname'], 'Player1')
+
 
 if __name__ == '__main__':
     unittest.main()

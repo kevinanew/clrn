@@ -5,9 +5,11 @@
 测试账号见 [测试账号与权限](../e2e/accounts.md)。
 
 德州与拼三张视觉用例及其登录态采集使用独立的 `mitmdump`，浏览器流量经过本机代理。
-节点列表和节点健康检查由代理返回固定响应，业务数据的截图 fixture 保持原有规则。
+代理默认透传真实请求；metadata 在真实成功响应中仅保留选中节点，保留真实地址及其他字段。
+选中节点的健康检查和 CORS 预检透传；其他 staging 节点的测速被本地排除，不再伪造节点健康。
 App 登录态采集直连；我的战绩用例通过独立 mitmproxy 提供数据。德州代理脚本位于 `cases/texas-holdem/mitmproxy/`，
-只复用 `../e2e/helpers/mitmproxy-*.ts` 的进程与控制客户端，完全独立于 E2E 故障脚本。
+复用 `../e2e/helpers/mitmproxy-*.ts` 的进程与控制客户端，以及
+`../e2e/mitmproxy/response_overrides.py` 的响应字段覆盖工具；E2E 故障场景仍独立。
 拼三张使用独立的 `cases/zhajinhua/mitmproxy/` 和 fixture，不加载德州代理脚本。
 Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的全部视觉任务也会安装。
 已有镜像需先执行 `docker compose build visual`，再执行 `pnpm run test:texas`。
@@ -16,6 +18,22 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的全部视觉任务�
 德州截图（包括 `zh-Hans_mobile_signed_in_texas_pre_game_chat`）中的 `0ms`
 是 `fixedTexts` 固定文案，用于消除延迟变化造成的截图差异，不表示真实网速或代理延迟。
 日志中的 `MITMPROXY > requests=..., stabilized=...` 用于确认真实流量经过代理。
+
+## 最小 mock 规则
+
+- 当前真实账号的资料、余额及统计透传，虚拟对手才使用完整夹具。混合资料批次只向上游查询本人，再补入本次回放的虚拟玩家；本人资料及新增字段原样保留。
+- 战绩版本选择只修改真实成功响应的 `available_url_version`，其余字段和响应头保留。API 错误、非 JSON、字段缺失或类型变化均保留原响应，不用固定成功结果兜底；结构变化会记录 `Visual override skipped` 提示。
+- 固定牌局、虚拟战绩、申请分支和故障注入继续使用场景夹具；它们只匹配本轮房间、账号或虚拟 ID。写操作隔离继续保留，避免回放操作落到服务端。
+- 后续新增夹具优先覆盖真实响应中的最少字段；只有不存在于服务端的虚拟实体或必须隔离的操作才在 request 阶段完整返回。
+- 原有 App 浏览器路由 mock 仍保留，详见下文。真实账号显示内容可能影响旧截图，基准差异需结合真实数据核对，不宜自动批量接受。
+
+离线验证（无 staging 依赖）：
+
+```bash
+e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
+```
+
+其中响应覆盖集成检查会分别启动四个真实 mitmdump 入口，连接本机模拟上游，检查成功、失败、结构变化及 CORS 预检。
 
 ## 场景
 

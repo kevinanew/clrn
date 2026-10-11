@@ -2,20 +2,21 @@
 
 import json
 import os
+import sys
+from pathlib import Path
 from urllib.parse import urlsplit
 from mitmproxy import http
-from texas_replay import PLAYER_IDS, TexasReplay
+from texas_replay import PLAYER_IDS, TABLE_PLAYER_IDS, TexasReplay
 from room_view import RoomView
 from game_log import fixture as log_fixture
 from records_v2 import RecordsV2
 from ui_states import UIStates
 
+# mitmdump 将 addon 目录加入 sys.path；三个独立代理共用字段覆盖工具。
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
+from response_overrides import VisualNetwork, is_staging, prepare_profiles, patch_profiles, patch_version  # noqa: E402
+
 CONTROL_HOST = 'test-mitmproxy.invalid'
-PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com'
-
-
-def is_staging(host):
-    return host == 'api.shafayouxi.org' or host.endswith('.api.staging.laiwan.shafayouxi.com')
 
 
 def respond(flow, data, status=200):
@@ -32,6 +33,7 @@ class TexasVisualProxy:
     def __init__(self):
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
+        self.network = VisualNetwork()
         self.proxied_requests = 0
         self.stabilized_requests = 0
         self.texas = TexasReplay()
@@ -91,9 +93,16 @@ class TexasVisualProxy:
 
     def response(self, flow):
         if self.scenario == 'visual-stable' and is_staging(flow.request.host):
-            self.view.response(flow, urlsplit(flow.request.path).path)
+            self.stabilized_requests += self.network.response(flow)
+            path = urlsplit(flow.request.path).path
+            if self.texas.room_id and path == '/v10/profile/users':
+                self.stabilized_requests += patch_profiles(flow, self.texas.self_id,
+                    {player: self.texas.profile(player) for player in TABLE_PLAYER_IDS})
+            if self.records.enabled and flow.request.method == 'GET' and path == '/public/v11/game_log/available.json':
+                self.stabilized_requests += patch_version(flow, 'v11')
+            self.view.response(flow, path)
             try:
-                self.records.response(flow, urlsplit(flow.request.path).path, self.view.room_id)
+                self.records.response(flow, path, self.view.room_id)
             except (ValueError, TypeError, AttributeError):
                 pass
             if self.view.room_id and not self.texas.room_id:
@@ -108,6 +117,11 @@ class TexasVisualProxy:
             return
         self.proxied_requests += 1
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
+            return
+        if self.texas.room_id and prepare_profiles(flow, self.texas.self_id, TABLE_PLAYER_IDS):
+            return
+        if self.network.request(flow):
+            self.stabilized_requests += 1
             return
         path = urlsplit(flow.request.path).path
         try:
@@ -137,14 +151,7 @@ class TexasVisualProxy:
             respond(flow, {'ok': True, 'result': fixture})
             self.stabilized_requests += 1
             return
-        if path == '/public/v13/metadata/servers':
-            data = {'ok': True, 'result': {'servers': {PROXY_HOST: '127.0.0.1'}}}
-            status = 200
-        elif path == '/node/v1/status':
-            selected = flow.request.host == PROXY_HOST
-            data = {'backend_delay': 0, 'server_load': 'normal' if selected else 'unavailable'}
-            status = 200 if selected else 503
-        elif self.texas.room_id and path == '/v1/hall_matching/blacklist' and flow.request.method in ('POST', 'DELETE'):
+        if self.texas.room_id and path == '/v1/hall_matching/blacklist' and flow.request.method in ('POST', 'DELETE'):
             try:
                 player_id = json.loads(flow.request.content).get('black_user_id')
             except (ValueError, TypeError, AttributeError):
@@ -163,9 +170,6 @@ class TexasVisualProxy:
         else:
             return
         respond(flow, data, status)
-        if flow.request.method == 'OPTIONS':
-            flow.response.status_code = 204
-            flow.response.content = b''
         self.stabilized_requests += 1
 
 
