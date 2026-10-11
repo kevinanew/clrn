@@ -172,7 +172,7 @@ class TexasReplay:
     def http_fixture(self, path, body=b""):
         if not self.room_id:
             return None
-        identifiers = [*TABLE_PLAYER_IDS, self.self_id]
+        identifiers = TABLE_PLAYER_IDS
         if path == '/v10/profile/users':
             requested = json.loads(body).get('users', [])
             if requested and all(identifier in identifiers for identifier in requested):

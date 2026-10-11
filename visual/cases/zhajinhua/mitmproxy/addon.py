@@ -3,16 +3,17 @@
 import json
 import os
 import re
+import sys
+from pathlib import Path
 from urllib.parse import urlsplit
 from mitmproxy import http
-from zhajinhua_replay import UUID, ZhajinhuaReplay
+from zhajinhua_replay import UUID, PLAYER_IDS, ZhajinhuaReplay
+
+# mitmdump 将 addon 目录加入 sys.path；三个独立代理共用字段覆盖工具。
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
+from response_overrides import VisualNetwork, is_staging, prepare_profiles, patch_profiles  # noqa: E402
 
 CONTROL_HOST = 'test-mitmproxy.invalid'
-PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com'
-
-
-def is_staging(host):
-    return host == 'api.shafayouxi.org' or host.endswith('.api.staging.laiwan.shafayouxi.com')
 
 
 def respond(flow, data, status=200):
@@ -29,6 +30,7 @@ class ZhajinhuaVisualProxy:
     def __init__(self):
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
+        self.network = VisualNetwork()
         self.proxied_requests = 0
         self.stabilized_requests = 0
         self.created_room_id = None
@@ -69,7 +71,12 @@ class ZhajinhuaVisualProxy:
     def response(self, flow):
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
             return
-        if (flow.request.method != 'POST' or urlsplit(flow.request.path).path != '/v3/pay_action/do'
+        self.stabilized_requests += self.network.response(flow)
+        path = urlsplit(flow.request.path).path
+        if self.replay.room_id and path == '/v10/profile/users':
+            self.stabilized_requests += patch_profiles(flow, self.replay.self_id,
+                {player: self.replay.profile(player) for player in PLAYER_IDS})
+        if (flow.request.method != 'POST' or path != '/v3/pay_action/do'
                 or not flow.response or flow.response.status_code != 200 or self.created_room_id):
             return
         try:
@@ -101,15 +108,13 @@ class ZhajinhuaVisualProxy:
         self.proxied_requests += 1
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
             return
+        if self.replay.room_id and prepare_profiles(flow, self.replay.self_id, PLAYER_IDS):
+            return
+        if self.network.request(flow):
+            self.stabilized_requests += 1
+            return
         path = urlsplit(flow.request.path).path
-        if path == '/public/v13/metadata/servers':
-            data = {'ok': True, 'result': {'servers': {PROXY_HOST: '127.0.0.1'}}}
-            status = 200
-        elif path == '/node/v1/status':
-            selected = flow.request.host == PROXY_HOST
-            data = {'backend_delay': 0, 'server_load': 'normal' if selected else 'unavailable'}
-            status = 200 if selected else 503
-        elif flow.request.method == 'GET' or (flow.request.method == 'PUT' and path == '/v10/profile/users'):
+        if flow.request.method == 'GET' or (flow.request.method == 'PUT' and path == '/v10/profile/users'):
             try:
                 fixture = self.replay.http_fixture(path, flow.request.content)
             except (ValueError, TypeError, AttributeError):
@@ -120,9 +125,6 @@ class ZhajinhuaVisualProxy:
         else:
             return
         respond(flow, data, status)
-        if flow.request.method == 'OPTIONS':
-            flow.response.status_code = 204
-            flow.response.content = b''
         self.stabilized_requests += 1
 
 

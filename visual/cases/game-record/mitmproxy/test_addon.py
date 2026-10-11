@@ -8,7 +8,7 @@ from mitmproxy import connection, http
 
 with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
     from addon import GameRecordProxy
-from data import CLUB, PREFIX, all_records
+from data import CLUB, PLAYER, PREFIX, all_records
 
 SELF = 'visual-user'
 
@@ -147,6 +147,29 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(rejected.response.status_code, 200)
         self.assertEqual(json.loads(rejected.response.content)['error_message'], 'Visual record service unavailable')
         self.assertIsNone((await self.request(path + 'real-session')).response)
+
+    async def test_current_profile_and_version_keep_real_fields_and_errors(self):
+        request = await self.request('/v10/profile/users', 'PUT', {'users': [SELF, PLAYER]})
+        self.assertIsNone(request.response)
+        self.assertEqual(request.request.json()['users'], [SELF])
+        real = {'nickname': 'Real name', 'new_field': 42}
+        request.response = http.Response.make(200, json.dumps({'ok': True, 'result': {SELF: real}}).encode())
+        self.proxy.response(request)
+        self.assertEqual(request.response.json()['result'][SELF], real)
+        self.assertEqual(request.response.json()['result'][PLAYER]['nickname'], 'Opponent')
+        for version, expected in (('legacy', 'v1'), ('v2', 'v11')):
+            self.proxy.version = version
+            request = await self.request('/public/v11/game_log/available.json')
+            self.assertIsNone(request.response)
+            request.response = http.Response.make(200,
+                b'{"ok":true,"result":{"available_url_version":"v11","new_field":42}}')
+            self.proxy.response(request)
+            self.assertEqual(request.response.json()['result'], {'available_url_version': expected, 'new_field': 42})
+            request.response = http.Response.make(503, b'{"ok":false,"error":"real outage"}')
+            self.proxy.response(request)
+            self.assertEqual(request.response.content, b'{"ok":false,"error":"real outage"}')
+        preflight = await self.request('/unrelated/protected/api', 'OPTIONS')
+        self.assertIsNone(preflight.response)
 
 
 if __name__ == '__main__':

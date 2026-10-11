@@ -33,8 +33,6 @@ class RecordsV2:
     def fixture(self, path, method, self_id):
         if not self.enabled or method != 'GET':
             return None
-        if path == '/public/v11/game_log/available.json':
-            return {'available_url_version': 'v11'}
         if not self_id or not self.session_id:
             return None
         if path == f'/v11/game_log/{self_id}/play_session_record/{self.session_id}':

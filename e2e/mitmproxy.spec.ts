@@ -45,27 +45,24 @@ test('mitmproxy 在真实 HTTPS 请求中断开登录接口并记录命中', asy
   }
 });
 
-test('mitmproxy 稳定视觉节点列表和健康检查，放行 CORS 预检', async ({ playwright, mitmproxy }) => {
+test('mitmproxy 只隔离其他 staging 节点并处理其 CORS 预检', async ({ playwright, mitmproxy }) => {
   await mitmproxy.stabilizeVisualNetwork();
   const client = await playwright.request.newContext({
     proxy: { server: mitmproxy.server }, ignoreHTTPSErrors: true,
     extraHTTPHeaders: { Origin: 'https://h5.page.shafayouxi.org' },
   });
-  const host = '64.kr-seoul.api.staging.laiwan.shafayouxi.com';
+  const url = 'https://offline.api.staging.laiwan.shafayouxi.com/node/v1/status';
   try {
-    const metadata = await client.get('https://api.shafayouxi.org/public/v13/metadata/servers');
-    expect((await metadata.json()).result.servers).toEqual({ [host]: '127.0.0.1' });
-    expect(metadata.headers()['access-control-allow-origin']).toBe('https://h5.page.shafayouxi.org');
-    const selected = await client.get(`https://${host}/node/v1/status`);
-    expect(await selected.json()).toEqual({ backend_delay: 0, server_load: 'normal' });
-    const unavailable = await client.get('https://offline.api.staging.laiwan.shafayouxi.com/node/v1/status');
+    const unavailable = await client.get(url);
     expect(unavailable.status()).toBe(503);
-    const preflight = await client.fetch(`https://${host}/node/v1/status`, {
+    expect(await unavailable.json()).toEqual({ server_load: 'unavailable' });
+    const preflight = await client.fetch(url, {
       method: 'OPTIONS', headers: { 'Access-Control-Request-Headers': 'authorization' },
     });
     expect(preflight.status()).toBe(204);
+    expect(preflight.headers()['access-control-allow-origin']).toBe('https://h5.page.shafayouxi.org');
     expect(preflight.headers()['access-control-allow-headers']).toBe('authorization');
-    expect((await mitmproxy.status()).stabilizedRequests).toBe(4);
+    expect((await mitmproxy.status()).stabilizedRequests).toBe(2);
   } finally {
     await client.dispose();
   }

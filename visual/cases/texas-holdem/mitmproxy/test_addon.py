@@ -3,6 +3,7 @@
 import json
 import unittest
 from unittest.mock import patch
+from mitmproxy import http
 
 from test_texas_replay import flow, ROOM, OTHER, SELF
 from texas_replay import PLAYER_IDS
@@ -33,7 +34,18 @@ class TexasAddonTests(unittest.TestCase):
         self.assertIsNone(self.request(f'/v10/profile/{OTHER}').response)
         self.assertIsNone(self.request('/v10/profile/users', 'PUT', {'users': [player, OTHER]}).response)
         profiles = self.request('/v10/profile/users', 'PUT', {'users': [player, SELF]})
-        self.assertEqual(set(json.loads(profiles.response.content)['result']), {player, SELF})
+        self.assertIsNone(profiles.response)
+        original = {'ok': True, 'new_metadata': 'kept', 'result': {
+            SELF: {'nickname': 'Real user', 'new_field': 42}}}
+        profiles.response = http.Response.make(200, json.dumps(original).encode())
+        self.addon.response(profiles)
+        result = profiles.response.json()
+        self.assertEqual(result['result'][SELF], original['result'][SELF])
+        self.assertEqual(result['result'][player]['nickname'], 'Player1')
+        self.assertEqual(result['new_metadata'], 'kept')
+        for path in (f'/v10/profile/{SELF}', f'/v10/wallet/{SELF}/currency/coin',
+                     f'/v1/texas_statistics/player/{SELF}/rounds/100'):
+            self.assertIsNone(self.request(path).response)
 
     def test_block_fixture_only_intercepts_replay_players_and_known_methods(self):
         path = '/v1/hall_matching/blacklist'
@@ -79,7 +91,11 @@ class TexasAddonTests(unittest.TestCase):
         valid = flow('http://test-mitmproxy.invalid/texas/records', 'POST', b'{"empty":true}', 'test-token')
         self.addon.request(valid)
         self.assertEqual(valid.response.status_code, 200)
-        self.assertIsNotNone(self.request(path).response)
+        version = self.request(path)
+        self.assertIsNone(version.response)
+        version.response = http.Response.make(200, b'{"ok":true,"result":{"available_url_version":"v1","extra":1}}')
+        self.addon.response(version)
+        self.assertEqual(version.response.json()['result'], {'available_url_version': 'v11', 'extra': 1})
         self.assertIsNone(self.request(path, host='production.example.com').response)
         release = flow('http://test-mitmproxy.invalid/texas/release', 'POST', b'{}', 'test-token')
         self.addon.request(release)
