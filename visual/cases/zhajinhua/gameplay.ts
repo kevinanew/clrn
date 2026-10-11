@@ -5,16 +5,32 @@ import { advance, capture, click as clickUi, closeMask, visible } from './captur
 import { events, PLAYER_IDS, restoreTable, validBets } from './replayData';
 import { GAME_STATES } from './scenarios';
 
+/**
+ * 点击当前页面可见的测试元素。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param id - 目标控件的测试标记。
+ */
 async function click(page: Page, id: string): Promise<void> {
   await clickUi(page, id);
   await advance(page);
 }
 
+/**
+ * 按固定回放顺序截取游戏各阶段及玩家操作状态。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param proxy - 本轮独占的代理控制对象。
+ * @param roomId - 接收回放消息的房间 ID。
+ */
 export async function captureGameplay(page: Page, scenario: VisualScenario,
   proxy: ZhajinhuaProxy, roomId: string): Promise<void> {
   const self = await page.evaluate(() => JSON.parse(
     localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
   let index = 0;
+  /**
+   * 推进页面动效并按当前场景标签保存指定状态的截图。
+   * @param state - 用于截图文件名的场景状态。
+   */
   const snapshot = async (state: typeof GAME_STATES[number]) => {
     expect(state).toBe(GAME_STATES[index++]);
     await capture(page, scenario, state);

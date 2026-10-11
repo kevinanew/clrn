@@ -20,6 +20,7 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
   let clubId = '';
   let apiOrigin = '';
 
+  /** 通过真实俱乐部接口读取并校验当前成员清单。 */
   const members = async (): Promise<ClubMember[]> => {
     const response = await page.request.get(`${apiOrigin}/v10/club/${clubId}/member`, {
       headers: { Authorization: newAccount.authorization }, timeout: 15_000,
@@ -32,6 +33,10 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
     return body.result.members as ClubMember[];
   };
 
+  /**
+   * 由第二账号申请加入俱乐部，再通过管理员界面审批并验证成员清单。
+   * @param guest - 参与俱乐部操作的第二账号及其浏览器页面。
+   */
   const addMember = async (guest: SecondAccount) => {
     const application = await guest.page.request.post(`${apiOrigin}/v10/club/${clubId}/application`, {
       headers: { Authorization: guest.authorization }, timeout: 15_000,
@@ -59,6 +64,11 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
     await expect.poll(async () => (await members()).some(member => member.id === guest.userId)).toBe(true);
   };
 
+  /**
+   * 通过成员管理界面删除指定成员，并验证请求及剩余成员数。
+   * @param guest - 参与俱乐部操作的第二账号及其浏览器页面。
+   * @param expectedCount - 操作完成后预期的成员数量。
+   */
   const removeMember = async (guest: SecondAccount, expectedCount: number) => {
     await (await unique(page, 'club-member-edit-button')).click();
     const editMode = await unique(page, 'club-member-edit-mode');

@@ -2,7 +2,7 @@
 
 测试访问已部署的 `https://h5.page.shafayouxi.org/`，不检出应用源码、不构建 Web 包、不启动应用服务器。
 用例与辅助代码使用 TypeScript；截图对比在 Docker/Linux 中运行以保持字体和渲染环境一致。
-测试账号见 [应用仓库账号文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/testing/accounts.md)。
+测试账号见 [测试账号与权限](../e2e/accounts.md)。
 
 德州与拼三张视觉用例及其登录态采集使用独立的 `mitmdump`，浏览器流量经过本机代理。
 节点列表和节点健康检查由代理返回固定响应，业务数据的截图 fixture 保持原有规则。
@@ -107,9 +107,9 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的全部视觉任务�
 
 主干新增德州状态的 198 张三语言基准与本次战绩的 372 张基准均纳入执行清单。
 
-- 全量（`VISUAL_LOCALES=all`）= 每语言 342 张已有图 + 124 张战绩图，三语言共 **1398 张**（390 个场景）
-- 默认仅简中 = **466 张**（130 个场景）
-- 核心范围（`VISUAL_SCOPE=core`）= 280 张已有图 + 124 张战绩图 = **404 张**（68 个场景）
+- 全量（`VISUAL_LOCALES=all`）= 每语言 344 张已有图 + 124 张战绩图，三语言共 **1404 张**（390 个场景）
+- 默认仅简中 = **468 张**（130 个场景）
+- 核心范围（`VISUAL_SCOPE=core`）= 282 张已有图 + 124 张战绩图 = **406 张**（68 个场景）
   （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、游客牌局登录提示、搜索登录提示、登录后大厅/消息/私人局/俱乐部/我的/商城）
 
 ### 易变内容固定填充（不用隐藏遮罩）
@@ -173,8 +173,8 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的全部视觉任务�
 
 ```bash
 cd visual
-pnpm run test          # 简中 466 张
-pnpm run test:all      # 全部语言 1398 张
+pnpm run test          # 简中 468 张
+pnpm run test:all      # 全部语言 1404 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
@@ -204,13 +204,12 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 ### 串行、分片与重试
 
-- 每次运行固定一个 worker，桌面、手机和各语言顺序执行。
+- 每个任务固定一个 worker，桌面和手机顺序执行；CI 各语言使用不同账号，可同时执行。
 - 同账号同时创建相同配置的 `TestRoom` 会触发 staging 的重复牌局限制；
-  本机也应串行运行真实建房用例，避免多进程并行采集。
-- 同一账号再次登录会作废旧凭据，即使 deviceId 相同也如此。功能、弱网、视觉 CI
-  中的应用任务共用 `h5-staging-test-account` 并发组；德州任务用独立账号和
-  `h5-staging-texas-test-account` 并发组；拼三张用 `h5-staging-laiwanvisualzjh01-account`。
-  三部分可并行，自定义玩法账号按用户名互斥，本机也应避免重复登录同一账号。
+  本机并行任务应使用根目录账号池启动脚本，为各任务分配不同账号。
+- 同一账号再次登录会作废旧凭据，即使 deviceId 相同也如此。CI 使用 30 个专用账号，
+  套件／语言矩阵的九个任务各用一个账号；跨工作流以 `h5-staging-account-<用户名>` 互斥。
+  不同账号可并行，选中同一账号的任务排队；本机账号池与 CI 账号池分开。
 - test/reference/approve 均按语言分片，每批默认最多 3 个场景；拆分后每种语言的应用
   全量为 36 批、核心为 15 批，德州为 7 批、拼三张为 2 批。分片之间重新采集登录态，
   场景只注入已有缓存，不自行回退登录。
@@ -226,23 +225,23 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 | 值 | 用途 |
 | --- | --- |
-| `zh-Hans`（默认） | 日常线上（466 张）；push CI 再叠加 `VISUAL_SCOPE=core`（404 张） |
+| `zh-Hans`（默认） | 日常线上（468 张）；push CI 再叠加 `VISUAL_SCOPE=core`（406 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 1398 张（GitHub Actions 定时任务） |
+| `all` | 全量 1404 张（GitHub Actions 定时任务） |
 
 环境变量 `VISUAL_SCOPE`：
 
 | 值 | 用途 |
 | --- | --- |
 | `full`（默认） | 运行完整页面集合；未设置时也使用此范围 |
-| `core` | 核心页面及本轮新增页面；简中共 404 张 |
+| `core` | 核心页面及本轮新增页面；简中共 406 张 |
 
 ## CI
 
 [视觉工作流](../.github/workflows/visual.yml) 在非 `release` 分支的视觉代码或工作流变更后，
-访问线上并检查简中核心 404 张截图；每日及手动 `full` 运行三种语言的完整场景。
+访问线上并检查简中核心 406 张截图；每日及手动 `full` 运行三种语言的完整场景。
 CI 按「应用 app」「德州 texas」和「拼三张 zhajinhua」拆为独立任务并行执行；每套内部各语言仍顺序执行。
-应用覆盖核心 164 张 / 全量 226 张，德州每种语言覆盖 188 张，拼三张覆盖 52 张，各任务分别保存失败报告。
+应用覆盖核心 164 张 / 全量 226 张，德州每种语言覆盖 190 张，拼三张覆盖 52 张，各任务分别保存失败报告。
 不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 手动触发可用 `suite` 选择 `all`、`app`、`texas` 或 `zhajinhua`，只重跑所需部分。
 手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
@@ -256,7 +255,7 @@ CI 按「应用 app」「德州 texas」和「拼三张 zhajinhua」拆为独立
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
 原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
-因此已从执行清单移除。历史图片保留，不计入当前 1398 张有效截图。
+因此已从执行清单移除。历史图片保留，不计入当前 1404 张有效截图。
 德州通过 mitmproxy 回放固定牌局和弹窗数据，所有入口仍由实际 UI 点击打开。
 覆盖清单、协议和当前源码限制见 [COVERAGE.md](cases/texas-holdem/COVERAGE.md)。
 服务端房间保持等待状态，回放房间的操作 RPC 被代理隔离，每例精确解散本次真实创建的房间。
@@ -278,15 +277,16 @@ VISUAL_SUITE=texas pnpm run test:all # 德州三种语言
 
 应用默认账号为 `laiwanvisual01`，单独的德州测试默认使用 `laiwanvisualtexas01`；
 拼三张默认使用 `laiwanvisualzjh01`；三者沿用固定 staging 测试密码，随后通过 UI 登录复用账号。
-新账号可由 UI 自动注册；遇到同 IP 注册限制时，使用既有 E2E 的
-`createTestingAccount` 工具和 `TESTING_API_TOKEN` 一次性预注册，再按相同流程采集登录态。
-本轮拼三张账号已用该工具预注册；管理 token 不发送给浏览器。
-牌桌账号余额不足时仅允许为本轮使用的这三个固定测试账号通过既有 `TESTING_API_TOKEN`
+账号应预先存在，登录态采集会阻断 UI 自动注册；缺失时明确失败。
+确需新增账号时使用既有 E2E 的 `createTestingAccount` 和 `TESTING_API_TOKEN` 一次性注册，
+在 PRD 登记后复用；管理 token 不发送给浏览器。
+牌桌账号余额不足时允许为本轮使用的这三个固定账号或 GitHub Actions 专用池账号通过 `TESTING_API_TOKEN`
 补钻，任意自定义账号不会自动补钻；新建房间仍在用例结束时解散。
-CI 可通过仓库 Variable `VISUAL_TEXAS_USERNAME` 和 Secret `VISUAL_TEXAS_PASSWORD`
-覆盖德州凭据；拼三张使用 `VISUAL_ZHAJINHUA_USERNAME` / `VISUAL_ZHAJINHUA_PASSWORD`，自定义账号需预先备足建房钻石。若改回应用默认账号，自动恢复
-与应用、功能和 E2E 的互斥，避免并发登录作废凭据。
+CI 从 `CLRN_CI_TEST_ACCOUNTS` Secret 为每个任务注入 `VISUAL_USERNAME` / `VISUAL_PASSWORD`，
+使用 30 个 CI 专用账号。旧 `VISUAL_TEXAS_*` / `VISUAL_ZHAJINHUA_*` CI 覆盖配置不再使用。
 本机覆盖凭据仍用 `VISUAL_USERNAME` / `VISUAL_PASSWORD`。
+账号页中的昵称、展示用户名和注册日期固定为既有视觉基准值，避免账号池轮转改变截图；
+真实会话、认证缓存和受保护接口仍属于本轮分配的账号。
 
 登录采集通过 `tsx` 运行，注入浏览器的脚本必须能独立序列化；
 `src/support/pageSetup.test.ts` 在独立执行环境检查语言固定和禁动画脚本，

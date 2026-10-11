@@ -15,6 +15,10 @@ require('node:fs').appendFileSync(process.env.VISUAL_ISOLATION_LOG,
     skipSupport: process.env.VISUAL_SKIP_SUPPORT_TESTS }) + '\\n');
 `, { mode: 0o755 });
   try {
+    /**
+     * 通过伪造 pnpm 捕获视觉启动进程，验证套件隔离而不访问 staging。
+     * @param filter - 匹配场景标签的可选正则表达式。
+     */
     const run = (filter: string) => {
       writeFileSync(log, '');
       const result = spawnSync(process.execPath, ['--import', 'tsx', 'run-visual.ts', 'test'], {
@@ -24,7 +28,7 @@ require('node:fs').appendFileSync(process.env.VISUAL_ISOLATION_LOG,
           VISUAL_SCOPE: 'core', VISUAL_FILTER: filter, VISUAL_ALLOW_HOST: 'true',
           VISUAL_SKIP_VISUAL_INSTALL: 'true', VISUAL_SKIP_SUPPORT_TESTS: 'false' },
       });
-      const children = readFileSync(log, 'utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
+      const children = readFileSync(log, 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
       return { result, children };
     };
     const all = run('');

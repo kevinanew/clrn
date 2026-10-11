@@ -1,3 +1,8 @@
+/**
+ * 读取非负整数环境配置，缺失时使用默认值，格式错误时立即失败。
+ * @param name - 需要读取的环境变量名。
+ * @param fallback - 配置缺失时采用的默认值。
+ */
 function readInteger(name: string, fallback: number): number {
   const raw = process.env[name];
   if (raw === undefined || raw === '') {
@@ -10,6 +15,7 @@ function readInteger(name: string, fallback: number): number {
   return value;
 }
 
+/** 读取并校验部署入口的 HTTPS 协议与 staging 域名。 */
 function readStagingUrl(): string {
   const name = 'E2E_STAGING_URL';
   const raw = process.env[name] || 'https://h5.page.shafayouxi.org/';

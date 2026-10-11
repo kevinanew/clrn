@@ -3,23 +3,14 @@ import { afterEach, beforeEach, describe, test } from 'node:test';
 import {
   BIO_INPUT_FIXED_TEXT,
   buildScenarios,
-  CORE_PAGE_LABELS,
-  expectedScenarioCount,
-  GUEST_CLUB_SCENARIO,
-  GUEST_GAME_SIGN_IN_PROMPT_SCENARIO,
-  getActiveLocales,
   LOCALES,
-  LOGIN_FORGOT_PASSWORD_EMAIL_SCENARIO,
   LOGIN_FORGOT_PASSWORD_SMS_SCENARIO,
-  LOGIN_OPEN_SCENARIO,
   LOGIN_PHONE_SCENARIO,
   LOGIN_PICK_COUNTRY_CODE_SCENARIO,
   LOGIN_USER_AGREEMENT_SCENARIO,
   LOGIN_USER_PRIVACY_SCENARIO,
-  LOGIN_USERNAME_SCENARIO,
   NICKNAME_INPUT_FIXED_TEXT,
   pageCountForViewport,
-  SEARCH_SIGN_IN_PROMPT_SCENARIO,
   SIGNED_IN_PAGES,
   scenarioLabel,
   VIEWPORTS,
@@ -48,6 +39,7 @@ describe('visual scenarios', () => {
     }
   });
 
+  /** 统计一个语言在全部视口下应生成的场景数。 */
   const pagesPerLocale = () =>
     VIEWPORTS.reduce((sum, viewport) => sum + pageCountForViewport(viewport.label), 0);
   test('登录支线场景仅 mobile 且导航链正确', () => {

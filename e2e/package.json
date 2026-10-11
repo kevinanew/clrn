@@ -13,7 +13,9 @@
     "test:functional": "playwright test --config cases/playwright.config.ts",
     "test:functional:existing": "playwright test --config cases/playwright.config.ts --grep-invert @creates-data",
     "test:functional:registration": "playwright test --config cases/playwright.config.ts auth-007-auto-registration",
-    "test:functional:joining": "playwright test --config cases/playwright.config.ts private-003-join-created-room club-005-join-approval-invite"
+    "test:functional:joining": "playwright test --config cases/playwright.config.ts private-003-join-created-room club-005-join-approval-invite",
+    "test:interactions": "playwright test --config interactions.config.ts",
+    "test:freshchat": "playwright test --config freshchat.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.59.1"

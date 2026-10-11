@@ -11,6 +11,11 @@ type CreationAccount = Session & { username: string; diamondBalance: number };
 
 /** 每个创建案例从 60 钻开始，业务扣费和退款仍由真实接口验证。 */
 export const test = base.extend<{ newAccount: CreationAccount }>({
+  /**
+   * 提供本轮创建或恢复的测试账号，交给案例执行并验证会话归属。
+   * @param fixtures - Playwright 注入的依赖，提供当前页面、上下文或已有代理。
+   * @param use - 将准备好的 fixture 交给案例使用的回调。
+   */
   newAccount: async ({ page, context }, use) => {
     const walletToken = await readTestApiToken();
     const stateFile = process.env.E2E_CREATION_STORAGE_STATE_FILE;

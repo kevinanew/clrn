@@ -13,7 +13,15 @@ export class MitmdumpProcess {
   private diagnostics = '';
   private readonly exited: Promise<void>;
 
+  /**
+   * 绑定代理子进程并开始收集启动诊断输出。
+   * @param child - 已启动的代理子进程。
+   */
   constructor(private readonly child: ChildProcess) {
+    /**
+     * 保留代理最近的标准输出和错误输出，用于启动失败诊断。
+     * @param data - 子进程输出的数据块。
+     */
     const captureOutput = (data: Buffer) => {
       this.diagnostics = (this.diagnostics + data.toString()).slice(-MAX_DIAGNOSTIC_LENGTH);
     };
@@ -23,10 +31,15 @@ export class MitmdumpProcess {
     this.exited = new Promise(resolve => child.once('close', () => resolve()));
   }
 
+  /** 判断代理子进程是否尚未退出或被信号结束。 */
   private get isRunning(): boolean {
     return this.child.exitCode === null && this.child.signalCode === null;
   }
 
+  /**
+   * 轮询代理控制接口，进程提前退出或超过等待期限时报告启动失败。
+   * @param checkStatus - 读取代理状态的异步探测函数。
+   */
   async waitUntilReady(checkStatus: () => Promise<unknown>): Promise<void> {
     const deadline = Date.now() + STARTUP_TIMEOUT_MS;
     while (true) {
@@ -46,6 +59,7 @@ export class MitmdumpProcess {
     }
   }
 
+  /** 终止代理并等待退出，超过清理期限后强制结束进程。 */
   async stop(): Promise<void> {
     if (this.isRunning) this.child.kill('SIGTERM');
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -62,6 +76,13 @@ export class MitmdumpProcess {
   }
 }
 
+/**
+ * 使用独立配置目录和控制凭据，在本机端口启动 mitmdump。
+ * @param port - 本机代理监听端口。
+ * @param directory - 代理独立配置与证书目录。
+ * @param token - 仅用于测试接口或代理控制接口的认证凭据。
+ * @param addonPath - 可选代理插件路径。
+ */
 export function startMitmdump(port: number, directory: string, token: string,
   addonPath = path.resolve(__dirname, '../mitmproxy/network_faults.py')): MitmdumpProcess {
   const executable = process.env.MITMDUMP_PATH || process.env.E2E_MITMDUMP_PATH

@@ -8,10 +8,8 @@ export const LANGUAGE_STORAGE_KEY = 'app.language.code.key';
 export const VISUAL_DEVICE_ID = 'a7f3c2e8-4d61-4b0a-9c5e-7f2d1e3a8b46';
 
 /**
- * 固定的视觉测试账号（仅 staging）。
- * Web 端「用户名或邮箱登录」界面自带注册逻辑：用户名不存在时会先调
- * /public/v11/user/register/username_password 自动注册再登录，
- * 因此每次运行都是同一个测试用户；staging 数据清零后会自动重新注册。
+ * 本轮视觉测试账号（仅 staging），由默认配置、本机启动脚本或 CI 专用池提供。
+ * 登录态采集阻断 UI 自动注册；账号缺失时失败，应恢复已有凭据或单独处理缺失账号。
  * 可用 VISUAL_USERNAME / VISUAL_PASSWORD 环境变量覆盖。
  */
 const visualTestAccount = getVisualTestAccount();

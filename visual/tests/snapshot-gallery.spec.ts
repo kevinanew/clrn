@@ -3,9 +3,17 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import manifest from '../gallery/manifest.json';
 
+/**
+ * 生成区分模块、页面和登录状态的页面分组键。
+ * @param page - 待展示或分组的截图元数据。
+ */
 const pageKey = (page: (typeof manifest.pages)[number]) => JSON.stringify([page.group, page.page, page.signedIn]);
 const pageCount = new Set(manifest.pages.map(pageKey)).size;
 const totalSummary = `${pageCount} 个页面 · ${manifest.pages.length} 张截图`;
+/**
+ * 查找指定模块的截图计数。
+ * @param group - 该组页面所属的场景分类。
+ */
 const summaryFor = (group: string) => {
   const pages = manifest.pages.filter(page => page.group === group);
   return `${new Set(pages.map(pageKey)).size} 个页面 · ${pages.length} 张截图`;

@@ -5,7 +5,16 @@ const statement: Statement = {
   currency_name: 'coin', amount: '12.50', balance: '101.25', event: 'deposit',
   create_at: '2026-10-09T01:02:03Z', memo: 'Registration reward', statement_id: 'fixture-id',
 };
-const response = (body: unknown, ok = true) => ({ ok: () => ok, json: async () => body }) as Response;
+/**
+ * 构造可供流水解析测试使用的 HTTP 响应替身。
+ * @param body - 测试替身返回的响应正文。
+ * @param ok - 测试响应是否模拟 HTTP 成功状态。
+ */
+const response = (body: unknown, ok = true) => ({
+  /** 返回测试响应的预设 HTTP 成功状态。 */
+  ok: () => ok,
+  /** 返回测试响应的预设 JSON 正文。 */
+  json: async () => body }) as Response;
 
 for (const currency of ['coin', 'diamond'] as const) {
   test(`流水响应校验：${currency} 接受有效和空数据，拒绝业务失败、错币种及无效结构`, async () => {
@@ -31,11 +40,21 @@ for (const currency of ['coin', 'diamond'] as const) {
       await expect(readStatements(response(invalid), currency)).rejects.toThrow();
     }
     await expect(readStatements(response(body, false), currency)).rejects.toThrow();
-    await expect(readStatements({ ok: () => true, json: async () => { throw new SyntaxError('invalid JSON'); } } as unknown as Response, currency))
+    await expect(readStatements({
+      /** 返回测试响应的预设 HTTP 成功状态。 */
+      ok: () => true,
+      /** 模拟 JSON 解析失败，验证流水校验能拒绝非法响应。 */
+      json: async () => { throw new SyntaxError('invalid JSON'); } } as unknown as Response, currency))
       .rejects.toThrow('invalid JSON');
   });
 }
 
+/**
+ * 生成带金额、余额和日期的流水行 HTML，用于验证页面列表断言。
+ * @param amount - 页面显示的交易金额文本。
+ * @param balance - 页面显示的交易后余额文本。
+ * @param date - 页面显示的交易时间文本。
+ */
 const row = (amount = '+12.50', balance = '余额: 101.25', date = '2026-10-09 09:02:03') => `
   <div data-testid="CurrencyTransactionRecordItem_container">
     <div data-testid="CurrencyTransactionRecordItem_amount">${amount}</div>

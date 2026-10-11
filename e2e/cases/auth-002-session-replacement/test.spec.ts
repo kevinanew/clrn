@@ -5,14 +5,14 @@ import { openHall, prepareContext } from '../_shared/page';
 // 真实账号登录不生成截图或网络 trace，报告只记录状态码。
 test.use({ screenshot: 'off', trace: 'off' });
 
-test('AUTH-002：不同设备再次登录后旧会话失效', async ({ page, context, browser, baseURL }, testInfo) => {
+test('AUTH-002：不同设备再次登录后旧会话失效', async ({ page, context, browser, baseURL, locale }, testInfo) => {
   await test.step('设备 A 登录并验证账户接口有效', async () => {
     await prepareContext(context);
     await openHall(page);
   });
   const first = await signIn(page);
   expect(await accountStatus(page, first), '第二次登录前 A 应有效').toBe(200);
-  const secondContext = await browser.newContext({ baseURL });
+  const secondContext = await browser.newContext({ baseURL, locale });
   try {
     await prepareContext(secondContext);
     const secondPage = await secondContext.newPage();

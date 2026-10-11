@@ -1,6 +1,10 @@
 const stagingUserOrigin = 'https://api.shafayouxi.org';
 
-/** 仅在 Node 进程中调用测试注册接口，避免把专用 token 写进浏览器 trace。 */
+/**
+ * 仅在 Node 进程中调用测试注册接口，避免把专用 token 写进浏览器 trace。
+ * @param credentials - 登录凭据，包含 username 用户名和 password 密码。
+ * @param token - 仅用于测试接口或代理控制接口的认证凭据。
+ */
 export async function createTestingAccount(
   credentials: { username: string; password: string },
   token: string,

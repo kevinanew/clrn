@@ -8,16 +8,32 @@ import { PANEL_STATES } from './scenarios';
 
 type Capture = (page: Page, scenario: VisualScenario, state: string) => Promise<void>;
 
+/**
+ * 依次截取德州菜单、设置、排行榜与管理面板。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param proxy - 本轮独占的代理控制对象。
+ * @param roomId - 接收回放消息的房间 ID。
+ * @param capture - 将页面和场景状态保存为截图的回调。
+ */
 export async function capturePanels(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   roomId: string, capture: Capture): Promise<void> {
   const self = await selfId(page);
   await freezeClock(page);
   let index = 0;
+  /**
+   * 推进页面动效并按当前场景标签保存指定状态的截图。
+   * @param state - 用于截图文件名的场景状态。
+   */
   const snapshot = async (state: typeof PANEL_STATES[number]) => {
     expect(state).toBe(PANEL_STATES[index++]);
     await page.clock.runFor(500);
     await capture(page, scenario, state);
   };
+  /**
+   * 打开游戏菜单并进入指定菜单项。
+   * @param item - 要打开的菜单或设置项标识。
+   */
   const menu = async (item: string) => {
     await click(page, 'menu-button');
     await click(page, `drawer-menu-item-${item}`);

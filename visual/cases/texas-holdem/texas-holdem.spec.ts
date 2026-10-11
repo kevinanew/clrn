@@ -23,8 +23,19 @@ import config from '../../playwright.config';
 test.use({ launchOptions: { ...config.use?.launchOptions,
   args: [...(config.use?.launchOptions?.args || []), '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] } });
 
+/**
+ * 定位当前页面可见的测试元素，排除导航历史中的隐藏副本。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param id - 目标控件的测试标记。
+ */
 const visible = (page: Page, id: string) => page.locator(`[data-testid="${id}"]:visible`).last();
 
+/**
+ * 进入德州菜单项并等待指定面板就绪。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param item - 要打开的菜单或设置项标识。
+ * @param ready - 面板就绪时必须可见的测试标记。
+ */
 async function openMenuItem(page: Page, item: string, ready: string): Promise<void> {
   await visible(page, 'menu-button').click();
   await expect(visible(page, `drawer-menu-item-${item}`)).toBeVisible();
@@ -32,12 +43,21 @@ async function openMenuItem(page: Page, item: string, ready: string): Promise<vo
   await expect(visible(page, ready)).toBeVisible({ timeout: 10_000 });
 }
 
+/**
+ * 点击弹层关闭按钮并确认对应标记已隐藏。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param button - 弹层关闭按钮的测试标记。
+ * @param marker - 用于定位所属弹层的测试标记。
+ */
 async function closePopup(page: Page, button: string, marker: string): Promise<void> {
   await visible(page, button).click();
   await expect(visible(page, marker)).toBeHidden({ timeout: 15_000 });
 }
 
-/** React Navigation 的游戏层有时相对视口偏移 ±4px；截图前归零。 */
+/**
+ * React Navigation 的游戏层有时相对视口偏移 ±4px；截图前归零。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 async function alignGameToViewport(page: Page): Promise<void> {
   const game = visible(page, 'run-game-view');
   // 浏览器点击底部控件可能自动滚动导航祖先；牌谱内部滚动保持原位置。
@@ -59,6 +79,10 @@ async function alignGameToViewport(page: Page): Promise<void> {
   }, correction);
 }
 
+/**
+ * 等待游戏连接完成和加载指示消失，再进行牌桌操作。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 async function waitForGameConnection(page: Page): Promise<void> {
   await expect.poll(async () => {
     if (await visible(page, 'countdown-text').isVisible()) return true;
@@ -71,14 +95,29 @@ async function waitForGameConnection(page: Page): Promise<void> {
   await expect(visible(page, 'texas-holdem-leaderboard-button')).toBeVisible({ timeout: 30_000 });
 }
 
+/**
+ * 等待场景资源稳定后保存指定游戏状态的截图。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param state - 用于截图文件名的场景状态。
+ */
 async function capture(page: Page, scenario: VisualScenario, state: string): Promise<void> {
   await alignGameToViewport(page);
   await ensureLocalImagesLoaded(page);
   await expect(page).toHaveScreenshot(`${scenario.label}_${state}.png`, { timeout: 20_000 });
 }
 
+/**
+ * 截取开局前的牌桌、菜单、设置及入座相关状态。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ */
 async function capturePreGame(page: Page, scenario: VisualScenario): Promise<void> {
   let stateIndex = 0;
+  /**
+   * 推进页面动效并按当前场景标签保存指定状态的截图。
+   * @param state - 用于截图文件名的场景状态。
+   */
   const snapshot = async (state: typeof PRE_GAME_STATES[number]) => {
     expect(state, '截图顺序应与场景清单一致').toBe(PRE_GAME_STATES[stateIndex++]);
     await capture(page, scenario, state);
@@ -131,6 +170,11 @@ async function capturePreGame(page: Page, scenario: VisualScenario): Promise<voi
   expect(stateIndex).toBe(PRE_GAME_STATES.length);
 }
 
+/**
+ * 截取启用可选建房功能后的开局前页面分支。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ */
 async function captureOptionalPreGame(page: Page, scenario: VisualScenario): Promise<void> {
   await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
   await waitForGameConnection(page);

@@ -1,10 +1,20 @@
 /** 拼三张的三张手牌、轮数、单底池与比牌协议独立于德州。 */
 export const PLAYER_IDS = [1, 2, 3, 4].map(index =>
   `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`);
+/**
+ * 为事件队列补齐固定回放时间与消息外层结构。
+ * @param queue - 按播放顺序排列的固定游戏事件。
+ */
 export const events = (queue: Record<string, unknown>[]) => ({
   stream: 'zhajinhua', sent_at: new Date().toISOString(), queue,
 });
 
+/**
+ * 构造指定玩家和回合的固定牌桌回放数据。
+ * @param self - 本轮登录玩家的用户 ID。
+ * @param opponent - 是否轮到对手操作。
+ * @param seen - 是否已查看手牌。
+ */
 export function restoreTable(self: string, opponent = false, seen = false) {
   const players = [self, ...PLAYER_IDS];
   const status = {
@@ -36,7 +46,10 @@ export function restoreTable(self: string, opponent = false, seen = false) {
   ]);
 }
 
-/** 看牌后按双倍跟注额展示操作；对手仍保持闷牌。 */
+/**
+ * 看牌后按双倍跟注额展示操作；对手仍保持闷牌。
+ * @param seen - 是否已查看手牌。
+ */
 export function validBets(seen: boolean) {
   const call = seen ? 20 : 10;
   return { fold: {}, call: { amount: call }, challenge: { amount: call * 2 },

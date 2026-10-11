@@ -11,6 +11,13 @@ export type TableOptions = {
   validBets?: Record<string, Record<string, number>>;
 };
 
+/**
+ * 构造指定玩家和回合的固定牌桌回放数据。
+ * @param self - 本轮登录玩家的用户 ID。
+ * @param street - 牌局回合：翻牌前、翻牌、转牌或河牌。
+ * @param opponentTurn - 是否恢复为对手操作回合。
+ * @param options - 本次操作的可选配置。
+ */
 export function restoreTable(self: string, street: Street, opponentTurn = false, options: TableOptions = {}) {
   const others = options.full ? Array.from({ length: 8 }, (_, index) =>
     `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`) : REPLAY_PLAYER_IDS;
@@ -55,6 +62,10 @@ export function restoreTable(self: string, street: Street, opponentTurn = false,
   };
 }
 
+/**
+ * 为事件队列补齐固定回放时间与消息外层结构。
+ * @param queue - 按播放顺序排列的固定游戏事件。
+ */
 export function events(queue: Record<string, unknown>[]) {
   return { stream: 'texas_holdem', sent_at: new Date().toISOString(), queue };
 }

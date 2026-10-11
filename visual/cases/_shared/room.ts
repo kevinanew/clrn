@@ -8,6 +8,10 @@ export type RoomSession = { roomId: string; apiOrigin: string; authorization: st
 type Account = { userId: string; username: string; authorization: string };
 const ROOM_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/**
+ * 读取页面持久化的账号和认证信息，构建真实房间操作所需的会话。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 async function visualAccount(page: Page) {
   const raw = await page.evaluate(() => localStorage.getItem('save.user.origin.data.from.server.key'));
   const auth = raw ? JSON.parse(raw) : null;
@@ -21,6 +25,11 @@ async function visualAccount(page: Page) {
   };
 }
 
+/**
+ * 读取真实钱包响应中的钻石余额，拒绝缺失币种或非数值余额。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param account - 包含用户 ID、账号接口与认证信息的会话。
+ */
 async function readDiamondBalance(page: Page, account: Account): Promise<number> {
   const response = await page.request.put(`https://api.shafayouxi.org/v10/wallet/${account.userId}`, {
     headers: { Authorization: account.authorization },
@@ -37,6 +46,11 @@ async function readDiamondBalance(page: Page, account: Account): Promise<number>
   return balance;
 }
 
+/**
+ * 确认建房钻石足够，仅允许为受支持的测试账号补充余额。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param account - 包含用户 ID、账号接口与认证信息的会话。
+ */
 async function ensureRoomBalance(page: Page, account: Account): Promise<void> {
   if (await readDiamondBalance(page, account) >= 10) return;
   if (!canTopUpVisualAccount(account.username)) {
@@ -59,6 +73,13 @@ async function ensureRoomBalance(page: Page, account: Account): Promise<void> {
   await expect.poll(() => readDiamondBalance(page, account)).toBe(60);
 }
 
+/**
+ * 从真实界面创建指定游戏的私人房，立即登记房间以便失败时清理。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param onCreated - 创建成功后立即登记房间的回调，用于失败时清理。
+ * @param gameType - 待创建的私人房游戏类型。
+ * @param optionalFeatures - 是否启用可选建房功能。
+ */
 export async function createPrivateGameRoom(
   page: Page,
   onCreated: (room: RoomSession) => void,
@@ -97,7 +118,10 @@ export async function createPrivateGameRoom(
   return room;
 }
 
-/** 只删除本用例创建响应中的 UUID；即使截图失败也执行。 */
+/**
+ * 只删除本用例创建响应中的 UUID；即使截图失败也执行。
+ * @param room - 本轮创建并负责清理的房间信息或 ID。
+ */
 export async function deletePrivateGameRoom(room: RoomSession): Promise<void> {
   // 清理直连，不依赖可能已退出的代理和浏览器 context。
   const response = await fetch(`${room.apiOrigin}/v1/room/${room.roomId}`, {

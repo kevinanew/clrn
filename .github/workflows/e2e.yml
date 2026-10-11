@@ -2,19 +2,30 @@ name: H5 E2E
 
 on:
   push:
-    paths: ['e2e/**', '.github/workflows/e2e.yml']
+    paths: ['e2e/**', 'scripts/*ci*', '.github/workflows/e2e.yml']
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: h5-staging-test-account
-  cancel-in-progress: false
-  queue: max
-
 jobs:
+  account:
+    runs-on: ubuntu-latest
+    outputs:
+      account: ${{ steps.plan.outputs.account }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: plan
+        run: node scripts/plan-ci-accounts.mjs e2e
   e2e:
+    needs: account
+    concurrency:
+      group: h5-staging-account-${{ needs.account.outputs.account }}
+      cancel-in-progress: false
+      queue: max
     # setup-python 使用 runner 的工具缓存，需与 Jammy 容器的 glibc 匹配。
     runs-on: ubuntu-22.04
     timeout-minutes: 25
@@ -30,6 +41,12 @@ jobs:
         working-directory: e2e
     steps:
       - uses: actions/checkout@v4
+      - name: 注入本任务独占的 CI 账号
+        working-directory: .
+        env:
+          CLRN_CI_ACCOUNT: ${{ needs.account.outputs.account }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS }}
+        run: node scripts/configure-ci-account.mjs
       - name: Install dependencies
         run: npm ci
       - uses: actions/setup-python@v5

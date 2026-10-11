@@ -4,7 +4,7 @@
 `src/texas_holdem_react_native/main/MainScreen.js` 及其引用组件整理界面。
 截图反映运行时的部署版本；源码中存在组件不等于部署版本有可用入口。
 
-当前基准为每种语言 desktop/mobile 两个视口、每视口 94 张，共 564 张德州基准图。
+当前基准为每种语言 desktop/mobile 两个视口、每视口 95 张，共 570 张德州基准图。
 本轮补齐 33 个状态及其 198 张 Linux 基准，全部纳入核心 CI。
 三种语言为 `zh-Hans`、`zh-Hant`、`en`。场景清单以 [scenarios.ts](scenarios.ts) 为准，
 新增状态必须同时提供六张 Linux 基准图，完整性测试会检查缺失和多余图片。
@@ -39,12 +39,14 @@
 | 过牌、仅全下、全下与跟注、大小盲倍数快捷加注、禁用快捷按钮 | `controls`: check、all_in_only、all_in_call、shortcut_blinds、shortcut_disabled |
 | 预选按钮及三种选中状态 | auto_buttons、auto_fold_selected、auto_call_selected、auto_check_selected；opponent_turn 也断言预选按钮实际显示 |
 | 滑杆最大值、拖动辅助、精确金额、低于最小金额提示 | raise_maximum、raise_dragging、accurate_raise_value、accurate_raise_minimum_error |
-| 观察者、九人满桌、保留座位、掉线、非房主菜单 | `table_states`: observer、full_table、reserved_seat、player_disconnected、guest_menu |
+| 观察者、九人满桌、满桌多底池、保留座位、掉线、非房主菜单 | `table_states`: observer、full_table、full_table_multiple_pots、reserved_seat、player_disconnected、guest_menu |
 | 非空带入申请：待审批、通过/拒绝/过期、加载更多 | `panel_variants`: applications_pending、applications_resolved、applications_more |
 | 语音历史行、弹幕关闭 | chat_audio_history、chat_barrage_off |
 | 重试、余额不足、认证失败弹窗 | alert_retry、alert_insufficient_balance、alert_authentication_failed |
 | 自动补码开启、已选举报玩家及理由 | `hall_variants`: auto_rebuy_enabled、pair_play_selected |
 | 下注成功、猜牌亏损、钻石结果、加时冷却及提示 | prediction_bet、prediction_loss、prediction_diamond、delay_cooldown、delay_cooldown_alert |
+
+新增 `full_table_multiple_pots` 回放九个底池 `[90, 80, 70, 60, 50, 40, 30, 20, 10]`，合计 `450`；截图前检查九人、全部金额、两列五行、末项可见和每项均位于列表范围内。该状态复用 `signed_in_texas_table_states`，纳入核心及全量回归，覆盖三种语言和两个视口。
 
 九人满桌按座位回放 BTN、SB、BB、UTG、MP1、MP2、MP3、HJ、CO；截图前逐玩家断言位置标签可见，并检查庄家 D 标记。
 

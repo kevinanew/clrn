@@ -6,6 +6,10 @@ import { expect } from '@playwright/test';
 import { isSignedIn, USER_ATTRIBUTE_STORAGE_KEY } from './authValidation';
 export { isSignedIn, waitForSignInState } from './authValidation';
 
+/**
+ * 处理 staging 确认提示，等待应用可操作状态。
+ * @param page - 执行操作的 Playwright 页面。
+ */
 export async function ensureAppReadyPastStaging(page: any): Promise<void> {
   const deadline = Date.now() + 90000;
 
@@ -58,7 +62,11 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
   throw new Error('应用未能在超时内进入大厅（staging 弹窗或初始化卡住）');
 }
 
-/** 等待超时后输出现场（可见文案 / 弹窗 / DOM 摘要），方便定位卡在哪一步 */
+/**
+ * 等待超时后输出现场（可见文案 / 弹窗 / DOM 摘要），方便定位卡在哪一步
+ * @param page - 执行操作的 Playwright 页面。
+ * @param where - 记录诊断时所在的流程阶段。
+ */
 export async function dumpPageState(page: any, where: string): Promise<void> {
   const state = await page
     .evaluate(() => {
@@ -92,12 +100,22 @@ export async function dumpPageState(page: any, where: string): Promise<void> {
   console.log(`DEBUG (${where}) > ${JSON.stringify(state)}`);
 }
 
-/** RN Web 的 TextInput testID 可能落在 input 本体或容器上，统一处理 */
+/**
+ * RN Web 的 TextInput testID 可能落在 input 本体或容器上，统一处理
+ * @param page - 执行操作的 Playwright 页面。
+ * @param testId - 目标元素的测试标记。
+ * @param value - 需要填入表单或转义的原始字符串。
+ */
 export async function fillByTestId(page: any, testId: string, value: string): Promise<void> {
   const input = await inputByTestId(page, testId);
   await input.fill(value);
 }
 
+/**
+ * 定位测试标记内的真实输入框，兼容容器标记与直接 input 标记。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param testId - 目标元素的测试标记。
+ */
 async function inputByTestId(page: any, testId: string) {
   const target = page.locator(`[data-testid="${testId}"]`).first();
   await target.waitFor({ state: 'visible', timeout: 60000 });
@@ -111,6 +129,8 @@ async function inputByTestId(page: any, testId: string) {
  * 用户名登录页挂载时会用已保存账号初始化输入框。React effect 偶尔会在页面已可见
  * 后才执行，清掉刚由 Playwright 填入的凭据，令提交按钮保持 disabled。确认一小段
  * 稳定窗口；若碰到这次初始化则重新填充，而不是提交空表单后等待登录态超时。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param credentials - 登录凭据，包含 username 用户名和 password 密码。
  */
 export async function fillStableSignInCredentials(
   page: any,
@@ -139,6 +159,7 @@ export async function fillStableSignInCredentials(
  * 登录页导航栈会保留首页；通用 sign-in-button 不能按整个页面的 DOM 顺序选择。
  * 用户名表单提交控件带有专属 nativeID；再从密码输入框向后限定，避免重绘后命中
  * 被保留的首页控件，同时保留现有原生/网页自动化所依赖的通用 testID。
+ * @param page - 执行操作的 Playwright 页面。
  */
 export async function usernameOrEmailSubmitButton(page: any) {
   const passwordInput = await inputByTestId(page, 'password-input');
@@ -156,6 +177,7 @@ export async function usernameOrEmailSubmitButton(page: any) {
  * 的 value 已改变还不足以说明登录回调已可用：TouchableOpacity 在此窗口仍会保留
  * aria-disabled，Playwright 对该 div 的 click 不会触发 onPress。提交前等待它可用，
  * 而非把一次无效点击误判为服务端登录超时。
+ * @param submit - 用户名登录的提交按钮定位器。
  */
 export async function waitForUsernameOrEmailSubmitEnabled(submit: any): Promise<void> {
   await expect(submit).toBeEnabled({ timeout: 60000 });
@@ -166,6 +188,8 @@ export async function waitForUsernameOrEmailSubmitEnabled(submit: any): Promise<
  * 该界面自带注册逻辑（用户名不存在时先调注册 API 再登录），
  * 因此固定账号首次运行会自动注册，之后直接登录，测试用户稳定。
  * 注：游客登录（register/device）在 Web 端不渲染，不能使用。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param credentials - 登录凭据，包含 username 用户名和 password 密码。
  */
 export async function ensureSignedIn(
   page: any,
@@ -226,6 +250,7 @@ export async function ensureSignedIn(
 /**
  * 登录后可能出现的弹窗（隐私政策、签到、邀请等），尽力关掉，避免遮挡截图。
  * 一轮检查没有弹窗即认为干净（每场景会在多个节点各调一次，整体覆盖足够）。
+ * @param page - 执行操作的 Playwright 页面。
  */
 export async function dismissSignedInPopups(page: any): Promise<void> {
   const closeSelectors = [

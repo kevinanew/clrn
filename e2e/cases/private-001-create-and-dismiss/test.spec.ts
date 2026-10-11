@@ -85,6 +85,7 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
               headers: { Authorization: newAccount.authorization }, timeout: 15_000,
             });
           } catch {
+            // eslint-disable-next-line no-unsafe-finally -- 清理失败必须使测试失败，避免遗留本次创建的牌局。
             throw new Error(`本次牌局 ${createdRoomId} 的API兜底清理请求失败`);
           }
           expect(response.ok(), '本次牌局兜底清理HTTP应成功').toBeTruthy();

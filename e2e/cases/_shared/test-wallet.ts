@@ -26,7 +26,11 @@ export async function readTestApiToken(): Promise<string> {
   throw new Error('缺少 TESTING_API_TOKEN；请配置环境变量或本机相邻 staging 部署文件的 test-api-token Secret');
 }
 
-/** 仅为已验证登录的 staging 创建专用账号设置钻石，不通过浏览器发送管理 token。 */
+/**
+ * 仅为已验证登录的 staging 创建专用账号设置钻石，不通过浏览器发送管理 token。
+ * @param account - 包含用户 ID、账号接口与认证信息的会话。
+ * @param token - 仅用于测试接口或代理控制接口的认证凭据。
+ */
 export async function setCreationDiamondBalance(account: Session, token: string): Promise<void> {
   const url = new URL(account.accountUrl);
   if (url.protocol !== 'https:' || url.port || url.username || url.password

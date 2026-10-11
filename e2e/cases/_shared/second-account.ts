@@ -9,7 +9,12 @@ import { clickAfterSignInNotices } from './sign-in-notices';
 
 export type SecondAccount = Session & { page: Page; context: BrowserContext; username: string };
 
-/** 只为多用户业务案例创建独立 staging 账号；注册凭据不写入报告。 */
+/**
+ * 只为多用户业务案例创建独立 staging 账号；注册凭据不写入报告。
+ * @param browser - 用于创建隔离上下文的浏览器实例。
+ * @param viewport - 本场景的浏览器视口配置。
+ * @param mobile - 是否创建移动设备触摸上下文。
+ */
 export async function createSecondAccount(browser: Browser, viewport: { width: number; height: number } | null,
   mobile: boolean): Promise<SecondAccount> {
   const token = await readTestApiToken();

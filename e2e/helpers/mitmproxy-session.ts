@@ -6,6 +6,7 @@ import path from 'node:path';
 import { Mitmproxy } from './mitmproxy-client';
 import { startMitmdump } from './mitmproxy-process';
 
+/** 申请本机临时监听端口并关闭探测服务，返回可用于代理的端口号。 */
 async function unusedPort(): Promise<number> {
   const server = createServer();
   await new Promise<void>((resolve, reject) => {
@@ -20,7 +21,11 @@ async function unusedPort(): Promise<number> {
   return address.port;
 }
 
-/** 测试结束或失败时先停止代理，再删除临时证书。 */
+/**
+ * 测试结束或失败时先停止代理，再删除临时证书。
+ * @param task - 在已准备好的上下文或代理上执行的异步任务。
+ * @param options - addonPath 可指定专用插件；未指定时使用默认弱网插件。
+ */
 export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>,
   options: { addonPath?: string } = {}): Promise<T> {
   const directory = await mkdtemp(path.join(tmpdir(), 'test-mitmproxy-'));

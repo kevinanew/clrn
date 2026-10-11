@@ -6,6 +6,7 @@
 import type { Locator, Page } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
 import { stabilizeVideos, stabilizeBackdropFilter, alignPersonalHouseTitlesToDevicePixels, applyContentStabilizers, ensureLocalImagesLoaded, lockPageWidth } from './pageStabilizers';
+import { accountPresentationRules } from '../../cases/account/presentation';
 export { applyContentStabilizers, ensureLocalImagesLoaded, lockPageWidth } from './pageStabilizers';
 import {
   dismissSignedInPopups,
@@ -25,6 +26,8 @@ import {
  * 1. 直接隐藏匹配节点（覆盖非 BottomSheet 弹层，如 club-more-popup / RN Modal）
  * 2. 若在 BottomSheet 内：再隐藏 `aria-label="Bottom Sheet"` 面板与 backdrop button
  * 3. 若在 PopUp/Modal 内：再隐藏祖先 `popup-backdrop`（透明全屏层，否则仍可能叠在截图上）
+ * @param page - 执行操作的 Playwright 页面。
+ * @param selector - 待操作元素的 CSS 选择器。
  */
 export async function ensureSelectorGone(page: Page, selector: string): Promise<void> {
   const target = page.locator(selector).first();
@@ -78,6 +81,8 @@ export async function ensureSelectorGone(page: Page, selector: string): Promise<
  * SectionList 在 RN Web 上会虚拟化列表项；「我的」页的商城等项目在首屏外时，
  * 对尚未挂载的 testID 调用 scrollIntoViewIfNeeded 无效。主动滚动 settings-list，
  * 让目标 cell 进入 DOM 后再点击。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param target - 待滚动、侧滑或验证的元素定位器。
  */
 export async function revealVirtualizedSettingsItem(page: Page, target: Locator): Promise<void> {
   // React Navigation 会保留非活动 tab 的 DOM；必须滚动当前可见列表，否则可能一直
@@ -108,6 +113,8 @@ export async function revealVirtualizedSettingsItem(page: Page, target: Locator)
  * RN Web 的异步图片/列表布局可能让 scrollIntoViewIfNeeded 先按临时高度滚动，
  * 随后内容收缩却保留 scrollTop，最终把页面顶部内容裁出截图。复位后派发 scroll，
  * 让 FlatList 同步虚拟化窗口，再等两帧完成布局。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param selector - 待操作元素的 CSS 选择器。
  */
 export async function resetScrollToStart(page: Page, selector: string): Promise<void> {
   const scrollContainer = page.locator(`${selector}:visible`).last();
@@ -128,7 +135,11 @@ export async function resetScrollToStart(page: Page, selector: string): Promise<
   );
 }
 
-/** 点击 data-testid 元素并等待页面稳定（loading 消失）；被遮罩拦截时降级为 JS click */
+/**
+ * 点击 data-testid 元素并等待页面稳定（loading 消失）；被遮罩拦截时降级为 JS click
+ * @param page - 执行操作的 Playwright 页面。
+ * @param testId - 目标元素的测试标记。
+ */
 async function clickByTestId(page: Page, testId: string): Promise<void> {
   // 嵌套导航会留下同 testID 的隐藏节点；点击当前可见节点可避免无意义的超时与 JS 降级。
   const target = page.locator(`[data-testid="${testId}"]:visible`).last();
@@ -185,6 +196,8 @@ async function clickByTestId(page: Page, testId: string): Promise<void> {
 /**
  * 选玩法弹层的 onPress 偶尔会完成 dismiss 却丢失 navigate，页面回到私人房详情。
  * 仅对建房表单场景重开弹层并重选一次；其它页面仍直接暴露真实导航失败。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
  */
 async function retryCreateRoomNavigation(page: Page, scenario: VisualScenario): Promise<boolean> {
   if (!scenario.pageLabel.startsWith('signed_in_create_room_form')) {
@@ -221,6 +234,11 @@ async function retryCreateRoomNavigation(page: Page, scenario: VisualScenario): 
   return true;
 }
 
+/**
+ * 等待应用和认证就绪，执行场景导航与滚动定位，准备最终截图。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ */
 export async function preparePage(page: Page, scenario: VisualScenario): Promise<void> {
   await page.waitForSelector('#root', { timeout: 60000 });
   await page.waitForLoadState('load');
@@ -351,7 +369,8 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
   await stabilizeVideos(page);
   await stabilizeBackdropFilter(page);
   await alignPersonalHouseTitlesToDevicePixels(page);
-  await applyContentStabilizers(page, scenario);
+  await applyContentStabilizers(page, { ...scenario,
+    fixedTexts: [...scenario.fixedTexts, ...await accountPresentationRules(page, scenario)] });
   // 页面就绪及图片等待期间仍可能有异步请求失败 Alert 晚到；截图前最后清理一次。
   // 未登录的协议/隐私页同样会收到代理探测失败 Alert，因此所有场景都要执行。
   await dismissSignedInPopups(page);

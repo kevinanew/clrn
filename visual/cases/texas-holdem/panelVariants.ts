@@ -6,6 +6,14 @@ import { events, REPLAY_PLAYER_IDS } from './replayData';
 import { advance, click, closeMask, freezeClock, restore, selfId, visible } from './replay';
 import { enableSetting, sequence, table, type Capture } from './variantSupport';
 
+/**
+ * 截取德州面板的数据、权限及错误提示分支。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉配置或代理故障场景。
+ * @param proxy - 本轮独占的代理控制对象。
+ * @param room - 本轮创建并负责清理的房间信息或 ID。
+ * @param capture - 将页面和场景状态保存为截图的回调。
+ */
 export async function capturePanelVariants(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   room: string, capture: Capture) {
   const self = await selfId(page);

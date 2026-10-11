@@ -13,6 +13,7 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
   const guests: SecondAccount[] = [];
   const joined: SecondAccount[] = [];
 
+  /** 通过真实俱乐部接口读取并校验当前成员清单。 */
   const members = async () => {
     const response = await page.request.get(`${apiOrigin}/v10/club/${clubId}/member`, {
       headers: { Authorization: newAccount.authorization }, timeout: 15_000,
@@ -25,6 +26,10 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
     return body.result.members as { id: string }[];
   };
 
+  /**
+   * 以第二账号的会话查询俱乐部清单，确认其是否已加入当前俱乐部。
+   * @param guest - 参与俱乐部操作的第二账号及其浏览器页面。
+   */
   const hasJoined = async (guest: SecondAccount) => {
     const response = await guest.page.request.get(`${apiOrigin}/v10/club?user_id=${guest.userId}`, {
       headers: { Authorization: guest.authorization }, timeout: 15_000,
@@ -36,6 +41,7 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
     return body.result?.clubs?.some((club: { id: string }) => club.id === clubId) === true;
   };
 
+  /** 打开俱乐部成员申请页面并等待申请列表就绪。 */
   const openApplications = async () => {
     const id = 'club-profile-item-touchable-club_notification';
     for (let attempt = 0; attempt < 8 && !(await page.getByTestId(id).filter({ visible: true }).count()); attempt++) {
@@ -46,6 +52,10 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
     await expect(await unique(page, 'club-notification-screen')).toBeVisible();
   };
 
+  /**
+   * 通过管理员界面批准指定账号的加入申请并核对真实接口响应。
+   * @param guest - 参与俱乐部操作的第二账号及其浏览器页面。
+   */
   const approve = async (guest: SecondAccount) => {
     await openApplications();
     const application = await unique(page, `club-notification-item-${guest.userId}`);

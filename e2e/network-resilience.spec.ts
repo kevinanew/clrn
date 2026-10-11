@@ -1,11 +1,12 @@
 import { expect, test } from './helpers/mitmproxy';
 import { initializePage, openHall, openUsernameLogin, signIn } from './helpers/page';
+import { clickAfterSignInNotices } from './cases/_shared/sign-in-notices';
 
 /**
  * 真实 staging 页面上的弱网行为回归。
  *
  * 浏览器通过每例独立的 mitmproxy 访问站点，代理在目标接口注入延迟或断连。
- * 所有失败均由 Playwright 配置保留 trace，可用 `npx playwright show-trace` 回放。
+ * 失败时保留页面错误上下文；含私有登录密码的网络 trace 不写入报告。
  */
 test.describe('H5 弱网行为', () => {
   test.setTimeout(150_000);
@@ -65,7 +66,8 @@ test.describe('H5 弱网行为', () => {
 
     await mitmproxy.inject('club-failure');
 
-    await page.locator('[data-testid="club-tab"]').click();
+    // 新账号可能收到救济金或隐私提示，先通过已知按钮处理，再执行实际点击。
+    await clickAfterSignInNotices(page, 'club-tab');
 
     await expect(page.locator('[data-testid="club-list-load-error"]')).toBeVisible({
       timeout: 30_000,

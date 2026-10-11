@@ -11,6 +11,7 @@ describe('runWithContext', () => {
       finishRead = resolve;
     });
     const context = {
+      /** 关闭本机测试资源，供测试验证清理时机及错误传播。 */
       close: async () => {
         events.push('context closed');
       },

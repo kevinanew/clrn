@@ -45,7 +45,7 @@ TESTING_API_TOKEN。被排除流程不计为通过。默认 `test:functional` �
 
 HTML 报告位于 `e2e/playwright-report/cases/`；失败截图位于 `e2e/test-results/cases/`。
 报告和登录状态不提交 Git；功能测试关闭网络 trace，避免保存登录凭据。
-CI 使用同一并发组串行运行功能测试，避免多轮登录互相影响。
+CI 从 30 个专用账号中分配每轮账号，按用户名设置 job 并发组；不同账号的任务可同时运行，同账号任务排队。
 
 ## 案例说明模板
 
