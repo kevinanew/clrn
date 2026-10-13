@@ -281,21 +281,50 @@ test('applyContentStabilizers survives late React-style rerenders', async ({ pag
   await expect(page.locator('[data-testid="new-version-need-update-text"]')).toBeHidden();
 });
 
-test('ensureLocalImagesLoaded rejects a missing same-origin asset', async ({ page }) => {
+test('ensureLocalImagesLoaded accepts a decoded same-origin WebP asset', async ({ page }) => {
+  // 两个不透明像素（红、绿）的无损 WebP，交给浏览器真实解码。
+  const webpImage = Buffer.from('UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAA+w//Mf8x8VMqL/AQA=', 'base64');
   await page.route('http://visual.test/**', async (route) => {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === '/') {
       await route.fulfill({
         contentType: 'text/html',
-        body: '<img src="/missing-visual-asset.png" alt="missing">',
+        body: '<img src="/visual-asset.webp" alt="WebP">',
       });
       return;
     }
-    await route.fulfill({ status: 404, body: 'missing' });
+    await route.fulfill({ contentType: 'image/webp', body: webpImage });
   });
   await page.goto('http://visual.test/');
 
-  await expect(ensureLocalImagesLoaded(page)).rejects.toThrow(
-    '本地图片加载失败: /missing-visual-asset.png',
-  );
+  await ensureLocalImagesLoaded(page);
+  await expect(page.getByAltText('WebP')).toBeVisible();
+  expect(await page.getByAltText('WebP').evaluate((image: HTMLImageElement) => ({
+    width: image.naturalWidth, height: image.naturalHeight,
+  }))).toEqual({ width: 2, height: 1 });
 });
+
+for (const asset of [
+  { name: 'missing-visual-asset.png', status: 404, contentType: 'image/png' },
+  { name: 'missing-visual-asset.webp', status: 404, contentType: 'image/webp' },
+  { name: 'corrupt-visual-asset.webp', status: 200, contentType: 'image/webp' },
+]) {
+  test(`ensureLocalImagesLoaded rejects ${asset.name} (HTTP ${asset.status})`, async ({ page }) => {
+    await page.route('http://visual.test/**', async (route) => {
+      const pathname = new URL(route.request().url()).pathname;
+      if (pathname === '/') {
+        await route.fulfill({
+          contentType: 'text/html',
+          body: `<img src="/${asset.name}" alt="broken">`,
+        });
+        return;
+      }
+      await route.fulfill({ status: asset.status, contentType: asset.contentType, body: 'invalid image' });
+    });
+    await page.goto('http://visual.test/');
+
+    await expect(ensureLocalImagesLoaded(page)).rejects.toThrow(
+      `本地图片加载失败: /${asset.name}`,
+    );
+  });
+}

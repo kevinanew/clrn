@@ -322,6 +322,20 @@ CI 从 `CLRN_CI_TEST_ACCOUNTS` Secret 为每个任务注入 `VISUAL_USERNAME` / 
 它验证线上前端的视觉表现。真实认证行为由 `e2e/cases/auth-002*` 和 `auth-003*` 检查。
 `tests/preparePage.spec.ts` 与 `tests/authValidation.spec.ts` 检查测试工具自身的 DOM/HTTP fixture，不启动应用开发环境。
 
+### WebP 图片与商城预览覆盖范围
+
+`ensureLocalImagesLoaded` 按同源图片的实际解码尺寸检查加载结果，不限制文件扩展名。
+`tests/preparePage.spec.ts` 覆盖有效 WebP、WebP 返回 404、HTTP 200 但内容损坏，以及原有 PNG 缺失情况。
+这些属于测试工具回归，不代表商城预览页的三张图片已通过线上端到端验证。
+页面资源使用 WebP 不影响 Playwright 截图基准格式；基准仍保留 PNG，不因格式转换批量更新。
+
+2026-10-14 在 staging 构建 `0e028b8c2c4fa6e965fbed6036e2c525d57529c1`
+（[应用图片优化 PR #7010](https://github.com/kevinanew/laiwan_react_native/pull/7010)）验证：
+设置页的商城入口仍打开旧商城；桌面和手机浏览器访问 `/mall/preview` 完成初始化后均进入大厅。
+现有 `signed_in_mall` 视觉场景和 `SETTINGS-011` 分类用例因此不覆盖 `MallPreviewScreen`。
+待应用提供真实可达入口后，再补金币、钻石、礼品卡分类的页面用例，以及三张 WebP 的加载和视觉检查；
+不能通过注入导航状态或跳过初始化来宣称已有页面覆盖。
+
 ### 测试与应用代码隔离
 
 visual 专用的认证校验、mock、等待、重试、稳定化及截图判定逻辑必须保留在
