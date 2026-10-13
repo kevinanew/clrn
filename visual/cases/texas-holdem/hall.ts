@@ -5,6 +5,7 @@ import type { TexasProxy } from './proxy';
 import { events, REPLAY_PLAYER_IDS } from './replayData';
 import { advance, click, freezeClock, restore, selfId, visible } from './replay';
 import { HALL_STATES } from './scenarios';
+import { applyContentStabilizers } from '../../src/support/pageStabilizers';
 
 type Capture = (page: Page, scenario: VisualScenario, state: string) => Promise<void>;
 
@@ -51,7 +52,22 @@ export async function captureHall(page: Page, scenario: VisualScenario, proxy: T
   await expect(page.locator('[data-testid="select-player-button"]:visible')).toHaveCount(4);
   await snapshot('pair_play_report');
   await click(page, 'report-pair-play-close-button');
+  // 资料与牌局统计分别加载；先验证真实资料，不能把空昵称接受为截图基准。
+  const profileResponsePromise = page.waitForResponse(response =>
+    response.request().method() === 'GET'
+    && new URL(response.url()).pathname === `/v10/profile/${self}`);
   await click(page, 'texas-holdem-leaderboard-button');
+  const profileResponse = await profileResponsePromise;
+  expect(profileResponse.ok(), '本人资料请求应成功').toBe(true);
+  const profile = await profileResponse.json();
+  expect(profile.ok, '本人资料业务响应应成功').toBe(true);
+  expect(profile.result?.nickname, '真实昵称应为非空文本').toEqual(expect.stringMatching(/\S/));
+  await expect(visible(page, 'personal-leader-board-nickname')).toHaveText(profile.result.nickname);
+  // 校验真实内容后，仅固定易变昵称；保留接口、真实组件及原有布局。
+  await applyContentStabilizers(page, { ...scenario,
+    fixedTexts: [...scenario.fixedTexts,
+      { selector: '[data-testid="personal-leader-board-nickname"]', text: 'TestPlayer' }],
+  });
   await proxy.replayTexas(roomId, events([{ event: 'player_statistics', player_id: self,
     history_buy_in_amount: 1000, played_game_count: 10, settlement_net_amount: 180 }]));
   await advance(page);
