@@ -33,7 +33,7 @@ on:
       group:
         description: '业务组；默认全部'
         type: choice
-        options: [all, guest, account, social, rooms, wallet-help, records]
+        options: [all, guest, account, social, rooms, wallet-help, records, texas, zhajinhua]
         default: all
       locale:
         description: '语言；默认三种语言'
@@ -134,6 +134,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           ANDROID_VISUAL_MODE: ${{ inputs.mode || 'compare' }}
+          TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
         with:
           api-level: 35
           target: google_apis

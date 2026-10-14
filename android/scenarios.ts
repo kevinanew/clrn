@@ -26,7 +26,7 @@ export function nativeSelector(selector: string): AndroidSelector {
  * @param group - 本轮独立运行的业务组。
  */
 export function androidScenarios(locale: string, group = 'all'): VisualScenario[] {
-  if (!['all', 'guest', 'account', 'social', 'rooms', 'wallet-help', 'records'].includes(group)) throw new Error(`未知安卓业务组：${group}`);
+  if (!['all', 'guest', 'account', 'social', 'rooms', 'wallet-help', 'records', 'texas', 'zhajinhua'].includes(group)) throw new Error(`未知安卓业务组：${group}`);
   return buildScenarios({ VISUAL_LOCALES: locale, VISUAL_SCOPE: 'full', VISUAL_SUITE: 'app' })
     .filter(scenario => scenario.viewport.label === 'mobile' && scenario.group !== 'game-record')
     .filter(scenario => !unavailablePages.some(page => page === scenario.pageLabel))

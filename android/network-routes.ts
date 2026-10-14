@@ -8,8 +8,9 @@ export type MockResponse = { status: number; contentType?: string; body?: string
 /**
  * 把现有 Web 网络夹具注册为传输层无关的响应查询器，原生代理直接复用相同响应。
  * 原生端没有 localStorage；国家区号由共用的 country 接口响应提供。
+ * @param options - 保留真实私人房接口，或将战绩交由共享代理。
  */
-export async function visualNetworkRouter(): Promise<(url: string) => Promise<MockResponse | null>> {
+export async function visualNetworkRouter(options: { realPrivateRoom?: boolean; recordFixtures?: boolean } = {}): Promise<(url: string) => Promise<MockResponse | null>> {
   const routes: { matcher: Matcher; handler: Handler }[] = [];
   await mockVisualNetworkDependencies({
     /**
@@ -20,7 +21,7 @@ export async function visualNetworkRouter(): Promise<(url: string) => Promise<Mo
     route: async (matcher: Matcher, handler: Handler) => { routes.push({ matcher, handler }); },
     /** 原生端通过 country 接口设置国家区号，无浏览器存储初始化。 */
     addInitScript: async () => {},
-  } as unknown as BrowserContext);
+  } as unknown as BrowserContext, options);
   return async (url: string) => {
     const selected = [...routes].reverse().find(({ matcher }) => {
       if (typeof matcher === 'function') return matcher(new URL(url));

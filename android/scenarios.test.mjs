@@ -53,6 +53,14 @@ test('业务分组完整分割清单且没有重复或遗漏', () => {
   assert.throws(() => androidScenarios('en', 'typo'));
 });
 
+test('牌桌保留真实房屋接口，战绩代理的俱乐部数据不被通用夹具覆盖', async () => {
+  const route = await visualNetworkRouter({ realPrivateRoom: true, recordFixtures: true });
+  for (const path of ['/v10/house/user/self', '/v2/building/rooms', '/v10/club?user_id=self', '/v10/clubs']) {
+    assert.equal(await route(`https://api.shafayouxi.org${path}`), null);
+  }
+  assert.ok(await route('https://api.shafayouxi.org/v10/alipay_order/goods'));
+});
+
 test('动态区域遮罩保留区域外像素，拒绝掩盖整页', () => {
   const { PNG } = require('pngjs');
   const { maskScreenshot } = require('./screenshot.ts');

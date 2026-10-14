@@ -35,10 +35,10 @@ async function configureProxy(directory: string, server: string): Promise<void> 
 /**
  * 复用 Web 网络夹具和代理生命周期；真实认证与未声明的接口仍访问 staging。
  * @param task - 在已准备的模拟器网络环境内运行测试。
- * @param records - 是否复用 Web 战绩代理与其状态控制。
+ * @param records - 战绩开关或要复用的 Web 玩法代理。
  */
-export async function withAndroidProxy<T>(task: (proxy: Mitmproxy) => Promise<T>, records = false): Promise<T> {
-  const route = await visualNetworkRouter();
+export async function withAndroidProxy<T>(task: (proxy: Mitmproxy) => Promise<T>, records: boolean | 'texas-holdem' | 'zhajinhua' = false): Promise<T> {
+  const route = await visualNetworkRouter({ realPrivateRoom: typeof records === 'string', recordFixtures: records === true });
   const token = randomBytes(32).toString('hex');
   const server = createServer(async (request, response) => {
     if (request.headers.authorization !== token) { response.writeHead(403).end(); return; }
@@ -60,7 +60,8 @@ export async function withAndroidProxy<T>(task: (proxy: Mitmproxy) => Promise<T>
   try {
     return await withMitmproxy(task, {
       addonPath: path.join(__dirname, 'proxy-addon.py'),
-      environment: { ...process.env, ANDROID_RECORDS: String(records), ANDROID_FIXTURE_TOKEN: token,
+      environment: { ...process.env, ANDROID_RECORDS: String(records === true),
+        ANDROID_GAME: typeof records === 'string' ? records : '', ANDROID_FIXTURE_TOKEN: token,
         ANDROID_FIXTURE_URL: `http://127.0.0.1:${address.port}/` },
       /**
        * 将本轮临时证书和端口配置到专用模拟器。

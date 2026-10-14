@@ -1,5 +1,6 @@
 """只在专用模拟器的代理边界复用 Web 响应，不改变 APK 或绕过应用初始化。"""
 
+import importlib.util
 import json
 import os
 import sys
@@ -8,12 +9,25 @@ import urllib.request
 from urllib.parse import urlsplit
 from mitmproxy import http
 from presentation import AccountPresentation
+from game_session import GameSession
 
 
 class AndroidVisualProxy:
     def __init__(self):
         self.presentation = AccountPresentation()
         self.records = None
+        self.game = None
+        self.game_session = None
+        game_type = os.environ.get('ANDROID_GAME')
+        if game_type in ('texas-holdem', 'zhajinhua'):
+            directory = Path(__file__).resolve().parents[1] / 'visual/cases' / game_type / 'mitmproxy'
+            sys.path.insert(0, str(directory))
+            spec = importlib.util.spec_from_file_location('native_game_addon', directory / 'addon.py')
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            self.game = module.TexasVisualProxy() if game_type == 'texas-holdem' else module.ZhajinhuaVisualProxy()
+            self.game.scenario = 'visual-stable'
+            self.game_session = GameSession('texas_react_native' if game_type == 'texas-holdem' else 'zhajinhua')
         if os.environ.get('ANDROID_RECORDS') == 'true':
             sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'visual/cases/game-record/mitmproxy'))
             from addon import GameRecordProxy
@@ -25,6 +39,9 @@ class AndroidVisualProxy:
                 or (flow.request.host != 'api.shafayouxi.org'
                     and not flow.request.host.endswith('.api.staging.laiwan.shafayouxi.com'))):
             return
+        if self.game:
+            self.game_session.response(flow)
+            self.game.response(flow)
         try:
             body = flow.response.json()
         except ValueError:
@@ -38,7 +55,27 @@ class AndroidVisualProxy:
                 self.records.user_id = self.presentation.user_id
             self.records.response(flow)
 
+    def websocket_message(self, flow):
+        if self.game:
+            self.game.websocket_message(flow)
+
+    def websocket_end(self, flow):
+        if self.game:
+            self.game.websocket_end(flow)
+
     async def request(self, flow):
+        if self.game and flow.request.host == 'test-mitmproxy.invalid' and urlsplit(flow.request.path).path == '/android/session':
+            if flow.request.headers.get('X-E2E-Control-Token') != os.environ['MITMPROXY_CONTROL_TOKEN']:
+                flow.response = http.Response.make(403, b'Forbidden')
+            else:
+                flow.response = http.Response.make(200, json.dumps({
+                    'account': self.game_session.account, 'room': self.game_session.room}).encode(),
+                    {'Content-Type': 'application/json'})
+            return
+        if self.game:
+            self.game.request(flow)
+            if flow.response:
+                return
         if self.records:
             await self.records.request(flow)
             if flow.response:

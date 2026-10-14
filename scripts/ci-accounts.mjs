@@ -43,13 +43,14 @@ export function visualAccountMatrix(runId, suite = 'all', full = false) {
  * @param selectedLocale - 全部语言或一种指定语言。
  */
 export function androidAccountMatrix(runId, selectedGroup = 'all', selectedLocale = 'all') {
-  const groups = ['guest', 'account', 'social', 'rooms', 'wallet-help', 'records'];
+  const groups = ['guest', 'account', 'social', 'rooms', 'wallet-help', 'records', 'texas', 'zhajinhua'];
   const locales = ['zh-Hans', 'zh-Hant', 'en'];
   if (selectedGroup !== 'all' && !groups.includes(selectedGroup)) throw new Error('未知安卓业务组。');
   if (selectedLocale !== 'all' && !locales.includes(selectedLocale)) throw new Error('未知安卓语言。');
   return { include: groups.filter(group => selectedGroup === 'all' || group === selectedGroup)
     .flatMap(group => locales.filter(locale => selectedLocale === 'all' || locale === selectedLocale)
-      .map(locale => ({ group, locale, account: allocateCiAccount(runId, 12 + groups.indexOf(group) * 3 + locales.indexOf(locale)) }))) };
+      .map(locale => ({ group, locale, account: allocateCiAccount(runId,
+        (12 + groups.indexOf(group) * 3 + locales.indexOf(locale)) % ciAccounts.length) }))) };
 }
 
 /**

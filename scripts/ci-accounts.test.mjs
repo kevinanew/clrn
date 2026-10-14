@@ -114,12 +114,13 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
 });
 
 
-test('安卓十八组独占账号，与同次 Web 调度分离，筛选保持槽位', () => {
+test('安卓二十四组独占账号，跨 Web 复用账号锁，筛选保持槽位', () => {
   const full = androidAccountMatrix('29').include;
   const web = visualAccountMatrix('29', 'all', true).include;
-  assert.equal(full.length, 18);
+  assert.equal(full.length, 24);
+  assert.equal(new Set(full.map(item => item.account)).size, 24);
   assert.equal(new Set([...full, ...web].map(item => item.account)).size, 27);
-  for (const group of ['guest', 'account', 'social', 'rooms', 'wallet-help']) {
+  for (const group of ['guest', 'account', 'social', 'rooms', 'wallet-help', 'records', 'texas', 'zhajinhua']) {
     assert.deepEqual(androidAccountMatrix('29', group, 'en').include,
       full.filter(item => item.group === group && item.locale === 'en'));
   }
