@@ -16,7 +16,12 @@ test('Android Staging 登录与找回密码页面视觉回归', async ({}, testI
     await device.wait({ res: 'username-or-email-sign-in-button' });
     await compareScreenshot(device, 'login-welcome', testInfo);
 
-    await device.tap({ res: 'username-or-email-sign-in-button' });
+    // Staging 提示覆盖按钮中央，按实际控件边界点击仍可见的右侧，不隐藏提示或修改应用。
+    const usernameButton = await device.info({ res: 'username-or-email-sign-in-button' });
+    await device.input.tap({
+      x: usernameButton.bounds.x + usernameButton.bounds.width - 10,
+      y: usernameButton.bounds.y + usernameButton.bounds.height / 2,
+    });
     await device.wait({ res: 'username-input' });
     await compareScreenshot(device, 'login-username', testInfo);
 
@@ -30,6 +35,14 @@ test('Android Staging 登录与找回密码页面视觉回归', async ({}, testI
   } finally {
     if (device) {
       await testInfo.attach('last-screen', { body: await device.screenshot(), contentType: 'image/png' }).catch(() => undefined);
+      try {
+        adb('shell', 'uiautomator', 'dump', '/sdcard/clrn-visual-hierarchy.xml');
+        await testInfo.attach('android-view-hierarchy', {
+          body: adb('shell', 'cat', '/sdcard/clrn-visual-hierarchy.xml'), contentType: 'application/xml',
+        });
+      } catch (error) {
+        await testInfo.attach('android-view-hierarchy-error', { body: String(error), contentType: 'text/plain' });
+      }
       await device.close();
     }
     await testInfo.attach('android-runtime', {
