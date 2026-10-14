@@ -14,8 +14,13 @@ import { adb } from './device';
  */
 async function configureProxy(directory: string, server: string): Promise<void> {
   if (adb('shell', 'getprop', 'ro.kernel.qemu').trim() !== '1') throw new Error('代理只能配置到专用模拟器。');
-  adb('root');
+  try { adb('root'); }
+  catch (error) {
+    // adbd 切换为 root 会主动断开连接；仅容许该断连，并在重连后验证真实权限。
+    if (!/closed|offline|device .* not found/.test(String(error))) throw error;
+  }
   adb('wait-for-device');
+  if (adb('shell', 'id', '-u').trim() !== '0') throw new Error('专用模拟器未成功切换 root，不能安装代理证书。');
   const certificate = path.join(directory, 'mitmproxy-ca-cert.pem');
   const hash = execFileSync('openssl', ['x509', '-in', certificate, '-subject_hash_old', '-noout'], { encoding: 'utf8' }).trim();
   if (!/^[a-f\d]{8}$/.test(hash)) throw new Error('无效代理证书 hash。');

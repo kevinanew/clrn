@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { _android, type AndroidDevice } from 'playwright';
 import { expect, type TestInfo } from '@playwright/test';
+import { dismissKeyboard } from './keyboard';
 import { maskScreenshot, type ScreenshotMask } from './screenshot';
 // @ts-expect-error 元数据验证模块也供纯 Node 下载入口使用。
 import { applicationId, packageName, readVerifiedBuild } from './release.mjs';
@@ -69,7 +70,7 @@ export async function launchApplication(): Promise<AndroidDevice> {
 export async function waitForHall(device: AndroidDevice): Promise<void> {
   await device.wait({ res: 'staging-confirmation-input' }, { timeout: 90_000 });
   await device.fill({ res: 'staging-confirmation-input' }, 'CONFIRM');
-  await device.input.press('Back');
+  await dismissKeyboard(device);
   await device.tap({ res: 'confirm-button' });
   await device.wait({ res: 'settings-tab' }, { timeout: 120_000 });
 }
