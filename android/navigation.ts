@@ -37,7 +37,10 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector, f
         if (finish) await waitAbsent(device, { res: 'stepDescription' });
         continue;
       }
-      const scrollable = await device.info({ scrollable: true }).catch(() => undefined);
+      // 战绩的首个 scrollable 节点是顶部横向标签栏；必须在纵向内容列表内滚动。
+      const scrollable = fullyVisible
+        ? await device.info({ scrollable: true, clazz: 'android.widget.ScrollView' }).catch(() => undefined)
+        : await device.info({ scrollable: true }).catch(() => undefined);
       if (!scrollable) { await device.wait(selector, { timeout: 30_000 }); return; }
       const { bounds } = scrollable;
       // 建房滑杆的整个标签区域也会接管拖动；从列表右边缘内侧滑动，避开其触摸范围。
