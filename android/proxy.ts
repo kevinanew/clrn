@@ -66,8 +66,11 @@ export async function withAndroidProxy<T>(task: () => Promise<T>): Promise<T> {
       },
     });
   } finally {
-    adb('shell', 'settings', 'put', 'global', 'http_proxy', previousProxy === 'null' ? ':0' : previousProxy);
-    if (proxyPort) adb('reverse', '--remove', `tcp:${proxyPort}`);
-    await new Promise<void>(resolve => server.close(() => resolve()));
+    try {
+      adb('shell', 'settings', 'put', 'global', 'http_proxy', previousProxy === 'null' ? ':0' : previousProxy);
+    } finally {
+      try { if (proxyPort) adb('reverse', '--remove', `tcp:${proxyPort}`); }
+      finally { await new Promise<void>(resolve => server.close(() => resolve())); }
+    }
   }
 }

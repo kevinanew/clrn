@@ -59,12 +59,6 @@ export async function tap(device: AndroidDevice, identifier: string): Promise<vo
  */
 export async function returnToTabs(device: AndroidDevice): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
-    const close = await device.info({ res: 'close-user-authentication-button' }).catch(() => undefined);
-    if (close && close.bounds.width > 0) {
-      await tap(device, 'close-user-authentication-button');
-      await device.wait({ res: 'settings-tab' });
-      return;
-    }
     try { await device.wait({ res: 'settings-tab' }, { timeout: 3000 }); return; }
     catch (error) {
       if (attempt === 8) throw error;
@@ -122,6 +116,7 @@ export async function signIn(device: AndroidDevice): Promise<void> {
   await tap(device, 'settings-tab');
   await tap(device, 'sign-in-button');
   await tap(device, 'username-or-email-sign-in-button');
+  await device.wait({ res: 'username-input' });
   await device.fill({ res: 'username-input' }, username);
   await device.fill({ res: 'password-input' }, password);
   await device.input.press('Back');
