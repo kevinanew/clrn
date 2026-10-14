@@ -47,11 +47,13 @@ APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使�
 
 当前正在扩充并审查基准，独立 compare 全量验证完成前不能视为 CI 已通过。候选截图来自固定的 x86_64 环境，按实际通过场景和语言挑选，避免把产物中携带的旧基准误当作本轮结果。
 
-- 账户页：每种语言的 12 个稳定场景来自 [reference 38635730370](https://github.com/kevinanew/clrn/actions/runs/38635730370)；昵称和简介的光标适配后另行补跑。
-- 游客页及四张认证冒烟图：来自 [reference 38636085095](https://github.com/kevinanew/clrn/actions/runs/38636085095)；弹窗背景中的拉霸图案另行补跑显式遮罩版本。
-- 钱包及帮助页：三种语言各 13 个已审查场景来自 [reference 38636704445](https://github.com/kevinanew/clrn/actions/runs/38636704445)；第三方反馈页改为复用 Web 空白响应后重新采集。
+- 账户页：每种语言的 12 个稳定场景来自 [reference 38635730370](https://github.com/kevinanew/clrn/actions/runs/38635730370)；昵称和简介另由 [reference 38637421710](https://github.com/kevinanew/clrn/actions/runs/38637421710) 补齐三语基准。
+- 游客页及四张认证冒烟图：来自 [reference 38636085095](https://github.com/kevinanew/clrn/actions/runs/38636085095)；弹窗背景中的拉霸图案使用显式遮罩后，由下述 7214 运行补齐。
+- 钱包及帮助页：三种语言各 13 个已审查场景来自 [reference 38636704445](https://github.com/kevinanew/clrn/actions/runs/38636704445)；第三方反馈页改为复用 Web 空白响应后，由下述 7214 运行补齐。
 
-这些运行使用 [Release 7213](https://github.com/kevinanew/clrn/releases/tag/android-staging-7213-b30e55cca0f3)。该版本包含认证页遮挡和分页组件修复，应用变更见 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)。后续大厅渐变组件修复的 APK 仍须完成全量回归。
+另由 [reference 38638620863](https://github.com/kevinanew/clrn/actions/runs/38638620863) 的已通过部分补齐 6 张登录弹窗、3 张反馈页面和旧版战绩 60 张基准，使用 [Release 7214](https://github.com/kevinanew/clrn/releases/tag/android-staging-7214-83f9eabadfc0)。共已审查 202 张正式基准。该运行仍有房间、社交和新版战绩失败项，不能算全量通过。
+
+早期运行使用 [Release 7213](https://github.com/kevinanew/clrn/releases/tag/android-staging-7213-b30e55cca0f3)。该版本包含认证页遮挡和分页组件修复，应用变更见 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)。后续大厅渐变组件修复的 APK 仍须完成全量回归。
 
 通过 GitHub CLI 指定包含工作流的分支和经确认的 Release 标签，生成候选基准：
 

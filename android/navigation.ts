@@ -1,3 +1,4 @@
+import { dismissKeyboard } from './keyboard';
 import { fillScenarioInputs } from './form-inputs';
 import { exists, waitAbsent } from './native-state';
 import { expect } from '@playwright/test';
@@ -27,10 +28,17 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
       const scrollable = await device.info({ scrollable: true }).catch(() => undefined);
       if (!scrollable) { await device.wait(selector, { timeout: 30_000 }); return; }
       const { bounds } = scrollable;
-      // RN 的触摸识别需要连续移动事件；使用容器内的真实 swipe，不用单段手势误触按钮。
-      // 滑杆会截获其轨道区域内的拖动；从滚动容器左侧留白发起纵向手势。
-      const horizontal = Math.round(bounds.x + Math.min(8, bounds.width * 0.02));
-      adb('shell', 'input', 'swipe', String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)),
+      // 建房滑杆会截获轨道内的拖动，从可见的静态标签开始滑动，保留表单数值。
+      const labels = await Promise.all(['max-buy-in-title-text', 'booking-second-label',
+        'min-buy-in-title-text', 'boot-title-text', 'operation-duration-title-text']
+        .map(res => device.info({ res, clazz: 'android.widget.TextView' }).catch(() => undefined)));
+      const anchor = labels.filter(node => node && node.bounds.height > 0
+        && node.bounds.y > bounds.y + bounds.height * 0.3
+        && node.bounds.y + node.bounds.height < bounds.y + bounds.height)
+        .sort((a, b) => b!.bounds.y - a!.bounds.y)[0];
+      const horizontal = Math.round(anchor ? anchor.bounds.x + anchor.bounds.width / 2 : bounds.x + bounds.width * 0.95);
+      const start = Math.round(anchor ? anchor.bounds.y + anchor.bounds.height / 2 : bounds.y + bounds.height * 0.85);
+      adb('shell', 'input', 'swipe', String(horizontal), String(start),
         String(horizontal), String(Math.round(bounds.y + bounds.height * 0.2)), '600');
     }
   }
@@ -71,6 +79,11 @@ export async function tap(device: AndroidDevice, identifier: string): Promise<vo
  */
 export async function returnToTabs(device: AndroidDevice): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
+    if (await exists(device, { res: 'slot-machine-view' })) {
+      await tap(device, 'close-button');
+      await waitAbsent(device, { res: 'slot-machine-view' });
+      continue;
+    }
     if (await exists(device, { res: 'confirm-pop-up-image-background' })) {
       await tap(device, 'cancel-button');
       await waitAbsent(device, { res: 'confirm-pop-up-image-background' });
@@ -165,10 +178,10 @@ export async function signIn(device: AndroidDevice): Promise<void> {
   await tap(device, 'username-or-email-sign-in-button');
   await device.wait({ res: 'username-input' });
   await device.fill({ res: 'username-input' }, username);
-  await device.input.press('Back');
+  await dismissKeyboard(device);
   await reveal(device, { res: 'password-input' });
   await device.fill({ res: 'password-input' }, password);
-  await device.input.press('Back');
+  await dismissKeyboard(device);
   await tap(device, 'sign-in-button');
   await device.wait({ res: 'settings-tab' }, { timeout: 60_000 });
   await tap(device, 'settings-tab');

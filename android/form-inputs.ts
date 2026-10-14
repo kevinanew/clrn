@@ -1,6 +1,7 @@
 import type { AndroidDevice } from 'playwright';
 import type { VisualScenario } from '../visual/scenarioTypes';
 import { adb } from './device';
+import { dismissKeyboard } from './keyboard';
 import { nativeSelector } from './scenarios';
 
 /**
@@ -24,6 +25,6 @@ export async function fillScenarioInputs(device: AndroidDevice, scenario: Visual
     // 原生 fill 的内部点击不会等待异步表单挂载，必须先确认输入框已出现。
     await device.wait(selector);
     await device.fill(selector, rule.text);
-    await device.input.press('Back');
+    await dismissKeyboard(device);
   }
 }
