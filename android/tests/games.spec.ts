@@ -36,6 +36,7 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
            */
           const capture = async (state: string) => {
             expect(state).toBe(scenario.snapshotStates![index++]);
+            console.log(`ANDROID > ${suite} 截图状态 ${state}`);
             await captureGame(device, `${locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo,
               state === 'statistics_help' ? 'toastText1' : undefined);
           };
