@@ -30,6 +30,10 @@ on:
         description: 'Android Staging Release 标签；留空选最新发布版本'
         type: string
         default: ''
+      filter:
+        description: '可选场景正则；默认执行全部场景'
+        type: string
+        default: ''
       mode:
         description: '比较基准或生成待审查基准'
         type: choice
@@ -75,6 +79,7 @@ jobs:
       CI: 'true'
       ANDROID_SERIAL: emulator-5554
       ANDROID_LOCALE: ${{ matrix.locale }}
+      ANDROID_FILTER: ${{ inputs.filter || '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

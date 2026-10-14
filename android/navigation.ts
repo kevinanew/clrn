@@ -24,6 +24,7 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
  * @param identifier - 与 Web 共用的 testID。
  */
 export async function tap(device: AndroidDevice, identifier: string): Promise<void> {
+  console.log(`ANDROID > 点击 ${identifier}`);
   await reveal(device, { res: identifier });
   if (identifier === 'username-or-email-sign-in-button') {
     const { bounds } = await device.info({ res: identifier });
@@ -108,6 +109,7 @@ export async function signIn(device: AndroidDevice): Promise<void> {
 export async function selectLanguage(device: AndroidDevice, locale: string): Promise<void> {
   const identifier = { en: 'english', 'zh-Hans': 'zh-hans', 'zh-Hant': 'zh-hant' }[locale];
   if (!identifier) throw new Error(`不支持的测试语言：${locale}`);
+  await returnToTabs(device);
   await tap(device, 'settings-tab');
   await tap(device, 'sign-in-button');
   await tap(device, 'switch-language-button');
