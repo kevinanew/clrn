@@ -2,6 +2,8 @@ import { PNG } from 'pngjs';
 import type { AndroidDevice } from 'playwright';
 import type { VisualScenario } from '../visual/scenarioTypes';
 import { nativeSelector } from './scenarios';
+import { setTimeout } from 'node:timers/promises';
+import { caretMask } from './caret-mask';
 
 export type ScreenshotMask = { x: number; y: number; width: number; height: number; reason: string };
 
@@ -12,6 +14,19 @@ export type ScreenshotMask = { x: number; y: number; width: number; height: numb
  */
 export async function screenshotMasks(device: AndroidDevice, scenario: VisualScenario): Promise<ScreenshotMask[]> {
   const masks: ScreenshotMask[] = [];
+  const input = await device.info({ clazz: 'android.widget.EditText', focused: true }).catch(() => undefined);
+  if (input) {
+    let before = await device.screenshot();
+    for (const delay of [400, 300, 400]) {
+      await setTimeout(delay);
+      const after = await device.screenshot();
+      const current = await device.info({ clazz: 'android.widget.EditText', focused: true });
+      if (current.text !== input.text || JSON.stringify(current.bounds) !== JSON.stringify(input.bounds)) break;
+      const mask = caretMask(before, after, input.bounds);
+      if (mask) { masks.push(mask); break; }
+      before = after;
+    }
+  }
   for (const rule of scenario.fixedTexts) {
     if (!/(?:version-text|current-server-text|checkInDetailDate)/.test(rule.selector)) continue;
     const node = await device.info(nativeSelector(rule.selector)).catch(() => undefined);
