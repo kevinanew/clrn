@@ -129,6 +129,6 @@ export async function deletePrivateGameRoom(room: RoomSession): Promise<void> {
     redirect: 'error', signal: AbortSignal.timeout(15_000),
   });
   const body = await response.json().catch(() => null);
-  expect(response.ok && body?.ok === true, '本次新建房间应成功解散').toBe(true);
+  expect(response.ok && body?.ok === true, `本次新建房间应成功解散（HTTP ${response.status}，业务成功=${body?.ok === true}）`).toBe(true);
   console.log('ROOM CLEANUP > 本次新建房间已解散');
 }

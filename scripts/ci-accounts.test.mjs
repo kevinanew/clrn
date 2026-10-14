@@ -79,7 +79,7 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     const selected=include[0].account;
     const accounts=ciAccounts.map((username,i)=>({username,password:`FakePassword${i}123`,status:'ready'}));
     const configured=spawnSync(process.execPath,['scripts/configure-ci-account.mjs'],{
-      encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_ENV:environment,
+      encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'kevinanew/clrn',GITHUB_ENV:environment,
         CLRN_CI_ACCOUNT:selected,CLRN_CI_TEST_ACCOUNTS:JSON.stringify({accounts})},
     });
     assert.equal(configured.status,0,configured.stderr);
@@ -94,9 +94,18 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     assert.equal(Object.keys(values).length,6);
     assert.ok(configured.stdout.includes(`::add-mask::${password}`));
     assert.ok(!configured.stdout.includes(accounts.find(account=>account.username!==selected).password));
-    writeFileSync(environment,'');
+    writeFileSync(environment, '');
+    const foreignRepository = spawnSync(process.execPath, ['scripts/configure-ci-account.mjs'], {
+      encoding: 'utf8', env: { ...process.env, GITHUB_ACTIONS: 'true',
+        GITHUB_REPOSITORY: 'kevinanew/laiwan_react_native', GITHUB_ENV: environment,
+        CLRN_CI_ACCOUNT: selected, CLRN_CI_TEST_ACCOUNTS: JSON.stringify({ accounts }) },
+    });
+    assert.notEqual(foreignRepository.status, 0);
+    assert.match(foreignRepository.stderr, /只允许在 kevinanew\/clrn/);
+    assert.equal(readFileSync(environment, 'utf8'), '');
+    assert.ok(!foreignRepository.stdout.includes(password));
     const missing=spawnSync(process.execPath,['scripts/configure-ci-account.mjs'],{
-      encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_ENV:environment,
+      encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'kevinanew/clrn',GITHUB_ENV:environment,
         CLRN_CI_ACCOUNT:selected,CLRN_CI_TEST_ACCOUNTS:''},
     });
     assert.notEqual(missing.status,0);
