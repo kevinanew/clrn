@@ -2,14 +2,28 @@ import type { NativeNode } from './game-controls';
 import type { ScreenshotBounds, ScreenshotMask } from './screenshot';
 
 /**
- * 从实际原生树取得弹层内容；半透明全屏触摸层本身不能遮住背景动画。
+ * 根据前景就绪标记找到实际内容容器；Fabric 可能把背景与弹层压平成兄弟节点。
  * @param nodes - 保留父子关系的可见节点。
  */
 export function foregroundPanels(nodes: NativeNode[]): NativeNode[] {
-  return nodes.flatMap(node => node.children?.some(child => child.res === 'screen-mask-touch-to-close')
-    ? node.children.filter(child => child.res !== 'screen-mask-touch-to-close'
-      && child.bounds.width > 80 && child.bounds.height > 80) : [])
-    .concat(nodes.filter(node => node.res === 'in-game-chat-animated-view'));
+  const markers = new Set(['drawer-menu-item-exit', 'card-rank-list', 'game-settings-close-button',
+    'buy-in-title', 'renew-popup-close-button', 'public-leader-board-container', 'review-board-close-button',
+    'review-board-description-text', 'in-game-chat-animated-view', 'buy-in-application-list',
+    'player-profile-popup-close', 'report-field-input', 'accurate-bet-popup-container', 'raise-bet-popup']);
+  const panels: NativeNode[] = [];
+  for (const marker of nodes.filter(node => markers.has(node.res || ''))) {
+    /**
+     * 根据原生父子关系定位这个前景控件。
+     * @param node - 当前检查的祖先节点。
+     */
+    const contains = (node: NativeNode): boolean => node === marker || Boolean(node.children?.some(contains));
+    const panel = nodes.filter(node => node.bounds.width > 80 && node.bounds.height > 80
+      // 半透明触摸背景和整个牌桌不能作为不透明面板。
+      && node.bounds.width * node.bounds.height < 720 * 1280 * 0.95 && contains(node))
+      .sort((first, second) => second.bounds.width * second.bounds.height - first.bounds.width * first.bounds.height)[0];
+    if (panel && !panels.includes(panel)) panels.push(panel);
+  }
+  return panels;
 }
 
 /**

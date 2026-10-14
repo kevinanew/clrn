@@ -17,7 +17,7 @@ test('前景只裁掉相交区域，跨越面板边缘的背景箭头仍需遮�
 });
 
 test('区分背景动画和前景房号，不能把整张屏幕或前景文字遮掉', () => {
-  const source = { bounds: { x: 30, y: 30, width: 20, height: 20 } };
+  const source = { res: 'public-leader-board-container', bounds: { x: 30, y: 30, width: 20, height: 20 } };
   const panel = { bounds: { x: 20, y: 20, width: 400, height: 600 }, children: [source] };
   const touch = { res: 'screen-mask-touch-to-close', bounds: { x: 0, y: 0, width: 720, height: 1280 } };
   const parent = { bounds: touch.bounds, children: [touch, panel] };
@@ -26,4 +26,14 @@ test('区分背景动画和前景房号，不能把整张屏幕或前景文字�
   const mask = { ...source.bounds, reason: '动态房号' };
   assert.deepEqual(visibleMasks(mask, source, panels), [mask]);
   assert.deepEqual(visibleMasks(mask, { bounds: source.bounds }, panels), []);
+});
+
+test('Fabric 压平后的全屏兄弟节点不能误认为不透明面板', () => {
+  const marker = { res: 'drawer-menu-item-exit', bounds: { x: 0, y: 700, width: 328, height: 80 } };
+  const panel = { bounds: { x: 0, y: 0, width: 328, height: 800 }, children: [marker] };
+  const full = { x: 0, y: 0, width: 720, height: 1280 };
+  const background = { res: 'table-background', bounds: full };
+  const touch = { res: 'screen-mask-touch-to-close', bounds: full };
+  const root = { bounds: full, children: [background, touch, panel] };
+  assert.deepEqual(foregroundPanels([root, background, touch, panel, marker]), [panel]);
 });
