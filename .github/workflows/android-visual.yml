@@ -139,9 +139,10 @@ jobs:
         run: node android/build-driver.mjs
       - name: 准备固定 Android 系统镜像
         run: |
-          (yes || true) | sdkmanager --licenses > /dev/null
+          sdk_manager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          (yes || true) | "$sdk_manager" --licenses > /dev/null
           for attempt in 1 2 3; do
-            if sdkmanager --install 'system-images;android-35;google_apis;x86_64' &&
+            if "$sdk_manager" --install 'system-images;android-35;google_apis;x86_64' &&
               test -f "$ANDROID_HOME/system-images/android-35/google_apis/x86_64/system.img"; then
               break
             fi

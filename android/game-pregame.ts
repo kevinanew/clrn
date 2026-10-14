@@ -75,7 +75,10 @@ export async function gamePreGame(device: AndroidDevice, game: 'texas-holdem' | 
   await tap(device, 'game-record-button');
   await gameReady(device, 'review-board-description-text');
   await capture('game_record');
-  await closeGameMask(device, 'review-board-description-text');
+  // 战绩从右侧展开；说明文字只占面板中间，不能用其边界判断遮罩位置。
+  const reviewMask = (await gameReady(device, 'screen-mask-touch-to-close')).bounds;
+  adb('shell', 'input', 'tap', String(Math.round(reviewMask.x + 8)), String(Math.round(reviewMask.y + 80)));
+  await gameGone(device, 'review-board-description-text');
   await tap(device, `${game}-chat-button`);
   await gameReady(device, 'in-game-chat-container');
   await capture('chat');
