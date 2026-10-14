@@ -6,6 +6,12 @@ on:
     paths: ['visual/**', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', 'scripts/*ci*', '.github/workflows/visual.yml']
   schedule:
     - cron: '12 22 * * *'
+  workflow_call:
+    inputs:
+      expected_application_commit:
+        description: '本轮 staging 部署的完整应用提交编号'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       full:
@@ -62,6 +68,7 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-jammy
     env:
+      CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
       CI: 'true'
       PUPPETEER_SKIP_DOWNLOAD: 'true'
       VISUAL_SKIP_VISUAL_INSTALL: 'true'
@@ -106,6 +113,11 @@ jobs:
           pnpm run typecheck
           pnpm run test:gallery
           if [ '${{ inputs.mode }}' != reference ]; then pnpm run test:scenarios; fi
+      - name: 等待本次 staging 部署生效
+        id: deployment
+        if: inputs.expected_application_commit != ''
+        working-directory: .
+        run: node scripts/staging-deployment.mjs wait
       - name: Run visual suite
         working-directory: visual
         env:
@@ -124,6 +136,10 @@ jobs:
           name: visual-${{ matrix.suite }}-${{ matrix.locale }}-reference
           path: visual/cases/*/snapshots/*.png
           if-no-files-found: error
+      - name: 确认测试期间应用版本未被覆盖
+        if: always() && !cancelled() && steps.deployment.outcome == 'success'
+        working-directory: .
+        run: node scripts/staging-deployment.mjs verify
       - name: Upload failure report
         if: failure()
         uses: actions/upload-artifact@v4

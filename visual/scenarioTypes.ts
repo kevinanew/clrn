@@ -1,11 +1,11 @@
-import { getVisualTestAccount } from './test-account';
+import { getVisualDeviceId, getVisualTestAccount } from './test-account';
 
 export const LANGUAGE_STORAGE_KEY = 'app.language.code.key';
 
 /**
- * 固定的 Web deviceId（localStorage['deviceId']），保证注册/登录 API 的 device_id 稳定。
+ * 当前账号的 Web deviceId；不同账号不再共用同一个设备标识。
  */
-export const VISUAL_DEVICE_ID = 'a7f3c2e8-4d61-4b0a-9c5e-7f2d1e3a8b46';
+export const VISUAL_DEVICE_ID = getVisualDeviceId();
 
 /**
  * 本轮视觉测试账号（仅 staging），由默认配置、本机启动脚本或 CI 专用池提供。

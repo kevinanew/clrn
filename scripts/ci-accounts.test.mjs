@@ -25,6 +25,24 @@ test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留�
   assert.throws(()=>visualAccountMatrix('29','typo'));
 });
 
+test('同一部署调用的四组工作流不重复分配账号', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'clrn-deployment-accounts-'));
+  const accounts = visualAccountMatrix('29', 'all', true).include.map(item => item.account);
+  try {
+    for (const mode of ['e2e', 'functional', 'interactions']) {
+      const output = join(directory, mode);
+      const result = spawnSync(process.execPath, ['scripts/plan-ci-accounts.mjs', mode], {
+        encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: output, GITHUB_RUN_ID: '29' },
+      });
+      assert.equal(result.status, 0, result.stderr);
+      accounts.push(readFileSync(output, 'utf8').trim().replace('account=', ''));
+    }
+    assert.equal(new Set(accounts).size, 12);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test('凭据按公开账号名读取，不依赖 Secret 排序，错误不包含密码', () => {
   const password='SensitiveTest1234';
   const accounts=ciAccounts.map(username=>({username,password,status:'ready'}));
@@ -50,7 +68,7 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
         encoding: 'utf8', env: { ...process.env, GITHUB_RUN_ID: '29', GITHUB_OUTPUT: output },
       });
       assert.equal(accountPlan.status, 0, accountPlan.stderr);
-      assert.equal(readFileSync(output, 'utf8'), `account=${allocateCiAccount('29')}\n`);
+      assert.equal(readFileSync(output, 'utf8'), `account=${allocateCiAccount('29', { e2e: 9, functional: 10, interactions: 11 }[mode])}\n`);
     }
     writeFileSync(output, '');
     const planned=spawnSync(process.execPath,['scripts/plan-ci-accounts.mjs','visual'],{
@@ -61,7 +79,7 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     const selected=include[0].account;
     const accounts=ciAccounts.map((username,i)=>({username,password:`FakePassword${i}123`,status:'ready'}));
     const configured=spawnSync(process.execPath,['scripts/configure-ci-account.mjs'],{
-      encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_ENV:environment,
+      encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'kevinanew/clrn',GITHUB_ENV:environment,
         CLRN_CI_ACCOUNT:selected,CLRN_CI_TEST_ACCOUNTS:JSON.stringify({accounts})},
     });
     assert.equal(configured.status,0,configured.stderr);
@@ -76,9 +94,18 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     assert.equal(Object.keys(values).length,6);
     assert.ok(configured.stdout.includes(`::add-mask::${password}`));
     assert.ok(!configured.stdout.includes(accounts.find(account=>account.username!==selected).password));
-    writeFileSync(environment,'');
+    writeFileSync(environment, '');
+    const foreignRepository = spawnSync(process.execPath, ['scripts/configure-ci-account.mjs'], {
+      encoding: 'utf8', env: { ...process.env, GITHUB_ACTIONS: 'true',
+        GITHUB_REPOSITORY: 'kevinanew/laiwan_react_native', GITHUB_ENV: environment,
+        CLRN_CI_ACCOUNT: selected, CLRN_CI_TEST_ACCOUNTS: JSON.stringify({ accounts }) },
+    });
+    assert.notEqual(foreignRepository.status, 0);
+    assert.match(foreignRepository.stderr, /只允许在 kevinanew\/clrn/);
+    assert.equal(readFileSync(environment, 'utf8'), '');
+    assert.ok(!foreignRepository.stdout.includes(password));
     const missing=spawnSync(process.execPath,['scripts/configure-ci-account.mjs'],{
-      encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_ENV:environment,
+      encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'kevinanew/clrn',GITHUB_ENV:environment,
         CLRN_CI_ACCOUNT:selected,CLRN_CI_TEST_ACCOUNTS:''},
     });
     assert.notEqual(missing.status,0);

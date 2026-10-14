@@ -3,6 +3,12 @@ name: H5 线上功能案例
 on:
   push:
     paths: ['e2e/**', 'scripts/*ci*', '.github/workflows/functional.yml']
+  workflow_call:
+    inputs:
+      expected_application_commit:
+        description: '本轮 staging 部署的完整应用提交编号'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       scope:
@@ -33,10 +39,11 @@ jobs:
       cancel-in-progress: false
       queue: max
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-jammy
     env:
+      CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
       E2E_STAGING_URL: ${{ vars.E2E_STAGING_URL }}
       TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
     steps:
@@ -68,6 +75,11 @@ jobs:
       - name: 检查测试账号及余额接口辅助代码
         working-directory: e2e
         run: npx playwright test test-user.spec.ts test-wallet.spec.ts --workers=1
+      - name: 等待本次 staging 部署生效
+        id: deployment
+        if: inputs.expected_application_commit != ''
+        working-directory: .
+        run: node scripts/staging-deployment.mjs wait
       - name: 运行线上 TypeScript 案例
         working-directory: e2e
         env:
@@ -82,6 +94,10 @@ jobs:
             # 注册／创建场景维持零重试，避免重复创建数据。
             npm run test:functional:existing -- --retries=1
           fi
+      - name: 确认测试期间应用版本未被覆盖
+        if: always() && !cancelled() && steps.deployment.outcome == 'success'
+        working-directory: .
+        run: node scripts/staging-deployment.mjs verify
       - name: 上传失败报告
         if: failure()
         uses: actions/upload-artifact@v4

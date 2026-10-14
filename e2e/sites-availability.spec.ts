@@ -100,8 +100,8 @@ for (const site of sites) {
     expect(response!.ok(), `HTTP 状态应成功: ${response!.status()} ${site.url}`).toBeTruthy();
 
     await expectSiteReady(page, site.url);
-    // 当前流水线会在部署前运行，因此仅在部署后显式指定目标提交时校验版本。
-    if (environment.expectedBuildSha) {
+    // 部署通知只携带 staging 提交；正式站仍执行可用性检查，不要求同步版本。
+    if (site.name === 'staging' && environment.expectedBuildSha) {
       await expectBuildVersion(page, site.url);
     }
   });

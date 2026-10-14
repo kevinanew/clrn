@@ -151,3 +151,15 @@ test('30 个并发任务使用 30 个不同账号，第 31 个任务不能复用
   await Promise.all(runs.map(run => run.finished));
   assert.deepEqual(await readdir(join(directory, 'locks')), []);
 });
+
+
+test('本机启动器拒绝 CI 专用账号，包括大小写变体', async t => {
+  for (const username of ['clrnci26100908', 'CLRNCI26100908']) {
+    const { pool } = await fixture(t, [username]);
+    const run = launch(t, pool, [process.execPath, '-e', 'console.log("SHOULD_NOT_START")']);
+    const result = await run.finished;
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /禁止使用 CLRN 的 CI 专用账号/);
+    assert.ok(!result.stdout.includes('SHOULD_NOT_START'));
+  }
+});

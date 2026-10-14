@@ -3,6 +3,7 @@ import { ciAccountCredentials } from './ci-accounts.mjs';
 
 // concurrency 在 job 开始前生效；这里仅注入已被该 job 独占账号的凭据。
 if (!process.env.GITHUB_ENV || process.env.GITHUB_ACTIONS !== 'true') throw new Error('CI 凭据注入只能在 GitHub Actions 内执行。');
+if (process.env.GITHUB_REPOSITORY !== 'kevinanew/clrn') throw new Error('CLRN 的 CI 账号只允许在 kevinanew/clrn 仓库使用。');
 const { username, password } = ciAccountCredentials(process.env.CLRN_CI_TEST_ACCOUNTS, process.env.CLRN_CI_ACCOUNT);
 // Mask 命令需要转义工作流控制字符，即使未来密码包含特殊字符也不能注入日志命令。
 console.log(`::add-mask::${password.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`);
