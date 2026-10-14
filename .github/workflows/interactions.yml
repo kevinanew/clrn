@@ -11,6 +11,12 @@ on:
       - 'e2e/package*.json'
       - 'scripts/*ci*'
       - '.github/workflows/interactions.yml'
+  workflow_call:
+    inputs:
+      expected_application_commit:
+        description: '本轮 staging 部署的完整应用提交编号'
+        required: true
+        type: string
   workflow_dispatch:
 
 permissions:
@@ -35,10 +41,11 @@ jobs:
       cancel-in-progress: false
       queue: max
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-jammy
     env:
+      CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
       CI: 'true'
       E2E_STAGING_URL: ${{ vars.E2E_STAGING_URL }}
     defaults:
@@ -54,10 +61,19 @@ jobs:
         run: node scripts/configure-ci-account.mjs
       - name: 安装测试依赖
         run: npm ci
+      - name: 等待本次 staging 部署生效
+        id: deployment
+        if: inputs.expected_application_commit != ''
+        working-directory: .
+        run: node scripts/staging-deployment.mjs wait
       - name: 运行桌面与触屏交互
         run: npm run test:interactions -- --grep-invert Freshchat
       - name: 运行真实 Freshchat 客服
         run: npm run test:freshchat
+      - name: 确认测试期间应用版本未被覆盖
+        if: always() && !cancelled() && steps.deployment.outcome == 'success'
+        working-directory: .
+        run: node scripts/staging-deployment.mjs verify
       - name: 上传失败报告
         if: failure()
         uses: actions/upload-artifact@v4
