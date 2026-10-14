@@ -1,6 +1,6 @@
 # Android Staging 视觉回归
 
-这里仅保存原生界面测试、截图基准和 Release 下载工具。应用源码和构建流程留在 `laiwan_react_native`；APK 下载到被 Git 忽略的 `android/artifacts/current/`，不提交到 clrn。
+这里仅保存原生界面测试、截图基准和 Release 下载工具。应用源码和构建流程留在 `laiwan_react_native`；Woodpecker 将 APK 发布到 clrn 的 Release，APK 下载到被 Git 忽略的 `android/artifacts/current/`，不提交到 clrn。
 
 ## 测试内容
 
@@ -29,9 +29,9 @@ ANDROID_RELEASE_TAG=android-visual-staging-7187-f00365042077 node android/downlo
 
 ## GitHub Actions
 
-工作流为 `Android Staging 视觉回归`。相关 PR、master 修改和每天定时任务会比较最新 APK；也可手动指定 Release 标签。此工作流与现有 H5 staging 部署验证独立，不修改 `deployments/staging.json`。
+工作流为 `Android Staging 视觉回归`。发布 Android Staging Release 后自动比较该标签对应的 APK；相关 PR、master 修改和每天定时任务会比较最新 APK，也可手动指定标签。Release 触发入口在工作流合入 master 后生效。此工作流与现有 H5 staging 部署验证独立，不修改 `deployments/staging.json`。
 
-应用仓库是私有仓库，需在 clrn 的 Actions Secrets 中设置 **`APP_RELEASE_READ_TOKEN`**，允许读取 `kevinanew/laiwan_react_native` 的 **Contents**。推荐只授予该仓库 Contents 读取权限的 fine-grained token；clrn 自带的 `GITHUB_TOKEN` 无法跨私有仓库读取 Release，SSH deploy key 也不适用于附件 API。凭据只注入下载步骤。首批测试无需账号 Secret。
+APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使用 GitHub Actions 内置的 `GITHUB_TOKEN`，工作流仅授予 `contents: read`，无需额外下载 Secret。Woodpecker 发布端的既有凭据需要 clrn Contents 读写权限。Release 附注标签指向 clrn 自己的提交，应用提交只记录在标签说明和 `build-info.json` 中，不导入应用 Git 历史。首批测试无需账号 Secret。
 
 比较失败时，从工作流产物下载 HTML 报告、实际图、预期图和差异图。附件保留 14 天，不重复上传完整 APK。缺失基准会失败，不会自动接受新截图。
 

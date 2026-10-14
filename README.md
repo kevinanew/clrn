@@ -130,4 +130,4 @@ CI 凭据注入只允许在 `kevinanew/clrn` 执行；`laiwan_react_native` 的�
 
 ## Android Staging 视觉回归
 
-原生 APK 的下载、模拟器运行和独立截图基准见 [android/README.md](android/README.md)。仅消费应用仓库的 Release 附件，不拉取应用源码。
+原生 APK 的下载、模拟器运行和独立截图基准见 [android/README.md](android/README.md)。仅消费 Woodpecker 发布到 clrn Release 的 APK 附件，不拉取应用源码，也不需要额外下载凭据。

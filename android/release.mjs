@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 
-export const applicationRepository = 'kevinanew/laiwan_react_native';
+export const releaseRepository = 'kevinanew/clrn';
 export const applicationId = 'com.ac.laiwanDev';
 export const packageName = 'laiwan-android-staging.apk';
 const releasePattern = /^android-visual-staging-(\d+)-([a-f0-9]{12})$/;

@@ -2,24 +2,24 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { applicationRepository, packageName, selectRelease, validateBuildInformation, verifyPackage } from './release.mjs';
+import { releaseRepository, packageName, selectRelease, validateBuildInformation, verifyPackage } from './release.mjs';
 
 const directory = fileURLToPath(new URL('./artifacts', import.meta.url));
 const tag = process.env.ANDROID_RELEASE_TAG || '';
 if (process.env.GITHUB_ACTIONS === 'true' && !process.env.GH_TOKEN) {
-  throw new Error('请在 clrn Actions Secrets 配置 APP_RELEASE_READ_TOKEN，以读取私有应用仓库的 Release。');
+  throw new Error('下载步骤需要把 GitHub Actions 内置 github.token 传入 GH_TOKEN。');
 }
 // 由 gh 管理认证；CI 仅在下载步骤注入只读 Token，不将凭据写入产物。
 const endpoint = tag
-  ? `repos/${applicationRepository}/releases/tags/${encodeURIComponent(tag)}`
-  : `repos/${applicationRepository}/releases?per_page=100`;
+  ? `repos/${releaseRepository}/releases/tags/${encodeURIComponent(tag)}`
+  : `repos/${releaseRepository}/releases?per_page=100`;
 const result = JSON.parse(execFileSync('gh', ['api', endpoint, ...(tag ? [] : ['--paginate', '--slurp'])],
   { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }));
 const release = selectRelease(tag ? [result] : result.flat(), tag);
 await mkdir(directory, { recursive: true });
 const temporary = await mkdtemp(join(directory, '.download-'));
 try {
-  execFileSync('gh', ['release', 'download', release.tag_name, '--repo', applicationRepository,
+  execFileSync('gh', ['release', 'download', release.tag_name, '--repo', releaseRepository,
     '--dir', temporary, '--pattern', 'build-info.json', '--pattern', packageName], { stdio: 'inherit' });
   const information = validateBuildInformation(JSON.parse(await readFile(join(temporary, 'build-info.json'), 'utf8')), release);
   await verifyPackage(join(temporary, packageName), information);
