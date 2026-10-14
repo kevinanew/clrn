@@ -1,0 +1,19 @@
+import { defineConfig } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
+
+export default defineConfig({
+  testDir: './tests',
+  outputDir: './test-results',
+  snapshotPathTemplate: process.env.GITHUB_ACTIONS === 'true'
+    ? '{testDir}/../snapshots/android-35-x86_64-720x1280-en/{arg}{ext}'
+    : '{testDir}/../snapshots/local/{arg}{ext}',
+  workers: 1,
+  fullyParallel: false,
+  forbidOnly: Boolean(process.env.CI),
+  retries: 0,
+  timeout: 180_000,
+  // 缺少基准属于失败，只有显式 reference 命令才能创建或替换基准。
+  updateSnapshots: 'none',
+  expect: { toMatchSnapshot: { threshold: 0.1, maxDiffPixels: 0 } },
+  reporter: [['list'], ['html', { outputFolder: fileURLToPath(new URL('./playwright-report', import.meta.url)), open: 'never' }]],
+});
