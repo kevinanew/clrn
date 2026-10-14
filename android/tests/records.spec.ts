@@ -8,6 +8,7 @@ import { launchApplication, waitForHall } from '../device';
 import { navigateScenario, reveal, selectLanguage, signIn, tap } from '../navigation';
 import { pressRecordControl, recordRow, recordSnapshots, reopenRecords, scrollRecords } from '../record-navigation';
 import { recordStates } from '../record-states';
+import { recordDeletion, legacyRecordEnd, v2RecordErrors } from '../record-extra';
 
 const locale = process.env.ANDROID_LOCALE || 'en';
 const enabled = ['all', 'records'].includes(process.env.ANDROID_GROUP || 'all');
@@ -21,14 +22,18 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
       // 登录前先设置版本；代理在真实登录成功后绑定实际用户 ID，不伪造登录态。
       await proxy.configure('pending-login', version, 'empty');
       const device = await launchApplication();
-      const { capture, complete } = recordSnapshots(device, scenario, testInfo, recordStates);
+      const { capture, complete } = recordSnapshots(device, scenario, testInfo, recordStates[version]);
       try {
         await waitForHall(device);
         await selectLanguage(device, locale);
         await signIn(device);
         await navigateScenario(device, { ...scenario, tabTestId: 'club-tab', visualReadySelector: '[data-testid="club-tab-screen"]' });
         await navigateScenario(device, scenario);
+        await proxy.mode('empty', true);
         await tap(device, 'game-record');
+        await device.wait({ res: version === 'legacy' ? 'progress-hud-activity-indicator' : 'loading-indicator' });
+        await capture('loading');
+        await proxy.release();
         await device.wait({ res: 'no-records-text' });
         await capture('empty');
         await proxy.mode('list');
@@ -75,11 +80,21 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
         await tap(device, header);
         await waitAbsent(device, { res: 'record-sum-score-text' });
         await capture('select_cancel');
+        await recordDeletion(device, capture);
         for (const [name, prefix] of [['Private Texas', 'private'], ['Club Cards', 'club']]) {
           await pressRecordControl(device, recordRow(name));
           await device.wait({ res: 'game-name-value-text', text: name });
           await device.wait({ res: 'detail-button' });
           await capture(`${prefix}_overview`);
+          if (prefix === 'private') {
+            await pressRecordControl(device, { text: 'Testing User' });
+            await device.wait({ res: version === 'legacy' ? 'player-name-text' : 'player-win-and-lose-relationship-list' });
+            await capture('private_relationship');
+            await pressRecordControl(device, { text: 'Opponent' });
+            await capture('private_relationship_switch');
+            await pressRecordControl(device, { text: 'Opponent' });
+            await waitAbsent(device, { res: version === 'legacy' ? 'player-name-text' : 'player-win-and-lose-relationship-list' });
+          }
           await tap(device, 'detail-button');
           await device.wait({ res: version === 'legacy' ? 'game-action-list-container' : 'review-board-action-list' });
           await capture(`${prefix}_actions`);
@@ -115,12 +130,17 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
         await pressRecordControl(device, version === 'legacy' ? { res: 'replay-tab-button' } : { text: /^(Replay|回放)$/i });
         await device.wait({ res: 'no-replay-text' });
         await capture('replay_empty');
+        await tap(device, 'navigation-bar-back-image');
+        await proxy.mode('list');
+        await reopenRecords(device);
+        if (version === 'legacy') await legacyRecordEnd(device, proxy, capture);
+        else await v2RecordErrors(device, proxy, capture);
         expect(Object.values((await proxy.status()).recordRequests).reduce((total, count) => total + count, 0)).toBeGreaterThan(0);
         complete();
       } catch (error) {
         await captureFailure(device, testInfo);
         throw error;
-      } finally { await device.close(); }
+      } finally { await proxy.release(); await device.close(); }
     }, true);
   });
 }

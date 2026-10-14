@@ -1,6 +1,7 @@
 import { waitAbsent } from './native-state';
 import { expect, type TestInfo } from '@playwright/test';
 import type { AndroidDevice, AndroidSelector } from 'playwright';
+import type { ScreenshotMask } from './screenshot';
 import { adb, compareScreenshot } from './device';
 import { reveal, tap } from './navigation';
 import type { VisualScenario } from '../visual/scenarioTypes';
@@ -68,7 +69,15 @@ export function recordSnapshots(device: AndroidDevice, scenario: VisualScenario,
       expect(state).toBe(states[index++]);
       expect(scenario.snapshotStates).toContain(state);
       await waitAbsent(device, { res: 'alert-message-text' });
-      await compareScreenshot(device, `${scenario.locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo);
+      if (!['delete_confirm', 'delete_blocked', 'delete_failure', 'list_failure', 'detail_failure'].includes(state)) {
+        await waitAbsent(device, { res: 'android:id/message' });
+      }
+      const masks: ScreenshotMask[] = [];
+      if (['loading', 'pagination_loading'].includes(state)) {
+        const spinner = await device.info({ clazz: 'android.widget.ProgressBar' });
+        masks.push({ ...spinner.bounds, reason: '加载场景仅遮罩已断言存在的旋转进度图案' });
+      }
+      await compareScreenshot(device, `${scenario.locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo, masks);
     },
     /** 检查所有声明的状态确实执行。 */
     complete: () => expect(index).toBe(states.length),

@@ -1,0 +1,129 @@
+import { expect } from '@playwright/test';
+import type { AndroidDevice } from 'playwright';
+import type { RecordProxy } from '../visual/cases/game-record/proxy';
+import { adb } from './device';
+import { exists, waitAbsent } from './native-state';
+import { tap, reveal } from './navigation';
+import { pressRecordControl, recordRow, reopenRecords, scrollRecords } from './record-navigation';
+
+type Capture = (state: string) => Promise<void>;
+
+/**
+ * 通过 Android 系统弹窗按钮完成确认或取消。
+ * @param device - 专用模拟器连接。
+ * @param confirm - 是否选择确认按钮。
+ */
+export async function recordDialog(device: AndroidDevice, confirm = true): Promise<void> {
+  await device.tap({ res: `android:id/button${confirm ? 1 : 2}` });
+  await waitAbsent(device, { res: 'android:id/message' });
+}
+
+/**
+ * 从指定战绩行内部真实左滑，定位露出的删除按钮。
+ * @param device - 专用模拟器连接。
+ * @param name - 共享夹具的房间名称。
+ */
+async function swipeRecord(device: AndroidDevice, name: string): Promise<void> {
+  await reveal(device, recordRow(name));
+  const row = (await device.info(recordRow(name))).bounds;
+  const list = (await device.info({ res: 'my-game-record-list' })).bounds;
+  const y = String(Math.round(row.y + row.height / 2));
+  adb('shell', 'input', 'swipe', String(Math.round(list.x + list.width * 0.85)), y,
+    String(Math.round(list.x + list.width * 0.25)), y, '600');
+  await device.wait({ res: 'delete-button' });
+}
+
+/**
+ * 点击已侧滑行的删除区域；同名隐藏按钮不能误选到其他记录行。
+ * @param device - 专用模拟器连接。
+ * @param name - 当前侧滑记录的名称。
+ */
+async function deleteRecord(device: AndroidDevice, name: string): Promise<void> {
+  const row = (await device.info(recordRow(name))).bounds;
+  const button = (await device.info({ res: 'delete-button' })).bounds;
+  await device.input.tap({ x: button.x + button.width / 2, y: row.y + row.height / 2 });
+}
+
+/**
+ * 验证两版共同的侧滑、确认、取消与进行中记录禁止删除。
+ * @param device - 专用模拟器连接。
+ * @param capture - 截图回调。
+ */
+export async function recordDeletion(device: AndroidDevice, capture: Capture): Promise<void> {
+  await swipeRecord(device, 'Private Texas');
+  await capture('swipe_delete');
+  await deleteRecord(device, 'Private Texas');
+  await device.wait({ res: 'android:id/button2' });
+  await capture('delete_confirm');
+  await recordDialog(device, false);
+  await capture('delete_cancel');
+  await deleteRecord(device, 'Private Texas');
+  await recordDialog(device);
+  await device.wait({ res: 'android:id/message', text: /.*(删除|刪除|delete).*/i });
+  await capture('delete_blocked');
+  await recordDialog(device);
+  await reopenRecords(device);
+}
+
+/**
+ * 覆盖旧版删除成功、失败、真实分页与重新进入列表。
+ * @param device - 专用模拟器连接。
+ * @param proxy - 共享 Web 战绩代理。
+ * @param capture - 截图回调。
+ */
+export async function legacyRecordEnd(device: AndroidDevice, proxy: RecordProxy, capture: Capture): Promise<void> {
+  await swipeRecord(device, 'Club Cards');
+  await deleteRecord(device, 'Club Cards');
+  await recordDialog(device);
+  await expect.poll(async () => (await proxy.status()).deleted).toContain('visual-record-club');
+  await waitAbsent(device, recordRow('Club Cards'));
+  await capture('delete_success');
+  await proxy.mode('delete-error');
+  await swipeRecord(device, 'Hall Texas');
+  await deleteRecord(device, 'Hall Texas');
+  await recordDialog(device);
+  await device.wait({ res: 'android:id/message', text: 'Visual record service unavailable' });
+  await capture('delete_failure');
+  await recordDialog(device);
+  await proxy.mode('paged', true);
+  await reopenRecords(device);
+  await device.wait(recordRow('Paged Texas 01'));
+  await scrollRecords(device, true);
+  await reveal(device, recordRow('No Hands'));
+  await device.wait({ res: 'pull-up-activity-indicator' });
+  await capture('pagination_loading');
+  await proxy.release();
+  await waitAbsent(device, { res: 'pull-up-activity-indicator' });
+  await reveal(device, recordRow('Long Room Name ABCDE'));
+  await capture('pagination_end');
+  await proxy.mode('list');
+  await reopenRecords(device);
+  await device.wait(recordRow('Private Texas'));
+  expect(await exists(device, recordRow('Club Cards'))).toBe(false);
+  await capture('reopen');
+}
+
+/**
+ * 覆盖新版列表错误、真实重试和详情错误，核对代理确实收到故障请求。
+ * @param device - 专用模拟器连接。
+ * @param proxy - 共享 Web 战绩代理。
+ * @param capture - 截图回调。
+ */
+export async function v2RecordErrors(device: AndroidDevice, proxy: RecordProxy, capture: Capture): Promise<void> {
+  await proxy.mode('list-error');
+  await device.input.press('Back');
+  await tap(device, 'game-record');
+  await device.wait({ res: 'android:id/message', text: 'Request failed with status code 503' });
+  await capture('list_failure');
+  const faults = (await proxy.status()).faultRequests;
+  expect(Object.values(faults).reduce((sum, count) => sum + count, 0)).toBeGreaterThan(0);
+  await proxy.mode('list');
+  await recordDialog(device);
+  await device.wait(recordRow('Private Texas'));
+  await capture('retry_success');
+  await proxy.mode('detail-error');
+  await pressRecordControl(device, recordRow('Private Texas'));
+  await device.wait({ res: 'android:id/message', text: 'Visual record service unavailable' });
+  await capture('detail_failure');
+  await recordDialog(device);
+}
