@@ -1,7 +1,7 @@
 import { test as base } from '@playwright/test';
 import type { AndroidDevice } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { adb, artifacts, launchApplication, waitForHall } from './device';
+import { artifacts, launchApplication, waitForHall } from './device';
 import { withAndroidProxy } from './proxy';
 import { captureFailure } from './diagnostics';
 import { selectLanguage } from './navigation';
@@ -33,7 +33,4 @@ test.afterEach(async ({ application }, testInfo) => {
   await testInfo.attach('build-info', { path: `${artifacts}/build-info.json`, contentType: 'application/json' });
   if (testInfo.status === testInfo.expectedStatus) return;
   await captureFailure(application.device, testInfo);
-  await testInfo.attach('runtime', {
-    body: adb('logcat', '-d', '-s', 'AndroidRuntime:E', 'ReactNativeJS:E'), contentType: 'text/plain',
-  }).catch(() => undefined);
 });

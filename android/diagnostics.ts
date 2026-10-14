@@ -16,7 +16,10 @@ export async function captureFailure(device: AndroidDevice, testInfo: TestInfo):
   }).catch(() => undefined);
   try {
     const filename = testInfo.outputPath('runtime.log');
-    await writeFile(filename, adb('logcat', '-d', '-b', 'crash', '-b', 'main', '-s', 'AndroidRuntime:E', 'ReactNativeJS:E'));
+    const logs = adb('logcat', '-d', '-b', 'all', '*:E').split('\n')
+      .filter(line => !/(access_token|refresh_token|authorization|password|Bearer\s)/i.test(line)
+        && !(process.env.VISUAL_PASSWORD && line.includes(process.env.VISUAL_PASSWORD))).join('\n');
+    await writeFile(filename, logs);
     await testInfo.attach('runtime', { path: filename, contentType: 'text/plain' });
   } catch { /* 截图和控件树仍可用于诊断。 */ }
   await device.close().catch(() => undefined);
