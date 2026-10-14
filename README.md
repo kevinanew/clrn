@@ -127,3 +127,7 @@ CI 凭据注入只允许在 `kevinanew/clrn` 执行；`laiwan_react_native` 的�
 测试注册／补钻仍使用既有 `TESTING_API_TOKEN`，仅在 Node 进程中调用。
 
 账号清单统一登记在 [PRD 账号池](https://github.com/kevinanew/laiwan_prd/blob/master/docs/测试与维护仓库.html#test-account-pool)，后续优先复用现有账号。
+
+## Android Staging 视觉回归
+
+原生 APK 的下载、模拟器运行和独立截图基准见 [android/README.md](android/README.md)。仅消费应用仓库的 Release 附件，不拉取应用源码。

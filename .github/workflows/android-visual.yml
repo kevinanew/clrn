@@ -1,0 +1,101 @@
+name: Android Staging 视觉回归
+
+on:
+  pull_request:
+    paths:
+      - 'android/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/android-visual.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'android/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/android-visual.yml'
+  schedule:
+    - cron: '42 22 * * *'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Android Staging Release 标签；留空选最新发布版本'
+        type: string
+        default: ''
+      mode:
+        description: '比较基准或生成待审查基准'
+        type: choice
+        options: [compare, reference]
+        default: compare
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-visual-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  visual:
+    # 私有附件凭据仅供本仓库分支使用。
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      ANDROID_SERIAL: emulator-5554
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: 下载并校验 Release APK
+        env:
+          GH_TOKEN: ${{ secrets.APP_RELEASE_READ_TOKEN }}
+          ANDROID_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: node android/download-release.mjs
+      - name: 安装原生控件测试驱动
+        run: npx playwright install android
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: 启用模拟器硬件加速
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: 原生页面截图回归
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ANDROID_VISUAL_MODE: ${{ inputs.mode || 'compare' }}
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          ram-size: 2048M
+          heap-size: 256M
+          disk-size: 4096M
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -camera-back none -camera-front none -skin 720x1280
+          script: node android/run-visual.mjs
+      - name: 保存报告、失败截图和构建身份
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-staging-visual-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          path: |
+            android/playwright-report/
+            android/test-results/
+            android/artifacts/current/build-info.json
+            android/artifacts/current/release.json
+      - name: 保存待审查基准
+        if: success() && inputs.mode == 'reference'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-staging-reference-${{ github.run_id }}
+          path: android/snapshots/
+          retention-days: 14
