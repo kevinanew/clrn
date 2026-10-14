@@ -26,7 +26,16 @@ export async function gameMenu(device: AndroidDevice, item: string, ready: strin
  */
 export async function closeGameMask(device: AndroidDevice, marker: string): Promise<void> {
   const { bounds } = await gameReady(device, 'screen-mask-touch-to-close');
-  adb('shell', 'input', 'tap', String(Math.round(bounds.x + 8)), String(Math.round(bounds.y + 8)));
+  const panel = (await gameReady(device, marker)).bounds;
+  const points = [
+    { x: bounds.x + bounds.width - 8, y: bounds.y + Math.min(80, bounds.height / 2) },
+    { x: bounds.x + 8, y: bounds.y + Math.min(80, bounds.height / 2) },
+    { x: bounds.x + bounds.width - 8, y: bounds.y + bounds.height - 32 },
+  ];
+  const point = points.find(item => item.x < panel.x || item.x > panel.x + panel.width
+    || item.y < panel.y || item.y > panel.y + panel.height);
+  expect(point, '遮罩上应有未被当前面板覆盖的区域').toBeDefined();
+  adb('shell', 'input', 'tap', String(Math.round(point!.x)), String(Math.round(point!.y)));
   await gameGone(device, marker);
 }
 
@@ -71,7 +80,7 @@ export async function gamePreGame(device: AndroidDevice, game: 'texas-holdem' | 
   await gameReady(device, 'in-game-chat-container');
   await capture('chat');
   const chat = (await gameReady(device, 'in-game-chat-mask')).bounds;
-  adb('shell', 'input', 'tap', String(Math.round(chat.x + 8)), String(Math.round(chat.y + 8)));
+  adb('shell', 'input', 'tap', String(Math.round(chat.x + 8)), String(Math.round(chat.y + 80)));
   await gameGone(device, 'in-game-chat-container');
   await tap(device, 'buy-in-application-button');
   await gameReady(device, 'buy-in-application-no-requests');
