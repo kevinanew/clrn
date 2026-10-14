@@ -103,9 +103,9 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
   const list = await device.info({ scrollable: true }).catch(() => undefined);
   if (list) {
     const { bounds } = list;
-    const horizontal = Math.round(bounds.x + bounds.width * 0.95);
+    const horizontal = Math.round(bounds.x + Math.min(8, bounds.width * 0.02));
     adb('shell', 'input', 'swipe', String(horizontal), String(Math.round(bounds.y + bounds.height * 0.2)),
-      String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)), '150');
+      String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)), '600');
   }
   let inputsFilled = false;
   let backgroundBanner: ScreenshotBounds | undefined;
