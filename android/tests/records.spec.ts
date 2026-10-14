@@ -93,7 +93,8 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
             await device.wait({ res: 'game-replay-item' });
             await capture('replay_list');
           }
-          await device.input.press('Back');
+          // Android 系统返回会先回到 Overview 标签；页头返回才离开战绩详情。
+          await tap(device, 'navigation-bar-back-image');
           await device.wait({ res: 'my-game-record-list' });
         }
         for (const [name, state, ready] of [
@@ -103,7 +104,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
           await pressRecordControl(device, recordRow(name));
           await device.wait({ res: ready });
           await capture(state);
-          await device.input.press('Back');
+          await tap(device, 'navigation-bar-back-image');
           await device.wait({ res: 'my-game-record-list' });
         }
         await proxy.mode('no-hands');

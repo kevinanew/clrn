@@ -17,7 +17,7 @@ export async function fillScenarioInputs(device: AndroidDevice, scenario: Visual
       const scrollable = await device.info({ scrollable: true }).catch(() => undefined);
       if (!scrollable) break;
       const { x, y, width, height } = scrollable.bounds;
-      const horizontal = String(Math.round(x + width * 0.95));
+      const horizontal = String(Math.round(x + Math.min(8, width * 0.02)));
       adb('shell', 'input', 'swipe', horizontal, String(Math.round(y + height * 0.2)),
         horizontal, String(Math.round(y + height * 0.85)), '600');
     }

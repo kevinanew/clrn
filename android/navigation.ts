@@ -5,6 +5,7 @@ import type { AndroidDevice, AndroidSelector } from 'playwright';
 import { nativeSelector } from './scenarios';
 import type { VisualScenario } from '../visual/scenarioTypes';
 import { adb } from './device';
+import type { ScreenshotBounds } from './screenshot';
 
 /**
  * 按原生控件定位；目标在列表下方时通过真实滑动寻找。
@@ -27,7 +28,8 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
       if (!scrollable) { await device.wait(selector, { timeout: 30_000 }); return; }
       const { bounds } = scrollable;
       // RN 的触摸识别需要连续移动事件；使用容器内的真实 swipe，不用单段手势误触按钮。
-      const horizontal = Math.round(bounds.x + bounds.width * 0.95);
+      // 滑杆会截获其轨道区域内的拖动；从滚动容器左侧留白发起纵向手势。
+      const horizontal = Math.round(bounds.x + Math.min(8, bounds.width * 0.02));
       adb('shell', 'input', 'swipe', String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)),
         String(horizontal), String(Math.round(bounds.y + bounds.height * 0.2)), '600');
     }
@@ -95,7 +97,7 @@ export async function returnToTabs(device: AndroidDevice): Promise<void> {
  * @param device - 专用模拟器连接。
  * @param scenario - Web 与 Android 共用的业务场景。
  */
-export async function navigateScenario(device: AndroidDevice, scenario: VisualScenario): Promise<void> {
+export async function navigateScenario(device: AndroidDevice, scenario: VisualScenario): Promise<ScreenshotBounds | undefined> {
   await returnToTabs(device);
   await tap(device, scenario.tabTestId || 'hall-tab');
   const list = await device.info({ scrollable: true }).catch(() => undefined);
@@ -106,7 +108,12 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
       String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)), '150');
   }
   let inputsFilled = false;
+  let backgroundBanner: ScreenshotBounds | undefined;
   for (const identifier of scenario.navClickTestIds) {
+    if (['search_sign_in_prompt', 'guest_game_sign_in_prompt'].includes(scenario.pageLabel)) {
+      // 原生 Dialog 会从无障碍树隐藏背景；在打开之前记录实际横幅边界。
+      backgroundBanner = (await device.info({ res: 'slot-banner' }).catch(() => undefined))?.bounds;
+    }
     if (identifier === 'advanced-options-button') {
       // 先填写首屏房名再展开下方选项，避免键盘收起后把高级区域滚回首屏。
       await fillScenarioInputs(device, scenario);
@@ -142,7 +149,7 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
   if (scenario.readyText) await device.wait({ text: scenario.readyText });
   if (scenario.waitForLoading) await waitAbsent(device, { clazz: 'android.widget.ProgressBar' });
   await waitAbsent(device, { res: 'alert-message-text' });
-
+  return backgroundBanner;
 }
 
 /**

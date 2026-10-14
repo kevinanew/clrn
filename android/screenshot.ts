@@ -6,13 +6,15 @@ import { setTimeout } from 'node:timers/promises';
 import { caretMask } from './caret-mask';
 
 export type ScreenshotMask = { x: number; y: number; width: number; height: number; reason: string };
+export type ScreenshotBounds = Omit<ScreenshotMask, 'reason'>;
 
 /**
  * 仅排除版本、日期和自动轮播帧，原始截图仍附在报告中供检查。
  * @param device - 专用模拟器连接。
  * @param scenario - 共用的页面场景。
+ * @param backgroundBanner - 打开原生弹窗前保存的背景横幅边界。
  */
-export async function screenshotMasks(device: AndroidDevice, scenario: VisualScenario): Promise<ScreenshotMask[]> {
+export async function screenshotMasks(device: AndroidDevice, scenario: VisualScenario, backgroundBanner?: ScreenshotBounds): Promise<ScreenshotMask[]> {
   const masks: ScreenshotMask[] = [];
   const input = await device.info({ clazz: 'android.widget.EditText', focused: true }).catch(() => undefined);
   if (input) {
@@ -34,10 +36,10 @@ export async function screenshotMasks(device: AndroidDevice, scenario: VisualSce
       masks.push({ ...node.bounds, x: 40, width: 640, reason: rule.selector });
     }
   }
-  if (['signed_in_hall', 'signed_in_hall_match'].includes(scenario.pageLabel)) {
-    const banner = await device.info({ res: 'slot-banner' }).catch(() => undefined);
+  if (['signed_in_hall', 'signed_in_hall_match', 'search_sign_in_prompt', 'guest_game_sign_in_prompt'].includes(scenario.pageLabel)) {
+    const banner = backgroundBanner || (await device.info({ res: 'slot-banner' }).catch(() => undefined))?.bounds;
     if (banner) {
-      const { x, y, width, height } = banner.bounds;
+      const { x, y, width, height } = banner;
       masks.push({ x: x + width * 0.52, y: y + height * 0.16, width: width * 0.4, height: height * 0.48,
         reason: '拉霸横幅自动轮播的三个图案；横幅文字、布局和按钮仍比较' });
     }

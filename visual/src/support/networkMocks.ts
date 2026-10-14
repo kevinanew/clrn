@@ -266,6 +266,12 @@ export async function mockVisualNetworkDependencies(
   // Freshchat 在线客服脚本是外部第三方资源（web 构建用占位 token），
   // 拉取慢且与视觉测试无关，直接屏蔽。
   await context.route(/freshchat\.com/, (route) => route.abort());
+  // Web 与原生 WebView 共用同一第三方反馈占位响应，不采集远端用户内容。
+  await context.route(/feedback\.userreport\.com/, route => route.fulfill({
+    status: 200,
+    contentType: 'text/html; charset=utf-8',
+    body: '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#f5f5f5"></body></html>',
+  }));
 
   if (!options.useMitmproxy) {
     await mockProxyMetadata(context);

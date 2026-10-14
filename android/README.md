@@ -45,9 +45,13 @@ APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使�
 
 ## 更新基准
 
-新增的 14 张英文账户页基准来自 [reference 38631551140](https://github.com/kevinanew/clrn/actions/runs/38631551140)，应用为 [Release 7211](https://github.com/kevinanew/clrn/releases/tag/android-staging-7211-d8e2e83aaabd)。14 个场景首轮全部通过，截图已检查：实际页面就绪、头像完整、账号展示数据一致，没有接受失败截图。其他新增场景仍在验证；完整 compare 验证记录尚待补齐。
+当前正在扩充并审查基准，独立 compare 全量验证完成前不能视为 CI 已通过。候选截图来自固定的 x86_64 环境，按实际通过场景和语言挑选，避免把产物中携带的旧基准误当作本轮结果。
 
-当前四张初始基准来自 [Android Staging Release 7187](https://github.com/kevinanew/clrn/releases/tag/android-visual-staging-7187-f00365042077)，由 [GitHub Actions reference 运行 38555441478](https://github.com/kevinanew/clrn/actions/runs/38555441478) 在上述固定环境生成，尺寸均为 720×1280。图片已逐张检查，包含完成初始化后的真实页面，没有加载态。基准保留 APK 当前外观：欢迎页与用户名登录页上的 Staging 提示仍会覆盖部分内容，用户名登录页底部条款与登录按钮也存在重叠。这些已有布局问题没有在本次测试接入中修复；后续应用修复后应重新审查并更新对应基准。
+- 账户页：每种语言的 12 个稳定场景来自 [reference 38635730370](https://github.com/kevinanew/clrn/actions/runs/38635730370)；昵称和简介的光标适配后另行补跑。
+- 游客页及四张认证冒烟图：来自 [reference 38636085095](https://github.com/kevinanew/clrn/actions/runs/38636085095)；弹窗背景中的拉霸图案另行补跑显式遮罩版本。
+- 钱包及帮助页：三种语言各 13 个已审查场景来自 [reference 38636704445](https://github.com/kevinanew/clrn/actions/runs/38636704445)；第三方反馈页改为复用 Web 空白响应后重新采集。
+
+这些运行使用 [Release 7213](https://github.com/kevinanew/clrn/releases/tag/android-staging-7213-b30e55cca0f3)。该版本包含认证页遮挡和分页组件修复，应用变更见 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)。后续大厅渐变组件修复的 APK 仍须完成全量回归。
 
 通过 GitHub CLI 指定包含工作流的分支和经确认的 Release 标签，生成候选基准：
 
@@ -65,7 +69,7 @@ gh workflow run android-visual.yml --repo kevinanew/clrn \
 ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visual.mjs
 ```
 
-新增用例使用 APK 暴露的原生 `testID`，等待目标控件就绪和位置稳定后，在实时控件边界内点击或滑动，不依赖固定屏幕坐标。先等待业务就绪标记，再等待截图稳定；像素阈值保持 `maxDiffPixels: 0`。版本、日期和横幅自动轮播图案采用显式小区域遮罩，报告同时保存原始截图与遮罩原因，遮罩面积超过 12% 会失败。
+新增用例使用 APK 暴露的原生 `testID`，等待目标控件就绪和位置稳定后，在实时控件边界内点击或滑动，不依赖固定屏幕坐标。先等待业务就绪标记，再等待截图稳定；像素阈值保持 `maxDiffPixels: 0`。版本、日期、输入光标和横幅自动轮播图案采用显式小区域遮罩，报告同时保存原始截图与遮罩原因，遮罩面积超过 12% 会失败。
 
 `ANDROID_GROUP` 支持 `guest`、`account`、`social`、`rooms`、`wallet-help`、`records` 和 `all`；`ANDROID_LOCALE` 支持 `en`、`zh-Hans`、`zh-Hant`。Actions 默认全组、全语言，也可用 `filter` 缩小调试范围。每组出现三次失败即停止该组，报告中的未执行用例不计为通过。
 

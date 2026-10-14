@@ -40,6 +40,9 @@ test('原生传输复用 Web 的动态 URL、商品和国家夹具，真实认�
   assert.equal(JSON.parse((await route(`${origin}/public/v10/profile/country`)).body).result.countryPhoneCode, '86');
   assert.equal(JSON.parse((await route(`${origin}/v10/alipay_order/goods`)).body).result.length, 7);
   assert.equal((await route('https://widget.freshchat.com/')).aborted, true);
+  const feedback = await route('https://feedback.userreport.com/visual-fixture/');
+  assert.equal(feedback.contentType, 'text/html; charset=utf-8');
+  assert.match(feedback.body, /<body[^>]*><\/body>/);
 });
 
 

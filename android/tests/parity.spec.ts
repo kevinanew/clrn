@@ -11,8 +11,8 @@ for (const scenario of androidScenarios(locale, process.env.ANDROID_GROUP)) {
       await signIn(application.device);
       application.signedIn = true;
     }
-    await navigateScenario(application.device, scenario);
+    const backgroundBanner = await navigateScenario(application.device, scenario);
     await compareScreenshot(application.device, `${locale}-${scenario.pageLabel.replaceAll('_', '-')}`, testInfo,
-      await screenshotMasks(application.device, scenario));
+      await screenshotMasks(application.device, scenario, backgroundBanner));
   });
 }
