@@ -36,6 +36,7 @@ export async function launchApplication(): Promise<AndroidDevice> {
   adb('shell', 'wm', 'density', '320');
   adb('shell', 'cmd', 'overlay', 'enable-exclusive', '--category', 'com.android.internal.systemui.navbar.gestural');
   adb('shell', 'settings', 'put', 'system', 'font_scale', '1.0');
+  adb('shell', 'settings', 'put', 'secure', 'spell_checker_enabled', '0');
   adb('shell', 'settings', 'put', 'system', 'accelerometer_rotation', '0');
   adb('shell', 'settings', 'put', 'system', 'user_rotation', '0');
   for (const setting of ['window_animation_scale', 'transition_animation_scale', 'animator_duration_scale']) {
@@ -82,6 +83,7 @@ export async function waitForHall(device: AndroidDevice): Promise<void> {
  */
 export async function compareScreenshot(device: AndroidDevice, name: string, testInfo: TestInfo, masks: ScreenshotMask[] = []): Promise<void> {
   let previous = maskScreenshot(await device.screenshot(), masks);
+  let stableSince = Date.now();
   let stable: Buffer | undefined;
   let original: Buffer | undefined;
   await expect(async () => {
@@ -89,9 +91,11 @@ export async function compareScreenshot(device: AndroidDevice, name: string, tes
     const current = maskScreenshot(original, masks);
     const equal = current.equals(previous);
     previous = current;
-    expect(equal, '页面必须连续两帧保持稳定').toBe(true);
+    if (!equal) stableSince = Date.now();
+    expect(equal, '页面像素必须保持稳定').toBe(true);
+    expect(Date.now() - stableSince, '页面须连续稳定两秒，等待系统滚动条淡出').toBeGreaterThanOrEqual(2000);
     stable = current;
-  }).toPass({ timeout: 30_000, intervals: [1000] });
+  }).toPass({ timeout: 30_000, intervals: [500] });
   if (masks.length) {
     await testInfo.attach(`${name}-original`, { body: original!, contentType: 'image/png' });
     await testInfo.attach(`${name}-masks`, { body: JSON.stringify(masks), contentType: 'application/json' });
