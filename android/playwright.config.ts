@@ -1,5 +1,5 @@
 import { defineConfig } from '@playwright/test';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 export default defineConfig({
   testDir: './tests',
@@ -15,5 +15,5 @@ export default defineConfig({
   // 缺少基准属于失败，只有显式 reference 命令才能创建或替换基准。
   updateSnapshots: 'none',
   expect: { toMatchSnapshot: { threshold: 0.1, maxDiffPixels: 0 } },
-  reporter: [['list'], ['html', { outputFolder: fileURLToPath(new URL('./playwright-report', import.meta.url)), open: 'never' }]],
+  reporter: [['list'], ['html', { outputFolder: path.join(__dirname, 'playwright-report'), open: 'never' }]],
 });

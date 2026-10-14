@@ -6,6 +6,9 @@ on:
   pull_request:
     paths:
       - 'android/**'
+      - 'visual/**'
+      - 'e2e/helpers/mitmproxy*.ts'
+      - 'scripts/*ci*'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/android-visual.yml'
@@ -13,6 +16,9 @@ on:
     branches: [master]
     paths:
       - 'android/**'
+      - 'visual/**'
+      - 'e2e/helpers/mitmproxy*.ts'
+      - 'scripts/*ci*'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/android-visual.yml'
@@ -38,23 +44,56 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  accounts:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: plan
+        run: node scripts/plan-ci-accounts.mjs android
   visual:
+    needs: accounts
+    name: Android (${{ matrix.locale }})
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.accounts.outputs.matrix) }}
+    concurrency:
+      group: h5-staging-account-${{ matrix.account }}
+      cancel-in-progress: false
+      queue: max
     # 私有附件凭据仅供本仓库分支使用。
     if: >-
       (github.event_name != 'release' || startsWith(github.event.release.tag_name, 'android-staging-')) &&
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 120
     env:
       CI: 'true'
       ANDROID_SERIAL: emulator-5554
+      ANDROID_LOCALE: ${{ matrix.locale }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
+      - name: 注入与 Web 共用账号池中的独占账号
+        env:
+          CLRN_CI_ACCOUNT: ${{ matrix.account }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS }}
+        run: node scripts/configure-ci-account.mjs
       - run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装共用网络代理
+        run: |
+          python -m venv e2e/.venv
+          e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
       - name: 下载并校验 Release APK
         env:
           GH_TOKEN: ${{ github.token }}
@@ -89,7 +128,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-staging-visual-${{ github.run_id }}-${{ github.run_attempt }}
+          name: android-staging-visual-${{ matrix.locale }}-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 14
           path: |
             android/playwright-report/
@@ -97,9 +136,9 @@ jobs:
             android/artifacts/current/build-info.json
             android/artifacts/current/release.json
       - name: 保存待审查基准
-        if: success() && inputs.mode == 'reference'
+        if: always() && inputs.mode == 'reference'
         uses: actions/upload-artifact@v4
         with:
-          name: android-staging-reference-${{ github.run_id }}
+          name: android-staging-reference-${{ matrix.locale }}-${{ github.run_id }}
           path: android/snapshots/
           retention-days: 14

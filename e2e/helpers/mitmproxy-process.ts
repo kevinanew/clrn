@@ -82,9 +82,11 @@ export class MitmdumpProcess {
  * @param directory - 代理独立配置与证书目录。
  * @param token - 仅用于测试接口或代理控制接口的认证凭据。
  * @param addonPath - 可选代理插件路径。
+ * @param environment - 本轮代理的环境配置，原生适配器可传入专用夹具服务地址。
  */
 export function startMitmdump(port: number, directory: string, token: string,
-  addonPath = path.resolve(__dirname, '../mitmproxy/network_faults.py')): MitmdumpProcess {
+  addonPath = path.resolve(__dirname, '../mitmproxy/network_faults.py'),
+  environment: NodeJS.ProcessEnv = process.env): MitmdumpProcess {
   const executable = process.env.MITMDUMP_PATH || process.env.E2E_MITMDUMP_PATH
     || path.resolve(__dirname, '../.venv/bin/mitmdump');
   const child = spawn(executable, [
@@ -96,7 +98,7 @@ export function startMitmdump(port: number, directory: string, token: string,
     '--set', 'termlog_verbosity=error',
     '-s', addonPath,
   ], {
-    env: { ...process.env, MITMPROXY_CONTROL_TOKEN: token },
+    env: { ...environment, MITMPROXY_CONTROL_TOKEN: token },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   return new MitmdumpProcess(child);

@@ -1,13 +1,13 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { _android, type AndroidDevice } from 'playwright';
 import { expect, type TestInfo } from '@playwright/test';
 // @ts-expect-error 元数据验证模块也供纯 Node 下载入口使用。
 import { applicationId, packageName, readVerifiedBuild } from './release.mjs';
 
 export { applicationId };
-export const artifacts = fileURLToPath(new URL('./artifacts/current', import.meta.url));
+export const artifacts = path.join(__dirname, 'artifacts/current');
 
 /**
  * 执行限定模拟器的 Android 调试命令，拒绝默认选中手机。

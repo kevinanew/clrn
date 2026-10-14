@@ -1,0 +1,23 @@
+import { buildScenarios, type VisualScenario } from '../visual/scenarios';
+import type { AndroidSelector } from 'playwright';
+
+/**
+ * 将共享页面清单中的 testID 选择器映射到原生控件；拒绝悄悄忽略复杂 CSS。
+ * @param selector - Web 场景的就绪或消失选择器。
+ */
+export function nativeSelector(selector: string): AndroidSelector {
+  const match = /^\[data-testid(\^=|\$=|=)"([^"]+)"\](?: input)?$/.exec(selector);
+  if (!match) throw new Error(`原生端需要显式适配选择器：${selector}`);
+  const [, operator, value] = match;
+  const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return { res: operator === '=' ? value : new RegExp(operator === '^=' ? `^${escaped}.*` : `.*${escaped}$`) };
+}
+
+/**
+ * 使用 Web 的同一份手机场景清单；桌面留白不产生额外安卓场景。
+ * @param locale - 本轮应用语言。
+ */
+export function androidScenarios(locale: string): VisualScenario[] {
+  return buildScenarios({ VISUAL_LOCALES: locale, VISUAL_SCOPE: 'full', VISUAL_SUITE: 'app' })
+    .filter(scenario => scenario.viewport.label === 'mobile' && scenario.group !== 'game-record');
+}
