@@ -36,9 +36,10 @@ test('Android Staging 登录与找回密码页面视觉回归', async ({}, testI
     if (device) {
       await testInfo.attach('last-screen', { body: await device.screenshot(), contentType: 'image/png' }).catch(() => undefined);
       try {
-        adb('shell', 'uiautomator', 'dump', '/sdcard/clrn-visual-hierarchy.xml');
+        // 复用 Playwright 的 UiAutomation 连接，另起 uiautomator 会争抢同一个系统服务。
+        const hierarchy = await device.info({ depth: 0 });
         await testInfo.attach('android-view-hierarchy', {
-          body: adb('shell', 'cat', '/sdcard/clrn-visual-hierarchy.xml'), contentType: 'application/xml',
+          body: JSON.stringify(hierarchy, null, 2), contentType: 'application/json',
         });
       } catch (error) {
         await testInfo.attach('android-view-hierarchy-error', { body: String(error), contentType: 'text/plain' });
