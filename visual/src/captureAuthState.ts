@@ -9,7 +9,7 @@
 
 import { chromium } from '@playwright/test';
 import fs from 'fs';
-import { LANGUAGE_STORAGE_KEY, VISUAL_TEST_USERNAME, VISUAL_TEST_PASSWORD } from '../scenarios';
+import { LANGUAGE_STORAGE_KEY, VISUAL_DEVICE_ID, VISUAL_TEST_USERNAME, VISUAL_TEST_PASSWORD } from '../scenarios';
 import { ensureAppReadyPastStaging, ensureSignedIn, waitForSignInState } from './support/authFlow';
 import {
   AUTH_STATE_PATH,
@@ -27,7 +27,7 @@ import { getVisualSuite } from '../visual-suite';
 import { visualBaseUrl as baseUrl } from '../target';
 const username = VISUAL_TEST_USERNAME;
 const password = VISUAL_TEST_PASSWORD;
-const deviceId = process.env.VISUAL_DEVICE_ID || 'a7f3c2e8-4d61-4b0a-9c5e-7f2d1e3a8b46';
+const deviceId = VISUAL_DEVICE_ID;
 const MAX_CAPTURE_ATTEMPTS = Number(process.env.VISUAL_AUTH_CAPTURE_ATTEMPTS || 3);
 
 const BROWSER_LAUNCH_ARGS = [

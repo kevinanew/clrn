@@ -9,6 +9,10 @@
 本机凭据维护在 Git 共同元数据目录的 `clrn-test-accounts/accounts.json`，CI 凭据维护在
 `CLRN_CI_TEST_ACCOUNTS` Actions Secret，恢复备份为同目录下的 `ci-accounts.json`；凭据文件权限为 0600。
 
+两组账号仅供 CLRN 使用，不与 `laiwan_react_native` 的独立测试或人工调试共用。
+主应用部署后只触发 CLRN，由 CLRN 自己取得 CI 账号锁。其他项目需要登录时使用自己的账号。
+CI 凭据注入检查仓库归属；本机启动器拒绝加载 CI 专用账号，避免本机锁绕过 GitHub 的账号锁。
+
 本机功能、视觉、交互和 Freshchat 测试通过 `node ../scripts/with-test-account.mjs -- <测试命令>`
 取得独占账号。CI 由各工作流分配账号并通过账号级并发组互斥，不同账号可以同时运行。
 密码目前为独立的 16 位，H5 输入框上限为 20 位；密码变更后同步凭据文件，CI 还需更新 Secret。

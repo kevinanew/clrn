@@ -3,6 +3,12 @@ name: H5 E2E
 on:
   push:
     paths: ['e2e/**', 'scripts/*ci*', '.github/workflows/e2e.yml']
+  workflow_call:
+    inputs:
+      expected_application_commit:
+        description: '本轮 staging 部署的完整应用提交编号'
+        required: true
+        type: string
   workflow_dispatch:
 
 permissions:
@@ -28,10 +34,11 @@ jobs:
       queue: max
     # setup-python 使用 runner 的工具缓存，需与 Jammy 容器的 glibc 匹配。
     runs-on: ubuntu-22.04
-    timeout-minutes: 25
+    timeout-minutes: 35
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-jammy
     env:
+      CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
       CI: 'true'
       E2E_WORKERS: '1'
       E2E_RETRIES: '1'
@@ -58,8 +65,17 @@ jobs:
           .venv/bin/python -m pip install -r mitmproxy/requirements.txt
       - name: Check mitmproxy addon
         run: .venv/bin/python -m unittest discover -s mitmproxy -p 'test_*.py'
+      - name: 等待本次 staging 部署生效
+        id: deployment
+        if: inputs.expected_application_commit != ''
+        working-directory: .
+        run: node scripts/staging-deployment.mjs wait
       - name: Run E2E tests
         run: npm test
+      - name: 确认测试期间应用版本未被覆盖
+        if: always() && !cancelled() && steps.deployment.outcome == 'success'
+        working-directory: .
+        run: node scripts/staging-deployment.mjs verify
       - name: Upload failure report
         if: failure()
         uses: actions/upload-artifact@v4

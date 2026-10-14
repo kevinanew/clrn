@@ -1,5 +1,6 @@
 import { type BrowserContext, expect, type Response, type Page } from '@playwright/test';
 import { environment } from './environment';
+import { confirmStagingNotice } from './staging-notice';
 
 const RETRYABLE_NAVIGATION_ERRORS =
   /(?:page\.goto: Timeout \d+ms exceeded|net::ERR_(?:CONNECTION_(?:ABORTED|CLOSED|RESET)|NETWORK_CHANGED|TIMED_OUT)|is interrupted by another navigation to "chrome-error:\/\/chromewebdata\/")/;
@@ -52,11 +53,9 @@ export async function initializePage(context: BrowserContext): Promise<void> {
  */
 export async function openHall(page: Page): Promise<void> {
   await page.goto(environment.stagingUrl, { waitUntil: 'domcontentloaded' });
-  await page
-    .getByRole('button', { name: /^(确定|OK)$/ })
-    .first()
-    .click({ timeout: 5_000 })
-    .catch(() => undefined);
+  await expect(page.getByTestId('hall-screen').or(page.getByTestId('staging-dialog')).first())
+    .toBeVisible({ timeout: 60_000 });
+  await confirmStagingNotice(page);
   await expect(page.locator('[data-testid="hall-screen"]')).toBeVisible({ timeout: 60_000 });
   await dismissAppAlert(page);
 }

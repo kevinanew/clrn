@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, type BrowserContext, type Locator, type Page } from '@playwright/test';
+import { confirmStagingNotice } from '../../helpers/staging-notice';
 
 /**
  * 查找当前页面内唯一可见的测试元素，排除导航历史中的隐藏页面。
@@ -43,11 +44,9 @@ export async function openHall(page: Page): Promise<void> {
   const response = await page.goto('/', { waitUntil: 'domcontentloaded' });
   expect(response?.ok(), '线上入口应返回成功状态').toBeTruthy();
   // staging 首次访问必须确认提示后才挂载大厅。
-  const ready = page.getByTestId('hall-screen').or(page.getByTestId('confirm-button'));
+  const ready = page.getByTestId('hall-screen').or(page.getByTestId('staging-dialog'));
   await expect(ready.first()).toBeVisible({ timeout: 60_000 });
-  if (await page.getByTestId('confirm-button').isVisible()) {
-    await (await unique(page, 'confirm-button')).click();
-  }
+  await confirmStagingNotice(page);
   await expect(await unique(page, 'hall-screen')).toBeVisible({ timeout: 60_000 });
 }
 

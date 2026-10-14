@@ -12,6 +12,7 @@ import { spawn, execFileSync } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ciAccounts } from './ci-accounts.mjs';
 
 // node 和脚本路径占据前两个参数；可选的 -- 用于分隔脚本和测试命令。
 const args = process.argv.slice(2);
@@ -59,6 +60,9 @@ async function run() {
   }
 
   // 自定义账号池也使用旁边的 locks；共享账号时必须指定相同的账号池文件。
+  if (accounts.some(account => ciAccounts.includes(account.username.toLowerCase()))) {
+    throw new Error('本机账号池禁止使用 CLRN 的 CI 专用账号，避免绕过 GitHub 账号锁');
+  }
   const locks = join(dirname(poolFile), 'locks');
   await mkdir(locks, { recursive: true, mode: 0o700 });
   for (const account of accounts) {
