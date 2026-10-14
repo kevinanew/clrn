@@ -3,10 +3,28 @@
 import json
 import os
 import urllib.request
+from urllib.parse import urlsplit
 from mitmproxy import http
+from presentation import AccountPresentation
 
 
 class AndroidVisualProxy:
+    def __init__(self):
+        self.presentation = AccountPresentation()
+
+    def response(self, flow):
+        if (not flow.response or flow.response.status_code != 200
+                or not flow.request.host.endswith('.api.staging.laiwan.shafayouxi.com')):
+            return
+        try:
+            body = flow.response.json()
+        except ValueError:
+            return
+        if self.presentation.normalize(urlsplit(flow.request.path).path, flow.request.method, body):
+            flow.response.content = json.dumps(body).encode()
+            for header in ('ETag', 'Content-MD5', 'Digest'):
+                flow.response.headers.pop(header, None)
+
     def request(self, flow):
         if flow.request.host == 'test-mitmproxy.invalid':
             if flow.request.headers.get('X-E2E-Control-Token') != os.environ['MITMPROXY_CONTROL_TOKEN']:

@@ -30,6 +30,16 @@ on:
         description: 'Android Staging Release 标签；留空选最新发布版本'
         type: string
         default: ''
+      group:
+        description: '业务组；默认全部'
+        type: choice
+        options: [all, guest, account, social, rooms, wallet-help]
+        default: all
+      locale:
+        description: '语言；默认三种语言'
+        type: choice
+        options: [all, zh-Hans, zh-Hant, en]
+        default: all
       filter:
         description: '可选场景正则；默认执行全部场景'
         type: string
@@ -58,10 +68,13 @@ jobs:
         with:
           node-version: '24'
       - id: plan
+        env:
+          CI_ANDROID_GROUP: ${{ inputs.group || 'all' }}
+          CI_ANDROID_LOCALE: ${{ inputs.locale || 'all' }}
         run: node scripts/plan-ci-accounts.mjs android
   visual:
     needs: accounts
-    name: Android (${{ matrix.locale }})
+    name: Android (${{ matrix.group }} / ${{ matrix.locale }})
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.accounts.outputs.matrix) }}
@@ -78,6 +91,7 @@ jobs:
     env:
       CI: 'true'
       ANDROID_SERIAL: emulator-5554
+      ANDROID_GROUP: ${{ matrix.group }}
       ANDROID_LOCALE: ${{ matrix.locale }}
       ANDROID_FILTER: ${{ inputs.filter || '' }}
     steps:
@@ -97,6 +111,7 @@ jobs:
           python-version: '3.12'
       - name: 安装共用网络代理
         run: |
+          python -m unittest discover -s android -p 'test_*.py'
           python -m venv e2e/.venv
           e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
       - name: 下载并校验 Release APK
@@ -133,7 +148,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-staging-visual-${{ matrix.locale }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: android-staging-visual-${{ matrix.group }}-${{ matrix.locale }}-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 14
           path: |
             android/playwright-report/
@@ -144,6 +159,6 @@ jobs:
         if: always() && inputs.mode == 'reference'
         uses: actions/upload-artifact@v4
         with:
-          name: android-staging-reference-${{ matrix.locale }}-${{ github.run_id }}
+          name: android-staging-reference-${{ matrix.group }}-${{ matrix.locale }}-${{ github.run_id }}
           path: android/snapshots/
           retention-days: 14

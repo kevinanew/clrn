@@ -1,5 +1,5 @@
 import { appendFileSync } from 'node:fs';
-import { allocateCiAccount, visualAccountMatrix } from './ci-accounts.mjs';
+import { allocateCiAccount, visualAccountMatrix, androidAccountMatrix } from './ci-accounts.mjs';
 
 if (!process.env.GITHUB_OUTPUT) throw new Error('账号调度脚本只能由 GitHub Actions 执行。');
 const mode = process.argv[2];
@@ -8,9 +8,7 @@ if (mode === 'visual') {
   const matrix = visualAccountMatrix(runId, process.env.CI_VISUAL_SUITE || 'all', process.env.CI_VISUAL_FULL === 'true');
   appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\n`);
 } else if (mode === 'android') {
-  const matrix = { include: ['zh-Hans', 'zh-Hant', 'en'].map((locale, index) => ({
-    locale, account: allocateCiAccount(runId, 12 + index),
-  })) };
+  const matrix = androidAccountMatrix(runId, process.env.CI_ANDROID_GROUP || 'all', process.env.CI_ANDROID_LOCALE || 'all');
   appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\n`);
 } else if (['e2e', 'functional', 'interactions'].includes(mode)) {
   // 同一部署入口调用四组工作流时运行 ID 相同，前三组避开视觉的 0–8 号槽位。

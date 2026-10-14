@@ -37,6 +37,22 @@ export function visualAccountMatrix(runId, suite = 'all', full = false) {
 }
 
 /**
+ * 安卓各业务组与语言独占账号，仍使用 Web 的跨工作流账号锁。
+ * @param runId - 当前 GitHub Actions 运行编号。
+ * @param selectedGroup - 全部业务组或一个指定组。
+ * @param selectedLocale - 全部语言或一种指定语言。
+ */
+export function androidAccountMatrix(runId, selectedGroup = 'all', selectedLocale = 'all') {
+  const groups = ['guest', 'account', 'social', 'rooms', 'wallet-help'];
+  const locales = ['zh-Hans', 'zh-Hant', 'en'];
+  if (selectedGroup !== 'all' && !groups.includes(selectedGroup)) throw new Error('未知安卓业务组。');
+  if (selectedLocale !== 'all' && !locales.includes(selectedLocale)) throw new Error('未知安卓语言。');
+  return { include: groups.filter(group => selectedGroup === 'all' || group === selectedGroup)
+    .flatMap(group => locales.filter(locale => selectedLocale === 'all' || locale === selectedLocale)
+      .map(locale => ({ group, locale, account: allocateCiAccount(runId, 12 + groups.indexOf(group) * 3 + locales.indexOf(locale)) }))) };
+}
+
+/**
  * 从 Secret 中读取指定槽位的凭据，校验完整账号池并隐藏所有解析细节。
  * @param serialized - GitHub Actions Secret 中的账号池 JSON。
  * @param username - 调度阶段选出的公开账号名，必须属于 CI 专用清单。

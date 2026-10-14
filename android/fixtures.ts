@@ -33,11 +33,11 @@ test.afterEach(async ({ application }, testInfo) => {
   if (testInfo.status === testInfo.expectedStatus) return;
   await application.device.screenshot().then(body => testInfo.attach('last-screen', { body, contentType: 'image/png' }))
     .catch(() => undefined);
-  // info 的根节点包含完整子树，不释放当前测试连接即可保留错误现场。
+  // 驱动 info 返回单个节点；记录窗口根节点帮助判断是否意外离开应用。
   await application.device.info({ depth: 0 }).then(async tree => {
-    const filename = testInfo.outputPath('hierarchy.json');
+    const filename = testInfo.outputPath('window-root.json');
     await writeFile(filename, JSON.stringify(tree, null, 2));
-    await testInfo.attach('hierarchy', { path: filename, contentType: 'application/json' });
+    await testInfo.attach('window-root', { path: filename, contentType: 'application/json' });
   }).catch(() => undefined);
   await testInfo.attach('runtime', {
     body: adb('logcat', '-d', '-s', 'AndroidRuntime:E', 'ReactNativeJS:E'), contentType: 'text/plain',

@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { allocateCiAccount, ciAccountCredentials, ciAccounts, visualAccountMatrix } from './ci-accounts.mjs';
+import { allocateCiAccount, androidAccountMatrix, ciAccountCredentials, ciAccounts, visualAccountMatrix } from './ci-accounts.mjs';
 
 test('连续 30 个运行 ID 轮转全部账号，重跑和大整数 ID 分配稳定', () => {
   assert.equal(new Set(Array.from({length:30},(_,i)=>allocateCiAccount(String(100+i)))).size,30);
@@ -111,4 +111,18 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     assert.notEqual(missing.status,0);
     assert.equal(readFileSync(environment,'utf8'),'');
   } finally {rmSync(directory,{recursive:true,force:true});}
+});
+
+
+test('安卓十五组独占账号，与同次 Web 调度分离，筛选保持槽位', () => {
+  const full = androidAccountMatrix('29').include;
+  const web = visualAccountMatrix('29', 'all', true).include;
+  assert.equal(full.length, 15);
+  assert.equal(new Set([...full, ...web].map(item => item.account)).size, 24);
+  for (const group of ['guest', 'account', 'social', 'rooms', 'wallet-help']) {
+    assert.deepEqual(androidAccountMatrix('29', group, 'en').include,
+      full.filter(item => item.group === group && item.locale === 'en'));
+  }
+  assert.throws(() => androidAccountMatrix('29', 'typo'));
+  assert.throws(() => androidAccountMatrix('29', 'all', 'typo'));
 });

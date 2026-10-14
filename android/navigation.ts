@@ -14,7 +14,9 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
     try { await device.wait(selector, { timeout: attempt === 0 ? 7000 : 3000 }); return; }
     catch (error) {
       if (attempt === 8) throw error;
-      const { bounds } = await device.info({ scrollable: true });
+      const scrollable = await device.info({ scrollable: true }).catch(() => undefined);
+      if (!scrollable) { await device.wait(selector, { timeout: 30_000 }); return; }
+      const { bounds } = scrollable;
       // RN 的触摸识别需要连续移动事件；使用容器内的真实 swipe，不用单段手势误触按钮。
       const horizontal = Math.round(bounds.x + bounds.width * 0.95);
       adb('shell', 'input', 'swipe', String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)),
@@ -31,11 +33,23 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
 export async function tap(device: AndroidDevice, identifier: string): Promise<void> {
   console.log(`ANDROID > 点击 ${identifier}`);
   await reveal(device, { res: identifier });
-  if (identifier === 'username-or-email-sign-in-button') {
+  let previousBounds: unknown;
+  await expect(async () => {
     const { bounds } = await device.info({ res: identifier });
+    const previous = previousBounds;
+    previousBounds = bounds;
+    expect(bounds.width).toBeGreaterThan(0);
+    expect(bounds.height).toBeGreaterThan(0);
+    expect(bounds, '点击前控件位置必须稳定').toEqual(previous);
+  }).toPass({ timeout: 10_000, intervals: [200] });
+  const { bounds } = await device.info({ res: identifier });
+  const warning = await device.info({ res: 'switch-to-production-tip-container' }).catch(() => undefined);
+  const overlapsWarning = warning && bounds.y < warning.bounds.y + warning.bounds.height
+    && bounds.y + bounds.height > warning.bounds.y;
+  if (identifier === 'username-or-email-sign-in-button' || overlapsWarning) {
     await device.input.tap({ x: bounds.x + bounds.width - 10, y: bounds.y + bounds.height / 2 });
   } else {
-    await device.tap({ res: identifier });
+    await device.input.tap({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 });
   }
 }
 
@@ -47,7 +61,7 @@ export async function returnToTabs(device: AndroidDevice): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
     const close = await device.info({ res: 'close-user-authentication-button' }).catch(() => undefined);
     if (close && close.bounds.width > 0) {
-      await device.tap({ res: 'close-user-authentication-button' });
+      await tap(device, 'close-user-authentication-button');
       await device.wait({ res: 'settings-tab' });
       return;
     }
@@ -67,6 +81,13 @@ export async function returnToTabs(device: AndroidDevice): Promise<void> {
 export async function navigateScenario(device: AndroidDevice, scenario: VisualScenario): Promise<void> {
   await returnToTabs(device);
   await tap(device, scenario.tabTestId || 'hall-tab');
+  const list = await device.info({ scrollable: true }).catch(() => undefined);
+  if (list) {
+    const { bounds } = list;
+    const horizontal = Math.round(bounds.x + bounds.width * 0.95);
+    adb('shell', 'input', 'swipe', String(horizontal), String(Math.round(bounds.y + bounds.height * 0.2)),
+      String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)), '150');
+  }
   for (const identifier of scenario.navClickTestIds) {
     if (identifier === 'hall-sign-in-button') {
       await tap(device, 'settings-tab');

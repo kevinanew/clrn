@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { _android, type AndroidDevice } from 'playwright';
 import { expect, type TestInfo } from '@playwright/test';
+import { maskScreenshot, type ScreenshotMask } from './screenshot';
 // @ts-expect-error 元数据验证模块也供纯 Node 下载入口使用。
 import { applicationId, packageName, readVerifiedBuild } from './release.mjs';
 
@@ -77,17 +78,24 @@ export async function waitForHall(device: AndroidDevice): Promise<void> {
  * @param device - 专用模拟器连接。
  * @param name - 截图场景名称。
  * @param testInfo - Playwright 当前测试报告。
+ * @param masks - 明确排除的动态区域，报告保留原图和区域原因。
  */
-export async function compareScreenshot(device: AndroidDevice, name: string, testInfo: TestInfo): Promise<void> {
-  let previous = await device.screenshot();
+export async function compareScreenshot(device: AndroidDevice, name: string, testInfo: TestInfo, masks: ScreenshotMask[] = []): Promise<void> {
+  let previous = maskScreenshot(await device.screenshot(), masks);
   let stable: Buffer | undefined;
+  let original: Buffer | undefined;
   await expect(async () => {
-    const current = await device.screenshot();
+    original = await device.screenshot();
+    const current = maskScreenshot(original, masks);
     const equal = current.equals(previous);
     previous = current;
     expect(equal, '页面必须连续两帧保持稳定').toBe(true);
     stable = current;
   }).toPass({ timeout: 30_000, intervals: [1000] });
+  if (masks.length) {
+    await testInfo.attach(`${name}-original`, { body: original!, contentType: 'image/png' });
+    await testInfo.attach(`${name}-masks`, { body: JSON.stringify(masks), contentType: 'application/json' });
+  }
   await testInfo.attach(name, { body: stable!, contentType: 'image/png' });
   expect.soft(stable!).toMatchSnapshot(`${name}.png`);
 }

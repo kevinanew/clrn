@@ -16,8 +16,15 @@ export function nativeSelector(selector: string): AndroidSelector {
 /**
  * 使用 Web 的同一份手机场景清单；桌面留白不产生额外安卓场景。
  * @param locale - 本轮应用语言。
+ * @param group - 本轮独立运行的业务组。
  */
-export function androidScenarios(locale: string): VisualScenario[] {
+export function androidScenarios(locale: string, group = 'all'): VisualScenario[] {
+  if (!['all', 'guest', 'account', 'social', 'rooms', 'wallet-help'].includes(group)) throw new Error(`未知安卓业务组：${group}`);
   return buildScenarios({ VISUAL_LOCALES: locale, VISUAL_SCOPE: 'full', VISUAL_SUITE: 'app' })
-    .filter(scenario => scenario.viewport.label === 'mobile' && scenario.group !== 'game-record');
+    .filter(scenario => scenario.viewport.label === 'mobile' && scenario.group !== 'game-record')
+    .filter(scenario => {
+      const selected = !scenario.signIn ? 'guest' : scenario.group === 'account' ? 'account'
+        : scenario.group === 'private-room' ? 'rooms' : ['wallet', 'help'].includes(scenario.group) ? 'wallet-help' : 'social';
+      return group === 'all' || group === selected;
+    });
 }

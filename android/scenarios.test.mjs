@@ -37,3 +37,25 @@ test('原生传输复用 Web 的动态 URL、商品和国家夹具，真实认�
   assert.equal(JSON.parse((await route(`${origin}/v10/alipay_order/goods`)).body).result.length, 7);
   assert.equal((await route('https://widget.freshchat.com/')).aborted, true);
 });
+
+
+test('业务分组完整分割清单且没有重复或遗漏', () => {
+  const combined = ['guest', 'account', 'social', 'rooms', 'wallet-help']
+    .flatMap(group => androidScenarios('en', group).map(scenario => scenario.pageLabel));
+  assert.deepEqual(combined.sort(), androidScenarios('en').map(scenario => scenario.pageLabel).sort());
+  assert.throws(() => androidScenarios('en', 'typo'));
+});
+
+test('动态区域遮罩保留区域外像素，拒绝掩盖整页', () => {
+  const { PNG } = require('pngjs');
+  const { maskScreenshot } = require('./screenshot.ts');
+  const original = new PNG({ width: 100, height: 100 });
+  original.data.fill(255);
+  const bytes = PNG.sync.write(original);
+  const masked = PNG.sync.read(maskScreenshot(bytes, [{ x: 10, y: 20, width: 10, height: 10, reason: '日期' }]));
+  for (let y = 0; y < 100; y++) for (let x = 0; x < 100; x++) {
+    const pixel = [...masked.data.subarray((y * 100 + x) * 4, (y * 100 + x + 1) * 4)];
+    assert.deepEqual(pixel, x >= 10 && x < 20 && y >= 20 && y < 30 ? [230, 210, 235, 255] : [255, 255, 255, 255]);
+  }
+  assert.throws(() => maskScreenshot(bytes, [{ x: 0, y: 0, width: 100, height: 100, reason: '错误范围' }]), /12%/);
+});
