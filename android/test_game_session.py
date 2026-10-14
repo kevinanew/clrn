@@ -20,7 +20,7 @@ def login():
         'api_token': {'token_type': 'Bearer', 'access_token': 'test-token'}})
 
 
-def room(game='texas_react_native', room_id=ROOM):
+def room(game='texas_holdem', room_id=ROOM):
     return flow('/v3/pay_action/do', {'room_id': room_id}, {
         'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
         'action_json': {'game_type': game}})
@@ -28,7 +28,7 @@ def room(game='texas_react_native', room_id=ROOM):
 
 class GameSessionTests(unittest.TestCase):
     def test_only_first_created_target_room_is_owned(self):
-        session = GameSession('texas_react_native')
+        session = GameSession('texas_holdem')
         session.response(room())
         self.assertIsNone(session.room)
         session.response(login())
@@ -41,7 +41,7 @@ class GameSessionTests(unittest.TestCase):
             'authorization': 'Bearer test-token'})
 
     def test_failed_and_malformed_responses_never_create_ownership(self):
-        session = GameSession('texas_react_native')
+        session = GameSession('texas_holdem')
         failed = login()
         failed.response.status_code = 401
         session.response(failed)

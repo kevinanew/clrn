@@ -27,7 +27,7 @@ class AndroidVisualProxy:
             spec.loader.exec_module(module)
             self.game = module.TexasVisualProxy() if game_type == 'texas-holdem' else module.ZhajinhuaVisualProxy()
             self.game.scenario = 'visual-stable'
-            self.game_session = GameSession('texas_react_native' if game_type == 'texas-holdem' else 'zhajinhua')
+            self.game_session = GameSession('texas_holdem' if game_type == 'texas-holdem' else 'zhajinhua')
         if os.environ.get('ANDROID_RECORDS') == 'true':
             sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'visual/cases/game-record/mitmproxy'))
             from addon import GameRecordProxy
