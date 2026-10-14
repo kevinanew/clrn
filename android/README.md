@@ -6,7 +6,7 @@
 
 使用 Playwright Android 原生控件驱动操作正式构建的 Staging APK，正常完成初始化和真实账号登录。`scenarios.ts` 从 Web 的 `buildScenarios` 读取手机页面，共 75 个基础场景、三种语言，包含游客、认证、账号、社交、大厅、私人房建房表单、钱包和帮助页面。保留原有四张认证冒烟截图。网页的桌面留白不重复计入安卓覆盖；安卓截图独立保存，不能直接比较网页像素。
 
-牌桌回放和新旧战绩的多状态套件尚未接入这份基础清单，不能把 75 个基础场景理解为所有 Web 状态已经覆盖。新增用例仍须通过原生执行并审查基线，清单数量不等于通过数量。
+另外接入新旧两版战绩各 20 个状态，复用 Web 的战绩响应和状态命名，包括空列表、列表底部、分数选择汇总、详情、结算与回放入口。战绩加载、侧滑删除、故障恢复，以及德州和炸金花牌桌回放仍未接入，不能把当前清单理解为所有 Web 状态已经覆盖。新增用例仍须通过原生执行并审查基线，清单数量不等于通过数量。
 
 网络代理直接调用 Web 的 `mockVisualNetworkDependencies`，复用商品、私人房、俱乐部等响应夹具；未匹配的请求继续访问真实服务。真实登录成功后，仅将本人昵称、展示用户名、注册日期和余额固定为 `visual/fixtures/account-presentation.json`，身份和令牌保持原值，失败响应不改成成功。测试不发送验证码、不提交资料、建房表单或付款。
 
@@ -37,7 +37,7 @@ ANDROID_RELEASE_TAG='android-staging-<构建编号>-<提交前12位>' node andro
 
 工作流为 `Android Staging 视觉回归`。发布 Android Staging Release 后自动比较该标签对应的 APK；相关 PR 和 master 修改会比较最新 APK，也可手动指定标签。Release 触发入口在工作流合入 master 后生效。定时任务要求工作流存在于 GitHub 默认分支；仓库默认分支目前仍为 main，因此该定时入口暂不生效。此工作流与现有 H5 staging 部署验证独立，不修改 `deployments/staging.json`。
 
-APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使用 GitHub Actions 内置的 `GITHUB_TOKEN`，工作流仅授予 `contents: read`，无需额外下载 Secret。Woodpecker 发布端的既有凭据需要 clrn Contents 读写权限。Release 附注标签明确指向 clrn master 分支的提交，应用提交只记录在标签说明和 `build-info.json` 中，不导入应用 Git 历史。登录场景使用现有 `CLRN_CI_TEST_ACCOUNTS` 账号池；五个业务组乘三种语言分别分配独占账号，并与 Web 共用账号级 concurrency，避免相互作废会话。
+APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使用 GitHub Actions 内置的 `GITHUB_TOKEN`，工作流仅授予 `contents: read`，无需额外下载 Secret。Woodpecker 发布端的既有凭据需要 clrn Contents 读写权限。Release 附注标签明确指向 clrn master 分支的提交，应用提交只记录在标签说明和 `build-info.json` 中，不导入应用 Git 历史。登录场景使用现有 `CLRN_CI_TEST_ACCOUNTS` 账号池；六个业务组乘三种语言分别分配独占账号，并与 Web 共用账号级 concurrency，避免相互作废会话。
 
 比较失败时，从工作流产物下载 HTML 报告、实际图、预期图和差异图。附件保留 14 天，不重复上传完整 APK。缺失基准会失败，不会自动接受新截图。
 
@@ -63,6 +63,6 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 
 新增用例使用 APK 暴露的原生 `testID`，等待目标控件就绪和位置稳定后，在实时控件边界内点击或滑动，不依赖固定屏幕坐标。先等待业务就绪标记，再等待截图稳定；像素阈值保持 `maxDiffPixels: 0`。版本、日期和横幅自动轮播图案采用显式小区域遮罩，报告同时保存原始截图与遮罩原因，遮罩面积超过 12% 会失败。
 
-`ANDROID_GROUP` 支持 `guest`、`account`、`social`、`rooms`、`wallet-help` 和 `all`；`ANDROID_LOCALE` 支持 `en`、`zh-Hans`、`zh-Hant`。Actions 默认全组、全语言，也可用 `filter` 缩小调试范围。每组出现三次失败即停止该组，报告中的未执行用例不计为通过。
+`ANDROID_GROUP` 支持 `guest`、`account`、`social`、`rooms`、`wallet-help`、`records` 和 `all`；`ANDROID_LOCALE` 支持 `en`、`zh-Hans`、`zh-Hant`。Actions 默认全组、全语言，也可用 `filter` 缩小调试范围。每组出现三次失败即停止该组，报告中的未执行用例不计为通过。
 
 代理仅绑定主机回环地址，控制接口和夹具服务使用每轮随机令牌。只对显式选定的专用模拟器安装临时 CA 和配置代理，结束时还原代理设置；此环境不应拿来运行个人应用。

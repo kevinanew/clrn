@@ -54,7 +54,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: android-visual-${{ github.ref }}
+  group: android-visual-${{ github.ref }}-${{ inputs.group || 'all' }}-${{ inputs.locale || 'all' }}
   cancel-in-progress: false
 
 jobs:

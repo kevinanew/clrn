@@ -19,7 +19,7 @@ export async function screenshotMasks(device: AndroidDevice, scenario: VisualSce
       masks.push({ ...node.bounds, x: 40, width: 640, reason: rule.selector });
     }
   }
-  if (['signed_in_hall', 'signed_in_hall_match', 'signed_in_me'].includes(scenario.pageLabel)) {
+  if (['signed_in_hall', 'signed_in_hall_match'].includes(scenario.pageLabel)) {
     const banner = await device.info({ res: 'slot-banner' }).catch(() => undefined);
     if (banner) {
       const { x, y, width, height } = banner.bounds;

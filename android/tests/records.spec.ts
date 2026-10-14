@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { writeFile } from 'node:fs/promises';
+import { captureFailure } from '../diagnostics';
 import { buildScenarios } from '../../visual/scenarios';
 import { RecordProxy } from '../../visual/cases/game-record/proxy';
 import { withAndroidProxy } from '../proxy';
@@ -116,7 +116,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
         expect(Object.values((await proxy.status()).recordRequests).reduce((total, count) => total + count, 0)).toBeGreaterThan(0);
         complete();
       } catch (error) {
-        await device.screenshot().then(body => writeFile(testInfo.outputPath('last-screen.png'), body)).catch(() => undefined);
+        await captureFailure(device, testInfo);
         throw error;
       } finally { await device.close(); }
     }, true);

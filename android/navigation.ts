@@ -14,6 +14,13 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
     try { await device.wait(selector, { timeout: attempt === 0 ? 7000 : 3000 }); return; }
     catch (error) {
       if (attempt === 8) throw error;
+      const tutorial = await device.info({ res: 'stepDescription' }).catch(() => undefined);
+      if (tutorial) {
+        const finish = await device.info({ res: 'tooltip-finish-button' }).catch(() => undefined);
+        await device.tap({ res: finish ? 'tooltip-finish-button' : 'tooltip-next-button' });
+        if (finish) await device.wait({ res: 'stepDescription' }, { state: 'gone' });
+        continue;
+      }
       const scrollable = await device.info({ scrollable: true }).catch(() => undefined);
       if (!scrollable) { await device.wait(selector, { timeout: 30_000 }); return; }
       const { bounds } = scrollable;
@@ -97,6 +104,8 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
     await device.wait(nativeSelector(scenario.visualGoneSelector), { state: 'gone' });
   }
   if (scenario.readyText) await device.wait({ text: scenario.readyText });
+  if (scenario.waitForLoading) await device.wait({ clazz: 'android.widget.ProgressBar' }, { state: 'gone' });
+  await device.wait({ res: 'alert-message-text' }, { state: 'gone' });
   // 表单预填文字与 Web 相同，只编辑表单，不提交个人资料或创建房间。
   for (const rule of scenario.fixedTexts) {
     if (/input"\]$/.test(rule.selector)) {

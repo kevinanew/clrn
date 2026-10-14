@@ -3,6 +3,7 @@ import type { AndroidDevice } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { adb, artifacts, launchApplication, waitForHall } from './device';
 import { withAndroidProxy } from './proxy';
+import { captureFailure } from './diagnostics';
 import { selectLanguage } from './navigation';
 
 export const locale = process.env.ANDROID_LOCALE || 'en';
@@ -31,17 +32,7 @@ export const test = base.extend<{}, { application: { device: AndroidDevice; sign
 test.afterEach(async ({ application }, testInfo) => {
   await testInfo.attach('build-info', { path: `${artifacts}/build-info.json`, contentType: 'application/json' });
   if (testInfo.status === testInfo.expectedStatus) return;
-  await application.device.screenshot().then(async body => {
-    const filename = testInfo.outputPath('last-screen.png');
-    await writeFile(filename, body);
-    await testInfo.attach('last-screen', { path: filename, contentType: 'image/png' });
-  }).catch(() => undefined);
-  // 驱动 info 返回单个节点；记录窗口根节点帮助判断是否意外离开应用。
-  await application.device.info({ depth: 0 }).then(async tree => {
-    const filename = testInfo.outputPath('window-root.json');
-    await writeFile(filename, JSON.stringify(tree, null, 2));
-    await testInfo.attach('window-root', { path: filename, contentType: 'application/json' });
-  }).catch(() => undefined);
+  await captureFailure(application.device, testInfo);
   await testInfo.attach('runtime', {
     body: adb('logcat', '-d', '-s', 'AndroidRuntime:E', 'ReactNativeJS:E'), contentType: 'text/plain',
   }).catch(() => undefined);
