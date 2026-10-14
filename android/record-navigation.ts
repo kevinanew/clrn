@@ -8,11 +8,11 @@ import type { VisualScenario } from '../visual/scenarioTypes';
 /**
  * 通过与 Web 相同的房名定位原生记录行。
  * @param name - 共享夹具中的房名。
- * @param version - 当前战绩版本。
  */
-export function recordRow(name: string, version: 'legacy' | 'v2'): AndroidSelector {
-  return { res: version === 'legacy' ? 'right-content-button' : /^record-visual-record-.*/,
-    hasDescendant: { selector: { res: 'room-name-text', text: name } } };
+export function recordRow(name: string): AndroidSelector {
+  // Playwright Android 的 hasDescendant 在 Java 驱动中没有解包子选择器。
+  // 两版均直接定位可见房名，正常点击由其所属记录行处理。
+  return { res: 'room-name-text', text: name };
 }
 
 /**

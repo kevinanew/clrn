@@ -105,7 +105,13 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
     adb('shell', 'input', 'swipe', String(horizontal), String(Math.round(bounds.y + bounds.height * 0.2)),
       String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)), '150');
   }
+  let inputsFilled = false;
   for (const identifier of scenario.navClickTestIds) {
+    if (identifier === 'advanced-options-button') {
+      // 先填写首屏房名再展开下方选项，避免键盘收起后把高级区域滚回首屏。
+      await fillScenarioInputs(device, scenario);
+      inputsFilled = true;
+    }
     if (identifier === 'personal-house-create' || identifier === 'personal-house-join') {
       // 原生私人房标签直接显示房屋详情；共用的创建/加入入口实际位于大厅。
       await tap(device, 'hall-tab');
@@ -128,7 +134,7 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
       await tap(device, identifier);
     }
   }
-  await fillScenarioInputs(device, scenario);
+  if (!inputsFilled) await fillScenarioInputs(device, scenario);
   await reveal(device, nativeSelector(scenario.visualReadySelector));
   if (scenario.visualGoneSelector) {
     await waitAbsent(device, nativeSelector(scenario.visualGoneSelector));
@@ -152,6 +158,8 @@ export async function signIn(device: AndroidDevice): Promise<void> {
   await tap(device, 'username-or-email-sign-in-button');
   await device.wait({ res: 'username-input' });
   await device.fill({ res: 'username-input' }, username);
+  await device.input.press('Back');
+  await reveal(device, { res: 'password-input' });
   await device.fill({ res: 'password-input' }, password);
   await device.input.press('Back');
   await tap(device, 'sign-in-button');

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { androidScenarios, nativeSelector } = require('./scenarios.ts');
+const { androidScenarios, nativeSelector, unavailablePages } = require('./scenarios.ts');
 const { visualNetworkRouter } = require('./network-routes.ts');
 
 test('原生选择器不忽略 Web 复杂 CSS，前后缀匹配保留字面字符', () => {
@@ -13,8 +13,12 @@ test('原生选择器不忽略 Web 复杂 CSS，前后缀匹配保留字面字�
   assert.throws(() => nativeSelector('[data-testid="container"] > :last-child'));
 });
 
-test('三种语言沿用完全相同的 Web 手机业务页面清单且每页唯一', () => {
+test('三种语言沿用相同的 Web 手机业务页面，渠道差异显式列出', () => {
   const english = androidScenarios('en').map(scenario => scenario.pageLabel);
+  const { buildScenarios } = require('../visual/scenarios.ts');
+  const web = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SCOPE: 'full', VISUAL_SUITE: 'app' })
+    .filter(scenario => scenario.viewport.label === 'mobile' && scenario.group !== 'game-record');
+  assert.deepEqual(web.filter(scenario => !english.includes(scenario.pageLabel)).map(scenario => scenario.pageLabel), unavailablePages);
   assert.equal(new Set(english).size, english.length);
   for (const locale of ['zh-Hans', 'zh-Hant']) {
     assert.deepEqual(androidScenarios(locale).map(scenario => scenario.pageLabel), english);

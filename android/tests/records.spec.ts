@@ -33,14 +33,14 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
         await capture('empty');
         await proxy.mode('list');
         await reopenRecords(device);
-        await device.wait(recordRow('Private Texas', version));
+        await device.wait(recordRow('Private Texas'));
         await capture('list');
         if (version === 'v2') {
           await proxy.mode('paged');
           await reopenRecords(device);
         }
         await scrollRecords(device, true);
-        await reveal(device, recordRow('Long Room Name ABCDE', version));
+        await reveal(device, recordRow('Long Room Name ABCDE'));
         await capture('list_bottom');
         await proxy.mode('list');
         await reopenRecords(device);
@@ -55,7 +55,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
          */
         const select = async (key: string, name: string) => {
           if (version === 'v2') { await tap(device, `select-record-visual-record-${key}-button`); return; }
-          const { bounds } = await device.info(recordRow(name, version));
+          const { bounds } = await device.info(recordRow(name));
           const checkbox = await device.info({ res: 'select-status-button' });
           await device.input.tap({ x: checkbox.bounds.x + checkbox.bounds.width / 2, y: bounds.y + bounds.height / 2 });
         };
@@ -76,7 +76,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
         await waitAbsent(device, { res: 'record-sum-score-text' });
         await capture('select_cancel');
         for (const [name, prefix] of [['Private Texas', 'private'], ['Club Cards', 'club']]) {
-          await pressRecordControl(device, recordRow(name, version));
+          await pressRecordControl(device, recordRow(name));
           await device.wait({ res: 'game-name-value-text', text: name });
           await device.wait({ res: 'detail-button' });
           await capture(`${prefix}_overview`);
@@ -100,7 +100,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
           ['Hall Texas', 'hall_overview', version === 'legacy' ? 'game-hall-record-view' : 'game-record-player-item'],
           ['Short Deck', 'short_deck_overview', 'detail-button'],
         ]) {
-          await pressRecordControl(device, recordRow(name, version));
+          await pressRecordControl(device, recordRow(name));
           await device.wait({ res: ready });
           await capture(state);
           await device.input.press('Back');
@@ -108,7 +108,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
         }
         await proxy.mode('no-hands');
         await reopenRecords(device);
-        await pressRecordControl(device, recordRow('No Hands', version));
+        await pressRecordControl(device, recordRow('No Hands'));
         await device.wait({ res: version === 'legacy' ? 'no-hands-text' : 'no-hands-footer' });
         await capture('no_hands');
         await pressRecordControl(device, version === 'legacy' ? { res: 'replay-tab-button' } : { text: /^(Replay|回放)$/i });
