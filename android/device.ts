@@ -103,6 +103,7 @@ export async function waitForHall(device: AndroidDevice): Promise<void> {
  * @param masks - 明确排除的动态区域，报告保留原图和区域原因。
  */
 export async function compareScreenshot(device: AndroidDevice, name: string, testInfo: TestInfo, masks: ScreenshotMask[] = []): Promise<void> {
+  if (masks.length) await testInfo.attach(`${name}-masks`, { body: JSON.stringify(masks), contentType: 'application/json' });
   let previous = maskScreenshot(await device.screenshot(), masks);
   let stableSince = Date.now();
   let stable: Buffer | undefined;
@@ -119,7 +120,6 @@ export async function compareScreenshot(device: AndroidDevice, name: string, tes
   }).toPass({ timeout: 30_000, intervals: [500] });
   if (masks.length) {
     await testInfo.attach(`${name}-original`, { body: original!, contentType: 'image/png' });
-    await testInfo.attach(`${name}-masks`, { body: JSON.stringify(masks), contentType: 'application/json' });
   }
   await testInfo.attach(name, { body: stable!, contentType: 'image/png' });
   expect.soft(stable!).toMatchSnapshot(`${name}.png`);

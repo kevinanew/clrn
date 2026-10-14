@@ -14,8 +14,11 @@ type Capture = (state: string) => Promise<void>;
  * @param confirm - 是否选择确认按钮。
  */
 export async function recordDialog(device: AndroidDevice, confirm = true): Promise<void> {
+  await device.wait({ res: 'android:id/message' });
+  const message = await device.info({ res: 'android:id/message' });
   await device.tap({ res: `android:id/button${confirm ? 1 : 2}` });
-  await waitAbsent(device, { res: 'android:id/message' });
+  // 确认后可能立即出现新的业务错误弹窗；只等待当前文案消失。
+  await waitAbsent(device, { res: 'android:id/message', text: message.text });
 }
 
 /**

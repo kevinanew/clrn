@@ -26,6 +26,7 @@ export async function captureFailure(device: AndroidDevice, testInfo: TestInfo):
   try {
     // UiAutomation 同时只允许一个连接；先释放驱动，再用系统工具读取完整树。
     adb('shell', 'am', 'force-stop', 'com.microsoft.playwright.androiddriver');
+    adb('shell', 'rm', '-f', '/sdcard/clrn-visual-hierarchy.xml');
     adb('shell', 'uiautomator', 'dump', '/sdcard/clrn-visual-hierarchy.xml');
     const hierarchy = adb('shell', 'cat', '/sdcard/clrn-visual-hierarchy.xml')
       .replace(/<node\b[^>]*password="true"[^>]*>/g, node => node.replace(/text="[^"]*"/, 'text="[redacted]"'));

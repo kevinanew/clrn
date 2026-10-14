@@ -91,6 +91,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
             await reveal(device, { res: version === 'legacy' ? 'player-name-text' : 'player-win-and-lose-relationship-list' });
             await capture('private_relationship');
             await pressRecordControl(device, { res: 'player-nickname-text', text: 'Opponent' });
+            await reveal(device, { res: version === 'legacy' ? 'player-name-text' : 'player-win-and-lose-relationship-list' });
             await capture('private_relationship_switch');
             await pressRecordControl(device, { res: 'player-nickname-text', text: 'Opponent' });
             await waitAbsent(device, { res: version === 'legacy' ? 'player-name-text' : 'player-win-and-lose-relationship-list' });

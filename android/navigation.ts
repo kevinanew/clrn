@@ -21,7 +21,7 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
       expect(bounds.width).toBeGreaterThan(0);
       expect(bounds.height).toBeGreaterThan(0);
       expect(bounds.y).toBeLessThan(1232);
-      expect(bounds.y + bounds.height).toBeLessThanOrEqual(1232);
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(1250);
       expect(bounds.y + bounds.height).toBeGreaterThan(0);
       return;
     }

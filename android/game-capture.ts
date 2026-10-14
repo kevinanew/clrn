@@ -17,8 +17,18 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
     '截图前不能存在意外错误提示').toBe(false);
   const masks: ScreenshotMask[] = [];
   for (const node of nodes) {
+    if (/^seat-guide-\d+$/.test(node.res || '')) {
+      // Android 将越出父节点的箭头边界裁短；按共用 24×20 图案及 11dp 动画行程还原范围。
+      const scale = node.bounds.width / 24;
+      const height = 20 * scale;
+      masks.push({ x: node.bounds.x - 1, y: node.bounds.y + node.bounds.height - height - 1,
+        width: node.bounds.width + 2, height: height + 22 + 2, reason: `${node.res} 完整箭头动画范围` });
+      continue;
+    }
     if (['texas-holdem-room-id-text', 'zhajinhua-room-id-text'].includes(node.res || '')
-      || /^seat-guide-\d+$/.test(node.res || '')
+      || /^(texas-holdem|zhajinhua)-active-countdown$/.test(node.res || '')
+      || (['countdown-text', 'zhajinhua-countdown'].includes(node.res || '') && /^\d+:\d+/.test(node.text || ''))
+      || node.res === 'player-profile-id'
       || /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(node.text || '')) {
       masks.push({ ...node.bounds, reason: node.res || '本轮真实房间 UUID' });
     }
