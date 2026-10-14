@@ -1,6 +1,7 @@
 import { type BrowserContext, test as base, expect, type Page } from '@playwright/test';
 import { environment } from '../helpers/environment';
 import { gotoDeployedSite, initializePage } from '../helpers/page';
+import { confirmStagingNotice } from '../helpers/staging-notice';
 import { signIn } from '../cases/_shared/auth';
 import { clickAfterSignInNotices, installSignInNoticeHandler } from '../cases/_shared/sign-in-notices';
 
@@ -46,13 +47,11 @@ async function prepare(context: BrowserContext): Promise<void> {
  */
 export async function openApp(page: Page, signedIn = true): Promise<void> {
   await gotoDeployedSite(page, baseURL);
-  const startup = page.getByTestId('confirm-button');
+  const startup = page.getByTestId('staging-dialog');
   await expect(page.getByTestId('hall-screen').or(startup).first()).toBeVisible({
     timeout: 60_000,
   });
-  if (await startup.isVisible()) {
-    await startup.click();
-  }
+  await confirmStagingNotice(page);
   await expect(page.getByTestId('hall-screen')).toBeVisible({ timeout: 60_000 });
   if (signedIn) {
     await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible();
