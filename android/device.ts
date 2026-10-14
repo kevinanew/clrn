@@ -6,6 +6,7 @@ import { expect, type TestInfo } from '@playwright/test';
 // @ts-expect-error 元数据验证模块也供纯 Node 下载入口使用。
 import { applicationId, packageName, readVerifiedBuild } from './release.mjs';
 
+export { applicationId };
 export const artifacts = fileURLToPath(new URL('./artifacts/current', import.meta.url));
 
 /**
