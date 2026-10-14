@@ -1,0 +1,29 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { foregroundPanels, subtractPanel, visibleMasks } = require('./game-masks.ts');
+
+test('前景只裁掉相交区域，跨越面板边缘的背景箭头仍需遮罩', () => {
+  const mask = { x: 0, y: 0, width: 20, height: 20, reason: '座位动画' };
+  const parts = subtractPanel(mask, { x: 5, y: 5, width: 10, height: 10 });
+  for (let y = 0; y < 20; y++) for (let x = 0; x < 20; x++) {
+    const covered = parts.some(part => x >= part.x && x < part.x + part.width
+      && y >= part.y && y < part.y + part.height);
+    assert.equal(covered, !(x >= 5 && x < 15 && y >= 5 && y < 15));
+  }
+  assert.deepEqual(subtractPanel(mask, mask), []);
+  assert.deepEqual(subtractPanel(mask, { x: 20, y: 0, width: 10, height: 10 }), [mask]);
+});
+
+test('区分背景动画和前景房号，不能把整张屏幕或前景文字遮掉', () => {
+  const source = { bounds: { x: 30, y: 30, width: 20, height: 20 } };
+  const panel = { bounds: { x: 20, y: 20, width: 400, height: 600 }, children: [source] };
+  const touch = { res: 'screen-mask-touch-to-close', bounds: { x: 0, y: 0, width: 720, height: 1280 } };
+  const parent = { bounds: touch.bounds, children: [touch, panel] };
+  const panels = foregroundPanels([parent, touch, panel, source]);
+  assert.deepEqual(panels, [panel]);
+  const mask = { ...source.bounds, reason: '动态房号' };
+  assert.deepEqual(visibleMasks(mask, source, panels), [mask]);
+  assert.deepEqual(visibleMasks(mask, { bounds: source.bounds }, panels), []);
+});

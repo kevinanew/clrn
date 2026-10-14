@@ -110,11 +110,15 @@ export async function compareScreenshot(device: AndroidDevice, name: string, tes
   let stableSince = Date.now();
   let stable: Buffer | undefined;
   let original: Buffer | undefined;
+  let comparisonBefore = previous;
+  let comparisonAfter = previous;
   await expect(async () => {
     await transientState?.();
     original = await device.screenshot();
     await transientState?.();
     const current = maskScreenshot(original, masks);
+    comparisonBefore = previous;
+    comparisonAfter = current;
     const equal = current.equals(previous);
     previous = current;
     if (!equal) stableSince = Date.now();
@@ -122,7 +126,12 @@ export async function compareScreenshot(device: AndroidDevice, name: string, tes
     expect(Date.now() - stableSince, '普通页面等待滚动条淡出；短时提示须在可见期间连续稳定')
       .toBeGreaterThanOrEqual(transientState ? 250 : 2000);
     stable = current;
-  }).toPass({ timeout: 30_000, intervals: [transientState ? 100 : 500] });
+  }).toPass({ timeout: 30_000, intervals: [transientState ? 100 : 500] }).catch(async error => {
+    // 保留最后两帧及既有遮罩说明，便于定位真实动态区域，不自动扩大容差。
+    await testInfo.attach(`${name}-unstable-before`, { body: comparisonBefore, contentType: 'image/png' });
+    await testInfo.attach(`${name}-unstable-after`, { body: comparisonAfter, contentType: 'image/png' });
+    throw error;
+  });
   if (masks.length) {
     await testInfo.attach(`${name}-original`, { body: original!, contentType: 'image/png' });
   }
