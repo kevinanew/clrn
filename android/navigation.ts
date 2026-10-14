@@ -15,9 +15,19 @@ import type { ScreenshotBounds } from './screenshot';
  */
 export async function reveal(device: AndroidDevice, selector: AndroidSelector): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
-    try { await device.wait(selector, { timeout: attempt === 0 ? 7000 : 3000 }); return; }
+    try {
+      await device.wait(selector, { timeout: attempt === 0 ? 7000 : 3000 });
+      const { bounds } = await device.info(selector);
+      expect(bounds.width).toBeGreaterThan(0);
+      expect(bounds.height).toBeGreaterThan(0);
+      expect(bounds.y).toBeLessThan(1232);
+      expect(bounds.y + bounds.height).toBeGreaterThan(0);
+      return;
+    }
     catch (error) {
       if (attempt === 8) throw error;
+      // 输入法可能在 fill 返回后才完成弹出；每次滚动前重新确认，防止滑动变成手势输入。
+      await dismissKeyboard(device);
       const tutorial = await device.info({ res: 'stepDescription' }).catch(() => undefined);
       if (tutorial) {
         const finish = await device.info({ res: 'tooltip-finish-button' }).catch(() => undefined);
@@ -42,6 +52,16 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
         String(horizontal), String(Math.round(bounds.y + bounds.height * 0.2)), '600');
     }
   }
+}
+
+/**
+ * 点击玩法弹层的真实遮罩关闭，避免系统 Back 同时弹出底下的房间详情页。
+ * @param device - 专用模拟器连接。
+ */
+async function closeGamePicker(device: AndroidDevice): Promise<void> {
+  const { bounds } = await device.info({ res: 'select-game-category-text' });
+  adb('shell', 'input', 'tap', '10', String(Math.max(30, Math.round(bounds.y - 100))));
+  await waitAbsent(device, { res: 'select-game-category-text' });
 }
 
 /**
@@ -80,8 +100,13 @@ export async function tap(device: AndroidDevice, identifier: string): Promise<vo
 export async function returnToTabs(device: AndroidDevice): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
     if (await exists(device, { res: 'stepDescription' })) {
-      await device.tap({ res: await exists(device, { res: 'tooltip-finish-button' })
-        ? 'tooltip-finish-button' : 'tooltip-next-button' });
+      const buttons = await Promise.all(['tooltip-finish-button', 'tooltip-next-button']
+        .map(res => device.info({ res }).catch(() => undefined)));
+      const button = buttons.find(node => node && node.bounds.width > 0 && node.bounds.height > 0);
+      if (button) {
+        const { x, y, width, height } = button.bounds;
+        adb('shell', 'input', 'tap', String(Math.round(x + width / 2)), String(Math.round(y + height / 2)));
+      }
       continue;
     }
     if (await exists(device, { res: 'slot-machine-view' })) {
@@ -98,8 +123,11 @@ export async function returnToTabs(device: AndroidDevice): Promise<void> {
     const overlay = await exists(device, { res: 'select-game-category-text' }) ? 'select-game-category-text'
       : await exists(device, { res: 'base-create-room-screen' }) ? 'base-create-room-screen' : undefined;
     if (overlay) {
-      await device.input.press('Back');
-      await waitAbsent(device, { res: overlay });
+      if (overlay === 'select-game-category-text') await closeGamePicker(device);
+      else {
+        await device.input.press('Back');
+        await waitAbsent(device, { res: overlay });
+      }
       continue;
     }
     try { await device.wait({ res: 'settings-tab' }, { timeout: 3000 }); return; }
@@ -146,8 +174,7 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
       if (identifier === 'personal-house-create') {
         await reveal(device, { res: 'select-game-category-text' });
         if (!scenario.navClickTestIds.includes('create-game-button')) {
-          await device.input.press('Back');
-          await waitAbsent(device, { res: 'select-game-category-text' });
+          await closeGamePicker(device);
         }
       } else await reveal(device, { res: 'copy-house-number-button' });
     } else if (identifier === 'create-game-button' && await exists(device, { res: 'select-game-category-text' })) {

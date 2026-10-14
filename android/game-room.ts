@@ -4,7 +4,7 @@ import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { ensureRoomBalance, type Account, type RoomSession } from '../visual/cases/_shared/room';
 import { dismissKeyboard } from './keyboard';
 import { tap, returnToTabs } from './navigation';
-import { waitAbsent } from './native-state';
+import { gameReady, gameGone } from './game-controls';
 
 /**
  * 从认证的本机控制接口取得本轮真实会话；不将令牌写入日志或报告。
@@ -42,8 +42,8 @@ export async function createGameRoom(device: AndroidDevice, proxy: Mitmproxy,
     expect(room, '真实建房接口必须返回本轮新建的房间').not.toBeNull();
   }).toPass({ timeout: 60_000, intervals: [500] });
   onCreated(room!);
-  await device.wait({ res: 'run-game-view' }, { timeout: 60_000 });
-  await waitAbsent(device, { res: 'game-splash-screen-bg' });
-  await device.wait({ res: 'menu-button' }, { timeout: 60_000 });
+  await gameReady(device, 'run-game-view');
+  await gameGone(device, 'game-splash-screen-bg');
+  await gameReady(device, 'menu-button');
   return room!;
 }

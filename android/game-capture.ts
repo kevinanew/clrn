@@ -1,7 +1,8 @@
 import type { AndroidDevice } from 'playwright';
 import type { TestInfo } from '@playwright/test';
 import { compareScreenshot } from './device';
-import { waitAbsent } from './native-state';
+import { gameNodes } from './game-controls';
+import { expect } from '@playwright/test';
 import type { ScreenshotMask } from './screenshot';
 
 /**
@@ -11,14 +12,20 @@ import type { ScreenshotMask } from './screenshot';
  * @param testInfo - 当前测试报告。
  */
 export async function captureGame(device: AndroidDevice, name: string, testInfo: TestInfo): Promise<void> {
-  await waitAbsent(device, { res: 'android:id/message' });
+  const nodes = await gameNodes(device);
+  expect(nodes.some(node => node.res === 'android:id/message' || node.res === 'common-alert-message'),
+    '截图前不能存在意外错误提示').toBe(false);
   const masks: ScreenshotMask[] = [];
-  for (const res of ['texas-holdem-room-id-text', 'zhajinhua-room-id-text', 'ping-screen-text',
-    ...Array.from({ length: 10 }, (_, index) => `seat-guide-${index}`)]) {
-    const node = await device.info({ res }).catch(() => undefined);
-    if (node && node.bounds.width > 0 && node.bounds.height > 0) masks.push({ ...node.bounds, reason: res });
+  for (const node of nodes) {
+    if (['texas-holdem-room-id-text', 'zhajinhua-room-id-text'].includes(node.res || '')
+      || /^seat-guide-\d+$/.test(node.res || '')
+      || /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(node.text || '')) {
+      masks.push({ ...node.bounds, reason: node.res || '本轮真实房间 UUID' });
+    }
+    if (node.res === 'ping-screen-text') {
+      masks.push({ ...node.bounds, x: node.bounds.x + node.bounds.width / 2 - 40, width: 80, reason: '网络延迟数值' });
+    }
+    if (node.res === 'ping-screen-icon') masks.push({ ...node.bounds, reason: '网络延迟状态图标' });
   }
-  const identifier = await device.info({ text: /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i }).catch(() => undefined);
-  if (identifier) masks.push({ ...identifier.bounds, reason: '本轮真实房间 UUID' });
   await compareScreenshot(device, name, testInfo, masks);
 }

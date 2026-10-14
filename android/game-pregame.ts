@@ -1,7 +1,8 @@
 import type { AndroidDevice } from 'playwright';
 import { expect } from '@playwright/test';
-import { tap } from './navigation';
-import { exists, waitAbsent } from './native-state';
+import { gameTap as tap, gameReady, gameGone, gameNodes } from './game-controls';
+import { adb } from './device';
+
 
 type Capture = (state: string) => Promise<void>;
 
@@ -14,8 +15,8 @@ type Capture = (state: string) => Promise<void>;
 export async function gameMenu(device: AndroidDevice, item: string, ready: string): Promise<void> {
   await tap(device, 'menu-button');
   await tap(device, `drawer-menu-item-${item}`);
-  await waitAbsent(device, { res: 'drawer-menu-item-exit' });
-  await device.wait({ res: ready });
+  await gameGone(device, 'drawer-menu-item-exit');
+  await gameReady(device, ready);
 }
 
 /**
@@ -24,9 +25,9 @@ export async function gameMenu(device: AndroidDevice, item: string, ready: strin
  * @param marker - 当前面板标记。
  */
 export async function closeGameMask(device: AndroidDevice, marker: string): Promise<void> {
-  const { bounds } = await device.info({ res: 'screen-mask-touch-to-close' });
-  await device.input.tap({ x: bounds.x + 8, y: bounds.y + 8 });
-  await waitAbsent(device, { res: marker });
+  const { bounds } = await gameReady(device, 'screen-mask-touch-to-close');
+  adb('shell', 'input', 'tap', String(Math.round(bounds.x + 8)), String(Math.round(bounds.y + 8)));
+  await gameGone(device, marker);
 }
 
 /**
@@ -36,15 +37,15 @@ export async function closeGameMask(device: AndroidDevice, marker: string): Prom
  * @param capture - 按共享状态名截图。
  */
 export async function gamePreGame(device: AndroidDevice, game: 'texas-holdem' | 'zhajinhua', capture: Capture): Promise<void> {
-  await device.wait({ res: game === 'texas-holdem' ? 'texas-holdem-room-name-text' : 'zhajinhua-text-room-name', text: 'TestRoom' });
+  await gameReady(device, game === 'texas-holdem' ? 'texas-holdem-room-name-text' : 'zhajinhua-text-room-name', 'TestRoom');
   await capture('waiting_table');
   await tap(device, 'menu-button');
-  await device.wait({ res: 'drawer-menu-item-exit' });
+  await gameReady(device, 'drawer-menu-item-exit');
   await capture('menu');
   await tap(device, 'drawer-menu-item-card_rank');
-  await device.wait({ res: 'card-rank-list' });
+  await gameReady(device, 'card-rank-list');
   await capture('card_rank');
-  if (await exists(device, { res: 'card-rank-popup-close' })) await tap(device, 'card-rank-popup-close');
+  if ((await gameNodes(device)).some(node => node.res === 'card-rank-popup-close')) await tap(device, 'card-rank-popup-close');
   else await closeGameMask(device, 'card-rank-list');
   for (const [state, ready, close] of [
     ['theme', 'game-settings-card-theme-simple', 'game-settings-close-button'],
@@ -55,25 +56,25 @@ export async function gamePreGame(device: AndroidDevice, game: 'texas-holdem' | 
     await gameMenu(device, state, ready);
     await capture(state);
     await tap(device, close);
-    await waitAbsent(device, { res: ready });
+    await gameGone(device, ready);
   }
   await tap(device, game === 'texas-holdem' ? 'texas-holdem-leaderboard-button' : 'zhajinhua-learder-borard-button');
-  await device.wait({ res: 'public-leader-board-empty' });
-  await waitAbsent(device, { res: 'public-leader-board-loading' });
+  await gameReady(device, 'public-leader-board-empty');
+  await gameGone(device, 'public-leader-board-loading');
   await capture('leaderboard');
   await closeGameMask(device, 'public-leader-board-container');
   await tap(device, 'game-record-button');
-  await device.wait({ res: 'review-board-description-text' });
+  await gameReady(device, 'review-board-description-text');
   await capture('game_record');
   await closeGameMask(device, 'review-board-description-text');
   await tap(device, `${game}-chat-button`);
-  await device.wait({ res: 'in-game-chat-container' });
+  await gameReady(device, 'in-game-chat-container');
   await capture('chat');
-  const chat = (await device.info({ res: 'in-game-chat-mask' })).bounds;
-  await device.input.tap({ x: chat.x + 8, y: chat.y + 8 });
-  await waitAbsent(device, { res: 'in-game-chat-container' });
+  const chat = (await gameReady(device, 'in-game-chat-mask')).bounds;
+  adb('shell', 'input', 'tap', String(Math.round(chat.x + 8)), String(Math.round(chat.y + 8)));
+  await gameGone(device, 'in-game-chat-container');
   await tap(device, 'buy-in-application-button');
-  await device.wait({ res: 'buy-in-application-no-requests' });
+  await gameReady(device, 'buy-in-application-no-requests');
   await capture('buy_in_applications');
   await closeGameMask(device, 'buy-in-application-list');
   if (game === 'texas-holdem') return;
@@ -97,9 +98,9 @@ export async function gamePreGame(device: AndroidDevice, game: 'texas-holdem' | 
   let count = 0;
   for (const name of ['sound-effect', 'vibrate', 'player-voice', 'show-card', 'operation-time', 'see-remain-card', 'shake-avatar']) {
     const selector = { res: `game-settings-switch-${name}` };
-    if (!await exists(device, selector)) continue;
-    if (!(await device.info(selector)).checked) await tap(device, selector.res);
-    expect((await device.info(selector)).checked).toBe(true);
+    if (!(await gameNodes(device)).some(node => node.res === selector.res)) continue;
+    if (!(await gameReady(device, selector.res)).checked) await tap(device, selector.res);
+    expect((await gameReady(device, selector.res)).checked).toBe(true);
     count++;
   }
   expect(count).toBeGreaterThanOrEqual(4);

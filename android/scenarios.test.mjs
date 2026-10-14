@@ -88,13 +88,16 @@ test('原生战绩与 Web 共用完整状态矩阵', () => {
 
 test('原生控件消失查询不把连接或驱动错误误认为成功', async () => {
   const { exists } = require('./native-state.ts');
-  assert.equal(await exists({ info: /** 模拟存在的原生控件。 */ async () => ({ res: 'ready' }) }, { res: 'ready' }), true);
+  const ready = { res: 'ready', bounds: { x: 0, y: 10, width: 100, height: 20 } };
+  assert.equal(await exists({ info: /** 模拟存在的原生控件。 */ async () => ready }, { res: 'ready' }), true);
+  assert.equal(await exists({ info: /** 模拟保留在屏外的历史弹层。 */ async () => ({ ...ready,
+    bounds: { x: 0, y: 1300, width: 100, height: -20 } }) }, { res: 'ready' }), false);
   assert.equal(await exists({ info: /** 模拟原生查询空结果。 */ async () => { throw new Error('java.lang.NullPointerException'); } }, { res: 'gone' }), false);
   await assert.rejects(exists({ info: /** 模拟连接中断。 */ async () => { throw new Error('Device closed'); } }, { res: 'gone' }), /Device closed/);
   let calls = 0;
   assert.equal(await exists({ info: /** 模拟转场后重新挂载的控件。 */ async () => {
     if (calls++ === 0) throw new Error('androidx.test.uiautomator.StaleObjectException');
-    return { res: 'ready' };
+    return ready;
   } }, { res: 'ready' }), true);
   assert.equal(calls, 2);
 });
