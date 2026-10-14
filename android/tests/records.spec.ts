@@ -107,7 +107,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
           await device.input.press('Back');
           await device.wait({ res: 'detail-button' });
           if (prefix === 'private') {
-            await pressRecordControl(device, version === 'legacy' ? { res: 'replay-tab-button' } : { text: /^(Replay|回放)$/i });
+            await pressRecordControl(device, version === 'legacy' ? { res: 'replay-tab-button' } : { text: /^(Replay|战绩回放|戰績回放)$/i });
             await device.wait({ res: 'game-replay-item' });
             await capture('replay_list');
           }
@@ -130,7 +130,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
         await pressRecordControl(device, recordRow('No Hands'));
         await device.wait({ res: version === 'legacy' ? 'no-hands-text' : 'no-hands-footer' });
         await capture('no_hands');
-        await pressRecordControl(device, version === 'legacy' ? { res: 'replay-tab-button' } : { text: /^(Replay|回放)$/i });
+        await pressRecordControl(device, version === 'legacy' ? { res: 'replay-tab-button' } : { text: /^(Replay|战绩回放|戰績回放)$/i });
         await device.wait({ res: 'no-replay-text' });
         await capture('replay_empty');
         await tap(device, 'navigation-bar-back-image');

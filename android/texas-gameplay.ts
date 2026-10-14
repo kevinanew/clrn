@@ -3,7 +3,7 @@ import type { AndroidDevice } from 'playwright';
 import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { events, REPLAY_PLAYER_IDS, restoreTable, type Street } from '../visual/cases/texas-holdem/replayData';
 import { gameReady, gameGone, gameTap, gameNodes } from './game-controls';
-import { replay, gameTexts } from './game-replay';
+import { replay, gameCardNames } from './game-replay';
 import { closeGameMask } from './game-pregame';
 import { adb } from './device';
 import { dismissKeyboard } from './keyboard';
@@ -31,9 +31,10 @@ export async function texasGameplay(device: AndroidDevice, proxy: Mitmproxy, roo
   const restore = async (street: Street, opponent = false) => {
     await send(restoreTable(self, street, opponent));
     const count = { preflop: 0, flop: 3, turn: 4, river: 5 }[street];
-    await gameTexts(device, 'community_card_name_text', ['ah', 'kd', '7c', '2s', 'qs']
+    await gameCardNames(device, 'community_card', 'community_card_name_text', ['ah', 'kd', '7c', '2s', 'qs']
       .map((card, index) => index < count ? card : 'back'));
-    await gameReady(device, 'texas-holdem-self-seated-marker');
+    await expect.poll(async () => (await gameNodes(device))
+      .some(node => node.res?.startsWith(`texas-holdem-player-container-${self}`)), { timeout: 30_000 }).toBe(true);
     if (!opponent) await gameReady(device, 'texas-holdem-operation-button-raise');
   };
   for (const street of ['preflop', 'flop', 'turn', 'river'] as const) {

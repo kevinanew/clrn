@@ -19,12 +19,15 @@ export async function replay(proxy: Mitmproxy, game: 'texas' | 'zhajinhua', room
 }
 
 /**
- * 断言同一原生控件的全部可见文字，用于重复 ID 的牌面和筹码列表。
+ * 断言可见牌面容器关联的牌名。辅助文字可能被 Android 裁到父容器外，
+ * 只从实际可见的牌面容器读取它，不能把屏外历史牌面计入当前状态。
  * @param device - 专用模拟器连接。
- * @param res - 共用的控件 ID。
+ * @param container - 当前牌面的可见容器 ID。
+ * @param marker - 容器内的语义牌名 ID。
  * @param expected - 顺序无关的预期文字。
  */
-export async function gameTexts(device: AndroidDevice, res: string, expected: string[]): Promise<void> {
-  await expect.poll(async () => (await gameNodes(device)).filter(node => node.res === res)
-    .map(node => node.text || '').sort(), { timeout: 30_000, intervals: [250] }).toEqual([...expected].sort());
+export async function gameCardNames(device: AndroidDevice, container: string, marker: string, expected: string[]): Promise<void> {
+  await expect.poll(async () => (await gameNodes(device)).filter(node => node.res === container)
+    .map(node => node.children?.find(child => child.res === marker)?.text || '').sort(),
+  { timeout: 30_000, intervals: [250] }).toEqual([...expected].sort());
 }

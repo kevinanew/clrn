@@ -3,7 +3,7 @@ import type { AndroidDevice } from 'playwright';
 import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { events, PLAYER_IDS, restoreTable, validBets } from '../visual/cases/zhajinhua/replayData';
 import { gameReady, gameGone, gameTap, gameNodes } from './game-controls';
-import { replay } from './game-replay';
+import { replay, gameCardNames } from './game-replay';
 import { closeGameMask } from './game-pregame';
 
 /**
@@ -34,9 +34,7 @@ export async function zhajinhuaGameplay(device: AndroidDevice, proxy: Mitmproxy,
     { event: 'obtain_hole_card', hole_card: ['as', 'ad', 'ac'], hand_strength: 'three_of_a_kind' },
     { event: 'player_bets', valid_bets: validBets(true) },
   ]));
-  await expect.poll(async () => (await gameNodes(device))
-    .filter(node => node.res === 'player_card_name_text' && /^(as|ad|ac)$/.test(node.text || ''))
-    .map(node => node.text).sort(), { timeout: 30_000 }).toEqual(['ac', 'ad', 'as']);
+  await gameCardNames(device, 'player_card', 'player_card_name_text', ['as', 'ad', 'ac']);
   await gameGone(device, 'zhajinhua-see-hand-card-button');
   await capture('seen_cards');
   await gameTap(device, 'zhajinhua-shortcut-raise-first');
