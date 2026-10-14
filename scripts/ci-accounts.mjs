@@ -43,7 +43,7 @@ export function visualAccountMatrix(runId, suite = 'all', full = false) {
  * @param selectedLocale - 全部语言或一种指定语言。
  */
 export function androidAccountMatrix(runId, selectedGroup = 'all', selectedLocale = 'all') {
-  const groups = ['guest', 'account', 'social', 'rooms', 'wallet-help'];
+  const groups = ['guest', 'account', 'social', 'rooms', 'wallet-help', 'records'];
   const locales = ['zh-Hans', 'zh-Hant', 'en'];
   if (selectedGroup !== 'all' && !groups.includes(selectedGroup)) throw new Error('未知安卓业务组。');
   if (selectedLocale !== 'all' && !locales.includes(selectedLocale)) throw new Error('未知安卓语言。');

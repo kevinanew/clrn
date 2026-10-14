@@ -59,3 +59,15 @@ test('动态区域遮罩保留区域外像素，拒绝掩盖整页', () => {
   }
   assert.throws(() => maskScreenshot(bytes, [{ x: 0, y: 0, width: 100, height: 100, reason: '错误范围' }]), /12%/);
 });
+
+
+test('原生战绩状态必须来自 Web 清单，未实现状态不冒充覆盖', () => {
+  const { recordStates } = require('./record-states.ts');
+  const { LEGACY_STATES, V2_STATES } = require('../visual/cases/game-record/scenarios.ts');
+  assert.equal(new Set(recordStates).size, recordStates.length);
+  for (const state of recordStates) {
+    assert.ok(LEGACY_STATES.includes(state));
+    assert.ok(V2_STATES.includes(state));
+  }
+  assert.deepEqual(androidScenarios('en', 'records'), []);
+});

@@ -44,8 +44,9 @@ export async function tap(device: AndroidDevice, identifier: string): Promise<vo
   }).toPass({ timeout: 10_000, intervals: [200] });
   const { bounds } = await device.info({ res: identifier });
   const warning = await device.info({ res: 'switch-to-production-tip-container' }).catch(() => undefined);
-  const overlapsWarning = warning && bounds.y < warning.bounds.y + warning.bounds.height
-    && bounds.y + bounds.height > warning.bounds.y;
+  const agreement = await device.info({ res: 'user-agreement-title' }).catch(() => undefined);
+  const overlapsWarning = [warning, agreement].some(overlay => overlay && bounds.y < overlay.bounds.y + overlay.bounds.height
+    && bounds.y + bounds.height > overlay.bounds.y);
   if (identifier === 'username-or-email-sign-in-button' || overlapsWarning) {
     await device.input.tap({ x: bounds.x + bounds.width - 10, y: bounds.y + bounds.height / 2 });
   } else {

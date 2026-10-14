@@ -31,8 +31,11 @@ export const test = base.extend<{}, { application: { device: AndroidDevice; sign
 test.afterEach(async ({ application }, testInfo) => {
   await testInfo.attach('build-info', { path: `${artifacts}/build-info.json`, contentType: 'application/json' });
   if (testInfo.status === testInfo.expectedStatus) return;
-  await application.device.screenshot().then(body => testInfo.attach('last-screen', { body, contentType: 'image/png' }))
-    .catch(() => undefined);
+  await application.device.screenshot().then(async body => {
+    const filename = testInfo.outputPath('last-screen.png');
+    await writeFile(filename, body);
+    await testInfo.attach('last-screen', { path: filename, contentType: 'image/png' });
+  }).catch(() => undefined);
   // 驱动 info 返回单个节点；记录窗口根节点帮助判断是否意外离开应用。
   await application.device.info({ depth: 0 }).then(async tree => {
     const filename = testInfo.outputPath('window-root.json');

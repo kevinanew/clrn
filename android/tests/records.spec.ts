@@ -1,0 +1,124 @@
+import { test, expect } from '@playwright/test';
+import { writeFile } from 'node:fs/promises';
+import { buildScenarios } from '../../visual/scenarios';
+import { RecordProxy } from '../../visual/cases/game-record/proxy';
+import { withAndroidProxy } from '../proxy';
+import { launchApplication, waitForHall } from '../device';
+import { navigateScenario, reveal, selectLanguage, signIn, tap } from '../navigation';
+import { pressRecordControl, recordRow, recordSnapshots, reopenRecords, scrollRecords } from '../record-navigation';
+import { recordStates } from '../record-states';
+
+const locale = process.env.ANDROID_LOCALE || 'en';
+const enabled = ['all', 'records'].includes(process.env.ANDROID_GROUP || 'all');
+for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL_SCOPE: 'full', VISUAL_SUITE: 'app' })
+  .filter(item => item.group === 'game-record' && item.viewport.label === 'mobile') : []) {
+  test(`${locale} / game-record / ${scenario.pageLabel}`, async ({}, testInfo) => {
+    test.setTimeout(900_000);
+    const version = scenario.pageLabel.endsWith('legacy') ? 'legacy' : 'v2';
+    await withAndroidProxy(async connection => {
+      const proxy = new RecordProxy(connection);
+      // 登录前先设置版本；代理在真实登录成功后绑定实际用户 ID，不伪造登录态。
+      await proxy.configure('pending-login', version, 'empty');
+      const device = await launchApplication();
+      const { capture, complete } = recordSnapshots(device, scenario, testInfo, recordStates);
+      try {
+        await waitForHall(device);
+        await selectLanguage(device, locale);
+        await signIn(device);
+        await navigateScenario(device, { ...scenario, tabTestId: 'club-tab', visualReadySelector: '[data-testid="club-tab-screen"]' });
+        await navigateScenario(device, scenario);
+        await tap(device, 'game-record');
+        await device.wait({ res: 'no-records-text' });
+        await capture('empty');
+        await proxy.mode('list');
+        await reopenRecords(device);
+        await device.wait(recordRow('Private Texas', version));
+        await capture('list');
+        if (version === 'v2') {
+          await proxy.mode('paged');
+          await reopenRecords(device);
+        }
+        await scrollRecords(device, true);
+        await reveal(device, recordRow('Long Room Name ABCDE', version));
+        await capture('list_bottom');
+        await proxy.mode('list');
+        await reopenRecords(device);
+        const header = version === 'legacy' ? 'header-right-button' : 'navigation-bar-right-button';
+        await tap(device, header);
+        await device.wait({ res: 'record-sum-score-text', text: '0' });
+        await capture('select_none');
+        /**
+         * 选择共享夹具中的一条战绩；旧版使用同一行的复选框位置。
+         * @param key - 记录标识。
+         * @param name - 房间名称。
+         */
+        const select = async (key: string, name: string) => {
+          if (version === 'v2') { await tap(device, `select-record-visual-record-${key}-button`); return; }
+          const { bounds } = await device.info(recordRow(name, version));
+          const checkbox = await device.info({ res: 'select-status-button' });
+          await device.input.tap({ x: checkbox.bounds.x + checkbox.bounds.width / 2, y: bounds.y + bounds.height / 2 });
+        };
+        await select('private', 'Private Texas');
+        await device.wait({ res: 'record-sum-score-text', text: '+180' });
+        await capture('select_win');
+        await select('private', 'Private Texas');
+        await select('club', 'Club Cards');
+        await device.wait({ res: 'record-sum-score-text', text: '-90' });
+        await capture('select_loss');
+        await tap(device, 'game-record-list-select-all-button');
+        await device.wait({ res: 'record-sum-score-text', text: '-1.2m' });
+        await capture('select_all');
+        await tap(device, 'game-record-list-select-all-button');
+        await device.wait({ res: 'record-sum-score-text', text: '0' });
+        await capture('select_clear');
+        await tap(device, header);
+        await device.wait({ res: 'record-sum-score-text' }, { state: 'gone' });
+        await capture('select_cancel');
+        for (const [name, prefix] of [['Private Texas', 'private'], ['Club Cards', 'club']]) {
+          await pressRecordControl(device, recordRow(name, version));
+          await device.wait({ res: 'game-name-value-text', text: name });
+          await device.wait({ res: 'detail-button' });
+          await capture(`${prefix}_overview`);
+          await tap(device, 'detail-button');
+          await device.wait({ res: version === 'legacy' ? 'game-action-list-container' : 'review-board-action-list' });
+          await capture(`${prefix}_actions`);
+          await pressRecordControl(device, { res: /^(Game settlements|Settlement|牌局结算|牌局結算)$/i });
+          await device.wait({ res: version === 'legacy' ? 'game-settlement-list' : 'review-board-settlement-list' });
+          await capture(`${prefix}_settlement`);
+          await device.input.press('Back');
+          await device.wait({ res: 'detail-button' });
+          if (prefix === 'private') {
+            await pressRecordControl(device, version === 'legacy' ? { res: 'replay-tab-button' } : { text: /^(Replay|回放)$/i });
+            await device.wait({ res: 'game-replay-item' });
+            await capture('replay_list');
+          }
+          await device.input.press('Back');
+          await device.wait({ res: 'my-game-record-list' });
+        }
+        for (const [name, state, ready] of [
+          ['Hall Texas', 'hall_overview', version === 'legacy' ? 'game-hall-record-view' : 'game-record-player-item'],
+          ['Short Deck', 'short_deck_overview', 'detail-button'],
+        ]) {
+          await pressRecordControl(device, recordRow(name, version));
+          await device.wait({ res: ready });
+          await capture(state);
+          await device.input.press('Back');
+          await device.wait({ res: 'my-game-record-list' });
+        }
+        await proxy.mode('no-hands');
+        await reopenRecords(device);
+        await pressRecordControl(device, recordRow('No Hands', version));
+        await device.wait({ res: version === 'legacy' ? 'no-hands-text' : 'no-hands-footer' });
+        await capture('no_hands');
+        await pressRecordControl(device, version === 'legacy' ? { res: 'replay-tab-button' } : { text: /^(Replay|回放)$/i });
+        await device.wait({ res: 'no-replay-text' });
+        await capture('replay_empty');
+        expect(Object.values((await proxy.status()).recordRequests).reduce((total, count) => total + count, 0)).toBeGreaterThan(0);
+        complete();
+      } catch (error) {
+        await device.screenshot().then(body => writeFile(testInfo.outputPath('last-screen.png'), body)).catch(() => undefined);
+        throw error;
+      } finally { await device.close(); }
+    }, true);
+  });
+}

@@ -1,0 +1,75 @@
+import { expect, type TestInfo } from '@playwright/test';
+import type { AndroidDevice, AndroidSelector } from 'playwright';
+import { adb, compareScreenshot } from './device';
+import { reveal, tap } from './navigation';
+import type { VisualScenario } from '../visual/scenarioTypes';
+
+/**
+ * 通过与 Web 相同的房名定位原生记录行。
+ * @param name - 共享夹具中的房名。
+ * @param version - 当前战绩版本。
+ */
+export function recordRow(name: string, version: 'legacy' | 'v2'): AndroidSelector {
+  return { res: version === 'legacy' ? 'right-content-button' : /^record-visual-record-.*/,
+    hasDescendant: { selector: { res: 'room-name-text', text: name } } };
+}
+
+/**
+ * 等待复合选择器可见，并点击其实际边界中心。
+ * @param device - 专用模拟器连接。
+ * @param selector - 原生控件条件。
+ */
+export async function pressRecordControl(device: AndroidDevice, selector: AndroidSelector): Promise<void> {
+  await reveal(device, selector);
+  const { bounds } = await device.info(selector);
+  await device.input.tap({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 });
+}
+
+/**
+ * 在真实战绩列表中滚动，不修改应用状态。
+ * @param device - 专用模拟器连接。
+ * @param end - 是否向列表末尾滚动。
+ */
+export async function scrollRecords(device: AndroidDevice, end: boolean): Promise<void> {
+  const { bounds } = await device.info({ res: 'my-game-record-list' });
+  const horizontal = String(Math.round(bounds.x + bounds.width * 0.95));
+  const top = String(Math.round(bounds.y + bounds.height * 0.2));
+  const bottom = String(Math.round(bounds.y + bounds.height * 0.85));
+  adb('shell', 'input', 'swipe', horizontal, end ? bottom : top, horizontal, end ? top : bottom, '600');
+}
+
+/**
+ * 返回当前列表入口并再次打开，重新读取代理中的状态。
+ * @param device - 专用模拟器连接。
+ */
+export async function reopenRecords(device: AndroidDevice): Promise<void> {
+  await device.input.press('Back');
+  await device.wait({ res: 'game-record' });
+  await tap(device, 'game-record');
+  await device.wait({ res: 'my-game-record-list' });
+}
+
+/**
+ * 截图顺序与共用状态清单一致；错误弹窗不能冒充正常页面。
+ * @param device - 专用模拟器连接。
+ * @param scenario - Web 场景及其状态清单。
+ * @param testInfo - 当前报告。
+ * @param states - 本轮要求的状态序列。
+ */
+export function recordSnapshots(device: AndroidDevice, scenario: VisualScenario, testInfo: TestInfo, states: readonly string[]) {
+  let index = 0;
+  return {
+    /**
+     * 验证当前状态并保存原生截图。
+     * @param state - 共享状态名称。
+     */
+    capture: async (state: string) => {
+      expect(state).toBe(states[index++]);
+      expect(scenario.snapshotStates).toContain(state);
+      await device.wait({ res: 'alert-message-text' }, { state: 'gone' });
+      await compareScreenshot(device, `${scenario.locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo);
+    },
+    /** 检查所有声明的状态确实执行。 */
+    complete: () => expect(index).toBe(states.length),
+  };
+}

@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { withMitmproxy } from '../e2e/helpers/mitmproxy-session';
 import { visualNetworkRouter } from './network-routes';
 import { adb } from './device';
@@ -29,8 +30,9 @@ async function configureProxy(directory: string, server: string): Promise<void> 
 /**
  * 复用 Web 网络夹具和代理生命周期；真实认证与未声明的接口仍访问 staging。
  * @param task - 在已准备的模拟器网络环境内运行测试。
+ * @param records - 是否复用 Web 战绩代理与其状态控制。
  */
-export async function withAndroidProxy<T>(task: () => Promise<T>): Promise<T> {
+export async function withAndroidProxy<T>(task: (proxy: Mitmproxy) => Promise<T>, records = false): Promise<T> {
   const route = await visualNetworkRouter();
   const token = randomBytes(32).toString('hex');
   const server = createServer(async (request, response) => {
@@ -53,7 +55,7 @@ export async function withAndroidProxy<T>(task: () => Promise<T>): Promise<T> {
   try {
     return await withMitmproxy(task, {
       addonPath: path.join(__dirname, 'proxy-addon.py'),
-      environment: { ...process.env, ANDROID_FIXTURE_TOKEN: token,
+      environment: { ...process.env, ANDROID_RECORDS: String(records), ANDROID_FIXTURE_TOKEN: token,
         ANDROID_FIXTURE_URL: `http://127.0.0.1:${address.port}/` },
       /**
        * 将本轮临时证书和端口配置到专用模拟器。

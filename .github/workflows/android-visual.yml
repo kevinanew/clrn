@@ -33,7 +33,7 @@ on:
       group:
         description: '业务组；默认全部'
         type: choice
-        options: [all, guest, account, social, rooms, wallet-help]
+        options: [all, guest, account, social, rooms, wallet-help, records]
         default: all
       locale:
         description: '语言；默认三种语言'

@@ -3,8 +3,9 @@ import path from 'node:path';
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: (process.env.ANDROID_LOCALE || 'en') === 'en' && ['all', 'guest'].includes(process.env.ANDROID_GROUP || 'all')
-    ? ['**/*.spec.ts'] : ['**/parity.spec.ts'],
+  testMatch: ['**/*.spec.ts'],
+  testIgnore: (process.env.ANDROID_LOCALE || 'en') === 'en' && ['all', 'guest'].includes(process.env.ANDROID_GROUP || 'all')
+    ? [] : ['**/auth.spec.ts'],
   outputDir: './test-results',
   snapshotPathTemplate: process.env.GITHUB_ACTIONS === 'true'
     ? `{testDir}/../snapshots/android-35-x86_64-720x1280-${process.env.ANDROID_LOCALE || 'en'}/{arg}{ext}`
