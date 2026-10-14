@@ -29,15 +29,23 @@ ANDROID_RELEASE_TAG=android-visual-staging-7187-f00365042077 node android/downlo
 
 ## GitHub Actions
 
-工作流为 `Android Staging 视觉回归`。发布 Android Staging Release 后自动比较该标签对应的 APK；相关 PR、master 修改和每天定时任务会比较最新 APK，也可手动指定标签。Release 触发入口在工作流合入 master 后生效。此工作流与现有 H5 staging 部署验证独立，不修改 `deployments/staging.json`。
+工作流为 `Android Staging 视觉回归`。发布 Android Staging Release 后自动比较该标签对应的 APK；相关 PR 和 master 修改会比较最新 APK，也可手动指定标签。Release 触发入口在工作流合入 master 后生效。定时任务要求工作流存在于 GitHub 默认分支；仓库默认分支目前仍为 main，因此该定时入口暂不生效。此工作流与现有 H5 staging 部署验证独立，不修改 `deployments/staging.json`。
 
-APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使用 GitHub Actions 内置的 `GITHUB_TOKEN`，工作流仅授予 `contents: read`，无需额外下载 Secret。Woodpecker 发布端的既有凭据需要 clrn Contents 读写权限。Release 附注标签指向 clrn 自己的提交，应用提交只记录在标签说明和 `build-info.json` 中，不导入应用 Git 历史。首批测试无需账号 Secret。
+APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使用 GitHub Actions 内置的 `GITHUB_TOKEN`，工作流仅授予 `contents: read`，无需额外下载 Secret。Woodpecker 发布端的既有凭据需要 clrn Contents 读写权限。Release 附注标签明确指向 clrn master 分支的提交，应用提交只记录在标签说明和 `build-info.json` 中，不导入应用 Git 历史。首批测试无需账号 Secret。
 
 比较失败时，从工作流产物下载 HTML 报告、实际图、预期图和差异图。附件保留 14 天，不重复上传完整 APK。缺失基准会失败，不会自动接受新截图。
 
 ## 更新基准
 
-在 Actions 手动运行，选择 `mode=reference` 并填写经确认的 Release 标签。成功后下载 `android-staging-reference-*` 产物，审查图片，再将 PNG 放回 `android/snapshots/android-35-x86_64-720x1280-en/`，通过 PR 更新。reference 仅生成候选基准，不代表比较通过。
+通过 GitHub CLI 指定包含工作流的分支和经确认的 Release 标签，生成候选基准：
+
+```sh
+gh workflow run android-visual.yml --repo kevinanew/clrn \
+  --ref master -f mode=reference \
+  -f release_tag=android-visual-staging-7187-f00365042077
+```
+
+在 PR 验证期间，将 `--ref master` 替换为 PR 分支。工作流至少运行过一次后可通过 CLI 指定分支；Actions 网页中的手动运行入口还要求工作流存在于默认分支。成功后下载 `android-staging-reference-*` 产物，审查图片，再将 PNG 放回 `android/snapshots/android-35-x86_64-720x1280-en/`，通过 PR 更新。reference 仅生成候选基准，不代表比较通过。
 
 本机调试可显式生成参考图，保存在被 Git 忽略的 `android/snapshots/local/`，不覆盖 CI 正式基准：
 
