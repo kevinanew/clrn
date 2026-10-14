@@ -22,3 +22,4 @@ node_modules/
 android/artifacts/
 android/test-results/
 android/playwright-report/
+android/snapshots/local/

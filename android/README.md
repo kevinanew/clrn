@@ -37,9 +37,9 @@ ANDROID_RELEASE_TAG=android-visual-staging-7187-f00365042077 node android/downlo
 
 ## 更新基准
 
-在 Actions 手动运行，选择 `mode=reference` 并填写经确认的 Release 标签。成功后下载 `android-staging-reference-*` 产物，审查图片，再将 PNG 放回 `android/snapshots/android-35-720x1280-en/`，通过 PR 更新。reference 仅生成候选基准，不代表比较通过。
+在 Actions 手动运行，选择 `mode=reference` 并填写经确认的 Release 标签。成功后下载 `android-staging-reference-*` 产物，审查图片，再将 PNG 放回 `android/snapshots/android-35-x86_64-720x1280-en/`，通过 PR 更新。reference 仅生成候选基准，不代表比较通过。
 
-本机调试可显式生成参考图：
+本机调试可显式生成参考图，保存在被 Git 忽略的 `android/snapshots/local/`，不覆盖 CI 正式基准：
 
 ```sh
 ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visual.mjs

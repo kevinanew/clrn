@@ -25,6 +25,9 @@ export async function launchApplication(): Promise<AndroidDevice> {
   await readVerifiedBuild(artifacts);
   if (adb('shell', 'getprop', 'ro.kernel.qemu').trim() !== '1') throw new Error('只允许在专用模拟器执行。');
   if (adb('shell', 'getprop', 'ro.build.version.sdk').trim() !== '35') throw new Error('截图基准要求 Android API 35。');
+  if (process.env.GITHUB_ACTIONS === 'true' && adb('shell', 'getprop', 'ro.product.cpu.abi').trim() !== 'x86_64') {
+    throw new Error('CI 正式截图基准要求 x86_64 模拟器。');
+  }
   const locale = adb('shell', 'getprop', 'persist.sys.locale').trim() || adb('shell', 'getprop', 'ro.product.locale').trim();
   if (!['en-US', 'en_US'].includes(locale)) throw new Error(`截图基准要求 en-US 系统语言，当前为 ${locale}。`);
   adb('shell', 'wm', 'size', '720x1280');
@@ -38,6 +41,8 @@ export async function launchApplication(): Promise<AndroidDevice> {
   }
   adb('shell', 'input', 'keyevent', 'KEYCODE_WAKEUP');
   adb('shell', 'wm', 'dismiss-keyguard');
+  // 系统时钟、电量和通知不属于应用视觉基准，隐藏这些变化的系统图标。
+  adb('shell', 'cmd', 'statusbar', 'send-disable-flag', 'clock', 'system-icons', 'notification-icons');
   // 只删除这个专用测试应用，以兼容不同 Release 的测试签名和清除旧会话。
   if (adb('shell', 'pm', 'list', 'packages', applicationId).includes(`package:${applicationId}`)) adb('uninstall', applicationId);
   adb('install', `${artifacts}/${packageName}`);

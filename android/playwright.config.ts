@@ -3,7 +3,9 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   outputDir: './test-results',
-  snapshotPathTemplate: '{testDir}/../snapshots/android-35-720x1280-en/{arg}{ext}',
+  snapshotPathTemplate: process.env.GITHUB_ACTIONS === 'true'
+    ? '{testDir}/../snapshots/android-35-x86_64-720x1280-en/{arg}{ext}'
+    : '{testDir}/../snapshots/local/{arg}{ext}',
   workers: 1,
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
