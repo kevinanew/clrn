@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import type { AndroidDevice, AndroidSelector } from 'playwright';
 import { nativeSelector } from './scenarios';
 import type { VisualScenario } from '../visual/scenarioTypes';
+import { adb } from './device';
 
 /**
  * 按原生控件定位；目标在列表下方时通过真实滑动寻找。
@@ -13,7 +14,11 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
     try { await device.wait(selector, { timeout: attempt === 0 ? 7000 : 3000 }); return; }
     catch (error) {
       if (attempt === 8) throw error;
-      await device.input.swipe({ x: 360, y: 1000 }, [{ x: 360, y: 400 }], 30);
+      const { bounds } = await device.info({ scrollable: true });
+      // RN 的触摸识别需要连续移动事件；使用容器内的真实 swipe，不用单段手势误触按钮。
+      const horizontal = Math.round(bounds.x + bounds.width * 0.95);
+      adb('shell', 'input', 'swipe', String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)),
+        String(horizontal), String(Math.round(bounds.y + bounds.height * 0.2)), '600');
     }
   }
 }
@@ -40,6 +45,12 @@ export async function tap(device: AndroidDevice, identifier: string): Promise<vo
  */
 export async function returnToTabs(device: AndroidDevice): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
+    const close = await device.info({ res: 'close-user-authentication-button' }).catch(() => undefined);
+    if (close && close.bounds.width > 0) {
+      await device.tap({ res: 'close-user-authentication-button' });
+      await device.wait({ res: 'settings-tab' });
+      return;
+    }
     try { await device.wait({ res: 'settings-tab' }, { timeout: 3000 }); return; }
     catch (error) {
       if (attempt === 8) throw error;
@@ -115,6 +126,9 @@ export async function selectLanguage(device: AndroidDevice, locale: string): Pro
   await tap(device, 'switch-language-button');
   await tap(device, identifier);
   await tap(device, 'confirm-button');
-  await device.wait({ res: 'switch-language-container' }, { state: 'gone', timeout: 30_000 });
-  await returnToTabs(device);
+  await device.wait({ res: 'username-or-email-sign-in-button' }, { timeout: 30_000 });
+  const expectedLabel = { en: 'English', 'zh-Hans': '简体中文', 'zh-Hant': '繁體中文' }[locale];
+  await device.wait({ res: 'switch-language-label', text: expectedLabel });
+  await tap(device, 'close-user-authentication-button');
+  await device.wait({ res: 'settings-tab' });
 }
