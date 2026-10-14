@@ -7,10 +7,14 @@ import type { AndroidDevice, AndroidSelector } from 'playwright';
  * @param selector - 原生控件条件。
  */
 export async function exists(device: AndroidDevice, selector: AndroidSelector): Promise<boolean> {
-  try { await device.info(selector); return true; }
-  catch (error) {
-    if (/NullPointerException|UiObjectNotFoundException/.test(String(error))) return false;
-    throw error;
+  for (let attempt = 0; ; attempt++) {
+    try { await device.info(selector); return true; }
+    catch (error) {
+      if (/NullPointerException|UiObjectNotFoundException/.test(String(error))) return false;
+      // 转场中查到的对象可能随即卸载，重新查询新控件树，不将过期对象当作消失。
+      if (/StaleObjectException/.test(String(error)) && attempt < 4) continue;
+      throw error;
+    }
   }
 }
 

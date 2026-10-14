@@ -78,4 +78,10 @@ test('原生控件消失查询不把连接或驱动错误误认为成功', async
   assert.equal(await exists({ info: /** 模拟存在的原生控件。 */ async () => ({ res: 'ready' }) }, { res: 'ready' }), true);
   assert.equal(await exists({ info: /** 模拟原生查询空结果。 */ async () => { throw new Error('java.lang.NullPointerException'); } }, { res: 'gone' }), false);
   await assert.rejects(exists({ info: /** 模拟连接中断。 */ async () => { throw new Error('Device closed'); } }, { res: 'gone' }), /Device closed/);
+  let calls = 0;
+  assert.equal(await exists({ info: /** 模拟转场后重新挂载的控件。 */ async () => {
+    if (calls++ === 0) throw new Error('androidx.test.uiautomator.StaleObjectException');
+    return { res: 'ready' };
+  } }, { res: 'ready' }), true);
+  assert.equal(calls, 2);
 });

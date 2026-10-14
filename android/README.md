@@ -43,6 +43,8 @@ APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使�
 
 ## 更新基准
 
+新增的 14 张英文账户页基准来自 [reference 38631551140](https://github.com/kevinanew/clrn/actions/runs/38631551140)，应用为 [Release 7211](https://github.com/kevinanew/clrn/releases/tag/android-staging-7211-d8e2e83aaabd)。14 个场景首轮全部通过，截图已检查：实际页面就绪、头像完整、账号展示数据一致，没有接受失败截图。其他新增场景仍在验证；完整 compare 验证记录尚待补齐。
+
 当前四张初始基准来自 [Android Staging Release 7187](https://github.com/kevinanew/clrn/releases/tag/android-visual-staging-7187-f00365042077)，由 [GitHub Actions reference 运行 38555441478](https://github.com/kevinanew/clrn/actions/runs/38555441478) 在上述固定环境生成，尺寸均为 720×1280。图片已逐张检查，包含完成初始化后的真实页面，没有加载态。基准保留 APK 当前外观：欢迎页与用户名登录页上的 Staging 提示仍会覆盖部分内容，用户名登录页底部条款与登录按钮也存在重叠。这些已有布局问题没有在本次测试接入中修复；后续应用修复后应重新审查并更新对应基准。
 
 通过 GitHub CLI 指定包含工作流的分支和经确认的 Release 标签，生成候选基准：
