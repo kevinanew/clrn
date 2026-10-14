@@ -34,7 +34,7 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
         width: node.bounds.width + 2, height: height + 22 + 2, reason: `${node.res} 完整箭头动画范围` });
       continue;
     }
-    if (['texas-holdem-room-id-text', 'zhajinhua-room-id-text'].includes(node.res || '')
+    if (['texas-holdem-room-id-text', 'zhajinhua-room-id-text', 'leader-board-room-id', 'game-network-proxy-code'].includes(node.res || '')
       || /^(texas-holdem|zhajinhua)-active-countdown$/.test(node.res || '')
       || (['countdown-text', 'zhajinhua-countdown'].includes(node.res || '') && /^\d+:\d+/.test(node.text || ''))
       || node.res === 'player-profile-id'

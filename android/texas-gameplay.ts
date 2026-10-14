@@ -69,8 +69,11 @@ export async function texasGameplay(device: AndroidDevice, proxy: Mitmproxy, roo
     { player_id: self, net: 180, prize: 180, stack: 1180 },
     { player_id: REPLAY_PLAYER_IDS[0], net: -960, prize: 0, stack: 0 },
   ] }]));
-  await expect.poll(async () => (await gameNodes(device)).some(node => node.text === '1180'),
-    { timeout: 30_000 }).toBe(true);
+  // 摊牌时余额被牌型标签替代；余额语义标记仍附在当前可见玩家容器内。
+  await expect.poll(async () => (await gameNodes(device))
+    .find(node => node.res === `texas-holdem-player-container-${self}`)
+    ?.children?.find(node => node.res === 'text-holdem-own-balance-text')?.text,
+  { timeout: 30_000 }).toBe('1180');
   await capture('settlement');
   /**
    * 打开玩家资料，等待统计数据实际完成加载。
