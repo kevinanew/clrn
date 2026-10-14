@@ -10,7 +10,7 @@ import type { VisualScenario } from '../visual/scenarioTypes';
  */
 export async function reveal(device: AndroidDevice, selector: AndroidSelector): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
-    try { await device.wait(selector, { timeout: attempt === 0 ? 3000 : 500 }); return; }
+    try { await device.wait(selector, { timeout: attempt === 0 ? 7000 : 3000 }); return; }
     catch (error) {
       if (attempt === 8) throw error;
       await device.input.swipe({ x: 360, y: 1000 }, [{ x: 360, y: 400 }], 30);
@@ -40,7 +40,7 @@ export async function tap(device: AndroidDevice, identifier: string): Promise<vo
  */
 export async function returnToTabs(device: AndroidDevice): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
-    try { await device.wait({ res: 'settings-tab' }, { timeout: 500 }); return; }
+    try { await device.wait({ res: 'settings-tab' }, { timeout: 3000 }); return; }
     catch (error) {
       if (attempt === 8) throw error;
       await device.input.press('Back');
