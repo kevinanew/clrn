@@ -51,7 +51,7 @@ APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使�
 - 游客页及四张认证冒烟图：来自 [reference 38636085095](https://github.com/kevinanew/clrn/actions/runs/38636085095)；弹窗背景中的拉霸图案使用显式遮罩后，由下述 7214 运行补齐。
 - 钱包及帮助页：三种语言各 13 个已审查场景来自 [reference 38636704445](https://github.com/kevinanew/clrn/actions/runs/38636704445)；第三方反馈页改为复用 Web 空白响应后，由下述 7214 运行补齐。
 
-另由 [reference 38638620863](https://github.com/kevinanew/clrn/actions/runs/38638620863) 的已通过部分补齐 6 张登录弹窗、3 张反馈页面和旧版战绩 60 张基准，使用 [Release 7214](https://github.com/kevinanew/clrn/releases/tag/android-staging-7214-83f9eabadfc0)。随后 [social reference 38641944393](https://github.com/kevinanew/clrn/actions/runs/38641944393) 三语全部通过，已审查并收录其中 39 张截图；搜索页统一收起输入法后再采集。[旧版战绩扩展运行 38643974954](https://github.com/kevinanew/clrn/actions/runs/38643974954) 已完成英文 32 个状态，补入 12 张新增基准。后续已补齐三语大厅搜索、英文房间 10 张及单行密码框基准，当前共审查 286 张正式基准。钱包购买历史更新了版本遮罩，英文和简体来自运行 38645206801，繁体来自 38645882574；密码框来自 38646732662，大厅搜索来自 38645201037，英文房间详情来自 38647075909。英文及繁体房间组最新完整 20 张基准来自 [reference 38650396063](https://github.com/kevinanew/clrn/actions/runs/38650396063)。简体旧版战绩另外 10 张删除和分页基准来自 38646727056，关系展开截图在改进滚动后重新验证。仍有房间和新版战绩失败项，不能算全量通过。
+另由 [reference 38638620863](https://github.com/kevinanew/clrn/actions/runs/38638620863) 的已通过部分补齐 6 张登录弹窗、3 张反馈页面和旧版战绩 60 张基准，使用 [Release 7214](https://github.com/kevinanew/clrn/releases/tag/android-staging-7214-83f9eabadfc0)。随后 [social reference 38641944393](https://github.com/kevinanew/clrn/actions/runs/38641944393) 三语全部通过，已审查并收录其中 39 张截图；搜索页统一收起输入法后再采集。[旧版战绩扩展运行 38643974954](https://github.com/kevinanew/clrn/actions/runs/38643974954) 已完成英文 32 个状态，补入 12 张新增基准。后续已补齐三语大厅搜索、英文房间 10 张及单行密码框基准，当前共审查 296 张正式基准。钱包购买历史更新了版本遮罩，英文和简体来自运行 38645206801，繁体来自 38645882574；密码框来自 38646732662，大厅搜索来自 38645201037，英文房间详情来自 38647075909。英文及繁体房间组最新完整 20 张基准来自 [reference 38650396063](https://github.com/kevinanew/clrn/actions/runs/38650396063)。简体旧版战绩另外 10 张删除和分页基准来自 38646727056，关系展开截图在改进滚动后重新验证。简体房间 10 张来自 [reference 38652547080](https://github.com/kevinanew/clrn/actions/runs/38652547080)，三语房间组均已通过基准生成。新版战绩和牌桌仍在验证，不能算全量通过。
 
 早期运行使用 [Release 7213](https://github.com/kevinanew/clrn/releases/tag/android-staging-7213-b30e55cca0f3)。该版本包含认证页遮挡和分页组件修复，应用变更见 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)。后续大厅渐变组件修复的 APK 仍须完成全量回归。
 
@@ -78,3 +78,5 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 `ANDROID_GROUP` 支持 `guest`、`account`、`social`、`rooms`、`wallet-help`、`records`、`texas`、`zhajinhua` 和 `all`；`ANDROID_LOCALE` 支持 `en`、`zh-Hans`、`zh-Hant`。Actions 默认全组、全语言，也可用 `filter` 缩小调试范围。每组出现三次失败即停止该组，报告中的未执行用例不计为通过。
 
 代理仅绑定主机回环地址，控制接口和夹具服务使用每轮随机令牌。只对显式选定的专用模拟器安装临时 CA 和配置代理，结束时还原代理设置；此环境不应拿来运行个人应用。
+
+统计说明等两秒短时提示采用连续 250 毫秒稳定检查，并断言提示在每次截图前后都可见；普通页面继续要求连续两秒稳定，所有截图仍要求零差异像素。

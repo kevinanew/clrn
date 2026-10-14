@@ -101,23 +101,28 @@ export async function waitForHall(device: AndroidDevice): Promise<void> {
  * @param name - 截图场景名称。
  * @param testInfo - Playwright 当前测试报告。
  * @param masks - 明确排除的动态区域，报告保留原图和区域原因。
+ * @param transientState - 短时提示的可见性断言；普通页面仍须稳定两秒。
  */
-export async function compareScreenshot(device: AndroidDevice, name: string, testInfo: TestInfo, masks: ScreenshotMask[] = []): Promise<void> {
+export async function compareScreenshot(device: AndroidDevice, name: string, testInfo: TestInfo, masks: ScreenshotMask[] = [],
+  transientState?: () => Promise<void>): Promise<void> {
   if (masks.length) await testInfo.attach(`${name}-masks`, { body: JSON.stringify(masks), contentType: 'application/json' });
   let previous = maskScreenshot(await device.screenshot(), masks);
   let stableSince = Date.now();
   let stable: Buffer | undefined;
   let original: Buffer | undefined;
   await expect(async () => {
+    await transientState?.();
     original = await device.screenshot();
+    await transientState?.();
     const current = maskScreenshot(original, masks);
     const equal = current.equals(previous);
     previous = current;
     if (!equal) stableSince = Date.now();
     expect(equal, '页面像素必须保持稳定').toBe(true);
-    expect(Date.now() - stableSince, '页面须连续稳定两秒，等待系统滚动条淡出').toBeGreaterThanOrEqual(2000);
+    expect(Date.now() - stableSince, '普通页面等待滚动条淡出；短时提示须在可见期间连续稳定')
+      .toBeGreaterThanOrEqual(transientState ? 250 : 2000);
     stable = current;
-  }).toPass({ timeout: 30_000, intervals: [500] });
+  }).toPass({ timeout: 30_000, intervals: [transientState ? 100 : 500] });
   if (masks.length) {
     await testInfo.attach(`${name}-original`, { body: original!, contentType: 'image/png' });
   }

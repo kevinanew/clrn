@@ -36,7 +36,8 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
            */
           const capture = async (state: string) => {
             expect(state).toBe(scenario.snapshotStates![index++]);
-            await captureGame(device, `${locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo);
+            await captureGame(device, `${locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo,
+              state === 'statistics_help' ? 'toastText1' : undefined);
           };
           if (scenario.pageLabel.endsWith('_pre_game')) await gamePreGame(device, game, capture);
           else {

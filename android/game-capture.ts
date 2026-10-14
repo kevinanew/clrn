@@ -10,8 +10,9 @@ import type { ScreenshotMask } from './screenshot';
  * @param device - 专用模拟器连接。
  * @param name - 共享场景与状态生成的截图名。
  * @param testInfo - 当前测试报告。
+ * @param transientMarker - 仅用于会自动消失的提示，截图前后都必须实际存在。
  */
-export async function captureGame(device: AndroidDevice, name: string, testInfo: TestInfo): Promise<void> {
+export async function captureGame(device: AndroidDevice, name: string, testInfo: TestInfo, transientMarker?: string): Promise<void> {
   const nodes = await gameNodes(device);
   expect(nodes.some(node => node.res === 'android:id/message' || node.res === 'common-alert-message'),
     '截图前不能存在意外错误提示').toBe(false);
@@ -37,5 +38,10 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
     }
     if (node.res === 'ping-screen-icon') masks.push({ ...node.bounds, reason: '网络延迟状态图标' });
   }
-  await compareScreenshot(device, name, testInfo, masks);
+  /** 不允许把提示消失后的稳定页面当成提示截图。 */
+  const assertTransient = async () => {
+    expect((await gameNodes(device)).some(node => node.res === transientMarker && node.text),
+      `${transientMarker} 必须在截图前后可见`).toBe(true);
+  };
+  await compareScreenshot(device, name, testInfo, masks, transientMarker ? assertTransient : undefined);
 }
