@@ -125,6 +125,18 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: 读取固定版本原生驱动源码
+        if: matrix.group == 'texas' || matrix.group == 'zhajinhua'
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/playwright
+          ref: 39e3553a4f283a41134d75d7e404484bd9e6865a
+          path: .ttyctl/playwright-driver-source
+          persist-credentials: false
+          sparse-checkout: packages/playwright-core/src/server/android/driver
+      - name: 构建牌桌动画兼容驱动
+        if: matrix.group == 'texas' || matrix.group == 'zhajinhua'
+        run: node android/build-driver.mjs
       - name: 启用模拟器硬件加速
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules

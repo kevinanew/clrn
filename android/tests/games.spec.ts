@@ -18,7 +18,7 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
     test(`${locale} / ${suite} / ${scenario.pageLabel}`, async ({}, testInfo) => {
       test.setTimeout(900_000);
       await withAndroidProxy(async proxy => {
-        const device = await launchApplication();
+        const device = await launchApplication({ gameDriver: true });
         let room: RoomSession | null = null;
         let index = 0;
         try {

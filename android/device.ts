@@ -23,8 +23,9 @@ export function adb(...argumentsList: string[]): string {
 
 /**
  * 安装已校验的 Release 并固定系统显示条件，正常冷启动应用。
+ * @param options - 牌桌使用修复持续动画查询的固定版本原生驱动。
  */
-export async function launchApplication(): Promise<AndroidDevice> {
+export async function launchApplication(options: { gameDriver?: boolean } = {}): Promise<AndroidDevice> {
   await readVerifiedBuild(artifacts);
   if (adb('shell', 'getprop', 'ro.kernel.qemu').trim() !== '1') throw new Error('只允许在专用模拟器执行。');
   if (adb('shell', 'getprop', 'ro.build.version.sdk').trim() !== '35') throw new Error('截图基准要求 Android API 35。');
@@ -55,7 +56,16 @@ export async function launchApplication(): Promise<AndroidDevice> {
   if (!installed.includes(`versionName=${information.versionName}`)) throw new Error('安装后的应用版本与 Release 不一致。');
   adb('logcat', '-c');
   adb('shell', 'am', 'start', '-n', `${applicationId}/com.laiwan_react_native.MainActivity`);
-  const devices = await _android.devices();
+  if (options.gameDriver) {
+    const driver = path.resolve('.ttyctl/android-driver');
+    const source = JSON.parse(readFileSync(path.join(driver, 'source.json'), 'utf8'));
+    if (source.revision !== '39e3553a4f283a41134d75d7e404484bd9e6865a' || source.patch !== 1) throw new Error('牌桌驱动构建身份无效。');
+    for (const pkg of ['com.microsoft.playwright.androiddriver.test', 'com.microsoft.playwright.androiddriver']) {
+      if (adb('shell', 'pm', 'list', 'packages', pkg).includes(`package:${pkg}`)) adb('uninstall', pkg);
+    }
+    for (const apk of ['android-driver-target.apk', 'android-driver.apk']) adb('install', path.join(driver, apk));
+  }
+  const devices = await _android.devices({ omitDriverInstall: options.gameDriver === true });
   const device = devices.find(item => item.serial() === process.env.ANDROID_SERIAL);
   await Promise.all(devices.filter(item => item !== device).map(item => item.close()));
   if (!device) throw new Error('未找到指定模拟器。');
@@ -68,7 +78,17 @@ export async function launchApplication(): Promise<AndroidDevice> {
  * @param device - 专用模拟器连接。
  */
 export async function waitForHall(device: AndroidDevice): Promise<void> {
-  await device.wait({ res: 'staging-confirmation-input' }, { timeout: 90_000 });
+  for (let attempt = 0; ; attempt++) {
+    try { await device.wait({ res: 'staging-confirmation-input' }, { timeout: 30_000 }); break; }
+    catch (error) {
+      // CI 系统桌面偶发 ANR 会遮住应用；只关闭明确属于 Pixel Launcher 的弹窗。
+      const launcher = await device.info({ text: "Pixel Launcher isn't responding" }).catch(() => undefined);
+      if (attempt >= 2) throw error;
+      if (!launcher) continue;
+      console.log('ANDROID > 关闭 Pixel Launcher 系统桌面 ANR，重新等待应用启动');
+      await device.tap({ res: 'android:id/aerr_close' });
+    }
+  }
   await device.fill({ res: 'staging-confirmation-input' }, 'CONFIRM');
   await dismissKeyboard(device);
   await device.tap({ res: 'confirm-button' });

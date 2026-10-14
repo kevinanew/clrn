@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import type { AndroidDevice } from 'playwright';
 import { adb } from './device';
 import type { ScreenshotBounds } from './screenshot';
+import { setTimeout } from 'node:timers/promises';
 
 export type NativeNode = { res?: string; text?: string; enabled?: boolean; checked?: boolean;
   bounds: ScreenshotBounds; children?: NativeNode[] };
@@ -14,9 +15,17 @@ export type NativeNode = { res?: string; text?: string; enabled?: boolean; check
 export async function gameNodes(device: AndroidDevice): Promise<NativeNode[]> {
   const internal = device as unknown as { _connection: { toImpl(device: AndroidDevice): {
     _send(method: string): Promise<NativeNode> } } };
-  const root = await internal._connection.toImpl(device)._send('tree');
-  if (!root?.bounds || !Array.isArray(root.children)) throw new Error('原生驱动没有返回完整控件树。');
-  return flattenNodes(root);
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const root = await internal._connection.toImpl(device)._send('tree');
+      if (!root?.bounds || !Array.isArray(root.children)) throw new Error('原生驱动没有返回完整控件树。');
+      return flattenNodes(root);
+    } catch (error) {
+      // 转场会在驱动遍历过程中移除子节点；重读整棵树，不返回残缺或伪造的空结果。
+      if (attempt >= 4 || !/NullPointerException|StaleObjectException/.test(String(error))) throw error;
+      await setTimeout(250);
+    }
+  }
 }
 
 /**

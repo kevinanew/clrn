@@ -3,7 +3,7 @@ import type { AndroidDevice } from 'playwright';
 import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { ensureRoomBalance, type Account, type RoomSession } from '../visual/cases/_shared/room';
 import { dismissKeyboard } from './keyboard';
-import { tap, returnToTabs } from './navigation';
+import { tap, returnToTabs, reveal } from './navigation';
 import { gameReady, gameGone } from './game-controls';
 
 /**
@@ -29,8 +29,10 @@ export async function createGameRoom(device: AndroidDevice, proxy: Mitmproxy,
   try { await ensureRoomBalance(api, account); }
   finally { await api.dispose(); }
   await returnToTabs(device);
-  await tap(device, 'hall-tab');
-  await tap(device, 'personal-house-create');
+  await tap(device, 'private-room-tab');
+  await reveal(device, { res: 'copy-house-number-button' });
+  await tap(device, 'create-game-button');
+  await reveal(device, { res: 'select-game-category-text' });
   await tap(device, `game-type-button-${game === 'texas-holdem' ? 'texas_react_native' : game}`);
   await device.wait({ res: 'room-name-input' });
   await device.fill({ res: 'room-name-input' }, 'TestRoom');

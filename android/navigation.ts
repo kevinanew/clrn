@@ -21,6 +21,7 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
       expect(bounds.width).toBeGreaterThan(0);
       expect(bounds.height).toBeGreaterThan(0);
       expect(bounds.y).toBeLessThan(1232);
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(1232);
       expect(bounds.y + bounds.height).toBeGreaterThan(0);
       return;
     }
@@ -38,16 +39,9 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
       const scrollable = await device.info({ scrollable: true }).catch(() => undefined);
       if (!scrollable) { await device.wait(selector, { timeout: 30_000 }); return; }
       const { bounds } = scrollable;
-      // 建房滑杆会截获轨道内的拖动，从可见的静态标签开始滑动，保留表单数值。
-      const labels = await Promise.all(['max-buy-in-title-text', 'booking-second-label',
-        'min-buy-in-title-text', 'boot-title-text', 'operation-duration-title-text', 'seats-amount-title-text']
-        .map(res => device.info({ res, clazz: 'android.widget.TextView' }).catch(() => undefined)));
-      const anchor = labels.filter(node => node && node.bounds.height > 0
-        && node.bounds.y > bounds.y + bounds.height * 0.3
-        && node.bounds.y + node.bounds.height < bounds.y + bounds.height)
-        .sort((a, b) => b!.bounds.y - a!.bounds.y)[0];
-      const horizontal = Math.round(anchor ? anchor.bounds.x + anchor.bounds.width / 2 : bounds.x + bounds.width * 0.95);
-      const start = Math.round(anchor ? anchor.bounds.y + anchor.bounds.height / 2 : bounds.y + bounds.height * 0.85);
+      // 建房滑杆的整个标签区域也会接管拖动；从列表右边缘内侧滑动，避开其触摸范围。
+      const horizontal = Math.round(bounds.x + bounds.width - 2);
+      const start = Math.round(bounds.y + bounds.height * 0.85);
       adb('shell', 'input', 'swipe', String(horizontal), String(start),
         String(horizontal), String(Math.round(bounds.y + bounds.height * 0.2)), '600');
     }
