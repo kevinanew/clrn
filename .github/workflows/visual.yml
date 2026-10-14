@@ -3,7 +3,7 @@ name: H5 Visual Regression
 on:
   push:
     branches-ignore: [release]
-    paths: ['visual/**', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', 'scripts/*ci*', '.github/workflows/visual.yml']
+    paths: ['visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', 'scripts/*ci*', '.github/workflows/visual.yml']
   schedule:
     - cron: '12 22 * * *'
   workflow_call:

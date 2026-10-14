@@ -3,6 +3,7 @@
  */
 
 import { expect } from '@playwright/test';
+import { confirmStagingNotice } from '../../../e2e/helpers/staging-notice';
 import { isSignedIn, USER_ATTRIBUTE_STORAGE_KEY } from './authValidation';
 export { isSignedIn, waitForSignInState } from './authValidation';
 
@@ -26,15 +27,7 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
       return;
     }
 
-    const confirmButton = page.locator('[data-testid="confirm-button"]').first();
-    const confirmVisible = await confirmButton.isVisible().catch(() => false);
-    if (confirmVisible) {
-      // noWaitAfter：RN Web 点确认后可能挂起 “waiting for scheduled navigations”
-      try {
-        await confirmButton.click({ timeout: 3000, noWaitAfter: true });
-      } catch {
-        await confirmButton.evaluate((el: HTMLElement) => el.click()).catch(() => undefined);
-      }
+    if (await confirmStagingNotice(page)) {
       await page.waitForTimeout(300);
       continue;
     }
