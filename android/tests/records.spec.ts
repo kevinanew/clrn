@@ -1,3 +1,4 @@
+import { waitAbsent } from '../native-state';
 import { test, expect } from '@playwright/test';
 import { captureFailure } from '../diagnostics';
 import { buildScenarios } from '../../visual/scenarios';
@@ -72,7 +73,7 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
         await device.wait({ res: 'record-sum-score-text', text: '0' });
         await capture('select_clear');
         await tap(device, header);
-        await device.wait({ res: 'record-sum-score-text' }, { state: 'gone' });
+        await waitAbsent(device, { res: 'record-sum-score-text' });
         await capture('select_cancel');
         for (const [name, prefix] of [['Private Texas', 'private'], ['Club Cards', 'club']]) {
           await pressRecordControl(device, recordRow(name, version));

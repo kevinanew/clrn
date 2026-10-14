@@ -1,3 +1,5 @@
+import { fillScenarioInputs } from './form-inputs';
+import { waitAbsent } from './native-state';
 import { expect } from '@playwright/test';
 import type { AndroidDevice, AndroidSelector } from 'playwright';
 import { nativeSelector } from './scenarios';
@@ -18,7 +20,7 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
       if (tutorial) {
         const finish = await device.info({ res: 'tooltip-finish-button' }).catch(() => undefined);
         await device.tap({ res: finish ? 'tooltip-finish-button' : 'tooltip-next-button' });
-        if (finish) await device.wait({ res: 'stepDescription' }, { state: 'gone' });
+        if (finish) await waitAbsent(device, { res: 'stepDescription' });
         continue;
       }
       const scrollable = await device.info({ scrollable: true }).catch(() => undefined);
@@ -99,20 +101,15 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
       await tap(device, identifier);
     }
   }
+  await fillScenarioInputs(device, scenario);
   await reveal(device, nativeSelector(scenario.visualReadySelector));
   if (scenario.visualGoneSelector) {
-    await device.wait(nativeSelector(scenario.visualGoneSelector), { state: 'gone' });
+    await waitAbsent(device, nativeSelector(scenario.visualGoneSelector));
   }
   if (scenario.readyText) await device.wait({ text: scenario.readyText });
-  if (scenario.waitForLoading) await device.wait({ clazz: 'android.widget.ProgressBar' }, { state: 'gone' });
-  await device.wait({ res: 'alert-message-text' }, { state: 'gone' });
-  // 表单预填文字与 Web 相同，只编辑表单，不提交个人资料或创建房间。
-  for (const rule of scenario.fixedTexts) {
-    if (/input"\]$/.test(rule.selector)) {
-      await device.fill(nativeSelector(rule.selector), rule.text);
-      await device.input.press('Back');
-    }
-  }
+  if (scenario.waitForLoading) await waitAbsent(device, { clazz: 'android.widget.ProgressBar' });
+  await waitAbsent(device, { res: 'alert-message-text' });
+
 }
 
 /**

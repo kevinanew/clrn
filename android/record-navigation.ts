@@ -1,3 +1,4 @@
+import { waitAbsent } from './native-state';
 import { expect, type TestInfo } from '@playwright/test';
 import type { AndroidDevice, AndroidSelector } from 'playwright';
 import { adb, compareScreenshot } from './device';
@@ -66,7 +67,7 @@ export function recordSnapshots(device: AndroidDevice, scenario: VisualScenario,
     capture: async (state: string) => {
       expect(state).toBe(states[index++]);
       expect(scenario.snapshotStates).toContain(state);
-      await device.wait({ res: 'alert-message-text' }, { state: 'gone' });
+      await waitAbsent(device, { res: 'alert-message-text' });
       await compareScreenshot(device, `${scenario.locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo);
     },
     /** 检查所有声明的状态确实执行。 */

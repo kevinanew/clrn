@@ -71,3 +71,11 @@ test('原生战绩状态必须来自 Web 清单，未实现状态不冒充覆盖
   }
   assert.deepEqual(androidScenarios('en', 'records'), []);
 });
+
+
+test('原生控件消失查询不把连接或驱动错误误认为成功', async () => {
+  const { exists } = require('./native-state.ts');
+  assert.equal(await exists({ info: /** 模拟存在的原生控件。 */ async () => ({ res: 'ready' }) }, { res: 'ready' }), true);
+  assert.equal(await exists({ info: /** 模拟原生查询空结果。 */ async () => { throw new Error('java.lang.NullPointerException'); } }, { res: 'gone' }), false);
+  await assert.rejects(exists({ info: /** 模拟连接中断。 */ async () => { throw new Error('Device closed'); } }, { res: 'gone' }), /Device closed/);
+});
