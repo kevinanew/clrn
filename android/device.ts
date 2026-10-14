@@ -68,7 +68,7 @@ export async function waitForHall(device: AndroidDevice): Promise<void> {
   await device.fill({ res: 'staging-confirmation-input' }, 'CONFIRM');
   await device.input.press('Back');
   await device.tap({ res: 'confirm-button' });
-  await device.wait({ res: 'hall-sign-in-button' }, { timeout: 120_000 });
+  await device.wait({ res: 'settings-tab' }, { timeout: 120_000 });
 }
 
 /**

@@ -10,7 +10,9 @@ test('Android Staging 登录与找回密码页面视觉回归', async ({}, testI
   try {
     device = await launchApplication();
     await waitForHall(device);
-    await device.tap({ res: 'hall-sign-in-button' });
+    // 大厅的登录入口在折叠区域，原生端通过可见的“我的”入口进入登录页。
+    await device.tap({ res: 'settings-tab' });
+    await device.tap({ res: 'sign-in-button' });
     await device.wait({ res: 'username-or-email-sign-in-button' });
     await compareScreenshot(device, 'login-welcome', testInfo);
 
