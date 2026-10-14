@@ -19,10 +19,10 @@ node android/download-release.mjs
 ANDROID_SERIAL=emulator-5554 node android/run-visual.mjs
 ```
 
-默认扫描已发布的 Android Staging Releases（包括 prerelease），选最新版本。指定旧版本重现问题：
+默认扫描 `android-staging-<构建编号>-<提交前12位>` 格式的已发布 Android Staging Releases（包括 prerelease），下载 `android-staging.apk` 并选最新版本。指定版本重现问题（替换为实际标签）：
 
 ```sh
-ANDROID_RELEASE_TAG=android-visual-staging-7187-f00365042077 node android/download-release.mjs
+ANDROID_RELEASE_TAG='android-staging-<构建编号>-<提交前12位>' node android/download-release.mjs
 ```
 
 下载后核对构建环境、应用标识、提交、架构、附件大小和 SHA-256；安装前再次校验，安装后检查版本。最新 Release 缺少附件会直接失败，不会悄悄退回旧版本。每次报告附带 `build-info.json`，用于确认实际测试的应用提交。
@@ -44,7 +44,7 @@ APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使�
 ```sh
 gh workflow run android-visual.yml --repo kevinanew/clrn \
   --ref master -f mode=reference \
-  -f release_tag=android-visual-staging-7187-f00365042077
+  -f release_tag='android-staging-<构建编号>-<提交前12位>'
 ```
 
 在 PR 验证期间，将 `--ref master` 替换为 PR 分支。工作流至少运行过一次后可通过 CLI 指定分支；Actions 网页中的手动运行入口还要求工作流存在于默认分支。成功后下载 `android-staging-reference-*` 产物，审查图片，再将 PNG 放回 `android/snapshots/android-35-x86_64-720x1280-en/`，通过 PR 更新。reference 仅生成候选基准，不代表比较通过。

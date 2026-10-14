@@ -9,13 +9,13 @@ import { packageName, selectRelease, validateBuildInformation, verifyPackage } f
 const content = Buffer.from('安装包完整性测试');
 const information = {
   schemaVersion: 1, platform: 'android', environment: 'staging', applicationId: 'com.ac.laiwanDev',
-  applicationCommit: 'f'.repeat(40), buildNumber: 7187, releaseTag: `android-visual-staging-7187-${'f'.repeat(12)}`,
+  applicationCommit: 'f'.repeat(40), buildNumber: 7187, releaseTag: `android-staging-7187-${'f'.repeat(12)}`,
   signing: 'visual-staging-testing-only', architectures: ['x86_64', 'arm64-v8a'],
   package: { name: packageName, size: content.length, sha256: createHash('sha256').update(content).digest('hex') },
 };
 const release = {
   tag_name: information.releaseTag, draft: false, prerelease: true, published_at: '2026-10-14T09:38:32Z',
-  body: '<!-- laiwan-android-visual-staging schema=1 -->',
+  body: '<!-- android-staging schema=1 -->',
   assets: [
     { name: 'build-info.json', state: 'uploaded', size: 603 },
     { name: packageName, state: 'uploaded', size: content.length, digest: `sha256:${information.package.sha256}` },
@@ -23,7 +23,7 @@ const release = {
 };
 
 test('选中预发布 APK，忽略其他平台和草稿，并可固定旧版本', () => {
-  const old = { ...release, published_at: '2026-10-13T00:00:00Z', tag_name: `android-visual-staging-7185-${'e'.repeat(12)}` };
+  const old = { ...release, published_at: '2026-10-13T00:00:00Z', tag_name: `android-staging-7185-${'e'.repeat(12)}` };
   const list = [old, { ...release, draft: true }, { ...release, tag_name: 'ios-production' }, release];
   assert.equal(selectRelease(list), release);
   assert.equal(selectRelease(list, old.tag_name), old);

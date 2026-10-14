@@ -4,8 +4,8 @@ import { readFile, stat } from 'node:fs/promises';
 
 export const releaseRepository = 'kevinanew/clrn';
 export const applicationId = 'com.ac.laiwanDev';
-export const packageName = 'laiwan-android-staging.apk';
-const releasePattern = /^android-visual-staging-(\d+)-([a-f0-9]{12})$/;
+export const packageName = 'android-staging.apk';
+const releasePattern = /^android-staging-(\d+)-([a-f0-9]{12})$/;
 
 /**
  * 从发布列表选出指定版本或最新已发布的安卓 Staging 测试版本。
@@ -16,7 +16,7 @@ export function selectRelease(releases, tag = '') {
   if (tag && !releasePattern.test(tag)) throw new Error('无效的 Android Staging Release 标签。');
   const candidates = releases.filter(release => !release.draft && release.published_at
     && releasePattern.test(release.tag_name)
-    && release.body?.includes('<!-- laiwan-android-visual-staging schema=1 -->')
+    && release.body?.includes('<!-- android-staging schema=1 -->')
     && (!tag || release.tag_name === tag));
   candidates.sort((left, right) => Date.parse(right.published_at) - Date.parse(left.published_at));
   const selected = candidates[0];
