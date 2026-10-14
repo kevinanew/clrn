@@ -30,7 +30,7 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
       const { bounds } = scrollable;
       // 建房滑杆会截获轨道内的拖动，从可见的静态标签开始滑动，保留表单数值。
       const labels = await Promise.all(['max-buy-in-title-text', 'booking-second-label',
-        'min-buy-in-title-text', 'boot-title-text', 'operation-duration-title-text']
+        'min-buy-in-title-text', 'boot-title-text', 'operation-duration-title-text', 'seats-amount-title-text']
         .map(res => device.info({ res, clazz: 'android.widget.TextView' }).catch(() => undefined)));
       const anchor = labels.filter(node => node && node.bounds.height > 0
         && node.bounds.y > bounds.y + bounds.height * 0.3
@@ -79,6 +79,11 @@ export async function tap(device: AndroidDevice, identifier: string): Promise<vo
  */
 export async function returnToTabs(device: AndroidDevice): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
+    if (await exists(device, { res: 'stepDescription' })) {
+      await device.tap({ res: await exists(device, { res: 'tooltip-finish-button' })
+        ? 'tooltip-finish-button' : 'tooltip-next-button' });
+      continue;
+    }
     if (await exists(device, { res: 'slot-machine-view' })) {
       await tap(device, 'close-button');
       await waitAbsent(device, { res: 'slot-machine-view' });
@@ -113,10 +118,12 @@ export async function returnToTabs(device: AndroidDevice): Promise<void> {
 export async function navigateScenario(device: AndroidDevice, scenario: VisualScenario): Promise<ScreenshotBounds | undefined> {
   await returnToTabs(device);
   await tap(device, scenario.tabTestId || 'hall-tab');
-  const list = await device.info({ scrollable: true }).catch(() => undefined);
-  if (list) {
+  // 标签页保留上次滚动位置；完整回到顶部后再按共享路径导航。
+  for (let reset = 0; reset < 3; reset++) {
+    const list = await device.info({ scrollable: true }).catch(() => undefined);
+    if (!list) break;
     const { bounds } = list;
-    const horizontal = Math.round(bounds.x + Math.min(8, bounds.width * 0.02));
+    const horizontal = Math.round(bounds.x + bounds.width / 2);
     adb('shell', 'input', 'swipe', String(horizontal), String(Math.round(bounds.y + bounds.height * 0.2)),
       String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)), '600');
   }
@@ -137,7 +144,7 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
       await tap(device, 'hall-tab');
       await tap(device, identifier);
       if (identifier === 'personal-house-create') {
-        await device.wait({ res: 'select-game-category-text' });
+        await reveal(device, { res: 'select-game-category-text' });
         if (!scenario.navClickTestIds.includes('create-game-button')) {
           await device.input.press('Back');
           await waitAbsent(device, { res: 'select-game-category-text' });
@@ -162,6 +169,7 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
   if (scenario.readyText) await device.wait({ text: scenario.readyText });
   if (scenario.waitForLoading) await waitAbsent(device, { clazz: 'android.widget.ProgressBar' });
   await waitAbsent(device, { res: 'alert-message-text' });
+  await dismissKeyboard(device);
   return backgroundBanner;
 }
 

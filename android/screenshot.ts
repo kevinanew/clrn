@@ -33,7 +33,7 @@ export async function screenshotMasks(device: AndroidDevice, scenario: VisualSce
     if (!/(?:version-text|current-server-text|checkInDetailDate)/.test(rule.selector)) continue;
     const node = await device.info(nativeSelector(rule.selector)).catch(() => undefined);
     if (node && node.bounds.width > 0 && node.bounds.height > 0) {
-      masks.push({ ...node.bounds, x: 40, width: 640, reason: rule.selector });
+      masks.push({ ...node.bounds, x: 40, width: rule.selector.includes('purchase-history-version-text') ? 660 : 640, reason: rule.selector });
     }
   }
   if (['signed_in_hall', 'signed_in_hall_match', 'search_sign_in_prompt', 'guest_game_sign_in_prompt'].includes(scenario.pageLabel)) {
