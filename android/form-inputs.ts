@@ -21,6 +21,8 @@ export async function fillScenarioInputs(device: AndroidDevice, scenario: Visual
       adb('shell', 'input', 'swipe', horizontal, String(Math.round(y + height * 0.2)),
         horizontal, String(Math.round(y + height * 0.85)), '600');
     }
+    // 原生 fill 的内部点击不会等待异步表单挂载，必须先确认输入框已出现。
+    await device.wait(selector);
     await device.fill(selector, rule.text);
     await device.input.press('Back');
   }

@@ -1,5 +1,5 @@
 import { fillScenarioInputs } from './form-inputs';
-import { waitAbsent } from './native-state';
+import { exists, waitAbsent } from './native-state';
 import { expect } from '@playwright/test';
 import type { AndroidDevice, AndroidSelector } from 'playwright';
 import { nativeSelector } from './scenarios';
@@ -69,6 +69,19 @@ export async function tap(device: AndroidDevice, identifier: string): Promise<vo
  */
 export async function returnToTabs(device: AndroidDevice): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
+    if (await exists(device, { res: 'confirm-pop-up-image-background' })) {
+      await tap(device, 'cancel-button');
+      await waitAbsent(device, { res: 'confirm-pop-up-image-background' });
+      continue;
+    }
+    // 选玩法弹层会保留底部标签，先正常关闭，不能点击遮罩下的控件。
+    const overlay = await exists(device, { res: 'select-game-category-text' }) ? 'select-game-category-text'
+      : await exists(device, { res: 'base-create-room-screen' }) ? 'base-create-room-screen' : undefined;
+    if (overlay) {
+      await device.input.press('Back');
+      await waitAbsent(device, { res: overlay });
+      continue;
+    }
     try { await device.wait({ res: 'settings-tab' }, { timeout: 3000 }); return; }
     catch (error) {
       if (attempt === 8) throw error;
@@ -93,7 +106,21 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
       String(horizontal), String(Math.round(bounds.y + bounds.height * 0.85)), '150');
   }
   for (const identifier of scenario.navClickTestIds) {
-    if (identifier === 'hall-sign-in-button') {
+    if (identifier === 'personal-house-create' || identifier === 'personal-house-join') {
+      // 原生私人房标签直接显示房屋详情；共用的创建/加入入口实际位于大厅。
+      await tap(device, 'hall-tab');
+      await tap(device, identifier);
+      if (identifier === 'personal-house-create') {
+        await device.wait({ res: 'select-game-category-text' });
+        if (!scenario.navClickTestIds.includes('create-game-button')) {
+          await device.input.press('Back');
+          await waitAbsent(device, { res: 'select-game-category-text' });
+        }
+      } else await reveal(device, { res: 'copy-house-number-button' });
+    } else if (identifier === 'create-game-button' && await exists(device, { res: 'select-game-category-text' })) {
+      // 大厅创建入口已经正常打开玩法弹层，不再次点击被遮住的创建按钮。
+      continue;
+    } else if (identifier === 'hall-sign-in-button') {
       await tap(device, 'settings-tab');
       await tap(device, 'sign-in-button');
       await device.wait({ res: 'username-or-email-sign-in-button' });
