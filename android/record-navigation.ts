@@ -22,7 +22,7 @@ export function recordRow(name: string): AndroidSelector {
  * @param selector - 原生控件条件。
  */
 export async function pressRecordControl(device: AndroidDevice, selector: AndroidSelector): Promise<void> {
-  await reveal(device, selector);
+  await reveal(device, selector, true);
   const { bounds } = await device.info(selector);
   await device.input.tap({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 });
 }

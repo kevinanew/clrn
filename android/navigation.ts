@@ -12,8 +12,9 @@ import type { ScreenshotBounds } from './screenshot';
  * 按原生控件定位；目标在列表下方时通过真实滑动寻找。
  * @param device - 专用模拟器连接。
  * @param selector - 目标控件。
+ * @param fullyVisible - 点击列表行时要求整个控件位于系统手势条上方。
  */
-export async function reveal(device: AndroidDevice, selector: AndroidSelector): Promise<void> {
+export async function reveal(device: AndroidDevice, selector: AndroidSelector, fullyVisible = false): Promise<void> {
   for (let attempt = 0; attempt < 9; attempt++) {
     try {
       await device.wait(selector, { timeout: attempt === 0 ? 7000 : 3000 });
@@ -21,7 +22,7 @@ export async function reveal(device: AndroidDevice, selector: AndroidSelector): 
       expect(bounds.width).toBeGreaterThan(0);
       expect(bounds.height).toBeGreaterThan(0);
       expect(bounds.y).toBeLessThan(1232);
-      expect(bounds.y + bounds.height).toBeLessThanOrEqual(1250);
+      if (fullyVisible) expect(bounds.y + bounds.height).toBeLessThanOrEqual(1250);
       expect(bounds.y + bounds.height).toBeGreaterThan(0);
       return;
     }
