@@ -34,8 +34,12 @@ test('Android Staging 登录与找回密码页面视觉回归', async ({}, testI
     await compareScreenshot(device, 'forgot-password-email', testInfo);
   } finally {
     if (device) {
-      await testInfo.attach('last-screen', { body: await device.screenshot(), contentType: 'image/png' }).catch(() => undefined);
-      await device.close();
+      await device.screenshot()
+        .then(body => testInfo.attach('last-screen', { body, contentType: 'image/png' }))
+        .catch(() => undefined);
+      await device.close()
+        .catch(error => testInfo.attach('android-driver-close-error', { body: String(error), contentType: 'text/plain' }))
+        .catch(() => undefined);
       try {
         // info() 只返回单个节点；先释放测试驱动的 UiAutomation，再读取被测应用的完整控件树。
         adb('shell', 'am', 'force-stop', 'com.microsoft.playwright.androiddriver');
@@ -49,11 +53,15 @@ test('Android Staging 登录与找回密码页面视觉回归', async ({}, testI
           });
         }
       } catch (error) {
-        await testInfo.attach('android-view-hierarchy-error', { body: String(error), contentType: 'text/plain' });
+        await testInfo.attach('android-view-hierarchy-error', { body: String(error), contentType: 'text/plain' }).catch(() => undefined);
       }
     }
-    await testInfo.attach('android-runtime', {
-      body: adb('logcat', '-d', '-s', 'AndroidRuntime:E', 'ReactNativeJS:E'), contentType: 'text/plain',
-    });
+    try {
+      await testInfo.attach('android-runtime', {
+        body: adb('logcat', '-d', '-s', 'AndroidRuntime:E', 'ReactNativeJS:E'), contentType: 'text/plain',
+      });
+    } catch (error) {
+      await testInfo.attach('android-runtime-error', { body: String(error), contentType: 'text/plain' }).catch(() => undefined);
+    }
   }
 });
