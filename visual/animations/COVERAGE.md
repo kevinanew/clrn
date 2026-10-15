@@ -25,7 +25,8 @@
 | 德州倒计时及操作区切换 | `texasGameplay.ts` / `texas-countdown-operation-switch` | 计时进度及操作区变换 |
 | 德州加注、精确加注、玩家资料 | `texasGameplay.ts` | 入退场及重开 |
 | 德州全压、摊牌、结算 | `texasGameplay.ts` | 手牌、皇冠、净收益、余额；火焰素材另测 |
-| 经验与升级 | `texasGameplay.ts` / `texas-experience-level-up` | 真实操作响应触发，展示与离场 |
+| 两种牌桌各自的经验与升级 | `texasGameplay.ts`、`zhajinhuaFeedback.ts` | 真实操作响应触发，展示与离场 |
+| 拼三张玩家倒计时 | `zhajinhuaFeedback.ts` / `zhajinhua-countdown` | 数字、进度及颜色变化 |
 | 拼三张发牌、看牌、加注、比牌、摊牌、结算 | `zhajinhuaGameplay.ts` | 十五张牌的飞行、翻牌、比牌往返、胜负、余额 |
 | 拼三张精确加注、比牌目标闪烁 | `zhajinhuaGameplay.ts` | 精确加注入退场、四个目标循环闪烁 |
 | 弹幕 | `texasSocial.ts` / `texas-barrage` | 固定随机高度后的真实移动轨迹 |

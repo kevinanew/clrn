@@ -7,6 +7,7 @@ import type { TableSession } from './tableSession';
 import { exerciseTablePopup as exercisePopup } from './popups';
 import { closeTableMask } from './tablePanels';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
+import { zhajinhuaFeedback } from './zhajinhuaFeedback';
 
 /**
  * 回放拼三张独立协议，覆盖看牌、下注、比牌往返、摊牌和结算。
@@ -105,4 +106,5 @@ export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaP
     });
   }
   await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('1120');
+  await zhajinhuaFeedback(session, proxy, info);
 }
