@@ -21,6 +21,8 @@ export async function captureFailure(device: AndroidDevice, testInfo: TestInfo):
     const hostLog = process.env.GITHUB_ACTIONS === 'true'
       ? await readFile(path.join(tmpdir(), `adb.${process.getuid!()}.log`), 'utf8').catch(() => '') : '';
     const logs = [adb('logcat', '-d', '-b', 'all', '*:E'), hostLog,
+      adb('logcat', '-d', '-b', 'all', 'adbd:I', 'init:I', 'lmkd:I', 'lowmemorykiller:I', '*:S'),
+      adb('shell', 'cat', '/proc/meminfo'),
       adb('logcat', '-d', '-b', 'events', 'am_kill:I', 'am_proc_died:I', 'am_crash:I', 'am_anr:I', '*:S')].join('\n').split('\n')
       .filter(line => !/(access_token|refresh_token|authorization|password|Bearer\s)/i.test(line)
         && !(process.env.VISUAL_PASSWORD && line.includes(process.env.VISUAL_PASSWORD))).join('\n');
