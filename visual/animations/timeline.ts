@@ -124,8 +124,15 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
   await seekCssAnimations(page, 0, true);
   try {
     for (const milliseconds of times) {
-      await page.clock.runFor(milliseconds - previous);
+      const duration = milliseconds - previous;
+      // React 的 MessageChannel 副作用也需要在帧间提交；一次快跑数秒会把倒计时更新合并到末帧。
+      if (duration === 0) await page.clock.runFor(0);
+      for (let elapsed = 0; elapsed < duration; elapsed += 16) {
+        await page.clock.runFor(Math.min(16, duration - elapsed));
+      }
       await seekCssAnimations(page, milliseconds);
+      // 新挂载的边框、牌面或道具可能仍在加载。时钟保持暂停，资源就绪后再比较同一关键帧。
+      await ensureLocalImagesLoaded(page);
       const sampledTime = milliseconds + (options.startOffset || 0);
       samples.push({ milliseconds: sampledTime, elements: await appearance(target) });
       // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。

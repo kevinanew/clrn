@@ -47,13 +47,19 @@ export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaP
   await proxy.replay(roomId, events([{ event: 'raise', player_id: self, amount: 40, stack: 960 },
     { event: 'pot_update', pot_amount: 160 }]));
   await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('加注');
-  await ensureLocalImagesLoaded(page);
   await captureTimeline(page, info, 'zhajinhua-raise', visible(page, `zhajinhua-player-container-${self}`), { clip });
   await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('960');
   await proxy.replay(roomId, restoreTable(self, false, true));
   await page.clock.runFor(3200);
   await exercisePopup(page, info, { name: 'zhajinhua-accurate-raise', target: page.getByTestId('accurate-bet-popup-container'), clip,
-    open: /** 打开精确加注，不提交下注。 */ () => press(page, 'zhajinhua-operation-accurate-bet-button'),
+    open: /** 每次采样从相同牌局和计时起点打开精确加注，不提交下注。 */ async () => {
+      await proxy.replay(roomId, restoreTable(self, false, true));
+      await expect(page.getByTestId(`zhajinhua-player-container-${self}-operating`)
+        .getByTestId('zhajinhua-active-countdown')).toHaveText('120');
+      await expect(page.getByTestId('countdown-text')).toHaveAttribute('data-seconds', '3600');
+      await page.clock.runFor(3200);
+      await press(page, 'zhajinhua-operation-accurate-bet-button');
+    },
     close: /** 点击精确加注所属遮罩。 */ () => closeTableMask(page, 'accurate-bet-popup-container') });
   await press(page, 'zhajinhua-operation-button-battle');
   const selectors = page.getByTestId('challenge_player_selector');
@@ -95,7 +101,6 @@ export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaP
       { player_id: self, net: 120, prize: 120, stack: 1120 },
       { player_id: PLAYER_IDS[1], net: -40, prize: 0, stack: 880 },
     ] }]));
-    await ensureLocalImagesLoaded(page);
     await captureTimeline(page, info, 'zhajinhua-settlement', page.getByTestId('run-game-view'),
       { clip, times: [0, 160, 320, 800, 1600, 2800] });
   } finally {

@@ -28,6 +28,7 @@ npm --prefix visual run test:animations -- --update-snapshots
 ## 采样方式
 
 - `timeline.ts` 用 Playwright 时钟推进 JS 动画，用 Web Animations API 定位 CSS 动画时间。
+  JS 时钟每次最多推进 16ms，让 React 定时副作用在帧间提交，避免长时间跳步合并倒计时更新。
   CSS 动画挂载时立即暂停，避免较慢机器在开始采样前已经播完淡入。
   保留 `animations: allow`，检查未启用 `__VISUAL_REGRESSION__` 或禁动画样式。
 - 常规面板采样 0、80、160、320、640、1200ms。BottomSheet 下一帧挂载，入场文件名记录
@@ -37,6 +38,7 @@ npm --prefix visual run test:animations -- --update-snapshots
   采样读取位置、透明度、变换；要求主体发生运动，避免把背景变化误当成面板动画。
 - 固定画幅不跟随目标移动，位置错误不会因动态裁切被抵消。像素差比例上限 0.1%，
   颜色阈值 0.1。每个虚拟时刻等待连续两张截图一致，再比较基准，避免截到布局尚未提交的画面。
+  每帧在暂停时钟的状态下等待新挂载的同源图片加载完成，避免把资源加载速度误当成动画变化。
   原有游客搜索四帧用例和透明度断言继续保留。
 - 表情、道具落点及火焰使用浏览器解码的 WebP，内部时间不受 JS 时钟控制。
   `imageFrames.ts` 比较实际页面加载素材的每一帧、尺寸、时间戳和帧时长；素材帧逐像素比较。

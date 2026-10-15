@@ -5,7 +5,6 @@ import { events, REPLAY_PLAYER_IDS } from '../cases/texas-holdem/replayData';
 import { captureImageFrames } from './imageFrames';
 import { captureTimeline } from './timeline';
 import type { TableSession } from './tableSession';
-import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 
 /**
  * 通过房间消息触发全部表情、道具及全压火焰，分别验证 JS 飞行轨迹与 WebP 原始帧。
@@ -34,7 +33,6 @@ export async function texasAssets(session: TableSession, proxy: TexasProxy, info
         const flying = page.getByTestId('ThrewProp:container');
         await expect(flying).toBeAttached();
         await expect(flying.getByTestId('ThrewProp:image').locator('img')).toBeAttached();
-        await ensureLocalImagesLoaded(page);
         await captureTimeline(page, info, `prop-${name}-flight`, flying,
           { clip, requireMotion: true, times: [0, 160, 400, 640, 960] });
         await page.clock.runFor(80);
