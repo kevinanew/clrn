@@ -43,7 +43,8 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
             console.log(`ANDROID > ${suite} 截图状态 ${state}`);
             const transient = ['statistics_help', 'accurate_raise_minimum_error'].includes(state) ? 'toastText1'
               : ['prediction_result', 'prediction_loss', 'prediction_diamond'].includes(state) ? 'bet-next-hand-result-amount'
-                : state === 'level_up' ? 'level-up-title' : undefined;
+                : state === 'level_up' ? 'level-up-title'
+                  : state === 'remaining_cards' ? 'view-community-cards-countdown' : undefined;
             const expectedAlerts: Record<string, string> = {
               quit_confirm: 'common-alert-button-quit', alert_retry: 'common-alert-button-retry',
               alert_insufficient_balance: 'common-alert-button-go_to_mall', alert_authentication_failed: 'common-alert-button-quit',

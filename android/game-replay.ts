@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import type { AndroidDevice } from 'playwright';
 import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { gameSession } from './game-room';
-import { flattenNodes, gameNodes } from './game-controls';
+import { gameNodes, gameNodesWithin, gameSemanticText } from './game-controls';
 
 /**
  * 复用 Web 回放控制接口，且只允许本轮真实建房响应中登记的 UUID。
@@ -31,9 +31,8 @@ export async function gameCardNames(device: AndroidDevice, container: string, ma
   options: { scope?: string; namedOnly?: boolean } = {}): Promise<void> {
   await expect.poll(async () => {
     const nodes = await gameNodes(device);
-    const root = options.scope ? nodes.find(node => node.res === options.scope) : undefined;
-    return (options.scope ? root ? flattenNodes(root) : [] : nodes).filter(node => node.res === container)
-      .map(node => node.children?.find(child => child.res === marker)?.text || '')
+    return (options.scope ? gameNodesWithin(nodes, options.scope) : nodes).filter(node => node.res === container)
+      .map(node => gameSemanticText(node, marker) || '')
       .filter(text => !options.namedOnly || text !== '').sort();
   },
   { timeout: 30_000, intervals: [250] }).toEqual([...expected].sort());

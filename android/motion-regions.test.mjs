@@ -41,3 +41,11 @@ test('动画分区不能重叠或越界，完整帧尺寸变化仍导致失败',
   assert.throws(() => motionParts(frame(0, 255), [{ x: 7, y: 7, width: 2, height: 2 }]), /超出/);
   assert.equal(samePixels(frame(0, 255), PNG.sync.write(new PNG({ width: 9, height: 8 }))), false);
 });
+
+test('稳定和基准比较都容许单色阶绘制抖动，但一个真实变化像素也不能漏掉', () => {
+  const expected = frame(80, 80, 80);
+  assert.equal(samePixels(frame(81, 81, 81), expected), true);
+  const changed = PNG.sync.read(expected);
+  changed.data.fill(255, (4 * 8 + 4) * 4, (4 * 8 + 4) * 4 + 3);
+  assert.equal(samePixels(PNG.sync.write(changed), expected), false);
+});

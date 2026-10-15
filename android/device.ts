@@ -5,6 +5,7 @@ import { _android, type AndroidDevice } from 'playwright';
 import { expect, type TestInfo } from '@playwright/test';
 import { dismissKeyboard } from './keyboard';
 import { maskScreenshot, type ScreenshotMask } from './screenshot';
+import { samePixels } from './motion-regions';
 // @ts-expect-error 元数据验证模块也供纯 Node 下载入口使用。
 import { applicationId, packageName, readVerifiedBuild } from './release.mjs';
 
@@ -107,6 +108,7 @@ export async function compareScreenshot(device: AndroidDevice, name: string, tes
   transientState?: () => Promise<void>): Promise<void> {
   if (masks.length) await testInfo.attach(`${name}-masks`, { body: JSON.stringify(masks), contentType: 'application/json' });
   let previous = maskScreenshot(await device.screenshot(), masks);
+  let stabilityReference = previous;
   let stableSince = Date.now();
   let stable: Buffer | undefined;
   let original: Buffer | undefined;
@@ -119,9 +121,11 @@ export async function compareScreenshot(device: AndroidDevice, name: string, tes
     const current = maskScreenshot(original, masks);
     comparisonBefore = previous;
     comparisonAfter = current;
-    const equal = current.equals(previous);
+    // 稳定检测与最终基准使用同一比较器；不把 GPU 的单色阶抖动当作持续动画。
+    // 固定本段稳定期的参考帧，避免连续缓慢变化通过逐帧小差异累积漂移。
+    const equal = samePixels(current, stabilityReference);
     previous = current;
-    if (!equal) stableSince = Date.now();
+    if (!equal) { stableSince = Date.now(); stabilityReference = current; }
     expect(equal, '页面像素必须保持稳定').toBe(true);
     expect(Date.now() - stableSince, '普通页面等待滚动条淡出；短时提示须在可见期间连续稳定')
       .toBeGreaterThanOrEqual(transientState ? 250 : 2000);

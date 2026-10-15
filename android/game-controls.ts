@@ -55,16 +55,25 @@ export function gameSemanticText(root: NativeNode | undefined, marker: string): 
 }
 
 /**
- * 读取可见容器边界内的文字，兼容 Fabric 把文字压平为容器兄弟节点的情况。
+ * 读取可见容器边界内的控件，兼容 Fabric 把内容压平为容器兄弟节点的情况。
+ * @param nodes - 本次完整查询得到的可见控件。
+ * @param marker - 要限定的真实容器标记。
+ */
+export function gameNodesWithin(nodes: NativeNode[], marker: string): NativeNode[] {
+  const container = nodes.find(node => node.res === marker)?.bounds;
+  if (!container) return [];
+  return nodes.filter(node => node.bounds.x >= container.x && node.bounds.y >= container.y
+    && node.bounds.x + node.bounds.width <= container.x + container.width
+    && node.bounds.y + node.bounds.height <= container.y + container.height);
+}
+
+/**
+ * 读取真实容器边界内的全部可见文字。
  * @param nodes - 本次完整查询得到的可见控件。
  * @param marker - 要限定的真实容器标记。
  */
 export function gameTextWithin(nodes: NativeNode[], marker: string): string[] {
-  const container = nodes.find(node => node.res === marker)?.bounds;
-  if (!container) return [];
-  return nodes.filter(node => node.text && node.bounds.x >= container.x && node.bounds.y >= container.y
-    && node.bounds.x + node.bounds.width <= container.x + container.width
-    && node.bounds.y + node.bounds.height <= container.y + container.height).map(node => node.text!);
+  return gameNodesWithin(nodes, marker).filter(node => node.text).map(node => node.text!);
 }
 
 /**

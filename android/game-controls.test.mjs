@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { flattenNodes, gameNodes, gameSemanticText, gameTextWithin } = require('./game-controls.ts');
+const { flattenNodes, gameNodes, gameNodesWithin, gameSemanticText, gameTextWithin } = require('./game-controls.ts');
 
 test('原生控件树保留重复 ID，忽略屏外历史面板但不忽略可见子节点', () => {
   const root = { bounds: { x: 0, y: 0, width: 720, height: 1280 }, children: [
@@ -48,4 +48,7 @@ test('Fabric 压平聊天文字为兄弟节点时仍按消息行边界严格校�
   assert.deepEqual(gameTextWithin([row, text, other], 'message'), ['Player1: Good hand!']);
   assert.deepEqual(gameTextWithin([text, other], 'message'), []);
   assert.deepEqual(gameTextWithin([row, other], 'message'), []);
+  const card = { res: 'card', bounds: { x: 100, y: 1017, width: 20, height: 30 } };
+  const behind = { res: 'card', bounds: { x: 100, y: 1100, width: 20, height: 30 } };
+  assert.deepEqual(gameNodesWithin([row, card, behind], 'message').filter(node => node.res === 'card'), [card]);
 });
