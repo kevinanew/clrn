@@ -19,6 +19,13 @@ test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留�
   assert.equal(full.length,9);
   assert.equal(new Set(full.map(item=>item.account)).size,9);
   assert.equal(visualAccountMatrix('29').include.length,3);
+  assert.deepEqual(visualAccountMatrix('29').include.map(item => item.suite), ['texas', 'zhajinhua', 'app']);
+  assert.deepEqual(full.map(item => `${item.suite}/${item.locale}`),
+    ['texas', 'zhajinhua', 'app'].flatMap(suite => ['zh-Hans', 'zh-Hant', 'en'].map(locale => `${suite}/${locale}`)));
+  for (const item of full) {
+    const offset = { app: 0, texas: 3, zhajinhua: 6 }[item.suite] + ['zh-Hans', 'zh-Hant', 'en'].indexOf(item.locale);
+    assert.equal(item.account, allocateCiAccount('29', offset));
+  }
   for (const suite of ['app','texas','zhajinhua']) {
     assert.deepEqual(visualAccountMatrix('29',suite,true).include,full.filter(item=>item.suite===suite));
   }
@@ -120,6 +127,15 @@ test('安卓二十四组独占账号，跨 Web 复用账号锁，筛选保持槽
   assert.equal(full.length, 24);
   assert.equal(new Set(full.map(item => item.account)).size, 24);
   assert.equal(new Set([...full, ...web].map(item => item.account)).size, 27);
+  assert.deepEqual(full.map(item => `${item.group}/${item.locale}`),
+    ['texas', 'zhajinhua', 'guest', 'account', 'social', 'rooms', 'wallet-help', 'records']
+      .flatMap(group => ['zh-Hans', 'zh-Hant', 'en'].map(locale => `${group}/${locale}`)));
+  for (const item of full) {
+    const offset = { guest: 12, account: 15, social: 18, rooms: 21, 'wallet-help': 24, records: 27, texas: 30, zhajinhua: 33 }[item.group]
+      + ['zh-Hans', 'zh-Hant', 'en'].indexOf(item.locale);
+    assert.equal(item.account, allocateCiAccount('29', offset % 30));
+  }
+  assert.deepEqual(androidAccountMatrix('29', 'all', 'en').include, full.filter(item => item.locale === 'en'));
   for (const group of ['guest', 'account', 'social', 'rooms', 'wallet-help', 'records', 'texas', 'zhajinhua']) {
     assert.deepEqual(androidAccountMatrix('29', group, 'en').include,
       full.filter(item => item.group === group && item.locale === 'en'));
