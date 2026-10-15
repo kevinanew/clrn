@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 
-// 这里只维护公开账号名，密码统一保存在 CLRN_CI_TEST_ACCOUNTS Secret。
+// 这里只维护公开账号名，密码统一保存在 CLRN_CI_TEST_ACCOUNTS_V2 Secret。
 export const ciAccounts = JSON.parse(readFileSync(new URL('./ci-test-accounts.json', import.meta.url), 'utf8')).accounts;
-if (ciAccounts.length !== 30 || new Set(ciAccounts.map(name => name.toLowerCase())).size !== 30) {
-  throw new Error('CI 账号清单必须包含 30 个不同账号。');
+if (ciAccounts.length !== 100 || new Set(ciAccounts.map(name => name.toLowerCase())).size !== 100) {
+  throw new Error('CI 账号清单必须包含 100 个不同账号。');
 }
 
 /**
@@ -67,7 +67,7 @@ export function ciAccountCredentials(serialized, username) {
   let pool;
   try { pool = JSON.parse(serialized); } catch { throw new Error('CLRN_CI_TEST_ACCOUNTS Secret 缺失或不是有效 JSON。'); }
   if (!Array.isArray(pool?.accounts) || pool.accounts.length !== ciAccounts.length) {
-    throw new Error('CI Secret 必须包含完整的 30 个专用账号。');
+    throw new Error('CI Secret 必须包含完整的 100 个专用账号。');
   }
   const seen = new Set();
   for (const account of pool.accounts) {

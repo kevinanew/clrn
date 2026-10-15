@@ -85,7 +85,7 @@ Production E2E 仅允许不会修改用户资产和业务数据的只读检查�
 每个场景有说明及测试，桌面与手机串行执行，认证用例关闭 trace 和截图。
 
 2026-09-26 实测不同设备再次登录后旧会话账户接口立即返回 401，新会话为 200。
-CI 因此使用 30 个专用账号，功能、弱网、交互与 Freshchat、视觉任务按运行 ID 分配账号。
+CI 因此使用 100 个专用账号，功能、弱网、交互与 Freshchat、视觉任务按运行 ID 分配账号。
 每个 job 使用 `h5-staging-account-<用户名>` 并发组，只让同账号任务互斥，其他任务可以同时执行。
 上述工作流/任务均设置 `queue: max`，允许最多 100 个运行排队；仅设置
 `cancel-in-progress: false` 仍会让新运行替换已有的等待任务。
@@ -107,7 +107,7 @@ CI 因此使用 30 个专用账号，功能、弱网、交互与 Freshchat、视
 创建俱乐部消耗 50 钻，俱乐部内建局另需 10 钻。每个创建用例（含桌面和手机）独立重设 60 钻，
 未开始牌局解散后退还其费用。
 
-功能 CI 从 `CLRN_CI_TEST_ACCOUNTS` Secret 按所选用户名注入 `E2E_TEST_*` 和 `E2E_CREATION_*`，
+功能 CI 从 `CLRN_CI_TEST_ACCOUNTS_V2` Secret 按所选用户名注入 `E2E_TEST_*` 和 `E2E_CREATION_*`，
 从 Secret 读取 `TESTING_API_TOKEN`，从 Actions Variables 读取 `E2E_STAGING_URL`。
 账号池必需；scope=all 额外检查创建凭据和 token，scope=registration 检查 token；缺失明确失败。
 在仓库 Settings → Secrets and variables → Actions 配置凭据，勿写入代码或报告。

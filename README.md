@@ -54,7 +54,7 @@
 
 功能案例涵盖认证、游客门禁、大厅入口、消息、个人设置、建房配置和创建流程，
 详细范围与已知缺口见 [功能线盘点](e2e/cases/COVERAGE.md)。
-实测同一账号再次登录后旧凭据失效。CI 使用 30 个专用账号，每个任务按运行 ID 分配账号，只有选到同一账号的任务排队；视觉全量矩阵的九个套件／语言任务使用九个不同账号。
+实测同一账号再次登录后旧凭据失效。CI 使用 100 个专用账号，每个任务按运行 ID 分配账号，只有选到同一账号的任务排队；视觉全量矩阵的九个套件／语言任务使用九个不同账号。
 
 滚动、触屏交互及真实 Freshchat 客服回归统一位于 [e2e/interactions](e2e/INTERACTIONS.md)，
 测试账号及权限统一见 [e2e/accounts.md](e2e/accounts.md)。
@@ -85,7 +85,7 @@ node ../scripts/with-test-account.mjs -- pnpm run test:ci
 可通过 `CLRN_TEST_ACCOUNT_POOL` 指定其他账号池文件；共用账号必须共用同一文件，
 占用锁保存在其旁边的 `locks/`。池用完时明确报错，不复用正在被占用的账号。
 进程被 SIGKILL 强制终止会留下占用锁，确认对应测试已结束后再删除该目录。
-本机锁只协调本机任务。CI 另有 30 个专用账号，和本机池分开，避免跨机器登录冲突。
+本机锁只协调本机任务。CI 另有 100 个专用账号，和本机池分开，避免跨机器登录冲突。
 本机启动器会拒绝 CI 专用账号，即使通过自定义账号池文件传入也不能借用。
 
 测试账号创建方式见相邻 PRD 的
@@ -111,13 +111,14 @@ GitHub Actions 在每次 push 和 PR 上运行同样的全仓库检查，包含 
 
 ## CI 专用账号池
 
-已另行创建并验证 30 个 staging 账号 `clrnci26100901`–`clrnci26100930`，每个准备 60 钻。
-完整凭据由仓库 Actions Secret **`CLRN_CI_TEST_ACCOUNTS`** 维护，结构为 `{ "accounts": [{ "username": "…", "password": "…", "status": "ready" }] }`；Git 中的 `scripts/ci-test-accounts.json` 只维护公开账号名。
-本机恢复备份为 Git 元数据目录中的 `clrn-test-accounts/ci-accounts.json`，权限 0600。
+CI 池包含 100 个 staging 账号：原有 `clrnci26100901`–`clrnci26100930`，新增 `clrnci261015001`–`clrnci261015070`。新增账号均经注册、真实界面登录、会话及 60 钻余额验证。
+完整凭据由仓库 Actions Secret **`CLRN_CI_TEST_ACCOUNTS_V2`** 维护，结构为 `{ "accounts": [{ "username": "…", "password": "…", "status": "ready" }] }`；Git 中的 `scripts/ci-test-accounts.json` 只维护公开账号名。
+旧的 `CLRN_CI_TEST_ACCOUNTS` Secret 保留 30 个账号，供尚未切换的旧分支及历史任务使用；新工作流通过 V2 Secret 注入完整 100 个账号。
+本机恢复备份为 Git 元数据目录中的 `clrn-test-accounts/ci-accounts-v2.json`，权限 0600。
 
 E2E、功能、交互与 Freshchat、视觉工作流先规划账号，再以 `h5-staging-account-<用户名>` 作为 job 并发组。
 GitHub 在 job 开始前取得账号锁，任务的所有步骤结束后释放；`queue: max` 保留等待任务。
-运行 ID 决定轮转起点，视觉套件与语言使用不同偏移。同一轮九个视觉任务不会重复分配账号；跨轮次选中同一账号时仍需排队，分配器不会查询服务器在线状态。
+运行 ID 决定轮转起点，视觉套件与语言使用不同偏移。同一运行编号下，九个 Web 视觉任务、三个其他 Web 回归任务及二十四个 Android 任务共 36 个槽位，不会重复分配账号；跨轮次选中同一账号时仍需排队，分配器不会查询服务器在线状态。
 不同账号的任务可以并行，实际任务数还受 GitHub runner 配额限制。缺少 Secret 或账号池不完整时直接失败。
 Web 与 Android 视觉矩阵优先创建德州、拼三张任务（包含本轮选中的全部语言），再创建其他业务任务，以减少长任务排在末尾的等待。实际启动仍受 runner 和账号锁可用性影响；任务顺序不改变账号槽位或并行机制。
 同一账号的测试保持一个 worker，账号级锁覆盖任务全部步骤；静态检查和单元测试不占用真实账号，可以并行。
