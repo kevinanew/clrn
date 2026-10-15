@@ -37,7 +37,7 @@ ANDROID_RELEASE_TAG='android-staging-<构建编号>-<提交前12位>' node andro
 
 ## GitHub Actions
 
-工作流为 `Android Staging 视觉回归`。发布 Android Staging Release 后自动比较该标签对应的 APK；相关 PR 和 master 修改会比较最新 APK，也可手动指定标签。Release 触发入口在工作流合入 master 后生效。定时任务要求工作流存在于 GitHub 默认分支；仓库默认分支目前仍为 main，因此该定时入口暂不生效。此工作流与现有 H5 staging 部署验证独立，不修改 `deployments/staging.json`。
+工作流为 `Android Staging 视觉回归`。发布 Android Staging Release 后自动比较该标签对应的 APK；相关 PR 和 master 修改会比较最新 APK，也可手动指定标签。本 PR 的完整矩阵须合入 master 后才用于 Release 自动验证；合入前 master 仍运行旧的认证冒烟测试和基准。定时任务要求工作流存在于 GitHub 默认分支；仓库默认分支目前仍为 main，因此该定时入口暂不生效。此工作流与现有 H5 staging 部署验证独立，不修改 `deployments/staging.json`。
 
 APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使用 GitHub Actions 内置的 `GITHUB_TOKEN`，工作流仅授予 `contents: read`，无需额外下载 Secret。Woodpecker 发布端的既有凭据需要 clrn Contents 读写权限。Release 附注标签明确指向 clrn master 分支的提交，应用提交只记录在标签说明和 `build-info.json` 中，不导入应用 Git 历史。登录场景使用现有 `CLRN_CI_TEST_ACCOUNTS` 账号池；八个业务组乘三种语言分别分配独占账号，并与 Web 共用账号级 concurrency，避免相互作废会话。
 
@@ -98,3 +98,5 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 旧版战绩分页加载截图复用 `scrollToEnd`，在末行真正抵达底部并稳定后截图，避免仅露出房名时提前停止。三语新旧战绩共 186 个状态的 [compare 38687644002](https://github.com/kevinanew/clrn/actions/runs/38687644002) 全部通过，未修改战绩基准。
 
 拼三张圆形加注按钮的 PNG 外缘有透明度，背景计时遮罩按一像素内缩的实心区域裁剪，按钮文字和主体继续比较。三语未看牌、已看牌共六张基准来自全部通过的 [reference 38688512253](https://github.com/kevinanew/clrn/actions/runs/38688512253)；逐图审查确认变化仅位于倒计时与按钮顶部边缘交叠处，其余牌局基准保留。
+
+安卓密码输入字号调整为 14 后，英文提示完整保持一行。三语密码页基准来自全部通过的 [reference 38707410687](https://github.com/kevinanew/clrn/actions/runs/38707410687)，使用 [APK 7237](https://github.com/kevinanew/clrn/releases/tag/android-staging-7237-35d1407ceb85)；逐图审查后仅更新三张密码页，其余 760 张基准保持不变。
