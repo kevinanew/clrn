@@ -157,8 +157,8 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
   let inputsFilled = false;
   let backgroundBanner: ScreenshotBounds | undefined;
   for (const identifier of scenario.navClickTestIds) {
-    if (identifier === 'official-site') {
-      // 设置页尾部入口不能只露出一部分，否则中心点击可能落在底部导航上。
+    if (['share-app', 'official-site', 'about-laiwan'].includes(identifier)) {
+      // 设置页尾部的分享、官网、关于入口需完全滚出，避免中心点击落在底部导航上。
       await reveal(device, { res: 'about-laiwan' }, true);
       await scrollToEnd(device, { res: 'settings-list' }, { res: 'about-laiwan' });
     }
