@@ -1,4 +1,5 @@
 import type { AndroidDevice } from 'playwright';
+import presentation from '../visual/fixtures/game-presentation.json';
 import type { TestInfo } from '@playwright/test';
 import { compareScreenshot } from './device';
 import { gameNodes, gameReady } from './game-controls';
@@ -42,14 +43,7 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
      */
     const add = (mask: ScreenshotMask) => masks.push(...visibleMasks(mask, node, panels));
     if (['texas-holdem-room-id-text', 'zhajinhua-room-id-text'].includes(node.res || '')) {
-      const marker = node.res === 'texas-holdem-room-id-text' ? 'texas-holdem-copy-room-number-button' : 'zhajinhua-room-copy-btn';
-      const button = nodes.find(item => item.res === marker);
-      expect(button, '真实房号必须位于复制按钮中').toBeDefined();
-      expect(button!.bounds.width).toBeLessThanOrEqual(180);
-      // 比例字体的不同数字会移动旁边的复制图标；按居中的整行固定宽度遮罩，避免随本轮房号漂移。
-      const bounds = button!.bounds;
-      add({ x: Math.round(bounds.x + bounds.width / 2) - 90, y: bounds.y - 2,
-        width: 180, height: bounds.height + 4, reason: '本轮真实房号及随数字宽度移动的复制图标' });
+      expect(node.text, '房号展示应与 Web 共用夹具一致').toBe(presentation.roomNumber);
       continue;
     }
     if (/^seat-guide-\d+$/.test(node.res || '')) {

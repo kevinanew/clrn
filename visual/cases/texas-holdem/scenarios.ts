@@ -1,3 +1,4 @@
+import presentation from '../../fixtures/game-presentation.json';
 import type { SignedInPageDef } from '../../scenarioTypes';
 
 /** 同一次真实建房进入牌桌后，依次采集所有无需开局的稳定界面。 */
@@ -58,7 +59,7 @@ const common: Omit<SignedInPageDef, 'label' | 'snapshotStates'> = {
   tabTestId: 'private-room-tab',
   visualReadySelector: '[data-testid="copy-house-number-button"]',
   fixedTexts: [
-    { selector: '[data-testid="texas-holdem-room-id-text"]', text: '123456789' },
+    { selector: '[data-testid="texas-holdem-room-id-text"]', text: presentation.roomNumber },
     { selector: '[data-testid="texas-holdem-room-name-text"]', text: 'TestRoom' },
     { selector: '[data-testid^="public-leader-board-item-nickname-"]', text: 'TestPlayer' },
     { selector: '[data-testid="public-leader-board-container"] > :last-child', text: '00000000-0000-0000-0000-000000000000' },

@@ -1,5 +1,6 @@
 """只允许登记本轮真实登录后创建的目标玩法房间，用于失败清理。"""
 
+import copy
 import json
 import unittest
 from types import SimpleNamespace
@@ -53,6 +54,34 @@ class GameSessionTests(unittest.TestCase):
         failed.response.json = lambda: {'ok': False, 'result': {'room_id': ROOM}}
         session.response(failed)
         self.assertIsNone(session.room)
+
+    def test_room_presentation_preserves_real_identity_and_only_changes_own_number(self):
+        session = GameSession('texas_holdem')
+        session.response(login())
+        session.response(room())
+        body = {'ok': True, 'result': {'room_id': ROOM, 'creator_id': USER,
+            'options': {'house_number': '987654321', 'allow_player_rtc': True},
+            'game_config': {'small_blind': 1}, 'room_status': 'waiting'}}
+        original = copy.deepcopy(body)
+        ownership = copy.deepcopy(session.room)
+        for path, method in [(f'/v1/room/{USER}', 'GET'), (f'/v1/room/{ROOM}', 'DELETE')]:
+            self.assertFalse(session.normalize_room(path, method, body))
+            self.assertEqual(body, original)
+        self.assertTrue(session.normalize_room(f'/v1/room/{ROOM}', 'GET', body))
+        original['result']['options']['house_number'] = '123456789'
+        self.assertEqual(body, original)
+        self.assertEqual(session.room, ownership)
+
+    def test_room_presentation_never_hides_errors_or_repairs_missing_fields(self):
+        session = GameSession('zhajinhua')
+        session.response(login())
+        session.response(room('zhajinhua'))
+        for body in [None, {'ok': False, 'result': {'room_id': ROOM, 'options': {'house_number': 'old'}}},
+                     {'ok': True, 'result': {'room_id': USER, 'options': {'house_number': 'other'}}},
+                     {'ok': True, 'result': {'room_id': ROOM, 'options': {}}}]:
+            original = copy.deepcopy(body)
+            self.assertFalse(session.normalize_room(f'/v1/room/{ROOM}', 'GET', body))
+            self.assertEqual(body, original)
 
 
 if __name__ == '__main__':

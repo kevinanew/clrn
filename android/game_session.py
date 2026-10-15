@@ -2,7 +2,11 @@
 
 import json
 import re
+from pathlib import Path
 from urllib.parse import urlsplit
+
+PRESENTATION = json.loads((Path(__file__).resolve().parents[1]
+    / 'visual/fixtures/game-presentation.json').read_text())
 
 UUID = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
@@ -43,3 +47,18 @@ class GameSession:
                         'authorization': self.account['authorization']}
         except (ValueError, TypeError, AttributeError):
             return
+
+    def normalize_room(self, path, method, body):
+        """仅稳定本轮已创建房间的展示房号；真实 UUID、权限、连接和清理信息不变。"""
+        if not self.room or method != 'GET' or path != f"/v1/room/{self.room['roomId']}":
+            return False
+        if not isinstance(body, dict) or body.get('ok') is not True:
+            return False
+        result = body.get('result')
+        if not isinstance(result, dict) or result.get('room_id') != self.room['roomId']:
+            return False
+        options = result.get('options')
+        if not isinstance(options, dict) or type(options.get('house_number')) not in (str, int):
+            return False
+        options['house_number'] = PRESENTATION['roomNumber']
+        return True

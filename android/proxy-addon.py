@@ -46,7 +46,11 @@ class AndroidVisualProxy:
             body = flow.response.json()
         except ValueError:
             return
-        if self.presentation.normalize(urlsplit(flow.request.path).path, flow.request.method, body):
+        path = urlsplit(flow.request.path).path
+        normalized = self.presentation.normalize(path, flow.request.method, body)
+        if self.game_session:
+            normalized = self.game_session.normalize_room(path, flow.request.method, body) or normalized
+        if normalized:
             flow.response.content = json.dumps(body).encode()
             for header in ('ETag', 'Content-MD5', 'Digest'):
                 flow.response.headers.pop(header, None)
