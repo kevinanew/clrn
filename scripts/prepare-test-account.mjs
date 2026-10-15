@@ -90,4 +90,5 @@ export async function prepareTestAccountCoins(account, token) {
   if (coins.length !== 1 || Number(coins[0].balance) !== Number(initialCoinBalance)) {
     throw new Error('核对测试金币失败，实际余额不是 10000');
   }
+  return { userId, authorization: `${session.api_token.token_type} ${session.api_token.access_token}` };
 }

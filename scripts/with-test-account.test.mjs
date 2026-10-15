@@ -178,3 +178,14 @@ test('余额准备失败不启动测试命令，并释放账号锁', async t => 
   assert.ok(!result.stderr.includes('private-token'));
   assert.deepEqual(await readdir(join(directory, 'locks')), []);
 });
+
+
+test('房间准备失败不启动测试命令，并释放账号锁', async context => {
+  const { directory, pool } = await fixture(context, ['parallel01']);
+  await writeFile(join(directory, 'reject-wallet'), '/v2/building/rooms');
+  const result = await launch(context, pool, [process.execPath, '-e', 'console.log("SHOULD_NOT_START")']).finished;
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /准备测试私人房间失败/);
+  assert.ok(!result.stdout.includes('SHOULD_NOT_START'));
+  assert.deepEqual(await readdir(join(directory, 'locks')), []);
+});

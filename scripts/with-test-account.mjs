@@ -14,6 +14,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ciAccounts } from './ci-accounts.mjs';
 import { prepareTestAccountCoins, readTestingApiToken } from './prepare-test-account.mjs';
+import { prepareTestAccountRooms } from './prepare-test-account-rooms.mjs';
 
 // node 和脚本路径占据前两个参数；可选的 -- 用于分隔脚本和测试命令。
 const args = process.argv.slice(2);
@@ -94,7 +95,8 @@ async function run() {
   try {
     // owner.json 只记录进程号和工作目录，方便排查残留锁，不保存密码。
     await writeFile(join(lock, 'owner.json'), JSON.stringify({ pid: process.pid, cwd: process.cwd() }), { mode: 0o600 });
-    await prepareTestAccountCoins(selected, await readTestingApiToken());
+    const session = await prepareTestAccountCoins(selected, await readTestingApiToken());
+    await prepareTestAccountRooms(session);
     console.error('已核对本轮账号金币余额为 10000');
     // 4. 三种测试都通过环境变量读取账号；只修改子进程的配置。
     const env = {

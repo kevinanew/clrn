@@ -103,7 +103,7 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     assert.equal(Object.keys(values).length,6);
     assert.ok(configured.stdout.includes(`::add-mask::${password}`));
     assert.ok(!configured.stdout.includes(accounts.find(account=>account.username!==selected).password));
-    for (const failedPath of ['/set_balance/testing', '/v10/wallet/']) {
+    for (const failedPath of ['/set_balance/testing', '/v10/wallet/', '/v10/house/user/', '/v2/building/rooms']) {
       writeFileSync(environment, '');
       writeFileSync(join(directory, 'reject-wallet'), failedPath);
       const rejected = spawnSync(process.execPath,

@@ -11,7 +11,7 @@ let username;
  * @param options - 请求方法、正文和认证头。
  */
 globalThis.fetch = async (url, options) => {
-  const body = JSON.parse(options.body);
+  const body = options.body === undefined ? undefined : JSON.parse(options.body);
   const directory = dirname(process.env.GITHUB_ENV || process.env.CLRN_TEST_ACCOUNT_POOL);
   if (url.endsWith('/public/v10/user/login/username/password')) username = body.username;
   const lock = join(directory, 'locks', username.toLowerCase());
@@ -35,7 +35,13 @@ globalThis.fetch = async (url, options) => {
     assert.deepEqual(body, { currency_name: 'coin', balance: '10000' });
     return Response.json({ ok: true, result: { wallet_id: userId, ...body } });
   }
+  if (url.endsWith(`/v10/house/user/${userId}`)) {
+    return Response.json({ ok: true, result: { house_id: userId, user_id: userId } });
+  }
+  if (url.endsWith('/v2/building/rooms')) {
+    appendFileSync(join(directory, 'prepared-accounts'), `${username}\n`);
+    return Response.json({ ok: true, result: [] });
+  }
   assert.equal(new URL(url).pathname, `/v10/wallet/${userId}`);
-  appendFileSync(join(directory, 'prepared-accounts'), `${username}\n`);
   return Response.json({ ok: true, result: { currencies: [{ code: 'coin', balance: '10000' }] } });
 };
