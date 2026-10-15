@@ -13,17 +13,19 @@ export type ScreenshotBounds = Omit<ScreenshotMask, 'reason'>;
  * @param device - 专用模拟器连接。
  */
 export async function focusedCaretMask(device: AndroidDevice) {
-  const input = await device.info({ clazz: 'android.widget.EditText', focused: true }).catch(() => undefined);
+  let input = await device.info({ clazz: 'android.widget.EditText', focused: true }).catch(() => undefined);
   if (input) {
     let before = await device.screenshot();
-    for (const delay of [400, 300, 400]) {
+    // 键盘转场会改变输入框边界；重建基准帧，并用不同采样间隔避免与光标周期重合。
+    for (const delay of [137, 263, 419, 181, 347, 223, 389, 157, 293, 431, 199, 317]) {
       await setTimeout(delay);
       const after = await device.screenshot();
       const current = await device.info({ clazz: 'android.widget.EditText', focused: true });
-      if (current.text !== input.text || JSON.stringify(current.bounds) !== JSON.stringify(input.bounds)) break;
-      const mask = caretMask(before, after, input.bounds);
+      const stable = current.text === input.text && JSON.stringify(current.bounds) === JSON.stringify(input.bounds);
+      const mask = stable ? caretMask(before, after, input.bounds) : undefined;
       if (mask) return { mask, input };
       before = after;
+      input = current;
     }
   }
 }

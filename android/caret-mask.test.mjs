@@ -3,7 +3,13 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { PNG } = require('pngjs');
-const { caretMask } = require('./caret-mask.ts');
+const { caretMask, translateCaret } = require('./caret-mask.ts');
+
+test('键盘收起只平移检测到的细光标，不把输入框或文字一起遮住', () => {
+  const mask = { x: 369, y: 684, width: 4, height: 38, reason: '真实光标' };
+  assert.deepEqual(translateCaret({ mask, input: { bounds: { x: 69, y: 643, width: 582, height: 80 } } },
+    { x: 69, y: 915, width: 582, height: 80 }), { ...mask, y: 956 });
+});
 
 test('光标识别仅覆盖聚焦框内的窄竖线，保留外部变化并拒绝文字块变化', () => {
   const before = new PNG({ width: 100, height: 100 });

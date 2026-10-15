@@ -5,9 +5,8 @@ import { events, REPLAY_PLAYER_IDS, restoreTable, type Street } from '../visual/
 import { gameReady, gameGone, gameTap, gameNodes, gameSemanticText } from './game-controls';
 import { replay, gameCardNames } from './game-replay';
 import { closeGameMask } from './game-pregame';
-import { adb } from './device';
 import { dismissKeyboard } from './keyboard';
-import type { TexasContext } from './texas-support';
+import { gameTapText, type TexasContext } from './texas-support';
 
 /**
  * 复用网页的德州消息夹具，覆盖各街、操作、摊牌、结算和玩家资料。
@@ -93,10 +92,7 @@ export async function texasGameplay(device: AndroidDevice, proxy: Mitmproxy, roo
   await profile(REPLAY_PLAYER_IDS[0]);
   await gameReady(device, 'player-profile-nickname', 'Player1');
   await capture('player_profile');
-  const statistics = await gameReady(device, 'PlayerStatisticComponent_List');
-  const { x, y, width, height } = statistics.bounds;
-  adb('shell', 'input', 'swipe', String(Math.round(x + width * 0.85)), String(Math.round(y + height / 2)),
-    String(Math.round(x + width * 0.15)), String(Math.round(y + height / 2)), '400');
+  await gameTapText(device, /^(千场统计|千場統計|1000 Times Statistics)$/);
   await gameReady(device, 'PlayerStatisticComponent_Item_Value_0', '1000');
   await capture('player_statistics_1000');
   await capture('statistics_help', [], () => gameTap(device, 'PlayerStatisticComponent_Item_1', true));

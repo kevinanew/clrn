@@ -116,3 +116,15 @@ export function networkStatusMask(bounds: ScreenshotBounds): ScreenshotMask {
   return { x: bounds.x + bounds.width - 55 * scale, y: bounds.y + bounds.height - 30 * scale,
     width: 50 * scale, height: 24 * scale, reason: '网络延迟数值、图标与前后端延迟比例条' };
 }
+
+/**
+ * 倒计时数字居中且等宽；固定为两位数字槽，避免 10 变 9 时遮罩自身发生变化。
+ * @param bounds - 当前数字的实际边界。
+ * @param text - 已确认的一位或两位倒计时数字。
+ */
+export function countdownMask(bounds: ScreenshotBounds, text: string): ScreenshotMask {
+  if (!/^\d{1,2}$/.test(text)) throw new Error('公共牌倒计时必须是一位或两位数字。');
+  const width = Math.round(bounds.width / text.length) * 2;
+  return { ...bounds, x: Math.round(bounds.x + bounds.width / 2 - width / 2), width,
+    reason: 'view-community-cards-countdown' };
+}

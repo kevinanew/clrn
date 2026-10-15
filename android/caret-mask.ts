@@ -1,5 +1,16 @@
 import { PNG } from 'pngjs';
-import type { ScreenshotMask } from './screenshot';
+import type { ScreenshotBounds, ScreenshotMask } from './screenshot';
+
+/**
+ * 将真实检测到的细光标平移到键盘收起后的输入框位置。
+ * @param caret - 采样时的光标和输入框。
+ * @param bounds - 键盘收起后的输入框边界。
+ */
+export function translateCaret(caret: { mask: ScreenshotMask; input: { bounds: ScreenshotBounds } },
+  bounds: ScreenshotBounds): ScreenshotMask {
+  return { ...caret.mask, x: caret.mask.x + bounds.x - caret.input.bounds.x,
+    y: caret.mask.y + bounds.y - caret.input.bounds.y };
+}
 
 /**
  * 仅识别聚焦输入框内细窄的闪烁光标，拒绝遮住文本变化或整行区域。

@@ -2,7 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { foregroundPanels, subtractPanel, visibleMasks } = require('./game-masks.ts');
+const { foregroundPanels, subtractPanel, visibleMasks, countdownMask } = require('./game-masks.ts');
+
+test('公共牌倒计时从两位变一位时保持同一小块遮罩，不覆盖旁边说明', () => {
+  const twoDigits = countdownMask({ x: 410, y: 314, width: 48, height: 56 }, '10');
+  const oneDigit = countdownMask({ x: 422, y: 314, width: 24, height: 56 }, '9');
+  assert.deepEqual(oneDigit, twoDigits);
+  assert.deepEqual({ ...oneDigit, reason: undefined }, { x: 410, y: 314, width: 48, height: 56, reason: undefined });
+  assert.throws(() => countdownMask({ x: 0, y: 0, width: 100, height: 56 }, 'Countdown'));
+});
 
 test('前景只裁掉相交区域，跨越面板边缘的背景箭头仍需遮罩', () => {
   const mask = { x: 0, y: 0, width: 20, height: 20, reason: '座位动画' };

@@ -6,6 +6,7 @@ import { gameCardNames, replay } from './game-replay';
 import { adb, applicationId } from './device';
 import { dismissKeyboard } from './keyboard';
 import { focusedCaretMask } from './screenshot';
+import { translateCaret } from './caret-mask';
 import { gameTapText, restoreTexas, texasEvents, type TexasContext } from './texas-support';
 
 /**
@@ -41,10 +42,11 @@ export async function texasPanels(context: TexasContext): Promise<void> {
   const captureRecord = async (state: string) => {
     await gameTap(device, 'review-board-page-input');
     await device.fill({ res: 'review-board-page-input' }, '1');
-    await dismissKeyboard(device);
-    await gameReady(device, 'review-board-page-input', '1');
     const caret = await focusedCaretMask(device);
-    await capture(state, caret ? [caret.mask] : []);
+    expect(caret, '页码输入框应检测到真实细光标').toBeDefined();
+    await dismissKeyboard(device);
+    const input = await gameReady(device, 'review-board-page-input', '1');
+    await capture(state, [translateCaret(caret!, input.bounds)]);
   };
   await captureRecord('record_settlement');
   await gameTapText(device, /^(Record|Details?|牌局详情|牌局詳情)$/i);

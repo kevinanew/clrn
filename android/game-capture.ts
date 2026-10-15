@@ -5,7 +5,7 @@ import { compareScreenshot } from './device';
 import { gameNodes, gameReady, gameMarker, gameScreenshot } from './game-controls';
 import { expect } from '@playwright/test';
 import type { ScreenshotMask } from './screenshot';
-import { foregroundPanels, visibleMasks, networkStatusMask } from './game-masks';
+import { foregroundPanels, visibleMasks, networkStatusMask, countdownMask } from './game-masks';
 import { captureToast } from './game-transient';
 import { captureChallengeAnimation } from './game-animation';
 
@@ -71,10 +71,13 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
       add({ ...node.bounds, x: Math.round(node.bounds.x + node.bounds.width / 2) - 220, width: 440, reason: node.res });
       continue;
     }
+    if (node.res === 'view-community-cards-countdown') {
+      add(countdownMask(node.bounds, node.text || ''));
+      continue;
+    }
     if (node.res === 'game-network-proxy-code'
       || /^\d{1,2}:\d{2}(?::\d{2})?$/.test(node.text || '')
       || (node.res === 'countdown_timer_text' && /^\d+s$/.test(node.text || ''))
-      || node.res === 'view-community-cards-countdown'
       || node.res === 'player-profile-id'
       || (!node.res && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(node.text || ''))) {
       // 玩家 ID 是透明语义标记；不能因它覆盖头像而把整个头像排除。
