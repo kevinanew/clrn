@@ -42,6 +42,17 @@ export function visualAccountMatrix(runId, suite = 'all', full = false) {
 }
 
 /**
+ * 动画使用 12–14 号槽位，与全量静态视觉及三组功能回归互不冲突。
+ * @param runId - 当前 GitHub Actions 运行 ID。
+ * @returns 三个动画套件的独占账号矩阵。
+ */
+export function animationAccountMatrix(runId) {
+  return { include: ['app', 'texas', 'zhajinhua'].map((suite, index) => ({
+    suite, account: allocateCiAccount(runId, 12 + index),
+  })) };
+}
+
+/**
  * 从 Secret 中读取指定槽位的凭据，校验完整账号池并隐藏所有解析细节。
  * @param serialized - GitHub Actions Secret 中的账号池 JSON。
  * @param username - 调度阶段选出的公开账号名，必须属于 CI 专用清单。

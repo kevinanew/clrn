@@ -47,3 +47,9 @@ jobs:
     with:
       expected_application_commit: ${{ needs.deployment.outputs.application_commit }}
     secrets: inherit
+  animations:
+    needs: deployment
+    uses: ./.github/workflows/animations.yml
+    with:
+      expected_application_commit: ${{ needs.deployment.outputs.application_commit }}
+    secrets: inherit

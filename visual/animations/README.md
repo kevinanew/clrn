@@ -1,57 +1,63 @@
-# 动画视觉回归验证
+# H5 动画视觉回归
 
-首个用例：**游客点击大厅搜索，登录提示弹窗淡入**。访问已部署的 H5 staging，
-通过真实搜索按钮触发，不登录、不建房、不提交业务操作。
-
-沿用 Playwright 1.61.1 和现有 Docker 渲染环境，固定简中、375×812、DPR 1。
-本目录的配置、基准和报告独立于静态视觉套件。相关 PR 和 master 更新会触发
-`H5 动画视觉回归`，在 Linux 容器中连续对比三次，不重试、不自动更新基准；也支持手动触发。
-CI 保存 HTML 报告、差异图和时间采样附件 14 天。
+本目录访问正常部署的 staging，使用真实按钮和房间消息触发动画，独立于静态视觉套件。
+覆盖范围与平台例外见 [COVERAGE.md](COVERAGE.md)。浏览器固定为 Playwright 1.61.1 的
+Linux Chromium、简中、DPR 1，使用手机 375×812 和桌面 1440×900 两种视口。
 
 ## 运行
-
-在仓库根目录执行（需要 Docker，首次运行可先构建现有视觉镜像）：
 
 ```bash
 docker compose -f visual/docker-compose.yml build visual
 npm --prefix visual run test:animations
 
-# 用新页面连续验证五次，不靠失败重试掩盖不稳定
-npm --prefix visual run test:animations -- --repeat-each=5
+# 单套件：app、texas、zhajinhua；默认依次运行三组
+VISUAL_SUITE=app npm --prefix visual run test:animations
 
-# 有意修改视觉效果后生成候选基准，检查差异再提交
+# 从新页面重复验证，不通过失败重试掩盖不稳定
+npm --prefix visual run test:animations -- --repeat-each=3
+
+# 生成候选基准；检查图片后再提交
 npm --prefix visual run test:animations -- --update-snapshots
 ```
 
-运行器在容器中安装锁定的依赖。普通 compare 对缺失基准直接报错，不自动创建或接受截图。
-正式基准在 Docker/Linux 生成；不要用 macOS 本地截图覆盖。
+缺失基准在普通比较中直接失败。正式基准只在 Docker/Linux 生成。
+运行器为每组先采集登录态，再运行用例；CI 为三组分配不同账号，账号锁与其他回归共用。
+牌桌测试通过真实入口创建独立房间，消息回放和 RPC 夹具只绑定该房间，结束或断言失败均解散。
+测试账号建房余额不足时，沿用现有 `TESTING_API_TOKEN` 补充机制。
 
-## 测试方式
+## 采样方式
 
-1. 正常初始化应用，复用现有的游客网络夹具和语言配置，保留真实动画。
-2. 打开并关闭一次弹窗，等待图片和字体加载，避免采样期间出现缺图。
-3. 暂停在固定的虚拟时刻，然后真实点击搜索。确认弹窗已挂载且透明度为 0。
-4. 用 `page.clock.runFor` 推进到 **0、80、160、320ms**，每个时刻暂停并截图。
-   时间点为固定毫秒数，不根据当前动画时长自动调整。
-5. 验证中间帧逐渐显现、320ms 时完全显示、继续推进后不回跳；取消后重新点击搜索，
-   确认遮罩释放且入口仍可用。
+- `timeline.ts` 用 Playwright 时钟推进 JS 动画，用 Web Animations API 定位 CSS 动画时间。
+  CSS 动画挂载时立即暂停，避免较慢机器在开始采样前已经播完淡入。
+  保留 `animations: allow`，检查未启用 `__VISUAL_REGRESSION__` 或禁动画样式。
+- 常规面板采样 0、80、160、320、640、1200ms。BottomSheet 下一帧挂载，入场文件名记录
+  实际起点偏移 16ms。长动画另有明确的时间点，不根据当前实现时长自动缩放。
+- 面板先真实打开、关闭以预热图片，再截入场和退场，最后重开验证遮罩释放。
+  牌桌定时动画的准备阶段可快进，正式关键帧始终逐帧推进；弹簧抽屉的准备也逐帧推进。
+  采样读取位置、透明度、变换；要求主体发生运动，避免把背景变化误当成面板动画。
+- 固定画幅不跟随目标移动，位置错误不会因动态裁切被抵消。像素差比例上限 0.1%，
+  颜色阈值 0.1。每个虚拟时刻等待连续两张截图一致，再比较基准，避免截到布局尚未提交的画面。
+  原有游客搜索四帧用例和透明度断言继续保留。
+- 表情、道具落点及火焰使用浏览器解码的 WebP，内部时间不受 JS 时钟控制。
+  `imageFrames.ts` 比较实际页面加载素材的每一帧、尺寸、时间戳和帧时长；素材帧逐像素比较。
+  原始素材帧只在手机项目比较一次，道具飞行在两种视口分别使用真实牌桌截图验证。
+  全压时间线遮罩 WebP 区域，其内部图像由素材用例负责。
+  这部分不声称验证浏览器实时解码播放的调度精度。
+- 夹具固定匹配与老虎机响应，避免进入真实匹配队列或实际抽奖；只固定业务数据和必要的随机输入，
+  不调用应用内部状态、组件方法，不向业务源码增加测试分支。
+  加载动画暂缓的单个 XHR 请求另设 120 秒真实网络超时：XHR 不受 JS 时钟控制，
+  不能让慢机器的截图耗时触发业务超时。动画采样仍为 0–1600ms，结束后恢复请求行为。
 
-当前部署的弹窗淡入由 JS 驱动，因此使用虚拟时钟控制；截图保留 `animations: 'allow'`，
-不注入 `__VISUAL_REGRESSION__`、禁动画 CSS、透明度或位移修正规则。
-测试只读取弹窗及祖先的实际透明度。若实现迁移为 CSS 或其他渲染方式，需要重新验证控制方法。
+已完成的 CSS 动画使用 `finish()` 归还控制，不能 `play()` 重启退场动画。
+部分抽屉关闭后保留 DOM；测试检查透明度或视口外位置，并再次真实点击入口。
 
-截图固定裁切 `(16, 286, 343, 240)`，包含完整弹窗和周围遮罩；裁切区域不跟随元素移动，
-避免位置偏移被自动抵消。背景使用既有固定牌局夹具。允许最多 0.1% 的像素差异，
-颜色差异阈值为 0.1；不通过扩大容差处理时间漂移。
+## CI 与报告
 
-| 0ms | 80ms | 160ms | 320ms |
-| --- | --- | --- | --- |
-| ![初始透明](snapshots/zh-Hans-mobile-search-prompt-0ms.png) | ![淡入前段](snapshots/zh-Hans-mobile-search-prompt-80ms.png) | ![淡入后段](snapshots/zh-Hans-mobile-search-prompt-160ms.png) | ![完全显示](snapshots/zh-Hans-mobile-search-prompt-320ms.png) |
+`H5 动画视觉回归` 支持 PR、master 更新、手动和部署后触发，三组独立运行，比较三遍，零重试。
+HTML 报告位于 `visual/playwright-report/animations/<suite>/`，失败图片和时间线附件位于
+`visual/test-results/animations/<suite>/`，CI 保存 14 天。
+每个新增用例附带实际加载的构建版本；设置 `CLRN_EXPECTED_APPLICATION_COMMIT` 时会在采样前核对版本。
+手动运行工作流可启用 `update_snapshots`，在 CI 生成候选图后连续比较三次。
+候选图只上传 artifact，下载检查后再纳入仓库；普通 PR、部署和手动比较不会自动更新基准。
 
-## 查看结果
-
-HTML 报告：`visual/playwright-report/animations/index.html`。
-失败截图和差异图：`visual/test-results/animations/`。
-报告附带 `animation-timeline`，记录采样时间、实际透明度和裁切区域，截图比较失败时也保留已采样数据。
-
-关键帧比较用于发现外观、时间进度及终态问题，不用于衡量真实设备掉帧或流畅度。
+关键帧比较用于检测外观、进度和终态变化，不衡量真实设备帧率。

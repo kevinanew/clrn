@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - 'visual/**'
+      - 'e2e/mitmproxy/**'
+      - 'scripts/*accounts*'
+      - 'scripts/configure-ci-account.mjs'
+      - 'scripts/staging-deployment.mjs'
       - 'e2e/helpers/staging-notice.ts'
       - 'package.json'
       - 'package-lock.json'
@@ -12,42 +16,119 @@ on:
     branches: [master]
     paths:
       - 'visual/**'
+      - 'e2e/mitmproxy/**'
+      - 'scripts/*accounts*'
+      - 'scripts/configure-ci-account.mjs'
+      - 'scripts/staging-deployment.mjs'
       - 'e2e/helpers/staging-notice.ts'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/animations.yml'
+  workflow_call:
+    inputs:
+      expected_application_commit:
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: 生成候选基准并连续比较三次（只上传 artifact，不自动提交）
+        type: boolean
+        default: false
+      expected_application_commit:
+        description: 本轮需要验证的 staging 应用完整提交编号
+        type: string
+        required: true
 
 permissions:
   contents: read
 
 jobs:
+  accounts:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: plan
+        run: node scripts/plan-ci-accounts.mjs animations
   animations:
-    name: 游客搜索提示淡入
+    needs: accounts
+    name: 动画关键帧 (${{ matrix.suite }})
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.accounts.outputs.matrix) }}
+    concurrency:
+      group: h5-staging-account-${{ matrix.account }}
+      cancel-in-progress: false
+      queue: max
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-jammy
     env:
       CI: 'true'
+      VISUAL_SUITE: ${{ matrix.suite }}
+      CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
+      TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
+      - name: 注入本任务独占的 CI 账号
+        env:
+          CLRN_CI_ACCOUNT: ${{ matrix.account }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
+        run: node scripts/configure-ci-account.mjs
       - name: 安装锁定的测试依赖
-        run: npm ci
+        run: |
+          npm ci
+          corepack enable
+          corepack prepare pnpm@11.13.0 --activate
+          cd visual
+          pnpm install --frozen-lockfile
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装牌局隔离代理
+        if: matrix.suite != 'app'
+        run: |
+          python -m venv e2e/.venv
+          e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
       - name: 检查 TypeScript
         run: npm run typecheck
-      - name: 连续三次比较动画关键帧
-        run: npx playwright test --config visual/animations/playwright.config.ts --repeat-each=3
+      - name: 等待本轮部署生效
+        id: deployment
+        if: inputs.expected_application_commit != ''
+        run: node scripts/staging-deployment.mjs wait
+      - name: 生成本轮候选基准
+        if: inputs.update_snapshots == true
+        working-directory: visual
+        run: pnpm run test:animations:ci --update-snapshots
+      - name: 连续三次比较手机和桌面动画关键帧
+        working-directory: visual
+        run: pnpm run test:animations:ci --repeat-each=3
+      - name: 确认测试期间应用版本未改变
+        if: always() && !cancelled() && steps.deployment.outcome == 'success'
+        run: node scripts/staging-deployment.mjs verify
+      - name: 打包本套件改动的候选图
+        if: always() && !cancelled() && inputs.update_snapshots == true
+        run: |
+          mkdir -p visual/test-results/animation-candidates
+          git ls-files -z --modified --others --exclude-standard -- visual/animations/snapshots \
+            | tar --null -T - -czf visual/test-results/animation-candidates/${{ matrix.suite }}.tar.gz
       - name: 保存关键帧对比和时间采样报告
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: animation-visual-report-${{ github.run_id }}-${{ github.run_attempt }}
+          name: animation-${{ matrix.suite }}-report-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 14
           path: |
             visual/playwright-report/animations/
             visual/test-results/animations/
+            visual/test-results/animation-candidates/

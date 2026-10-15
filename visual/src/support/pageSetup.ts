@@ -21,7 +21,10 @@ export {
   mockVisualNetworkDependencies,
 } from './networkMocks';
 
-export const AUTH_STATE_PATH = path.resolve(__dirname, '..', '..', 'auth-state.json');
+// 独立动画运行可使用临时认证文件，避免与其他套件相互覆盖。
+export const AUTH_STATE_PATH = process.env.VISUAL_AUTH_STATE_PATH
+  ? path.resolve(process.env.VISUAL_AUTH_STATE_PATH)
+  : path.resolve(__dirname, '..', '..', 'auth-state.json');
 
 type AuthStateArgs = {
   entries: Record<string, string>;
