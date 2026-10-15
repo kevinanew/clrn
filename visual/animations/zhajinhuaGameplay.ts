@@ -73,8 +73,13 @@ export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaP
     { player_id: self, hole_card: ['as', 'ad', 'ac'], hand_strength: 'three_of_a_kind', is_winner: true },
     { player_id: PLAYER_IDS[1], hole_card: ['kh', 'ks', 'qd'], hand_strength: 'pair', is_winner: false },
   ] }]));
+  const shownCards = page.locator('[data-testid="player_cards_container"]:visible');
+  await expect(shownCards).toHaveCount(2);
+  const faces = shownCards.getByTestId('sprite-image-content');
+  await expect(faces).toHaveCount(6);
+  await ensureLocalImagesLoaded(page);
+  for (const face of await faces.all()) await expect(face).toHaveCSS('opacity', '1');
   await captureTimeline(page, info, 'zhajinhua-showdown', page.getByTestId('run-game-view'), { clip });
-  await expect(page.locator('[data-testid="player_cards_container"]:visible')).toHaveCount(2);
   await page.evaluate(() => {
     const state = window as typeof window & { animationParticleRandom?: typeof Math.random };
     state.animationParticleRandom = Math.random;

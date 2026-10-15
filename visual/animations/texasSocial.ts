@@ -53,7 +53,10 @@ export async function texasSocial(session: TableSession, proxy: TexasProxy, info
     stream.getTracks().forEach(track => track.stop());
   });
   await exercisePopup(page, info, { name: 'texas-voice', target: page.getByTestId('in-game-audio-microphone-button'), clip,
-    open: /** 打开语音面板，不录音或发送。 */ () => press(page, 'texas-holdem-voice-button'),
+    open: /** 等待真实麦克风权限检查和面板挂载，再从固定时刻推进动画。 */ async () => {
+      await press(page, 'texas-holdem-voice-button');
+      await expect(page.getByTestId('in-game-audio-microphone-button')).toBeAttached();
+    },
     close: /** 关闭语音面板。 */ () => press(page, 'in-game-audio-popup-close') });
   await exercisePopup(page, info, { name: 'texas-buy-in-review', target: page.getByTestId('buy-in-review-close-button'), clip,
     open: /** 回放本房间的固定带入申请。 */ () => proxy.replayTexas(roomId,
