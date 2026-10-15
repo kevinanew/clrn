@@ -41,6 +41,10 @@ export async function zhajinhuaGameplay(device: AndroidDevice, proxy: Mitmproxy,
   await gameTap(device, 'zhajinhua-shortcut-raise-first');
   await send(events([{ event: 'raise', player_id: self, amount: 40, stack: 960 },
     { event: 'pot_update', pot_amount: 160 }]));
+  await gameReady(device, `zhajinhua-player-container-${self}`);
+  await expect.poll(async () => gameSemanticText((await gameNodes(device))
+    .find(node => node.res === `zhajinhua-player-container-${self}`), 'player_stack_text'),
+  { timeout: 30_000 }).toBe(`${self} 960`);
   await capture('quick_raise');
   await send(restoreTable(self, false, true));
   await gameReady(device, 'zhajinhua-operation-accurate-bet-button');

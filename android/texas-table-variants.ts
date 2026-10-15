@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { REPLAY_PLAYER_IDS } from '../visual/cases/texas-holdem/replayData';
-import { gameGone, gameNodes, gameReady, gameTap } from './game-controls';
+import { gameGone, gameNodes, gameReady, gameTap, gameTextWithin } from './game-controls';
 import { restoreTexas, texasEvents, type TexasContext } from './texas-support';
 
 /**
@@ -41,8 +41,12 @@ export async function texasTableVariants(context: TexasContext): Promise<void> {
   await countPlayers(9);
   await gameReady(device, 'texas_holdem_main_pot_amount', '450');
   const container = (await gameReady(device, 'texas_holdem_side_pots_list')).bounds;
+  await expect.poll(async () => {
+    const nodes = await gameNodes(device);
+    return pots.map((_, index) => gameTextWithin(nodes, `texas_holdem_side_pot_${index}`).join(''));
+  }, { timeout: 30_000 }).toEqual(pots.map(String));
   const items = (await gameNodes(device)).filter(node => /^texas_holdem_side_pot_\d+$/.test(node.res || ''));
-  expect(items.map(node => node.text)).toEqual(pots.map(String));
+  expect(items).toHaveLength(pots.length);
   for (const [index, item] of items.entries()) {
     const bounds = item.bounds;
     expect(bounds.x).toBeGreaterThanOrEqual(container.x);

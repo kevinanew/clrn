@@ -51,3 +51,14 @@ test('两种玩法摊牌后的牌面必须参与比较，不能被下面的头�
     assert.equal(masks.reduce((sum, mask) => sum + mask.width * mask.height, 0), 104 ** 2 - 98 ** 2);
   }
 });
+
+test('倒计时上方的小尺寸看牌和下注动作提示仍完整参与像素比较', () => {
+  const countdown = { res: 'zhajinhua-active-countdown', bounds: { x: 100, y: 100, width: 100, height: 100 } };
+  const bounds = { x: 100, y: 110, width: 39, height: 46 };
+  const action = { bounds, children: [{ res: 'player_action_text', text: 'Seen', bounds }] };
+  const panels = foregroundPanels([countdown, action, ...action.children]);
+  assert.deepEqual(panels, [action]);
+  const masks = visibleMasks({ ...countdown.bounds, reason: '倒计时' }, countdown, panels);
+  assert.equal(masks.some(mask => 120 >= mask.x && 120 < mask.x + mask.width
+    && 130 >= mask.y && 130 < mask.y + mask.height), false);
+});

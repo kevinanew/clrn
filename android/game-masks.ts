@@ -15,7 +15,9 @@ export function foregroundPanels(nodes: NativeNode[]): NativeNode[] {
     'personal-leader-board-close-button', 'level-up-close-button', 'common-alert-message', 'in_game_report_message_component']);
   // 摊牌位于头像倒计时之上；即使 Android 将牌面容器裁到头像范围，也必须保留其中的牌面。
   const panels: NativeNode[] = nodes.filter(node => ['base-review-board-container',
-    'player_cards_container', 'texas-holdem-player-hole-cards'].includes(node.res || ''));
+    'player_cards_container', 'texas-holdem-player-hole-cards'].includes(node.res || '')
+    || node.res?.startsWith('texas-holdem-player-action-')
+    || node.children?.some(child => child.res === 'player_action_text'));
   for (const marker of nodes.filter(node => markers.has(node.res || ''))) {
     /**
      * 根据原生父子关系定位这个前景控件。

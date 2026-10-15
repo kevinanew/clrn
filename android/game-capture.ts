@@ -1,7 +1,7 @@
 import type { AndroidDevice } from 'playwright';
 import type { TestInfo } from '@playwright/test';
 import { compareScreenshot } from './device';
-import { gameNodes } from './game-controls';
+import { gameNodes, gameReady } from './game-controls';
 import { expect } from '@playwright/test';
 import type { ScreenshotMask } from './screenshot';
 import { foregroundPanels, visibleMasks } from './game-masks';
@@ -17,6 +17,7 @@ import { captureChallengeAnimation } from './game-animation';
  */
 export async function captureGame(device: AndroidDevice, name: string, testInfo: TestInfo, transientMarker?: string,
   expectedAlertMarker?: string): Promise<void> {
+  if (expectedAlertMarker) await gameReady(device, expectedAlertMarker);
   let nodes = await gameNodes(device);
   if ((!transientMarker || transientMarker === 'level-up-title') && foregroundPanels(nodes).length) {
     let previous = '';

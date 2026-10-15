@@ -75,6 +75,9 @@ export async function texasHallVariants(context: TexasContext): Promise<void> {
   await gameTap(device, 'auto-rebuy-close-button');
   await gameGone(device, 'auto-rebuy-popup');
   await gameTap(device, 'report-pair-play-button');
+  await gameReady(device, 'report-pair-play-reason-input');
+  await expect.poll(async () => (await gameNodes(device)).filter(node => node.res === 'select-player-button').length,
+    { timeout: 30_000 }).toBe(4);
   const players = (await gameNodes(device)).filter(node => node.res === 'select-player-button');
   expect(players).toHaveLength(4);
   for (const node of players.slice(0, 2)) {

@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { gameGone, gameNodes, gameReady, gameTap } from './game-controls';
 import { gameTapText, restoreTexas, type TexasContext } from './texas-support';
+import { closeGameMask } from './game-pregame';
 
 /**
  * 复用 Web 新版牌局战绩的空、行动和结算状态。
@@ -13,8 +14,7 @@ export async function texasRecordVariants(context: TexasContext): Promise<void> 
   await gameReady(device, 'base-review-board-container');
   expect((await gameReady(device, 'review-board-description-text')).text).toMatch(/empty games|没有|沒有/i);
   await capture('empty');
-  await gameTap(device, 'review-board-close-button');
-  await gameGone(device, 'base-review-board-container');
+  await closeGameMask(device, 'base-review-board-container');
   await proxy.command('texas/records', { empty: false });
   await gameTap(device, 'game-record-button');
   await gameReady(device, 'review-board-action-list');
@@ -26,7 +26,7 @@ export async function texasRecordVariants(context: TexasContext): Promise<void> 
   await gameReady(device, 'review-board-settlement-list');
   expect((await gameNodes(device)).filter(node => node.res === 'GameSettlementItemTwoV2_container')).toHaveLength(2);
   await capture('settlement');
-  await gameTap(device, 'review-board-close-button');
+  await closeGameMask(device, 'base-review-board-container');
 }
 
 /**
