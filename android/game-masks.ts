@@ -66,11 +66,13 @@ function subtractRoundButton(mask: ScreenshotMask, bounds: ScreenshotBounds): Sc
     || mask.y >= bounds.y + bounds.height || mask.y + mask.height <= bounds.y) return [mask];
   const result: ScreenshotMask[] = [];
   const cx = bounds.x + bounds.width / 2, cy = bounds.y + bounds.height / 2;
+  // 按钮 PNG 的首行 alpha 最大仅 229；缩放后的外缘一像素仍混合背景计时。
+  const rx = bounds.width / 2 - 1, ry = bounds.height / 2 - 1;
   for (let y = Math.floor(mask.y); y < Math.ceil(mask.y + mask.height); y++) {
     const row = { ...mask, y, height: 1 };
-    const relative = (y + 0.5 - cy) / (bounds.height / 2);
+    const relative = (y + 0.5 - cy) / ry;
     if (Math.abs(relative) >= 1) { result.push(row); continue; }
-    const radius = bounds.width / 2 * Math.sqrt(1 - relative * relative);
+    const radius = rx * Math.sqrt(1 - relative * relative);
     const left = Math.ceil(cx - radius), right = Math.floor(cx + radius);
     result.push(...subtractPanel(row, { x: left, y, width: right - left, height: 1 }));
   }

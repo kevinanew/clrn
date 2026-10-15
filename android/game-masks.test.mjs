@@ -100,7 +100,8 @@ test('拼三张圆形加注按钮的透明角落仍遮罩背景计时，圆形�
     { text: 'Raise', bounds: { x: 398, y: 833, width: 59, height: 18 } },
   ] };
   const parts = visibleMasks({ ...source.bounds, reason: '真实倒计时' }, source, [button]);
-  for (const [x, y, expected] of [[413, 751, true], [414, 751, true], [415, 751, true],
+  for (const [x, y, expected] of [[422, 750, true], [428, 750, true],
+    [413, 751, true], [414, 751, true], [415, 751, true],
     [412, 752, true], [413, 752, true], [428, 752, false], [428, 780, false], [428, 840, false]]) {
     assert.equal(parts.some(part => x >= part.x && x < part.x + part.width && y >= part.y && y < part.y + part.height), expected);
   }
