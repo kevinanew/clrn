@@ -5,6 +5,7 @@ import { adb } from './device';
 import { exists, waitAbsent } from './native-state';
 import { tap, reveal } from './navigation';
 import { pressRecordControl, recordRow, reopenRecords, scrollRecords } from './record-navigation';
+import { scrollToEnd } from './scroll-end';
 
 type Capture = (state: string) => Promise<void>;
 
@@ -94,6 +95,7 @@ export async function legacyRecordEnd(device: AndroidDevice, proxy: RecordProxy,
   await scrollRecords(device, true);
   await reveal(device, recordRow('No Hands'));
   await device.wait({ res: 'pull-up-activity-indicator' });
+  await scrollToEnd(device, { res: 'my-game-record-list' }, recordRow('No Hands'));
   await capture('pagination_loading');
   await proxy.release();
   await waitAbsent(device, { res: 'pull-up-activity-indicator' });
