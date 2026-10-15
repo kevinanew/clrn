@@ -110,18 +110,29 @@ jobs:
         if: inputs.update_snapshots == true
         working-directory: visual
         run: pnpm run test:animations:ci --update-snapshots
+      - name: 打包本套件改动的候选图
+        if: always() && !cancelled() && inputs.update_snapshots == true
+        shell: bash
+        run: |
+          mkdir -p visual/test-results/animation-candidates
+          git -c safe.directory="$GITHUB_WORKSPACE" ls-files -z --modified --others --exclude-standard -- visual/animations/snapshots \
+            > visual/test-results/animation-candidates/files.list
+          tar --null -T visual/test-results/animation-candidates/files.list \
+            -czf visual/test-results/animation-candidates/${{ matrix.suite }}.tar.gz
+      - name: 提前保存候选图供检查
+        if: always() && !cancelled() && inputs.update_snapshots == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: animation-${{ matrix.suite }}-candidates-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: error
+          path: visual/test-results/animation-candidates/${{ matrix.suite }}.tar.gz
       - name: 连续三次比较手机和桌面动画关键帧
         working-directory: visual
         run: pnpm run test:animations:ci --repeat-each=3
       - name: 确认测试期间应用版本未改变
         if: always() && !cancelled() && steps.deployment.outcome == 'success'
         run: node scripts/staging-deployment.mjs verify
-      - name: 打包本套件改动的候选图
-        if: always() && !cancelled() && inputs.update_snapshots == true
-        run: |
-          mkdir -p visual/test-results/animation-candidates
-          git ls-files -z --modified --others --exclude-standard -- visual/animations/snapshots \
-            | tar --null -T - -czf visual/test-results/animation-candidates/${{ matrix.suite }}.tar.gz
       - name: 保存关键帧对比和时间采样报告
         if: always()
         uses: actions/upload-artifact@v4
