@@ -103,7 +103,7 @@ jobs:
       - name: 注入与 Web 共用账号池中的独占账号
         env:
           CLRN_CI_ACCOUNT: ${{ matrix.account }}
-          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
         run: node scripts/configure-ci-account.mjs
       - run: npm ci
       - uses: actions/setup-python@v5

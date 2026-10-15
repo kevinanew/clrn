@@ -6,12 +6,12 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { allocateCiAccount, androidAccountMatrix, ciAccountCredentials, ciAccounts, visualAccountMatrix } from './ci-accounts.mjs';
 
-test('连续 30 个运行 ID 轮转全部账号，重跑和大整数 ID 分配稳定', () => {
-  assert.equal(new Set(Array.from({length:30},(_,i)=>allocateCiAccount(String(100+i)))).size,30);
+test('连续 100 个运行 ID 轮转全部账号，重跑和大整数 ID 分配稳定', () => {
+  assert.equal(new Set(Array.from({length:100},(_,i)=>allocateCiAccount(String(100+i)))).size,100);
   assert.equal(allocateCiAccount('90071992547409931'), allocateCiAccount('90071992547409931'));
-  assert.equal(allocateCiAccount('90071992547409931'), ciAccounts[Number(90071992547409931n % 30n)]);
+  assert.equal(allocateCiAccount('90071992547409931'), ciAccounts[Number(90071992547409931n % 100n)]);
   for (const id of ['', '1\n', 'abc', '-1', undefined]) assert.throws(()=>allocateCiAccount(id));
-  for (const offset of [-1,30,0.5]) assert.throws(()=>allocateCiAccount('1',offset));
+  for (const offset of [-1,100,0.5]) assert.throws(()=>allocateCiAccount('1',offset));
 });
 
 test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留原账号槽位', () => {
@@ -19,25 +19,33 @@ test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留�
   assert.equal(full.length,9);
   assert.equal(new Set(full.map(item=>item.account)).size,9);
   assert.equal(visualAccountMatrix('29').include.length,3);
+  assert.deepEqual(visualAccountMatrix('29').include.map(item => item.suite), ['texas', 'zhajinhua', 'app']);
+  assert.deepEqual(full.map(item => `${item.suite}/${item.locale}`),
+    ['texas', 'zhajinhua', 'app'].flatMap(suite => ['zh-Hans', 'zh-Hant', 'en'].map(locale => `${suite}/${locale}`)));
+  for (const item of full) {
+    const offset = { app: 0, texas: 3, zhajinhua: 6 }[item.suite] + ['zh-Hans', 'zh-Hant', 'en'].indexOf(item.locale);
+    assert.equal(item.account, allocateCiAccount('29', offset));
+  }
   for (const suite of ['app','texas','zhajinhua']) {
     assert.deepEqual(visualAccountMatrix('29',suite,true).include,full.filter(item=>item.suite===suite));
   }
   assert.throws(()=>visualAccountMatrix('29','typo'));
 });
 
-test('同一部署调用的四组工作流不重复分配账号', () => {
+test('同一运行编号下 Web 与 Android 的 36 个任务不重复分配账号', () => {
   const directory = mkdtempSync(join(tmpdir(), 'clrn-deployment-accounts-'));
-  const accounts = visualAccountMatrix('29', 'all', true).include.map(item => item.account);
+  const accounts = [...visualAccountMatrix('99', 'all', true).include, ...androidAccountMatrix('99').include]
+    .map(item => item.account);
   try {
     for (const mode of ['e2e', 'functional', 'interactions']) {
       const output = join(directory, mode);
       const result = spawnSync(process.execPath, ['scripts/plan-ci-accounts.mjs', mode], {
-        encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: output, GITHUB_RUN_ID: '29' },
+        encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: output, GITHUB_RUN_ID: '99' },
       });
       assert.equal(result.status, 0, result.stderr);
       accounts.push(readFileSync(output, 'utf8').trim().replace('account=', ''));
     }
-    assert.equal(new Set(accounts).size, 12);
+    assert.equal(new Set(accounts).size, 36);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -48,7 +56,7 @@ test('凭据按公开账号名读取，不依赖 Secret 排序，错误不包含
   const accounts=ciAccounts.map(username=>({username,password,status:'ready'}));
   assert.deepEqual(ciAccountCredentials(JSON.stringify({accounts:[...accounts].reverse()}),ciAccounts[5]),{username:ciAccounts[5],password});
   for (const invalid of [password,JSON.stringify({accounts:accounts.slice(1)}),
-    JSON.stringify({accounts:[accounts[0],...accounts.slice(0,29)]}),
+    JSON.stringify({accounts:[accounts[0],...accounts.slice(0,-1)]}),
     JSON.stringify({accounts:accounts.map((a,i)=>i===0?{...a,status:'registered'}:a)}),
     JSON.stringify({accounts:accounts.map((a,i)=>i===0?{...a,password:'x'.repeat(21)}:a)}),
     JSON.stringify({accounts:accounts.map((a,i)=>i===0?{...a,password:'injected\nKEY=value'}:a)})]) {
@@ -119,7 +127,16 @@ test('安卓二十四组独占账号，跨 Web 复用账号锁，筛选保持槽
   const web = visualAccountMatrix('29', 'all', true).include;
   assert.equal(full.length, 24);
   assert.equal(new Set(full.map(item => item.account)).size, 24);
-  assert.equal(new Set([...full, ...web].map(item => item.account)).size, 27);
+  assert.equal(new Set([...full, ...web].map(item => item.account)).size, 33);
+  assert.deepEqual(full.map(item => `${item.group}/${item.locale}`),
+    ['texas', 'zhajinhua', 'guest', 'account', 'social', 'rooms', 'wallet-help', 'records']
+      .flatMap(group => ['zh-Hans', 'zh-Hant', 'en'].map(locale => `${group}/${locale}`)));
+  for (const item of full) {
+    const offset = { guest: 12, account: 15, social: 18, rooms: 21, 'wallet-help': 24, records: 27, texas: 30, zhajinhua: 33 }[item.group]
+      + ['zh-Hans', 'zh-Hant', 'en'].indexOf(item.locale);
+    assert.equal(item.account, allocateCiAccount('29', offset % ciAccounts.length));
+  }
+  assert.deepEqual(androidAccountMatrix('29', 'all', 'en').include, full.filter(item => item.locale === 'en'));
   for (const group of ['guest', 'account', 'social', 'rooms', 'wallet-help', 'records', 'texas', 'zhajinhua']) {
     assert.deepEqual(androidAccountMatrix('29', group, 'en').include,
       full.filter(item => item.group === group && item.locale === 'en'));

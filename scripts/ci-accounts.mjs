@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 
-// 这里只维护公开账号名，密码统一保存在 CLRN_CI_TEST_ACCOUNTS Secret。
+// 这里只维护公开账号名，密码统一保存在 CLRN_CI_TEST_ACCOUNTS_V2 Secret。
 export const ciAccounts = JSON.parse(readFileSync(new URL('./ci-test-accounts.json', import.meta.url), 'utf8')).accounts;
-if (ciAccounts.length !== 30 || new Set(ciAccounts.map(name => name.toLowerCase())).size !== 30) {
-  throw new Error('CI 账号清单必须包含 30 个不同账号。');
+if (ciAccounts.length !== 100 || new Set(ciAccounts.map(name => name.toLowerCase())).size !== 100) {
+  throw new Error('CI 账号清单必须包含 100 个不同账号。');
 }
 
 /**
@@ -28,10 +28,12 @@ export function allocateCiAccount(runId, offset = 0) {
  * @returns 可直接用于 GitHub Actions include 矩阵的任务配置。
  */
 export function visualAccountMatrix(runId, suite = 'all', full = false) {
+  // 保留账号槽位顺序；只将耗时较长的牌桌任务提前创建。
   const suites = ['app', 'texas', 'zhajinhua'];
+  const executionOrder = ['texas', 'zhajinhua', ...suites.filter(item => item !== 'texas' && item !== 'zhajinhua')];
   if (suite !== 'all' && !suites.includes(suite)) throw new Error('不支持的视觉套件。');
   const locales = full ? ['zh-Hans', 'zh-Hant', 'en'] : ['zh-Hans'];
-  return { include: suites.filter(item => suite === 'all' || item === suite).flatMap(item =>
+  return { include: executionOrder.filter(item => suite === 'all' || item === suite).flatMap(item =>
     locales.map((locale, index) => ({ suite: item, locale,
       account: allocateCiAccount(runId, suites.indexOf(item) * 3 + index) }))) };
 }
@@ -43,11 +45,13 @@ export function visualAccountMatrix(runId, suite = 'all', full = false) {
  * @param selectedLocale - 全部语言或一种指定语言。
  */
 export function androidAccountMatrix(runId, selectedGroup = 'all', selectedLocale = 'all') {
+  // 账号槽位与 Web 共用锁保持不变，德州、拼三张的全部语言优先进入矩阵。
   const groups = ['guest', 'account', 'social', 'rooms', 'wallet-help', 'records', 'texas', 'zhajinhua'];
+  const executionOrder = ['texas', 'zhajinhua', ...groups.filter(group => group !== 'texas' && group !== 'zhajinhua')];
   const locales = ['zh-Hans', 'zh-Hant', 'en'];
   if (selectedGroup !== 'all' && !groups.includes(selectedGroup)) throw new Error('未知安卓业务组。');
   if (selectedLocale !== 'all' && !locales.includes(selectedLocale)) throw new Error('未知安卓语言。');
-  return { include: groups.filter(group => selectedGroup === 'all' || group === selectedGroup)
+  return { include: executionOrder.filter(group => selectedGroup === 'all' || group === selectedGroup)
     .flatMap(group => locales.filter(locale => selectedLocale === 'all' || locale === selectedLocale)
       .map(locale => ({ group, locale, account: allocateCiAccount(runId,
         (12 + groups.indexOf(group) * 3 + locales.indexOf(locale)) % ciAccounts.length) }))) };
@@ -63,7 +67,7 @@ export function ciAccountCredentials(serialized, username) {
   let pool;
   try { pool = JSON.parse(serialized); } catch { throw new Error('CLRN_CI_TEST_ACCOUNTS Secret 缺失或不是有效 JSON。'); }
   if (!Array.isArray(pool?.accounts) || pool.accounts.length !== ciAccounts.length) {
-    throw new Error('CI Secret 必须包含完整的 30 个专用账号。');
+    throw new Error('CI Secret 必须包含完整的 100 个专用账号。');
   }
   const seen = new Set();
   for (const account of pool.accounts) {

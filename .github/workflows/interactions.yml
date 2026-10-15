@@ -57,7 +57,7 @@ jobs:
         working-directory: .
         env:
           CLRN_CI_ACCOUNT: ${{ needs.account.outputs.account }}
-          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
         run: node scripts/configure-ci-account.mjs
       - name: 安装测试依赖
         run: npm ci
