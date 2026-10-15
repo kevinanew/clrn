@@ -40,6 +40,21 @@ export function flattenNodes(root: NativeNode): NativeNode[] {
 }
 
 /**
+ * 从已确认可见的容器读取语义文字，保留 Android 裁到容器外的透明辅助节点。
+ * @param root - 当前可见玩家或牌面容器，不能传入整棵窗口树。
+ * @param marker - 明确指定的辅助文字标记。
+ */
+export function gameSemanticText(root: NativeNode | undefined, marker: string): string | undefined {
+  if (!root) return undefined;
+  if (root.res === marker) return root.text;
+  for (const child of root.children || []) {
+    const value = gameSemanticText(child, marker);
+    if (value !== undefined) return value;
+  }
+  return undefined;
+}
+
+/**
  * 等待实际可见的游戏控件；空查询不会吞掉驱动错误。
  * @param device - 专用模拟器连接。
  * @param res - 与 Web 共用的 testID。
@@ -70,6 +85,7 @@ export async function gameGone(device: AndroidDevice, res: string): Promise<void
  * @param res - 与 Web 共用的 testID。
  */
 export async function gameTap(device: AndroidDevice, res: string): Promise<void> {
+  console.log(`ANDROID > 游戏点击 ${res}`);
   let previous: ScreenshotBounds | undefined;
   let node: NativeNode;
   await expect(async () => {

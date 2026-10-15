@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import type { AndroidDevice } from 'playwright';
 import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { events, PLAYER_IDS, restoreTable, validBets } from '../visual/cases/zhajinhua/replayData';
-import { gameReady, gameGone, gameTap, gameNodes } from './game-controls';
+import { gameReady, gameGone, gameTap, gameNodes, gameSemanticText } from './game-controls';
 import { replay, gameCardNames } from './game-replay';
 import { closeGameMask } from './game-pregame';
 
@@ -69,8 +69,10 @@ export async function zhajinhuaGameplay(device: AndroidDevice, proxy: Mitmproxy,
     { player_id: self, net: 120, prize: 120, stack: 1120 },
     { player_id: PLAYER_IDS[0], net: -40, prize: 0, stack: 920 },
   ] }]));
-  await expect.poll(async () => (await gameNodes(device)).some(node => node.text === '1120'),
-    { timeout: 30_000 }).toBe(true);
+  // 与德州一样，摊牌后的牌型会覆盖余额；从当前可见玩家读取明确的余额语义标记。
+  await expect.poll(async () => gameSemanticText((await gameNodes(device))
+    .find(node => node.res === `zhajinhua-player-container-${self}`), 'player_stack_text'),
+  { timeout: 30_000 }).toBe(`${self} 1120`);
   await capture('settlement');
   const status = await proxy.command<{ replayedMessages: number; blockedRpcs: number }>('status');
   expect(status.replayedMessages).toBeGreaterThan(0);

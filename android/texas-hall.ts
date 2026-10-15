@@ -38,7 +38,8 @@ export async function texasHall(context: TexasContext): Promise<void> {
   await texasEvents(context, [{ event: 'player_statistics', player_id: self,
     history_buy_in_amount: 1000, played_game_count: 10, settlement_net_amount: 180 }]);
   await gameReady(device, 'personal-leader-board-record-container');
-  expect((await gameReady(device, 'personal-leader-board-round')).text).toMatch(/(?:^|\s)10$/);
+  await expect.poll(async () => (await gameReady(device, 'personal-leader-board-round')).text,
+    { timeout: 30_000 }).toMatch(/(?:^|\s)10$/);
   await capture('personal_leaderboard');
   await gameTap(device, 'personal-leader-board-close-button');
   await gameGone(device, 'personal-leader-board-close-button');
@@ -67,7 +68,8 @@ export async function texasHallVariants(context: TexasContext): Promise<void> {
   await proxy.command('texas/ui', {});
   await gameTap(device, 'auto-rebuy-button');
   await gameTap(device, 'auto-rebuy-switch');
-  expect((await gameReady(device, 'auto-rebuy-switch')).checked).toBe(true);
+  await expect.poll(async () => (await gameReady(device, 'auto-rebuy-switch')).checked,
+    { timeout: 30_000 }).toBe(true);
   await gameGone(device, 'common-alert-container');
   await capture('auto_rebuy_enabled');
   await gameTap(device, 'auto-rebuy-close-button');

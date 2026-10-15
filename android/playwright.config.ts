@@ -14,8 +14,9 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
-  // 连续故障时停止当前业务组；失败和未执行场景仍使 CI 失败。
-  maxFailures: 3,
+  // 基准采集遍历全部独立场景以报告覆盖缺口；正式比较连续故障时停止当前业务组。
+  // 两种模式中的任何失败都会使 CI 失败，房间仍由每个场景的 finally 清理。
+  maxFailures: process.env.ANDROID_VISUAL_MODE === 'reference' ? 0 : 3,
   timeout: 180_000,
   // 缺少基准属于失败，只有显式 reference 命令才能创建或替换基准。
   updateSnapshots: 'none',

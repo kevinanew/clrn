@@ -106,25 +106,26 @@ export async function captureGameThemes(device: AndroidDevice, capture: Capture)
   }
   await tap(device, 'game-settings-card-theme-simple');
   await tap(device, 'game-settings-close-button');
-  await gameGone(device, 'game-settings-popup-container');
+  await gameGone(device, 'game-settings-card-theme-simple');
   for (const background of ['blue', 'purple', 'black']) {
     await gameMenu(device, 'theme', 'game-settings-card-theme-simple');
     await tap(device, `game-settings-background-${background}`);
     await tap(device, 'game-settings-close-button');
-    await gameGone(device, 'game-settings-popup-container');
+    await gameGone(device, 'game-settings-card-theme-simple');
     await capture(`table_${background}`);
   }
   await gameMenu(device, 'theme', 'game-settings-card-theme-simple');
   await tap(device, 'game-settings-background-green');
   await tap(device, 'game-settings-close-button');
-  await gameGone(device, 'game-settings-popup-container');
+  await gameGone(device, 'game-settings-card-theme-simple');
   await gameMenu(device, 'settings', 'game-settings-popup-container');
   let count = 0;
   for (const name of ['sound-effect', 'vibrate', 'player-voice', 'show-card', 'operation-time', 'see-remain-card', 'shake-avatar']) {
     const selector = { res: `game-settings-switch-${name}` };
     if (!(await gameNodes(device)).some(node => node.res === selector.res)) continue;
     if (!(await gameReady(device, selector.res)).checked) await tap(device, selector.res);
-    expect((await gameReady(device, selector.res)).checked).toBe(true);
+    await expect.poll(async () => (await gameReady(device, selector.res)).checked,
+      { timeout: 30_000 }).toBe(true);
     count++;
   }
   expect(count).toBeGreaterThanOrEqual(4);

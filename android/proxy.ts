@@ -33,6 +33,17 @@ async function configureProxy(directory: string, server: string): Promise<void> 
 }
 
 /**
+ * 删除本轮转发；adbd 重连后已被移除的端口等同于清理成功。
+ * @param port - 本轮独占的代理端口。
+ */
+function removeReverse(port: string): void {
+  try { adb('reverse', '--remove', `tcp:${port}`); }
+  catch (error) {
+    if (!String(error).includes(`listener 'tcp:${port}' not found`)) throw error;
+  }
+}
+
+/**
  * 复用 Web 网络夹具和代理生命周期；真实认证与未声明的接口仍访问 staging。
  * @param task - 在已准备的模拟器网络环境内运行测试。
  * @param records - 战绩开关或要复用的 Web 玩法代理。
@@ -77,7 +88,9 @@ export async function withAndroidProxy<T>(task: (proxy: Mitmproxy) => Promise<T>
     try {
       adb('shell', 'settings', 'put', 'global', 'http_proxy', previousProxy === 'null' ? ':0' : previousProxy);
     } finally {
-      try { if (proxyPort) adb('reverse', '--remove', `tcp:${proxyPort}`); }
+      try {
+        if (proxyPort) removeReverse(proxyPort);
+      }
       finally { await new Promise<void>(resolve => server.close(() => resolve())); }
     }
   }

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { flattenNodes, gameNodes } = require('./game-controls.ts');
+const { flattenNodes, gameNodes, gameSemanticText } = require('./game-controls.ts');
 
 test('原生控件树保留重复 ID，忽略屏外历史面板但不忽略可见子节点', () => {
   const root = { bounds: { x: 0, y: 0, width: 720, height: 1280 }, children: [
@@ -14,6 +14,18 @@ test('原生控件树保留重复 ID，忽略屏外历史面板但不忽略可�
     ] },
   ] };
   assert.deepEqual(flattenNodes(root).map(node => node.res), [undefined, 'seat', 'seat', 'visible-child']);
+});
+
+test('摊牌余额读取当前玩家的嵌套语义标记，不依赖被牌型覆盖的可见文字', () => {
+  const own = { res: 'self', bounds: { x: 200, y: 1000, width: 100, height: 180 }, children: [
+    { bounds: { x: 200, y: 1150, width: 100, height: 30 }, children: [
+      { res: 'player_stack_text', text: 'self 1120', bounds: { x: 200, y: 1150, width: -1, height: 0 } },
+    ] },
+  ] };
+  assert.equal(flattenNodes(own).some(node => node.res === 'player_stack_text'), false);
+  assert.equal(gameSemanticText(own, 'player_stack_text'), 'self 1120');
+  assert.equal(gameSemanticText(own, 'missing-marker'), undefined);
+  assert.equal(gameSemanticText(undefined, 'player_stack_text'), undefined);
 });
 
 test('控件树驱动协议变更和断连必须失败，不能当作空页面', async () => {

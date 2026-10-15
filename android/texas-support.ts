@@ -63,7 +63,7 @@ export async function enableGameSetting(device: AndroidDevice, setting: string):
   await gameMenu(device, 'settings', 'game-settings-popup-container');
   const marker = `game-settings-switch-${setting}`;
   if (!(await gameReady(device, marker)).checked) await gameTap(device, marker);
-  expect((await gameReady(device, marker)).checked).toBe(true);
+  await expect.poll(async () => (await gameReady(device, marker)).checked, { timeout: 30_000 }).toBe(true);
   await gameTap(device, 'game-settings-close-button');
   await gameGone(device, 'game-settings-popup-container');
 }

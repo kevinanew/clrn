@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import type { AndroidDevice } from 'playwright';
 import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { events, REPLAY_PLAYER_IDS, restoreTable, type Street } from '../visual/cases/texas-holdem/replayData';
-import { gameReady, gameGone, gameTap, gameNodes } from './game-controls';
+import { gameReady, gameGone, gameTap, gameNodes, gameSemanticText } from './game-controls';
 import { replay, gameCardNames } from './game-replay';
 import { closeGameMask } from './game-pregame';
 import { adb } from './device';
@@ -70,9 +70,8 @@ export async function texasGameplay(device: AndroidDevice, proxy: Mitmproxy, roo
     { player_id: REPLAY_PLAYER_IDS[0], net: -960, prize: 0, stack: 0 },
   ] }]));
   // 摊牌时余额被牌型标签替代；余额语义标记仍附在当前可见玩家容器内。
-  await expect.poll(async () => (await gameNodes(device))
-    .find(node => node.res === `texas-holdem-player-container-${self}`)
-    ?.children?.find(node => node.res === 'text-holdem-own-balance-text')?.text,
+  await expect.poll(async () => gameSemanticText((await gameNodes(device))
+    .find(node => node.res === `texas-holdem-player-container-${self}`), 'text-holdem-own-balance-text'),
   { timeout: 30_000 }).toBe('1180');
   await capture('settlement');
   /**
