@@ -8,7 +8,7 @@
 
 Web 另外有 5 个下载帮助场景。当前 Staging APK 的发布渠道为 `default`，原生 `SettingItems._listAndroidAdSectionItems` 仅在 `self-host` 渠道显示该入口，因此在 `unavailablePages` 明确列为不可达，不计入通过数量。
 
-战绩直接复用 Web 的完整状态清单：旧版 32 个、新版 30 个状态，三种语言，共 186 张目标截图。覆盖加载、空列表、列表底部、分数选择汇总、侧滑删除、详情输赢展开、结算、回放入口、分页和故障恢复。与基础场景及冒烟图合计 400 张正式基准。德州完整 95 个状态、拼三张完整 26 个状态已接入同一份 Web 清单，涵盖操作控件、边池、旁观、聊天举报、带入审核、牌谱、主题、语音面板、大厅和故障恢复；三语合计目标 763 张截图。新增牌桌分支仍在原生验证，接入数量不等于通过数量。
+战绩直接复用 Web 的完整状态清单：旧版 32 个、新版 30 个状态，三种语言，共 186 张截图。覆盖加载、空列表、列表底部、分数选择汇总、侧滑删除、详情输赢展开、结算、回放入口、分页和故障恢复。与基础场景及冒烟图合计 400 张正式基准。德州完整 95 个状态、拼三张完整 26 个状态已接入同一份 Web 清单，涵盖操作控件、边池、旁观、聊天举报、带入审核、牌谱、主题、语音面板、大厅和故障恢复；三语合计 763 张截图，由 253 个测试用例执行。全部基准均来自固定 x86_64 CI 环境并经过审查；回归结果以对应提交的 compare 运行及 PR 检查为准。
 
 网络代理直接调用 Web 的 `mockVisualNetworkDependencies`，复用商品、私人房、俱乐部等响应夹具；未匹配的请求继续访问真实服务。真实登录成功后，仅将本人昵称、展示用户名、注册日期和余额固定为 `visual/fixtures/account-presentation.json`，身份和令牌保持原值，失败响应不改成成功。普通页面测试不提交表单。牌桌组通过真实界面创建本轮专用私人房，复用 Web 的余额检查与清理；退出和失败时都解散该房间。仅测试账号余额不足时复用现有 testing 接口补钻，不执行真实充值。Web 和 Android 共用 `visual/fixtures/game-presentation.json` 中的展示房号；Android 仅覆盖本轮真实房间成功响应的 `options.house_number`，保留 UUID、房主、权限、房间状态及连接和清理请求。房号及复制图标完整参与截图比较。
 
@@ -47,9 +47,9 @@ APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使�
 
 正式基准必须来自固定的 x86_64 CI 环境，并逐图检查。reference 产物会同时携带仓库已有图片，因此只能接收该轮实际通过的场景，不能将整个目录直接覆盖到仓库。更新后必须另跑 compare；基准生成成功不代表回归比较通过。
 
-应用修复集中在 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)。当前基准扩充和全量 compare 尚在验证，完成记录会同时注明测试提交、APK Release 及 CI 运行，未执行或失败的用例不计入通过数量。
+应用修复集中在 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)，基准扩充及验证记录见 [clrn #25](https://github.com/kevinanew/clrn/pull/25)，其中注明测试提交、APK Release 和 CI 运行。未执行或失败的用例不计入通过数量。
 
-拼三张三语全部 78 张基准来自 [reference 38673980189](https://github.com/kevinanew/clrn/actions/runs/38673980189)，使用 [APK 7235](https://github.com/kevinanew/clrn/releases/tag/android-staging-7235-72d60d0080df)，六个场景全部通过且已审查。独立比较结果另行记录。
+拼三张三语全部 78 张基准来自 [reference 38673980189](https://github.com/kevinanew/clrn/actions/runs/38673980189)，使用 [APK 7235](https://github.com/kevinanew/clrn/releases/tag/android-staging-7235-72d60d0080df)，六个场景全部通过且已审查。三语独立 compare [38676799300](https://github.com/kevinanew/clrn/actions/runs/38676799300) 全部通过。
 
 通过 GitHub CLI 指定包含工作流的分支和经确认的 Release 标签，生成候选基准：
 
@@ -83,10 +83,14 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 
 列表滚动固定后，三语高级建房基准来自 [38674831805](https://github.com/kevinanew/clrn/actions/runs/38674831805) 的八个通过场景和 [38675676317](https://github.com/kevinanew/clrn/actions/runs/38675676317) 的简体德州场景；三语新版战绩页脚来自完整通过的 [38674838931](https://github.com/kevinanew/clrn/actions/runs/38674838931)，其余 87 张新版战绩图与原基准匹配。
 
-德州新增 110 张已审查基准来自 [reference 38673123965](https://github.com/kevinanew/clrn/actions/runs/38673123965) 的完整通过场景，清单覆盖新版牌谱、牌局、主题及面板变体、满桌/旁观/保座和大厅变体；未接收同轮失败场景及使用旧 UUID 遮罩的排行榜。剩余状态和全量 compare 仍在验证。
+德州新增 110 张已审查基准来自 [reference 38673123965](https://github.com/kevinanew/clrn/actions/runs/38673123965) 的完整通过场景，清单覆盖新版牌谱、牌局、主题及面板变体、满桌/旁观/保座和大厅变体；未接收同轮失败场景及使用旧 UUID 遮罩的排行榜。其余状态来源见后续记录。
 
 德州三语开局前与扩展面板 96 张基准来自全部通过的 [38675400987](https://github.com/kevinanew/clrn/actions/runs/38675400987)，已审查新增及变化图，并更新固定房号和 UUID 遮罩。
 
 礼品卡兑换三语基准来自 [38676970410](https://github.com/kevinanew/clrn/actions/runs/38676970410) 与 [APK 7236](https://github.com/kevinanew/clrn/releases/tag/android-staging-7236-923ccc1008dd)，已检查输入提示完整显示且不覆盖扫码入口。
 
 德州另有 24 张新增及 40 张更新基准来自 [38676785782](https://github.com/kevinanew/clrn/actions/runs/38676785782) 的完整通过场景，覆盖简体满桌/旁观、繁体面板变体、英文等待和大厅；该轮失败场景的部分截图未接收。
+
+英文牌局与操作的最后 29 张基准来自全部通过的 [38682440621](https://github.com/kevinanew/clrn/actions/runs/38682440621)，使用 APK 7236；逐图审查后已补齐 763 个正式截图状态。
+
+三语德州完整 285 个状态的 [reference 38681586730](https://github.com/kevinanew/clrn/actions/runs/38681586730) 全部通过（APK 7236）。牌谱页码仅遮罩实测光标细条，提示框完整保留；该轮变化图已单独审查，其余基准保持匹配。

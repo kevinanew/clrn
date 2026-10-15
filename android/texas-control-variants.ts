@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { REPLAY_PLAYER_IDS } from '../visual/cases/texas-holdem/replayData';
-import { gameGone, gameNodes, gameReady, gameTap } from './game-controls';
+import { flattenNodes, gameGone, gameNodes, gameReady, gameTap, gameSemanticText } from './game-controls';
 import { closeGameMask } from './game-pregame';
 import { adb } from './device';
 import { gameTapText, restoreTexas, texasEvents, type TexasContext } from './texas-support';
@@ -32,7 +32,14 @@ export async function texasControlVariants(context: TexasContext): Promise<void>
     raise: { minimum: 40, maximum: 50 }, all_in: { amount: 50 } } });
   expect((await gameReady(device, 'texas-holdem-shortcut-raise-button-half_pot')).enabled).toBe(false);
   await capture('shortcut_disabled');
-  await restoreTexas(context);
+  // 直接恢复对手回合，避免本人异步开始计时与紧随其后的 switch_player 相互覆盖。
+  await restoreTexas(context, {}, 'river', true);
+  await gameReady(device, `texas-holdem-player-container-${REPLAY_PLAYER_IDS[0]}-operating`);
+  await expect.poll(async () => {
+    const self = (await gameNodes(device)).find(node => node.res === `texas-holdem-player-container-${context.self}`);
+    return self && gameSemanticText(self, 'texas-holdem-bet-amount-text') === '20'
+      && flattenNodes(self).some(node => node.res === 'texas-holdem-player-action-call');
+  }, { timeout: 30_000 }).toBe(true);
   await texasEvents(context, [{ event: 'switch_player', player_id: REPLAY_PLAYER_IDS[0], valid_bets: { call: { amount: 20 } } }]);
   await gameGone(device, 'texas-holdem-operation-button-raise');
   await expect.poll(async () => (await gameNodes(device)).some(node => /看或弃|看或棄|Check\/Fold/.test(node.text || ''))).toBe(true);
@@ -56,12 +63,22 @@ export async function texasControlVariants(context: TexasContext): Promise<void>
   await gameReady(device, 'raise-bet-all-in-button');
   await capture('raise_maximum');
   const topThumb = (await gameReady(device, 'sliderThumb')).bounds;
-  adb('shell', 'input', 'motionevent', 'DOWN', String(x), String(Math.round(topThumb.y + topThumb.height / 2)));
+  const startY = Math.round(topThumb.y + topThumb.height / 2);
+  let endY = startY;
+  adb('shell', 'input', 'motionevent', 'DOWN', String(x), String(startY));
   try {
-    adb('shell', 'input', 'motionevent', 'MOVE', String(x), String(Math.round(track.y + track.height / 2)));
-    await gameReady(device, 'raise-bet-assist-text');
+    // 等待 PanResponder 接管按压后再移动；分步拖动与 Web 的真实指针流程一致。
+    await gameReady(device, 'raise-bet-assist-text', '1000');
+    const heldTrack = (await gameReady(device, 'raise-bet-slider')).bounds;
+    const targetY = Math.round(heldTrack.y + heldTrack.height / 2);
+    for (let step = 1; step <= 8; step++) {
+      endY = Math.round(startY + (targetY - startY) * step / 8);
+      adb('shell', 'input', 'motionevent', 'MOVE', String(x), String(endY));
+    }
+    await gameReady(device, 'raise-bet-assist-text', '520');
+    await gameReady(device, 'raise-bet-display-text', '520');
     await capture('raise_dragging');
-  } finally { adb('shell', 'input', 'motionevent', 'UP', String(x), String(Math.round(track.y + track.height / 2))); }
+  } finally { adb('shell', 'input', 'motionevent', 'UP', String(x), String(endY)); }
   await gameTap(device, 'raise-bet-cancel-button');
   await gameTap(device, 'texas-holdem-operation-accurate-bet-button');
   for (const digit of [1, 2, 3]) await gameTap(device, `texas-holdem-operation-accurate-bet-number-button-${digit}`);
