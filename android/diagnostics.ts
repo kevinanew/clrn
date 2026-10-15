@@ -16,7 +16,8 @@ export async function captureFailure(device: AndroidDevice, testInfo: TestInfo):
   }).catch(() => undefined);
   try {
     const filename = testInfo.outputPath('runtime.log');
-    const logs = adb('logcat', '-d', '-b', 'all', '*:E').split('\n')
+    const logs = [adb('logcat', '-d', '-b', 'all', '*:E'),
+      adb('logcat', '-d', '-b', 'events', 'am_kill:I', 'am_proc_died:I', 'am_crash:I', 'am_anr:I', '*:S')].join('\n').split('\n')
       .filter(line => !/(access_token|refresh_token|authorization|password|Bearer\s)/i.test(line)
         && !(process.env.VISUAL_PASSWORD && line.includes(process.env.VISUAL_PASSWORD))).join('\n');
     await writeFile(filename, logs);

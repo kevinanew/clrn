@@ -5,11 +5,12 @@ import { events, restoreTable, type Street, type TableOptions } from '../visual/
 import { gameGone, gameNodes, gameReady, gameTap, type NativeNode } from './game-controls';
 import { gameCardNames, replay } from './game-replay';
 import { adb } from './device';
+import type { ScreenshotMask } from './screenshot';
 import { gameMenu } from './game-pregame';
 
 export type TexasContext = {
   device: AndroidDevice; proxy: Mitmproxy; room: string; self: string;
-  capture(state: string): Promise<void>;
+  capture(state: string, masks?: ScreenshotMask[]): Promise<void>;
 };
 
 /**

@@ -9,13 +9,10 @@ export type ScreenshotMask = { x: number; y: number; width: number; height: numb
 export type ScreenshotBounds = Omit<ScreenshotMask, 'reason'>;
 
 /**
- * 仅排除版本、日期和自动轮播帧，原始截图仍附在报告中供检查。
+ * 从两帧真实截图识别聚焦输入框的光标，保留原输入边界以适配键盘收起后的窗口位移。
  * @param device - 专用模拟器连接。
- * @param scenario - 共用的页面场景。
- * @param backgroundBanner - 打开原生弹窗前保存的背景横幅边界。
  */
-export async function screenshotMasks(device: AndroidDevice, scenario: VisualScenario, backgroundBanner?: ScreenshotBounds): Promise<ScreenshotMask[]> {
-  const masks: ScreenshotMask[] = [];
+export async function focusedCaretMask(device: AndroidDevice) {
   const input = await device.info({ clazz: 'android.widget.EditText', focused: true }).catch(() => undefined);
   if (input) {
     let before = await device.screenshot();
@@ -25,10 +22,22 @@ export async function screenshotMasks(device: AndroidDevice, scenario: VisualSce
       const current = await device.info({ clazz: 'android.widget.EditText', focused: true });
       if (current.text !== input.text || JSON.stringify(current.bounds) !== JSON.stringify(input.bounds)) break;
       const mask = caretMask(before, after, input.bounds);
-      if (mask) { masks.push(mask); break; }
+      if (mask) return { mask, input };
       before = after;
     }
   }
+}
+
+/**
+ * 仅排除版本、日期和自动轮播帧，原始截图仍附在报告中供检查。
+ * @param device - 专用模拟器连接。
+ * @param scenario - 共用的页面场景。
+ * @param backgroundBanner - 打开原生弹窗前保存的背景横幅边界。
+ */
+export async function screenshotMasks(device: AndroidDevice, scenario: VisualScenario, backgroundBanner?: ScreenshotBounds): Promise<ScreenshotMask[]> {
+  const masks: ScreenshotMask[] = [];
+  const caret = await focusedCaretMask(device);
+  if (caret) masks.push(caret.mask);
   for (const rule of scenario.fixedTexts) {
     if (!/(?:version-text|current-server-text|checkInDetailDate)/.test(rule.selector)) continue;
     const node = await device.info(nativeSelector(rule.selector)).catch(() => undefined);

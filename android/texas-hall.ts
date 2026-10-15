@@ -4,6 +4,7 @@ import { gameGone, gameNodes, gameReady, gameTap, gameTextWithin } from './game-
 import { closeGameMask } from './game-pregame';
 import { adb } from './device';
 import { dismissKeyboard } from './keyboard';
+import { focusedCaretMask } from './screenshot';
 import { enableGameSetting, restoreTexas, texasEvents, type TexasContext } from './texas-support';
 
 /**
@@ -85,8 +86,14 @@ export async function texasHallVariants(context: TexasContext): Promise<void> {
     adb('shell', 'input', 'tap', String(Math.round(x + width / 2)), String(Math.round(y + height / 2)));
   }
   await device.fill({ res: 'report-pair-play-reason-input' }, 'Suspicious cooperation');
+  const caret = await focusedCaretMask(device);
+  expect(caret, '键盘可见时应检测到真实光标，不能遮掉整行文字').toBeDefined();
   await dismissKeyboard(device);
-  await capture('pair_play_selected');
+  const input = await device.info({ res: 'report-pair-play-reason-input' });
+  expect(input.text).toBe('Suspicious cooperation');
+  await capture('pair_play_selected', [{ ...caret!.mask,
+    x: caret!.mask.x + input.bounds.x - caret!.input.bounds.x,
+    y: caret!.mask.y + input.bounds.y - caret!.input.bounds.y }]);
   await gameTap(device, 'report-pair-play-close-button');
   await gameGone(device, 'report-pair-play-reason-input');
   await texasEvents(context, [{ event: 'settlement', players: [{ player_id: REPLAY_PLAYER_IDS[0], net: 180, prize: 180, stack: 1140 }] }]);

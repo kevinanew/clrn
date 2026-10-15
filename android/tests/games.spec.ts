@@ -10,6 +10,7 @@ import { captureGame } from '../game-capture';
 import { gamePreGame } from '../game-pregame';
 import { runTexasScenario } from '../texas-flows';
 import { zhajinhuaGameplay } from '../zhajinhua-gameplay';
+import type { ScreenshotMask } from '../screenshot';
 
 const test = base.extend<{ ownedRoom: { value: RoomSession | null } }>({
   /**
@@ -49,8 +50,9 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
           /**
            * 校验每个状态与 Web 清单的顺序一致。
            * @param state - 共用状态名。
+           * @param masks - 已从真实输入框检测的光标区域。
            */
-          const capture = async (state: string) => {
+          const capture = async (state: string, masks: ScreenshotMask[] = []) => {
             expect(state).toBe(scenario.snapshotStates![index++]);
             console.log(`ANDROID > ${suite} 截图状态 ${state}`);
             const transient = ['statistics_help', 'accurate_raise_minimum_error'].includes(state) ? 'toastText1'
@@ -63,7 +65,7 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
               delay_cooldown_alert: 'common-alert-message',
             };
             await captureGame(device, `${locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo,
-              transient, expectedAlerts[state]);
+              transient, expectedAlerts[state], masks);
           };
           const { account } = await gameSession(proxy);
           expect(account).not.toBeNull();

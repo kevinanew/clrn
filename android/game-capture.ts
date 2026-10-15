@@ -5,19 +5,20 @@ import { compareScreenshot } from './device';
 import { gameNodes, gameReady } from './game-controls';
 import { expect } from '@playwright/test';
 import type { ScreenshotMask } from './screenshot';
-import { foregroundPanels, visibleMasks } from './game-masks';
+import { foregroundPanels, visibleMasks, networkStatusMask } from './game-masks';
 import { captureChallengeAnimation } from './game-animation';
 
 /**
- * 保留真实牌桌布局，仅遮罩明确的房号、网络延迟和循环座位指示箭头。
+ * 保留真实牌桌布局，仅遮罩网络延迟、倒计时和循环座位指示箭头等动态区域。
  * @param device - 专用模拟器连接。
  * @param name - 共享场景与状态生成的截图名。
  * @param testInfo - 当前测试报告。
  * @param transientMarker - 仅用于会自动消失的提示，截图前后都必须实际存在。
  * @param expectedAlertMarker - 错误分支已断言内容后，允许截图的特定业务弹窗按钮。
+ * @param inputMasks - 已根据真实输入框位移校准的光标区域。
  */
 export async function captureGame(device: AndroidDevice, name: string, testInfo: TestInfo, transientMarker?: string,
-  expectedAlertMarker?: string): Promise<void> {
+  expectedAlertMarker?: string, inputMasks: ScreenshotMask[] = []): Promise<void> {
   if (expectedAlertMarker) await gameReady(device, expectedAlertMarker);
   let nodes = await gameNodes(device);
   if ((!transientMarker || transientMarker === 'level-up-title') && foregroundPanels(nodes).length) {
@@ -33,7 +34,7 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
   if (expectedAlertMarker) expect(nodes.some(node => node.res === expectedAlertMarker), '目标业务提示必须可见').toBe(true);
   expect(nodes.some(node => node.res === 'android:id/message' || (!expectedAlertMarker && node.res === 'common-alert-message')),
     '截图前不能存在意外错误提示').toBe(false);
-  const masks: ScreenshotMask[] = [];
+  const masks: ScreenshotMask[] = [...inputMasks];
   const panels = foregroundPanels(nodes);
   await testInfo.attach(`${name}-native-tree`, { body: JSON.stringify(nodes[0]), contentType: 'application/json' });
   for (const node of nodes) {
@@ -70,10 +71,7 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
       // 玩家 ID 是透明语义标记；不能因它覆盖头像而把整个头像排除。
       add({ ...node.bounds, reason: node.res || (node.text?.includes(':') ? '保座或加时冷却倒计时' : '本轮真实房间 UUID') });
     }
-    if (node.res === 'ping-screen-text') {
-      add({ ...node.bounds, x: node.bounds.x + node.bounds.width / 2 - 40, width: 80, reason: '网络延迟数值' });
-    }
-    if (node.res === 'ping-screen-icon') add({ ...node.bounds, reason: '网络延迟状态图标' });
+    if (node.res === 'ping-screen-container') add(networkStatusMask(node.bounds));
   }
   if (name.endsWith('-zhajinhua-game-challenge-select')) {
     await captureChallengeAnimation(device, name, testInfo, masks);

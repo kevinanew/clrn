@@ -75,3 +75,13 @@ export function visibleMasks(mask: ScreenshotMask, source: NativeNode, panels: N
       width: panel.bounds.width - 2, height: panel.bounds.height - 2,
     })), [mask]);
 }
+
+/**
+ * 网络状态固定在容器右下侧；数字位数会改变容器宽度和内部图标中心，不能按文字中心遮罩。
+ * @param bounds - PingScreen 的真实外层边界，包含固定的 70dp 高度和右侧锚点。
+ */
+export function networkStatusMask(bounds: ScreenshotBounds): ScreenshotMask {
+  const scale = bounds.height / 70;
+  return { x: bounds.x + bounds.width - 55 * scale, y: bounds.y + bounds.height - 30 * scale,
+    width: 50 * scale, height: 24 * scale, reason: '网络延迟数值、图标与前后端延迟比例条' };
+}

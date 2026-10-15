@@ -76,3 +76,18 @@ test('房间计时不能遮掉结算牌型和覆盖其上的牌桌按钮', () =>
     assert.equal(masks.some(mask => mask.x <= 400 && mask.x + mask.width > 400), false);
   }
 });
+
+test('网络延迟两位和三位数字引起横移时，遮罩固定且覆盖比例条，不覆盖上方操作控件', () => {
+  const { networkStatusMask } = require('./game-masks.ts');
+  const twoDigits = networkStatusMask({ x: 600, y: 66, width: 120, height: 140 });
+  const threeDigits = networkStatusMask({ x: 595, y: 66, width: 125, height: 140 });
+  assert.deepEqual(twoDigits, threeDigits);
+  for (const content of [
+    { x: 646, y: 150, width: 28, height: 2 },
+    { x: 649, y: 156, width: 22, height: 17 },
+    { x: 636, y: 172, width: 43, height: 20 },
+  ]) assert.deepEqual(subtractPanel({ ...content, reason: '真实网络状态内容' }, twoDigits), []);
+  assert.equal(twoDigits.y > 140, true);
+  const button = { x: 620, y: 72, width: 60, height: 60, reason: '牌型按钮' };
+  assert.deepEqual(subtractPanel(button, twoDigits), [button]);
+});
