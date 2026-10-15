@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import type { AndroidDevice } from 'playwright';
 import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { gameSession } from './game-room';
-import { gameNodes } from './game-controls';
+import { flattenNodes, gameNodes } from './game-controls';
 
 /**
  * 复用 Web 回放控制接口，且只允许本轮真实建房响应中登记的 UUID。
@@ -25,9 +25,16 @@ export async function replay(proxy: Mitmproxy, game: 'texas' | 'zhajinhua', room
  * @param container - 当前牌面的可见容器 ID。
  * @param marker - 容器内的语义牌名 ID。
  * @param expected - 顺序无关的预期文字。
+ * @param options - 可限定前景区域，或仅验证已取得牌名的明牌。
  */
-export async function gameCardNames(device: AndroidDevice, container: string, marker: string, expected: string[]): Promise<void> {
-  await expect.poll(async () => (await gameNodes(device)).filter(node => node.res === container)
-    .map(node => node.children?.find(child => child.res === marker)?.text || '').sort(),
+export async function gameCardNames(device: AndroidDevice, container: string, marker: string, expected: string[],
+  options: { scope?: string; namedOnly?: boolean } = {}): Promise<void> {
+  await expect.poll(async () => {
+    const nodes = await gameNodes(device);
+    const root = options.scope ? nodes.find(node => node.res === options.scope) : undefined;
+    return (options.scope ? root ? flattenNodes(root) : [] : nodes).filter(node => node.res === container)
+      .map(node => node.children?.find(child => child.res === marker)?.text || '')
+      .filter(text => !options.namedOnly || text !== '').sort();
+  },
   { timeout: 30_000, intervals: [250] }).toEqual([...expected].sort());
 }

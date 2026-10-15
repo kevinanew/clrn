@@ -8,7 +8,7 @@
 
 Web 另外有 5 个下载帮助场景。当前 Staging APK 的发布渠道为 `default`，原生 `SettingItems._listAndroidAdSectionItems` 仅在 `self-host` 渠道显示该入口，因此在 `unavailablePages` 明确列为不可达，不计入通过数量。
 
-战绩直接复用 Web 的完整状态清单：旧版 32 个、新版 30 个状态，三种语言，共 186 张目标截图。覆盖加载、空列表、列表底部、分数选择汇总、侧滑删除、详情输赢展开、结算、回放入口、分页和故障恢复。与基础场景及冒烟图合计 400 张目标截图；新增状态仍在原生验证，目标数量不等于通过数量。德州和拼三张的开局前状态沿用 Web 清单，分别 11 和 18 个，三语新增 87 张目标截图，游戏中德州 16 个、拼三张 8 个状态也直接复用 Web 回放，三语再增 72 张，当前合计 559 张目标截图。牌桌流程仍在原生验证；其余操作和面板变体尚未接入，不能称为全部 Web 状态已经覆盖。
+战绩直接复用 Web 的完整状态清单：旧版 32 个、新版 30 个状态，三种语言，共 186 张目标截图。覆盖加载、空列表、列表底部、分数选择汇总、侧滑删除、详情输赢展开、结算、回放入口、分页和故障恢复。与基础场景及冒烟图合计 400 张正式基准。德州完整 95 个状态、拼三张完整 26 个状态已接入同一份 Web 清单，涵盖操作控件、边池、旁观、聊天举报、带入审核、牌谱、主题、语音面板、大厅和故障恢复；三语合计目标 763 张截图。新增牌桌分支仍在原生验证，接入数量不等于通过数量。
 
 网络代理直接调用 Web 的 `mockVisualNetworkDependencies`，复用商品、私人房、俱乐部等响应夹具；未匹配的请求继续访问真实服务。真实登录成功后，仅将本人昵称、展示用户名、注册日期和余额固定为 `visual/fixtures/account-presentation.json`，身份和令牌保持原值，失败响应不改成成功。普通页面测试不提交表单。牌桌组通过真实界面创建本轮专用私人房，复用 Web 的余额检查与清理；退出和失败时都解散该房间。仅测试账号余额不足时复用现有 testing 接口补钻，不执行真实充值。
 
@@ -51,7 +51,7 @@ APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使�
 - 游客页及四张认证冒烟图：来自 [reference 38636085095](https://github.com/kevinanew/clrn/actions/runs/38636085095)；弹窗背景中的拉霸图案使用显式遮罩后，由下述 7214 运行补齐。
 - 钱包及帮助页：三种语言各 13 个已审查场景来自 [reference 38636704445](https://github.com/kevinanew/clrn/actions/runs/38636704445)；第三方反馈页改为复用 Web 空白响应后，由下述 7214 运行补齐。
 
-另由 [reference 38638620863](https://github.com/kevinanew/clrn/actions/runs/38638620863) 的已通过部分补齐 6 张登录弹窗、3 张反馈页面和旧版战绩 60 张基准，使用 [Release 7214](https://github.com/kevinanew/clrn/releases/tag/android-staging-7214-83f9eabadfc0)。随后 [social reference 38641944393](https://github.com/kevinanew/clrn/actions/runs/38641944393) 三语全部通过，已审查并收录其中 39 张截图；搜索页统一收起输入法后再采集。[旧版战绩扩展运行 38643974954](https://github.com/kevinanew/clrn/actions/runs/38643974954) 已完成英文 32 个状态，补入 12 张新增基准。后续已补齐三语大厅搜索、英文房间 10 张及单行密码框基准，当前共审查 386 张正式基准。钱包购买历史更新了版本遮罩，英文和简体来自运行 38645206801，繁体来自 38645882574；密码框来自 38646732662，大厅搜索来自 38645201037，英文房间详情来自 38647075909。英文及繁体房间组最新完整 20 张基准来自 [reference 38650396063](https://github.com/kevinanew/clrn/actions/runs/38650396063)。简体旧版战绩另外 10 张删除和分页基准来自 38646727056，关系展开截图在改进滚动后重新验证。简体房间 10 张来自 [reference 38652547080](https://github.com/kevinanew/clrn/actions/runs/38652547080)，三语房间组均已通过基准生成。英文新版战绩完整 30 张来自 [reference 38653135207](https://github.com/kevinanew/clrn/actions/runs/38653135207)。简体新版战绩完整 30 张来自 [reference 38654314235](https://github.com/kevinanew/clrn/actions/runs/38654314235)。繁体新版战绩完整 30 张来自 [reference 38654319530](https://github.com/kevinanew/clrn/actions/runs/38654319530)。新版战绩三语基准均已完成，牌桌及全量比较仍在验证，不能算全量通过。
+另由 [reference 38638620863](https://github.com/kevinanew/clrn/actions/runs/38638620863) 的已通过部分补齐 6 张登录弹窗、3 张反馈页面和旧版战绩 60 张基准，使用 [Release 7214](https://github.com/kevinanew/clrn/releases/tag/android-staging-7214-83f9eabadfc0)。随后 [social reference 38641944393](https://github.com/kevinanew/clrn/actions/runs/38641944393) 三语全部通过，已审查并收录其中 39 张截图；搜索页统一收起输入法后再采集。[旧版战绩扩展运行 38643974954](https://github.com/kevinanew/clrn/actions/runs/38643974954) 已完成英文 32 个状态，补入 12 张新增基准。后续已补齐三语大厅搜索、英文房间 10 张及单行密码框基准，当前共审查 400 张正式基准。钱包购买历史更新了版本遮罩，英文和简体来自运行 38645206801，繁体来自 38645882574；密码框来自 38646732662，大厅搜索来自 38645201037，英文房间详情来自 38647075909。英文及繁体房间组最新完整 20 张基准来自 [reference 38650396063](https://github.com/kevinanew/clrn/actions/runs/38650396063)。简体旧版战绩另外 10 张删除和分页基准来自 38646727056，关系展开截图在改进滚动后重新验证。简体房间 10 张来自 [reference 38652547080](https://github.com/kevinanew/clrn/actions/runs/38652547080)，三语房间组均已通过基准生成。英文新版战绩完整 30 张来自 [reference 38653135207](https://github.com/kevinanew/clrn/actions/runs/38653135207)。简体新版战绩完整 30 张来自 [reference 38654314235](https://github.com/kevinanew/clrn/actions/runs/38654314235)。繁体新版战绩完整 30 张来自 [reference 38654319530](https://github.com/kevinanew/clrn/actions/runs/38654319530)。新版战绩三语基准均已完成，牌桌及全量比较仍在验证，不能算全量通过。
 
 早期运行使用 [Release 7213](https://github.com/kevinanew/clrn/releases/tag/android-staging-7213-b30e55cca0f3)。该版本包含认证页遮挡和分页组件修复，应用变更见 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)。后续大厅渐变组件修复的 APK 仍须完成全量回归。
 
@@ -80,3 +80,5 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 代理仅绑定主机回环地址，控制接口和夹具服务使用每轮随机令牌。只对显式选定的专用模拟器安装临时 CA 和配置代理，结束时还原代理设置；此环境不应拿来运行个人应用。
 
 统计说明等两秒短时提示采用连续 250 毫秒稳定检查，并断言提示在每次截图前后都可见；普通页面继续要求连续两秒稳定，所有截图仍要求零差异像素。
+
+三种语言旧版战绩各 32 个状态由 [reference 38655437959](https://github.com/kevinanew/clrn/actions/runs/38655437959) 在修复下拉刷新后的 7227 APK 上验证，补齐繁体 12 张缺失状态并补齐简体关系展开与切换、更新英文关系切换位置。

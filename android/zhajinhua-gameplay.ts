@@ -34,7 +34,8 @@ export async function zhajinhuaGameplay(device: AndroidDevice, proxy: Mitmproxy,
     { event: 'obtain_hole_card', hole_card: ['as', 'ad', 'ac'], hand_strength: 'three_of_a_kind' },
     { event: 'player_bets', valid_bets: validBets(true) },
   ]));
-  await gameCardNames(device, 'player_card', 'player_card_name_text', ['as', 'ad', 'ac']);
+  // 其余四位玩家的十二张暗牌没有牌名；与 Web 相同，只校验已翻开的三张牌。
+  await gameCardNames(device, 'player_card', 'player_card_name_text', ['as', 'ad', 'ac'], { namedOnly: true });
   await gameGone(device, 'zhajinhua-see-hand-card-button');
   await capture('seen_cards');
   await gameTap(device, 'zhajinhua-shortcut-raise-first');

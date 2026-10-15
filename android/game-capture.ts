@@ -12,10 +12,23 @@ import { foregroundPanels, visibleMasks } from './game-masks';
  * @param name - 共享场景与状态生成的截图名。
  * @param testInfo - 当前测试报告。
  * @param transientMarker - 仅用于会自动消失的提示，截图前后都必须实际存在。
+ * @param expectedAlertMarker - 错误分支已断言内容后，允许截图的特定业务弹窗按钮。
  */
-export async function captureGame(device: AndroidDevice, name: string, testInfo: TestInfo, transientMarker?: string): Promise<void> {
-  const nodes = await gameNodes(device);
-  expect(nodes.some(node => node.res === 'android:id/message' || node.res === 'common-alert-message'),
+export async function captureGame(device: AndroidDevice, name: string, testInfo: TestInfo, transientMarker?: string,
+  expectedAlertMarker?: string): Promise<void> {
+  let nodes = await gameNodes(device);
+  if (!transientMarker && foregroundPanels(nodes).length) {
+    let previous = '';
+    await expect(async () => {
+      nodes = await gameNodes(device);
+      const current = JSON.stringify(foregroundPanels(nodes).map(node => node.bounds));
+      const before = previous;
+      previous = current;
+      expect(current, '前景面板边界须完成转场后再裁剪背景遮罩').toBe(before);
+    }).toPass({ timeout: 30_000, intervals: [300] });
+  }
+  if (expectedAlertMarker) expect(nodes.some(node => node.res === expectedAlertMarker), '目标业务提示必须可见').toBe(true);
+  expect(nodes.some(node => node.res === 'android:id/message' || (!expectedAlertMarker && node.res === 'common-alert-message')),
     '截图前不能存在意外错误提示').toBe(false);
   const masks: ScreenshotMask[] = [];
   const panels = foregroundPanels(nodes);
@@ -42,11 +55,11 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
       continue;
     }
     if (['texas-holdem-room-id-text', 'zhajinhua-room-id-text', 'leader-board-room-id', 'game-network-proxy-code'].includes(node.res || '')
-      || (['countdown-text', 'zhajinhua-countdown'].includes(node.res || '') && /^\d+:\d+/.test(node.text || ''))
+      || /^\d{1,2}:\d{2}(?::\d{2})?$/.test(node.text || '')
       || node.res === 'player-profile-id'
       || (!node.res && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(node.text || ''))) {
       // 玩家 ID 是透明语义标记；不能因它覆盖头像而把整个头像排除。
-      add({ ...node.bounds, reason: node.res || '本轮真实房间 UUID' });
+      add({ ...node.bounds, reason: node.res || (node.text?.includes(':') ? '保座或加时冷却倒计时' : '本轮真实房间 UUID') });
     }
     if (node.res === 'ping-screen-text') {
       add({ ...node.bounds, x: node.bounds.x + node.bounds.width / 2 - 40, width: 80, reason: '网络延迟数值' });

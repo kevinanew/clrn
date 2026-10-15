@@ -18,7 +18,7 @@ export function createTexasRoom(page: Page, onCreated: (room: RoomSession) => vo
  * @param page - 执行操作的 Playwright 页面。
  * @param room - 本轮创建并负责清理的房间信息或 ID。
  */
-export async function enterTexasRoom(page: Page, room: RoomSession): Promise<void> {
+export async function enterTexasRoom(page: Pick<Page, 'request'>, room: RoomSession): Promise<void> {
   const response = await page.request.put(`${room.apiOrigin}/v10/texas_holdem/room/${room.roomId}/enter`, {
     headers: { Authorization: room.authorization }, data: { client_support: ['time_based_rules'] },
     timeout: 15_000,

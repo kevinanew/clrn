@@ -85,6 +85,15 @@ test('原生战绩与 Web 共用完整状态矩阵', () => {
   assert.deepEqual(androidScenarios('en', 'records'), []);
 });
 
+test('原生德州覆盖完整 Web 手机场景清单，新增场景不能被静默过滤', () => {
+  const { texasScenarioLabels } = require('./texas-flows.ts');
+  const { buildScenarios } = require('../visual/scenarios.ts');
+  const scenarios = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SCOPE: 'full', VISUAL_SUITE: 'texas' })
+    .filter(scenario => scenario.viewport.label === 'mobile');
+  assert.deepEqual([...texasScenarioLabels].sort(), scenarios.map(scenario => scenario.pageLabel).sort());
+  assert.equal(scenarios.reduce((total, scenario) => total + scenario.snapshotStates.length, 0), 95);
+});
+
 
 test('原生控件消失查询不把连接或驱动错误误认为成功', async () => {
   const { exists } = require('./native-state.ts');

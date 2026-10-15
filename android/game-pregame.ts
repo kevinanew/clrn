@@ -90,6 +90,15 @@ export async function gamePreGame(device: AndroidDevice, game: 'texas-holdem' | 
   await capture('buy_in_applications');
   await closeGameMask(device, 'buy-in-application-list');
   if (game === 'texas-holdem') return;
+  await captureGameThemes(device, capture);
+}
+
+/**
+ * 两种玩法共用卡牌主题、牌桌背景和开关操作，维持同样的原生验证。
+ * @param device - 专用模拟器连接。
+ * @param capture - 当前玩法的共享状态截图入口。
+ */
+export async function captureGameThemes(device: AndroidDevice, capture: Capture): Promise<void> {
   await gameMenu(device, 'theme', 'game-settings-card-theme-simple');
   for (const theme of ['four-color', 'four-color-two', 'realistic']) {
     await tap(device, `game-settings-card-theme-${theme}`);

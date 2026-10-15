@@ -8,19 +8,19 @@ import { captureFailure } from '../diagnostics';
 import { createGameRoom, gameSession } from '../game-room';
 import { captureGame } from '../game-capture';
 import { gamePreGame } from '../game-pregame';
-import { texasGameplay } from '../texas-gameplay';
+import { runTexasScenario } from '../texas-flows';
 import { zhajinhuaGameplay } from '../zhajinhua-gameplay';
 
 const locale = process.env.ANDROID_LOCALE || 'en';
 for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua']] as const) {
   const enabled = ['all', suite].includes(process.env.ANDROID_GROUP || 'all');
   const scenarios = enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL_SCOPE: 'full', VISUAL_SUITE: suite })
-    .filter(scenario => scenario.viewport.label === 'mobile'
-      && [`signed_in_${suite}_pre_game`, `signed_in_${suite}_game`].includes(scenario.pageLabel)) : [];
+    .filter(scenario => scenario.viewport.label === 'mobile') : [];
   for (const scenario of scenarios) {
     test(`${locale} / ${suite} / ${scenario.pageLabel}`, async ({}, testInfo) => {
-      test.setTimeout(900_000);
+      test.setTimeout(1_200_000);
       await withAndroidProxy(async proxy => {
+        if (scenario.pageLabel === 'signed_in_texas_records_v2') await proxy.command('texas/records', { empty: true });
         const device = await launchApplication({ gameDriver: true });
         let room: RoomSession | null = null;
         let index = 0;
@@ -28,7 +28,11 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
           await waitForHall(device);
           await selectLanguage(device, locale);
           await signIn(device);
-          await createGameRoom(device, proxy, game, created => { room = created; });
+          const hall = ['signed_in_texas_hall', 'signed_in_texas_hall_variants'].includes(scenario.pageLabel);
+          const guest = scenario.pageLabel === 'signed_in_texas_table_states';
+          if (hall || guest) await proxy.command('texas/view', { mode: hall ? 'hall' : 'guest' });
+          await createGameRoom(device, proxy, game, created => { room = created; },
+            scenario.pageLabel === 'signed_in_texas_optional_pre_game', hall || guest);
           await testInfo.attach('created-room', { body: JSON.stringify({ roomId: room!.roomId }), contentType: 'application/json' });
           /**
            * 校验每个状态与 Web 清单的顺序一致。
@@ -37,15 +41,22 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
           const capture = async (state: string) => {
             expect(state).toBe(scenario.snapshotStates![index++]);
             console.log(`ANDROID > ${suite} 截图状态 ${state}`);
+            const transient = ['statistics_help', 'accurate_raise_minimum_error'].includes(state) ? 'toastText1'
+              : ['prediction_result', 'prediction_loss', 'prediction_diamond'].includes(state) ? 'bet-next-hand-result-amount' : undefined;
+            const expectedAlerts: Record<string, string> = {
+              quit_confirm: 'common-alert-button-quit', alert_retry: 'common-alert-button-retry',
+              alert_insufficient_balance: 'common-alert-button-go_to_mall', alert_authentication_failed: 'common-alert-button-quit',
+              delay_cooldown_alert: 'common-alert-message',
+            };
             await captureGame(device, `${locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo,
-              state === 'statistics_help' ? 'toastText1' : undefined);
+              transient, expectedAlerts[state]);
           };
-          if (scenario.pageLabel.endsWith('_pre_game')) await gamePreGame(device, game, capture);
-          else {
-            const { account } = await gameSession(proxy);
-            expect(account).not.toBeNull();
-            await (suite === 'texas' ? texasGameplay : zhajinhuaGameplay)(device, proxy, room!.roomId, account!.userId, capture);
-          }
+          const { account } = await gameSession(proxy);
+          expect(account).not.toBeNull();
+          if (suite === 'texas') await runTexasScenario(scenario.pageLabel,
+            { device, proxy, room: room!.roomId, self: account!.userId, capture });
+          else if (scenario.pageLabel.endsWith('_pre_game')) await gamePreGame(device, game, capture);
+          else await zhajinhuaGameplay(device, proxy, room!.roomId, account!.userId, capture);
           expect(index).toBe(scenario.snapshotStates!.length);
         } catch (error) {
           await captureFailure(device, testInfo);

@@ -9,8 +9,11 @@ export function foregroundPanels(nodes: NativeNode[]): NativeNode[] {
   const markers = new Set(['drawer-menu-item-exit', 'card-rank-list', 'game-settings-close-button',
     'buy-in-title', 'renew-popup-close-button', 'public-leader-board-container', 'review-board-close-button',
     'review-board-description-text', 'in-game-chat-animated-view', 'buy-in-application-list',
-    'player-profile-popup-close', 'report-field-input', 'accurate-bet-popup-container', 'raise-bet-popup']);
-  const panels: NativeNode[] = [];
+    'player-profile-popup-close', 'report-field-input', 'accurate-bet-popup-container', 'raise-bet-popup',
+    'in-game-audio-microphone-button', 'report-popup-title', 'BlockPlayerConfirmPopup:title', 'buy-in-review-close-button',
+    'view-community-close-button', 'raise-blind-detail', 'auto-rebuy-popup', 'report-pair-play-close-button',
+    'personal-leader-board-close-button', 'level-up-close-button', 'common-alert-message', 'in_game_report_message_component']);
+  const panels: NativeNode[] = nodes.filter(node => node.res === 'base-review-board-container');
   for (const marker of nodes.filter(node => markers.has(node.res || ''))) {
     /**
      * 根据原生父子关系定位这个前景控件。

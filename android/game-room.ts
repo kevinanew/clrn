@@ -5,6 +5,7 @@ import { ensureRoomBalance, type Account, type RoomSession } from '../visual/cas
 import { dismissKeyboard } from './keyboard';
 import { tap, returnToTabs, reveal } from './navigation';
 import { gameReady, gameGone } from './game-controls';
+import { enterTexasRoom } from '../visual/cases/texas-holdem/room';
 
 /**
  * 从认证的本机控制接口取得本轮真实会话；不将令牌写入日志或报告。
@@ -20,9 +21,12 @@ export async function gameSession(proxy: Mitmproxy): Promise<{ account: Account 
  * @param proxy - 本轮独占代理。
  * @param game - 本轮玩法。
  * @param onCreated - 新房间登记回调。
+ * @param optionalFeatures - 与 Web 一致，从真实建房表单启用升盲。
+ * @param observerConnection - 大厅或非房主展示也必须建立当前私人房的真实观察者连接。
  */
 export async function createGameRoom(device: AndroidDevice, proxy: Mitmproxy,
-  game: 'texas-holdem' | 'zhajinhua', onCreated: (room: RoomSession) => void): Promise<RoomSession> {
+  game: 'texas-holdem' | 'zhajinhua', onCreated: (room: RoomSession) => void, optionalFeatures = false,
+  observerConnection = false): Promise<RoomSession> {
   const { account } = await gameSession(proxy);
   if (!account || account.username !== process.env.VISUAL_USERNAME) throw new Error('建房必须使用本轮真实登录的测试账号。');
   const api = await request.newContext();
@@ -37,6 +41,10 @@ export async function createGameRoom(device: AndroidDevice, proxy: Mitmproxy,
   await device.wait({ res: 'room-name-input' });
   await device.fill({ res: 'room-name-input' }, 'TestRoom');
   await dismissKeyboard(device);
+  if (optionalFeatures) {
+    await tap(device, 'advanced-options-button');
+    await tap(device, 'BlindsEnableFlipSwitch');
+  }
   await tap(device, 'creat-room-button');
   let room: RoomSession | null = null;
   await expect(async () => {
@@ -44,6 +52,11 @@ export async function createGameRoom(device: AndroidDevice, proxy: Mitmproxy,
     expect(room, '真实建房接口必须返回本轮新建的房间').not.toBeNull();
   }).toPass({ timeout: 60_000, intervals: [500] });
   onCreated(room!);
+  if (observerConnection) {
+    const observerApi = await request.newContext();
+    try { await enterTexasRoom({ request: observerApi }, room!); }
+    finally { await observerApi.dispose(); }
+  }
   await gameReady(device, 'run-game-view');
   await gameGone(device, 'game-splash-screen-bg');
   await gameReady(device, 'menu-button');
