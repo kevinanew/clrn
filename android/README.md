@@ -97,6 +97,8 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 
 旧版战绩分页加载截图复用 `scrollToEnd`，在末行真正抵达底部并稳定后截图，避免仅露出房名时提前停止。三语新旧战绩共 186 个状态的 [compare 38687644002](https://github.com/kevinanew/clrn/actions/runs/38687644002) 全部通过，未修改战绩基准。
 
+原生旧版分页保留应用真实的十秒请求截止时间；快速滚至页尾后逐帧确认进度控件仍可见，采用 250 毫秒稳定期截取加载态。释放人工挂起后通过正常回滑、触底恢复可能超时的分页，再等待末行贴底；不暂停应用时钟，也不把进度控件消失后的页面算作加载态。
+
 拼三张圆形加注按钮的 PNG 外缘有透明度，背景计时遮罩按一像素内缩的实心区域裁剪，按钮文字和主体继续比较。三语未看牌、已看牌共六张基准来自全部通过的 [reference 38688512253](https://github.com/kevinanew/clrn/actions/runs/38688512253)；逐图审查确认变化仅位于倒计时与按钮顶部边缘交叠处，其余牌局基准保留。
 
 安卓密码输入字号调整为 14 后，英文提示完整保持一行。三语密码页基准来自全部通过的 [reference 38707410687](https://github.com/kevinanew/clrn/actions/runs/38707410687)，使用 [APK 7237](https://github.com/kevinanew/clrn/releases/tag/android-staging-7237-35d1407ceb85)；逐图审查后仅更新三张密码页，其余 760 张基准保持不变。

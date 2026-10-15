@@ -73,11 +73,20 @@ export function recordSnapshots(device: AndroidDevice, scenario: VisualScenario,
         await waitAbsent(device, { res: 'android:id/message' });
       }
       const masks: ScreenshotMask[] = [];
+      let assertLoading: (() => Promise<void>) | undefined;
       if (['loading', 'pagination_loading'].includes(state)) {
         const spinner = await device.info({ clazz: 'android.widget.ProgressBar' });
         masks.push({ ...spinner.bounds, reason: '加载场景仅遮罩已断言存在的旋转进度图案' });
+        if (state === 'pagination_loading') {
+          /** 原生请求保留真实截止时间；每帧确认仍在加载，不能把超时后的空白当加载态。 */
+          assertLoading = async () => {
+            const current = await device.info({ res: 'pull-up-activity-indicator' });
+            expect(current.bounds).toEqual(spinner.bounds);
+          };
+        }
       }
-      await compareScreenshot(device, `${scenario.locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`, testInfo, masks);
+      await compareScreenshot(device, `${scenario.locale}-${scenario.pageLabel.replaceAll('_', '-')}-${state.replaceAll('_', '-')}`,
+        testInfo, masks, assertLoading);
     },
     /** 检查所有声明的状态确实执行。 */
     complete: () => expect(index).toBe(states.length),

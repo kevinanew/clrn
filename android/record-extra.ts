@@ -92,14 +92,22 @@ export async function legacyRecordEnd(device: AndroidDevice, proxy: RecordProxy,
   await proxy.mode('paged', true);
   await reopenRecords(device);
   await device.wait(recordRow('Paged Texas 01'));
-  await scrollRecords(device, true);
-  await reveal(device, recordRow('No Hands'));
+  // 页尾尚未滚入屏幕时立即继续滑动，不能逐行消耗原生请求的十秒截止时间。
+  await expect(async () => {
+    await scrollRecords(device, true);
+    expect(await exists(device, recordRow('No Hands'))).toBe(true);
+  }).toPass({ timeout: 30_000, intervals: [100] });
   await device.wait({ res: 'pull-up-activity-indicator' });
   await scrollToEnd(device, { res: 'my-game-record-list' }, recordRow('No Hands'));
   await capture('pagination_loading');
   await proxy.release();
   await waitAbsent(device, { res: 'pull-up-activity-indicator' });
+  // 人工挂起期间请求可能已超时；离开再回到分页阈值，通过真实滚动恢复加载。
+  // 已完成分页时应用会正常忽略再次触底，不重置数据或修改应用请求时钟。
+  await scrollRecords(device, false);
+  await scrollRecords(device, true);
   await reveal(device, recordRow('Long Room Name ABCDE'));
+  await scrollToEnd(device, { res: 'my-game-record-list' }, recordRow('Long Room Name ABCDE'));
   await capture('pagination_end');
   await proxy.mode('list');
   await reopenRecords(device);
