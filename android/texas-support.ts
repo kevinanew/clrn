@@ -10,7 +10,7 @@ import { gameMenu } from './game-pregame';
 
 export type TexasContext = {
   device: AndroidDevice; proxy: Mitmproxy; room: string; self: string;
-  capture(state: string, masks?: ScreenshotMask[], triggerToast?: () => Promise<void>): Promise<void>;
+  capture(state: string, masks?: ScreenshotMask[], triggerToast?: () => Promise<string | void>): Promise<void>;
 };
 
 /**

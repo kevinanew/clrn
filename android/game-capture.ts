@@ -2,10 +2,11 @@ import type { AndroidDevice } from 'playwright';
 import presentation from '../visual/fixtures/game-presentation.json';
 import type { TestInfo } from '@playwright/test';
 import { compareScreenshot } from './device';
-import { gameNodes, gameReady, gameMarker } from './game-controls';
+import { gameNodes, gameReady, gameMarker, gameScreenshot } from './game-controls';
 import { expect } from '@playwright/test';
 import type { ScreenshotMask } from './screenshot';
 import { foregroundPanels, visibleMasks, networkStatusMask } from './game-masks';
+import { captureToast } from './game-transient';
 import { captureChallengeAnimation } from './game-animation';
 
 /**
@@ -19,7 +20,7 @@ import { captureChallengeAnimation } from './game-animation';
  * @param triggerToast - 仅浮层提示可在准备背景遮罩后触发，不改变底层页面布局。
  */
 export async function captureGame(device: AndroidDevice, name: string, testInfo: TestInfo, transientMarker?: string,
-  expectedAlertMarker?: string, inputMasks: ScreenshotMask[] = [], triggerToast?: () => Promise<void>): Promise<void> {
+  expectedAlertMarker?: string, inputMasks: ScreenshotMask[] = [], triggerToast?: () => Promise<string | void>): Promise<void> {
   if (triggerToast && transientMarker !== 'toastText1') throw new Error('提前准备遮罩仅用于不改变布局的短时文字提示。');
   if (expectedAlertMarker) await gameReady(device, expectedAlertMarker);
   let nodes = await gameNodes(device);
@@ -86,17 +87,15 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
     return;
   }
   if (triggerToast) {
-    await triggerToast();
-    await expect.poll(async () => (await gameMarker(device, 'toastText1'))?.text,
-      { timeout: 3000, intervals: [20] }).toBeTruthy();
-    await testInfo.attach(`${name}-toast-node`, {
-      body: JSON.stringify(await gameMarker(device, 'toastText1')), contentType: 'application/json',
-    });
+    const expectedText = await triggerToast();
+    await captureToast(device, name, testInfo, masks, expectedText || undefined);
+    return;
   }
   /** 不允许把提示消失后的稳定页面当成提示截图。 */
   const assertTransient = async () => {
     expect((await gameMarker(device, transientMarker!))?.text,
       `${transientMarker} 必须在截图前后可见`).toBeTruthy();
   };
-  await compareScreenshot(device, name, testInfo, masks, transientMarker ? assertTransient : undefined);
+  await compareScreenshot(device, name, testInfo, masks, transientMarker ? assertTransient : undefined,
+    transientMarker ? () => gameScreenshot(device) : undefined);
 }

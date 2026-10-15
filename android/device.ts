@@ -60,7 +60,7 @@ export async function launchApplication(options: { gameDriver?: boolean } = {}):
   if (options.gameDriver) {
     const driver = path.resolve('.ttyctl/android-driver');
     const source = JSON.parse(readFileSync(path.join(driver, 'source.json'), 'utf8'));
-    if (source.revision !== '39e3553a4f283a41134d75d7e404484bd9e6865a' || source.patch !== 2) throw new Error('牌桌驱动构建身份无效。');
+    if (source.revision !== '39e3553a4f283a41134d75d7e404484bd9e6865a' || source.patch !== 3) throw new Error('牌桌驱动构建身份无效。');
     for (const pkg of ['com.microsoft.playwright.androiddriver.test', 'com.microsoft.playwright.androiddriver']) {
       if (adb('shell', 'pm', 'list', 'packages', pkg).includes(`package:${pkg}`)) adb('uninstall', pkg);
     }
@@ -109,12 +109,13 @@ export async function waitForHall(device: AndroidDevice): Promise<void> {
  * @param testInfo - Playwright 当前测试报告。
  * @param masks - 明确排除的动态区域，报告保留原图和区域原因。
  * @param transientState - 短时提示的可见性断言；普通页面仍须稳定两秒。
+ * @param takeScreenshot - 短时提示使用同一设备上的快速原生截图接口。
  */
 export async function compareScreenshot(device: AndroidDevice, name: string, testInfo: TestInfo, masks: ScreenshotMask[] = [],
-  transientState?: () => Promise<void>): Promise<void> {
+  transientState?: () => Promise<void>, takeScreenshot: () => Promise<Buffer> = () => device.screenshot()): Promise<void> {
   if (masks.length) await testInfo.attach(`${name}-masks`, { body: JSON.stringify(masks), contentType: 'application/json' });
   await transientState?.();
-  const initial = await device.screenshot();
+  const initial = await takeScreenshot();
   await transientState?.();
   let previous = maskScreenshot(initial, masks);
   let stabilityReference = previous;
@@ -125,7 +126,7 @@ export async function compareScreenshot(device: AndroidDevice, name: string, tes
   let comparisonAfter = previous;
   await expect(async () => {
     await transientState?.();
-    original = await device.screenshot();
+    original = await takeScreenshot();
     await transientState?.();
     const current = maskScreenshot(original, masks);
     comparisonBefore = previous;

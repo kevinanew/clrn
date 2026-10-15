@@ -8,6 +8,25 @@ export type NativeNode = { res?: string; text?: string; enabled?: boolean; check
   bounds: ScreenshotBounds; children?: NativeNode[] };
 
 /**
+ * 直接由 UiAutomation 截取真实屏幕，避免每帧启动 screencap 进程错过短时提示。
+ * @param device - 使用固定补丁驱动的模拟器连接。
+ */
+export async function gameScreenshot(device: AndroidDevice): Promise<Buffer> {
+  const implementation = (device as unknown as { _connection: { toImpl(device: AndroidDevice): {
+    _send(method: string): Promise<string> } } })._connection.toImpl(device);
+  const timeout = new AbortController();
+  try {
+    const encoded = await Promise.race([
+      implementation._send('screen'),
+      setTimeout(30_000, undefined, { signal: timeout.signal }).then(() => { throw new Error('原生截图超时。'); }),
+    ]);
+    const png = Buffer.from(encoded, 'base64');
+    if (!png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) throw new Error('原生截图没有返回 PNG。');
+    return png;
+  } finally { timeout.abort(); }
+}
+
+/**
  * 快速读取一个真实提示节点，用于截图前后的短时可见性断言。
  * @param device - 使用固定补丁驱动的模拟器连接。
  * @param resource - 提示控件标记。

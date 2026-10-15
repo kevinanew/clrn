@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { REPLAY_PLAYER_IDS } from '../visual/cases/texas-holdem/replayData';
-import { gameGone, gameNodes, gameReady, gameTap, gameMarker } from './game-controls';
+import { gameGone, gameNodes, gameReady, gameTap } from './game-controls';
 import { closeGameMask } from './game-pregame';
 import { adb } from './device';
 import { gameTapText, restoreTexas, texasEvents, type TexasContext } from './texas-support';
@@ -69,10 +69,10 @@ export async function texasControlVariants(context: TexasContext): Promise<void>
   await capture('accurate_raise_value');
   for (let index = 0; index < 3; index++) await gameTap(device, 'texas-holdem-operation-accurate-bet-backspace-button');
   await gameTap(device, 'texas-holdem-operation-accurate-bet-number-button-1');
+  await gameReady(device, 'accurate-bet-value-text', '1');
   await capture('accurate_raise_minimum_error', [], async () => {
     await gameTap(device, 'texas-holdem-operation-accurate-bet-confirm-button');
-    await expect.poll(async () => (await gameMarker(device, 'toastText1'))?.text,
-      { timeout: 3000, intervals: [20] }).toContain('40');
+    return '40';
   });
   await closeGameMask(device, 'accurate-bet-popup-container');
 }

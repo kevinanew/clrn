@@ -5,6 +5,7 @@ import { captureGameThemes, closeGameMask, gameMenu } from './game-pregame';
 import { gameCardNames, replay } from './game-replay';
 import { adb, applicationId } from './device';
 import { dismissKeyboard } from './keyboard';
+import { focusedCaretMask } from './screenshot';
 import { gameTapText, restoreTexas, texasEvents, type TexasContext } from './texas-support';
 
 /**
@@ -33,10 +34,22 @@ export async function texasPanels(context: TexasContext): Promise<void> {
     { timeout: 30_000 }).toBe(2);
   await gameTapText(device, /settle|结算|結算/i);
   await gameGone(device, 'TexasPlayerActionIcon_container');
-  await capture('record_settlement');
+  /**
+   * 通过真实输入固定页码焦点，只排除检测到的细光标，保留页码与边框。
+   * @param state - 共用牌谱截图状态。
+   */
+  const captureRecord = async (state: string) => {
+    await gameTap(device, 'review-board-page-input');
+    await device.fill({ res: 'review-board-page-input' }, '1');
+    await dismissKeyboard(device);
+    await gameReady(device, 'review-board-page-input', '1');
+    const caret = await focusedCaretMask(device);
+    await capture(state, caret ? [caret.mask] : []);
+  };
+  await captureRecord('record_settlement');
   await gameTapText(device, /^(Record|Details?|牌局详情|牌局詳情)$/i);
   await gameReady(device, 'TexasPlayerActionIcon_container');
-  await capture('record_actions');
+  await captureRecord('record_actions');
   await gameTap(device, 'review-board-close-button');
   await gameGone(device, 'review-board-close-button');
   await replay(proxy, 'texas', room, { stream: 'room_message', payload: { action: 'text', content: {

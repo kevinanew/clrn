@@ -53,7 +53,7 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
            * @param masks - 已从真实输入框检测的光标区域。
            * @param triggerToast - 遮罩准备完成后才点击触发短时提示。
            */
-          const capture = async (state: string, masks: ScreenshotMask[] = [], triggerToast?: () => Promise<void>) => {
+          const capture = async (state: string, masks: ScreenshotMask[] = [], triggerToast?: () => Promise<string | void>) => {
             expect(state).toBe(scenario.snapshotStates![index++]);
             console.log(`ANDROID > ${suite} 截图状态 ${state}`);
             const transient = ['statistics_help', 'accurate_raise_minimum_error'].includes(state) ? 'toastText1'

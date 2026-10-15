@@ -38,7 +38,54 @@ const patched = source
   }
 
   private static JSONObject tree(UiDevice device)`)
-  .replace('case "tree":', `case "marker":
+  .replace('case "tree":', `case "transientFrames":
+              // 先采集真实位图，再压缩传输，避免 PNG 编码耗尽短时提示的显示时间。
+              java.util.ArrayList<android.graphics.Bitmap> bitmaps = new java.util.ArrayList<>();
+              JSONArray frames = new JSONArray();
+              long deadline = android.os.SystemClock.uptimeMillis() + 3000;
+              long firstFrame = 0;
+              try {
+                while (android.os.SystemClock.uptimeMillis() < deadline && bitmaps.size() < 8) {
+                  AccessibilityNodeInfo root = getRootA11yNode(device);
+                  JSONObject before = marker(root, params.getString("resource"));
+                  if (before == null) {
+                    if (!bitmaps.isEmpty()) break;
+                    android.os.SystemClock.sleep(20);
+                    continue;
+                  }
+                  JSONObject panel = marker(root, "toastTouchableContainer");
+                  android.graphics.Bitmap frame = InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
+                  if (frame == null) throw new IllegalStateException("Native screenshot returned no bitmap");
+                  long capturedAt = android.os.SystemClock.uptimeMillis();
+                  JSONObject after = marker(getRootA11yNode(device), params.getString("resource"));
+                  if (after == null) { frame.recycle(); break; }
+                  bitmaps.add(frame);
+                  frames.put(new JSONObject().put("before", before).put("after", after)
+                    .put("panel", panel).put("capturedAt", capturedAt));
+                  if (firstFrame == 0) firstFrame = capturedAt;
+                  if (capturedAt - firstFrame >= 900) break;
+                  android.os.SystemClock.sleep(100);
+                }
+                for (int index = 0; index < bitmaps.size(); index++) {
+                  java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+                  if (!bitmaps.get(index).compress(android.graphics.Bitmap.CompressFormat.PNG, 100, bytes))
+                    throw new IllegalStateException("Native screenshot PNG encoding failed");
+                  frames.getJSONObject(index).put("png", android.util.Base64.encodeToString(bytes.toByteArray(), android.util.Base64.NO_WRAP));
+                }
+                response.put("result", frames);
+              } finally { for (android.graphics.Bitmap frame : bitmaps) frame.recycle(); }
+              break;
+            case "screen":
+              android.graphics.Bitmap bitmap = InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
+              if (bitmap == null) throw new IllegalStateException("Native screenshot returned no bitmap");
+              try {
+                java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+                if (!bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, bytes))
+                  throw new IllegalStateException("Native screenshot PNG encoding failed");
+                response.put("result", android.util.Base64.encodeToString(bytes.toByteArray(), android.util.Base64.NO_WRAP));
+              } finally { bitmap.recycle(); }
+              break;
+            case "marker":
               JSONObject found = marker(getRootA11yNode(device), params.getString("resource"));
               response.put("result", found == null ? JSONObject.NULL : found);
               break;
@@ -54,5 +101,5 @@ const output = path.resolve('.ttyctl/android-driver');
 mkdirSync(output, { recursive: true });
 copyFileSync(path.join(directory, 'app/build/outputs/apk/debug/app-debug.apk'), path.join(output, 'android-driver-target.apk'));
 copyFileSync(path.join(directory, 'app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk'), path.join(output, 'android-driver.apk'));
-writeFileSync(path.join(output, 'source.json'), JSON.stringify({ revision, patch: 2 }));
+writeFileSync(path.join(output, 'source.json'), JSON.stringify({ revision, patch: 3 }));
 console.log('原生控件驱动已构建，应用画面和动画保持原样。');
