@@ -7,6 +7,7 @@ import { nativeSelector } from './scenarios';
 import type { VisualScenario } from '../visual/scenarioTypes';
 import { adb } from './device';
 import type { ScreenshotBounds } from './screenshot';
+import { scrollToEnd } from './scroll-end';
 
 /**
  * 按原生控件定位；目标在列表下方时通过真实滑动寻找。
@@ -188,6 +189,9 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
   }
   if (!inputsFilled) await fillScenarioInputs(device, scenario);
   await reveal(device, nativeSelector(scenario.visualReadySelector));
+  if (scenario.navClickTestIds.includes('advanced-options-button')) {
+    await scrollToEnd(device, { scrollable: true, clazz: 'android.widget.ScrollView' }, { res: 'create-room-tips-text' });
+  }
   if (scenario.visualGoneSelector) {
     await waitAbsent(device, nativeSelector(scenario.visualGoneSelector));
   }

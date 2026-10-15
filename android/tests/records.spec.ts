@@ -9,6 +9,7 @@ import { navigateScenario, reveal, selectLanguage, signIn, tap } from '../naviga
 import { pressRecordControl, recordRow, recordSnapshots, reopenRecords, scrollRecords } from '../record-navigation';
 import { recordStates } from '../record-states';
 import { recordDeletion, legacyRecordEnd, v2RecordErrors } from '../record-extra';
+import { scrollToEnd } from '../scroll-end';
 
 const locale = process.env.ANDROID_LOCALE || 'en';
 const enabled = ['all', 'records'].includes(process.env.ANDROID_GROUP || 'all');
@@ -46,6 +47,9 @@ for (const scenario of enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL
         }
         await scrollRecords(device, true);
         await reveal(device, recordRow('Long Room Name ABCDE'));
+        if (version === 'v2') {
+          await scrollToEnd(device, { res: 'my-game-record-list' }, { res: 'record-retained-days-text' });
+        }
         await capture('list_bottom');
         await proxy.mode('list');
         await reopenRecords(device);
