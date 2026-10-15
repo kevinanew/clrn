@@ -159,6 +159,7 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
   for (const identifier of scenario.navClickTestIds) {
     if (identifier === 'official-site') {
       // 设置页尾部入口不能只露出一部分，否则中心点击可能落在底部导航上。
+      await reveal(device, { res: 'about-laiwan' }, true);
       await scrollToEnd(device, { res: 'settings-list' }, { res: 'about-laiwan' });
     }
     if (['search_sign_in_prompt', 'guest_game_sign_in_prompt'].includes(scenario.pageLabel)) {
