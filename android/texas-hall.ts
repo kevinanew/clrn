@@ -24,12 +24,14 @@ export async function texasHall(context: TexasContext): Promise<void> {
   await gameReady(device, 'auto-rebuy-popup');
   await capture('auto_rebuy');
   await gameTap(device, 'auto-rebuy-close-button');
+  await gameGone(device, 'auto-rebuy-popup');
   await gameTap(device, 'report-pair-play-button');
   await gameReady(device, 'report-pair-play-reason-input');
   expect((await gameNodes(device)).filter(node => node.res === 'select-player-button')).toHaveLength(4);
   await dismissKeyboard(device);
   await capture('pair_play_report');
   await gameTap(device, 'report-pair-play-close-button');
+  await gameGone(device, 'report-pair-play-reason-input');
   await gameTap(device, 'texas-holdem-leaderboard-button');
   await expect.poll(async () => (await gameReady(device, 'personal-leader-board-nickname')).text,
     { timeout: 30_000 }).toMatch(/\S/);
@@ -39,6 +41,7 @@ export async function texasHall(context: TexasContext): Promise<void> {
   expect((await gameReady(device, 'personal-leader-board-round')).text).toMatch(/(?:^|\s)10$/);
   await capture('personal_leaderboard');
   await gameTap(device, 'personal-leader-board-close-button');
+  await gameGone(device, 'personal-leader-board-close-button');
   await texasEvents(context, [{ event: 'settlement', players: [{ player_id: REPLAY_PLAYER_IDS[0], net: 180, prize: 180, stack: 1140 }] }]);
   await gameReady(device, 'bet-next-hand-button');
   await capture('prediction');
@@ -68,6 +71,7 @@ export async function texasHallVariants(context: TexasContext): Promise<void> {
   await gameGone(device, 'common-alert-container');
   await capture('auto_rebuy_enabled');
   await gameTap(device, 'auto-rebuy-close-button');
+  await gameGone(device, 'auto-rebuy-popup');
   await gameTap(device, 'report-pair-play-button');
   const players = (await gameNodes(device)).filter(node => node.res === 'select-player-button');
   expect(players).toHaveLength(4);
@@ -79,6 +83,7 @@ export async function texasHallVariants(context: TexasContext): Promise<void> {
   await dismissKeyboard(device);
   await capture('pair_play_selected');
   await gameTap(device, 'report-pair-play-close-button');
+  await gameGone(device, 'report-pair-play-reason-input');
   await texasEvents(context, [{ event: 'settlement', players: [{ player_id: REPLAY_PLAYER_IDS[0], net: 180, prize: 180, stack: 1140 }] }]);
   await gameTap(device, 'bet-next-hand-button');
   await gameReady(device, 'bet-next-hand-has-bet-icon');

@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { REPLAY_PLAYER_IDS } from '../visual/cases/texas-holdem/replayData';
-import { gameGone, gameNodes, gameReady, gameTap } from './game-controls';
+import { flattenNodes, gameGone, gameNodes, gameReady, gameTap } from './game-controls';
 import { captureGameThemes, closeGameMask, gameMenu } from './game-pregame';
 import { gameCardNames, replay } from './game-replay';
 import { adb, applicationId } from './device';
@@ -38,6 +38,7 @@ export async function texasPanels(context: TexasContext): Promise<void> {
   await gameReady(device, 'TexasPlayerActionIcon_container');
   await capture('record_actions');
   await gameTap(device, 'review-board-close-button');
+  await gameGone(device, 'review-board-close-button');
   await replay(proxy, 'texas', room, { stream: 'room_message', payload: { action: 'text', content: {
     from_user_id: REPLAY_PLAYER_IDS[0], from_user_nickname: 'Player1', text: 'Good hand!',
   } } });
@@ -49,7 +50,8 @@ export async function texasPanels(context: TexasContext): Promise<void> {
   await gameGone(device, 'barrage_text');
   await capture('chat_phrases');
   await gameTap(device, '-in-game-chat-record-tab');
-  expect((await gameReady(device, 'in-game-chat-text-message-0')).text).toContain('Good hand!');
+  await expect.poll(async () => flattenNodes(await gameReady(device, 'in-game-chat-text-message-0'))
+    .some(node => node.text === 'Player1: Good hand!'), { timeout: 30_000 }).toBe(true);
   await capture('chat_history');
   await gameTap(device, 'in-game-chat-report-button-0');
   await gameReady(device, 'in_game_report_message_component');
@@ -64,6 +66,7 @@ export async function texasPanels(context: TexasContext): Promise<void> {
   await gameReady(device, 'BlockPlayerConfirmPopup:title');
   await capture('chat_block_confirm');
   await gameTap(device, 'BlockPlayerConfirmPopup:cancelButton');
+  await gameGone(device, 'BlockPlayerConfirmPopup:title');
   const chat = (await gameReady(device, 'in-game-chat-mask')).bounds;
   adb('shell', 'input', 'tap', String(chat.x + 8), String(chat.y + 80));
   await gameGone(device, 'in-game-chat-container');
@@ -74,6 +77,7 @@ export async function texasPanels(context: TexasContext): Promise<void> {
   await gameReady(device, 'buy-in-review-close-button');
   await capture('buy_in_review');
   await gameTap(device, 'buy-in-review-close-button');
+  await gameGone(device, 'buy-in-review-close-button');
   await restoreTexas(context, {}, 'flop', true);
   await texasEvents(context, [{ event: 'settlement', players: [{ player_id: self, net: 180, prize: 180, stack: 1180 }] }]);
   await gameReady(device, 'texas-holdem-show-hand-card-button');
@@ -84,6 +88,7 @@ export async function texasPanels(context: TexasContext): Promise<void> {
   await gameCardNames(device, 'community_card', 'community_card_name_text', ['ah', 'kd', '7c', '2s', 'qs'], { scope: 'view-community-cards-container' });
   await capture('remaining_cards');
   await gameTap(device, 'view-community-close-button');
+  await gameGone(device, 'view-community-cards-container');
   await gameTap(device, 'texas-holdem-show-hand-card-button');
   await texasEvents(context, [{ event: 'publish_hole_card', player_id: self, public_hole_card: ['as', 'ad'] }]);
   await gameReady(device, 'texas-holdem-player-hole-cards');
