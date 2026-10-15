@@ -113,7 +113,10 @@ export async function waitForHall(device: AndroidDevice): Promise<void> {
 export async function compareScreenshot(device: AndroidDevice, name: string, testInfo: TestInfo, masks: ScreenshotMask[] = [],
   transientState?: () => Promise<void>): Promise<void> {
   if (masks.length) await testInfo.attach(`${name}-masks`, { body: JSON.stringify(masks), contentType: 'application/json' });
-  let previous = maskScreenshot(await device.screenshot(), masks);
+  await transientState?.();
+  const initial = await device.screenshot();
+  await transientState?.();
+  let previous = maskScreenshot(initial, masks);
   let stabilityReference = previous;
   let stableSince = Date.now();
   let stable: Buffer | undefined;

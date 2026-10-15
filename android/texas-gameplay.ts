@@ -7,6 +7,7 @@ import { replay, gameCardNames } from './game-replay';
 import { closeGameMask } from './game-pregame';
 import { adb } from './device';
 import { dismissKeyboard } from './keyboard';
+import type { TexasContext } from './texas-support';
 
 /**
  * 复用网页的德州消息夹具，覆盖各街、操作、摊牌、结算和玩家资料。
@@ -17,7 +18,7 @@ import { dismissKeyboard } from './keyboard';
  * @param capture - 按共享状态清单采集截图。
  */
 export async function texasGameplay(device: AndroidDevice, proxy: Mitmproxy, roomId: string,
-  self: string, capture: (state: string) => Promise<void>): Promise<void> {
+  self: string, capture: TexasContext['capture']): Promise<void> {
   /**
    * 发送共用网络事件。
    * @param data - Web 消息夹具。
@@ -98,9 +99,7 @@ export async function texasGameplay(device: AndroidDevice, proxy: Mitmproxy, roo
     String(Math.round(x + width * 0.15)), String(Math.round(y + height / 2)), '400');
   await gameReady(device, 'PlayerStatisticComponent_Item_Value_0', '1000');
   await capture('player_statistics_1000');
-  await gameTap(device, 'PlayerStatisticComponent_Item_1');
-  await gameReady(device, 'toastText1');
-  await capture('statistics_help');
+  await capture('statistics_help', [], () => gameTap(device, 'PlayerStatisticComponent_Item_1'));
   await gameGone(device, 'toastText1');
   await gameTap(device, 'player-profile-report-button');
   await gameReady(device, 'report-field-input');

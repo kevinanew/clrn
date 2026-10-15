@@ -16,9 +16,11 @@ import { captureChallengeAnimation } from './game-animation';
  * @param transientMarker - 仅用于会自动消失的提示，截图前后都必须实际存在。
  * @param expectedAlertMarker - 错误分支已断言内容后，允许截图的特定业务弹窗按钮。
  * @param inputMasks - 已根据真实输入框位移校准的光标区域。
+ * @param triggerToast - 仅浮层提示可在准备背景遮罩后触发，不改变底层页面布局。
  */
 export async function captureGame(device: AndroidDevice, name: string, testInfo: TestInfo, transientMarker?: string,
-  expectedAlertMarker?: string, inputMasks: ScreenshotMask[] = []): Promise<void> {
+  expectedAlertMarker?: string, inputMasks: ScreenshotMask[] = [], triggerToast?: () => Promise<void>): Promise<void> {
+  if (triggerToast && transientMarker !== 'toastText1') throw new Error('提前准备遮罩仅用于不改变布局的短时文字提示。');
   if (expectedAlertMarker) await gameReady(device, expectedAlertMarker);
   let nodes = await gameNodes(device);
   if ((!transientMarker || transientMarker === 'level-up-title') && foregroundPanels(nodes).length) {
@@ -82,6 +84,14 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
   if (name.endsWith('-zhajinhua-game-challenge-select')) {
     await captureChallengeAnimation(device, name, testInfo, masks);
     return;
+  }
+  if (triggerToast) {
+    await triggerToast();
+    await expect.poll(async () => (await gameMarker(device, 'toastText1'))?.text,
+      { timeout: 3000, intervals: [20] }).toBeTruthy();
+    await testInfo.attach(`${name}-toast-node`, {
+      body: JSON.stringify(await gameMarker(device, 'toastText1')), contentType: 'application/json',
+    });
   }
   /** 不允许把提示消失后的稳定页面当成提示截图。 */
   const assertTransient = async () => {
