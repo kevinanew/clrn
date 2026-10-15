@@ -157,6 +157,10 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
   let inputsFilled = false;
   let backgroundBanner: ScreenshotBounds | undefined;
   for (const identifier of scenario.navClickTestIds) {
+    if (identifier === 'official-site') {
+      // 设置页尾部入口不能只露出一部分，否则中心点击可能落在底部导航上。
+      await scrollToEnd(device, { res: 'settings-list' }, { res: 'about-laiwan' });
+    }
     if (['search_sign_in_prompt', 'guest_game_sign_in_prompt'].includes(scenario.pageLabel)) {
       // 原生 Dialog 会从无障碍树隐藏背景；在打开之前记录实际横幅边界。
       backgroundBanner = (await device.info({ res: 'slot-banner' }).catch(() => undefined))?.bounds;
