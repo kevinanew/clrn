@@ -61,5 +61,9 @@ export function visibleMasks(mask: ScreenshotMask, source: NativeNode, panels: N
    */
   const contains = (parent: NativeNode): boolean => parent === source || Boolean(parent.children?.some(contains));
   return panels.filter(panel => !contains(panel))
-    .reduce((parts, panel) => parts.flatMap(part => subtractPanel(part, panel.bounds)), [mask]);
+    // 无障碍边界取整后，面板最外一像素仍可能露出背景；买入框实测漏出两个箭头像素。
+    .reduce((parts, panel) => parts.flatMap(part => subtractPanel(part, {
+      x: panel.bounds.x + 1, y: panel.bounds.y + 1,
+      width: panel.bounds.width - 2, height: panel.bounds.height - 2,
+    })), [mask]);
 }

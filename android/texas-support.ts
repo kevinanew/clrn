@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import type { AndroidDevice } from 'playwright';
 import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { events, restoreTable, type Street, type TableOptions } from '../visual/cases/texas-holdem/replayData';
-import { gameNodes, gameReady, gameTap, type NativeNode } from './game-controls';
+import { gameGone, gameNodes, gameReady, gameTap, type NativeNode } from './game-controls';
 import { gameCardNames, replay } from './game-replay';
 import { adb } from './device';
 import { gameMenu } from './game-pregame';
@@ -65,4 +65,5 @@ export async function enableGameSetting(device: AndroidDevice, setting: string):
   if (!(await gameReady(device, marker)).checked) await gameTap(device, marker);
   expect((await gameReady(device, marker)).checked).toBe(true);
   await gameTap(device, 'game-settings-close-button');
+  await gameGone(device, 'game-settings-popup-container');
 }

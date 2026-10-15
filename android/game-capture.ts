@@ -5,6 +5,7 @@ import { gameNodes } from './game-controls';
 import { expect } from '@playwright/test';
 import type { ScreenshotMask } from './screenshot';
 import { foregroundPanels, visibleMasks } from './game-masks';
+import { captureChallengeAnimation } from './game-animation';
 
 /**
  * 保留真实牌桌布局，仅遮罩明确的房号、网络延迟和循环座位指示箭头。
@@ -65,6 +66,10 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
       add({ ...node.bounds, x: node.bounds.x + node.bounds.width / 2 - 40, width: 80, reason: '网络延迟数值' });
     }
     if (node.res === 'ping-screen-icon') add({ ...node.bounds, reason: '网络延迟状态图标' });
+  }
+  if (name.endsWith('-zhajinhua-game-challenge-select')) {
+    await captureChallengeAnimation(device, name, testInfo, masks);
+    return;
   }
   /** 不允许把提示消失后的稳定页面当成提示截图。 */
   const assertTransient = async () => {

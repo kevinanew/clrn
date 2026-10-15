@@ -106,15 +106,18 @@ export async function captureGameThemes(device: AndroidDevice, capture: Capture)
   }
   await tap(device, 'game-settings-card-theme-simple');
   await tap(device, 'game-settings-close-button');
+  await gameGone(device, 'game-settings-popup-container');
   for (const background of ['blue', 'purple', 'black']) {
     await gameMenu(device, 'theme', 'game-settings-card-theme-simple');
     await tap(device, `game-settings-background-${background}`);
     await tap(device, 'game-settings-close-button');
+    await gameGone(device, 'game-settings-popup-container');
     await capture(`table_${background}`);
   }
   await gameMenu(device, 'theme', 'game-settings-card-theme-simple');
   await tap(device, 'game-settings-background-green');
   await tap(device, 'game-settings-close-button');
+  await gameGone(device, 'game-settings-popup-container');
   await gameMenu(device, 'settings', 'game-settings-popup-container');
   let count = 0;
   for (const name of ['sound-effect', 'vibrate', 'player-voice', 'show-card', 'operation-time', 'see-remain-card', 'shake-avatar']) {

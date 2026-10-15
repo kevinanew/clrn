@@ -1,6 +1,5 @@
 import { expect } from '@playwright/test';
 import { gameGone, gameNodes, gameReady, gameTap } from './game-controls';
-import { closeGameMask } from './game-pregame';
 import { gameTapText, restoreTexas, type TexasContext } from './texas-support';
 
 /**
@@ -44,5 +43,6 @@ export async function texasOptionalPreGame(context: TexasContext): Promise<void>
   await expect.poll(async () => (await gameNodes(device)).some(node => node.text?.includes('1/2')),
     { timeout: 30_000 }).toBe(true);
   await capture('raise_blinds');
-  await closeGameMask(device, 'raise-blind-detail');
+  await gameTap(device, 'raise-blind-close-button');
+  await gameGone(device, 'raise-blind-detail');
 }
