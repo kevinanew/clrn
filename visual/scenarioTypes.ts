@@ -1,4 +1,5 @@
 import { getVisualDeviceId, getVisualTestAccount } from './test-account';
+import presentation from './fixtures/account-presentation.json';
 
 export const LANGUAGE_STORAGE_KEY = 'app.language.code.key';
 
@@ -102,7 +103,7 @@ export const VIEWPORTS: ViewportDef[] = [
 /** 用户余额（金币/钻石等）随签到、购买变化，截图前统一填充固定值 */
 export const BALANCE_FIXED_TEXT: FixedTextRule = {
   selector: '[data-testid$="-balance-text"]',
-  text: '12345',
+  text: presentation.balance,
 };
 
 /** 建房表单默认房间名取自账号昵称（CreateRoomRuleStore），随测试账号资料变化，截图前统一填充固定值 */

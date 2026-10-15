@@ -218,14 +218,6 @@ export async function setupContextForScenario(
       }
     }
 
-    // 意见反馈页嵌入第三方 UserReport；列表内容随远端变化，mock 成空白页保证截图稳定
-    await context.route(/feedback\.userreport\.com/, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'text/html; charset=utf-8',
-        body: '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#f5f5f5"></body></html>',
-      }),
-    );
   } else if (authEntries) {
     // 未登录场景也复用与登录无关的安全缓存键（主题等；国家码已由 mockFixedCountryCode 固定）
     const safeEntries = Object.fromEntries(

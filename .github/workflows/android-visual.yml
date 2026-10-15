@@ -6,6 +6,9 @@ on:
   pull_request:
     paths:
       - 'android/**'
+      - 'visual/**'
+      - 'e2e/helpers/mitmproxy*.ts'
+      - 'scripts/*ci*'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/android-visual.yml'
@@ -13,6 +16,9 @@ on:
     branches: [master]
     paths:
       - 'android/**'
+      - 'visual/**'
+      - 'e2e/helpers/mitmproxy*.ts'
+      - 'scripts/*ci*'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/android-visual.yml'
@@ -22,6 +28,20 @@ on:
     inputs:
       release_tag:
         description: 'Android Staging Release 标签；留空选最新发布版本'
+        type: string
+        default: ''
+      group:
+        description: '业务组；默认全部'
+        type: choice
+        options: [all, guest, account, social, rooms, wallet-help, records, texas, zhajinhua]
+        default: all
+      locale:
+        description: '语言；默认三种语言'
+        type: choice
+        options: [all, zh-Hans, zh-Hant, en]
+        default: all
+      filter:
+        description: '可选场景正则；默认执行全部场景'
         type: string
         default: ''
       mode:
@@ -34,27 +54,66 @@ permissions:
   contents: read
 
 concurrency:
-  group: android-visual-${{ github.ref }}
+  group: android-visual-${{ github.ref }}-${{ inputs.group || 'all' }}-${{ inputs.locale || 'all' }}
   cancel-in-progress: false
 
 jobs:
+  accounts:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: plan
+        env:
+          CI_ANDROID_GROUP: ${{ inputs.group || 'all' }}
+          CI_ANDROID_LOCALE: ${{ inputs.locale || 'all' }}
+        run: node scripts/plan-ci-accounts.mjs android
   visual:
+    needs: accounts
+    name: Android (${{ matrix.group }} / ${{ matrix.locale }})
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.accounts.outputs.matrix) }}
+    concurrency:
+      group: h5-staging-account-${{ matrix.account }}
+      cancel-in-progress: false
+      queue: max
     # 私有附件凭据仅供本仓库分支使用。
     if: >-
       (github.event_name != 'release' || startsWith(github.event.release.tag_name, 'android-staging-')) &&
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 120
     env:
       CI: 'true'
       ANDROID_SERIAL: emulator-5554
+      ANDROID_GROUP: ${{ matrix.group }}
+      ANDROID_LOCALE: ${{ matrix.locale }}
+      ANDROID_FILTER: ${{ inputs.filter || '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
+      - name: 注入与 Web 共用账号池中的独占账号
+        env:
+          CLRN_CI_ACCOUNT: ${{ matrix.account }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS }}
+        run: node scripts/configure-ci-account.mjs
       - run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装共用网络代理
+        run: |
+          python -m unittest discover -s android -p 'test_*.py'
+          python -m venv e2e/.venv
+          e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
       - name: 下载并校验 Release APK
         env:
           GH_TOKEN: ${{ github.token }}
@@ -66,6 +125,30 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: 读取固定版本原生驱动源码
+        if: matrix.group == 'texas' || matrix.group == 'zhajinhua'
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/playwright
+          ref: 39e3553a4f283a41134d75d7e404484bd9e6865a
+          path: .ttyctl/playwright-driver-source
+          persist-credentials: false
+          sparse-checkout: packages/playwright-core/src/server/android/driver
+      - name: 构建牌桌动画兼容驱动
+        if: matrix.group == 'texas' || matrix.group == 'zhajinhua'
+        run: node android/build-driver.mjs
+      - name: 准备固定 Android 系统镜像
+        run: |
+          sdk_manager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          (yes || true) | "$sdk_manager" --licenses > /dev/null
+          for attempt in 1 2 3; do
+            if "$sdk_manager" --install 'system-images;android-35;google_apis;x86_64' &&
+              test -f "$ANDROID_HOME/system-images/android-35/google_apis/x86_64/system.img"; then
+              break
+            fi
+            if [ "$attempt" = 3 ]; then exit 1; fi
+            sleep 5
+          done
       - name: 启用模拟器硬件加速
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -75,21 +158,23 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           ANDROID_VISUAL_MODE: ${{ inputs.mode || 'compare' }}
+          TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
         with:
           api-level: 35
           target: google_apis
           arch: x86_64
-          ram-size: 2048M
+          ram-size: 4096M
           heap-size: 256M
           disk-size: 4096M
           disable-animations: true
+          disable-spellchecker: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -camera-back none -camera-front none -skin 720x1280
           script: node android/run-visual.mjs
       - name: 保存报告、失败截图和构建身份
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-staging-visual-${{ github.run_id }}-${{ github.run_attempt }}
+          name: android-staging-visual-${{ matrix.group }}-${{ matrix.locale }}-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 14
           path: |
             android/playwright-report/
@@ -97,9 +182,9 @@ jobs:
             android/artifacts/current/build-info.json
             android/artifacts/current/release.json
       - name: 保存待审查基准
-        if: success() && inputs.mode == 'reference'
+        if: always() && inputs.mode == 'reference'
         uses: actions/upload-artifact@v4
         with:
-          name: android-staging-reference-${{ github.run_id }}
+          name: android-staging-reference-${{ matrix.group }}-${{ matrix.locale }}-${{ github.run_id }}
           path: android/snapshots/
           retention-days: 14

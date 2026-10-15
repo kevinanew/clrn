@@ -1,11 +1,11 @@
-import type { Page } from '@playwright/test';
+import type { APIRequestContext, Page } from '@playwright/test';
 import { expect as playwrightExpect } from '@playwright/test';
 const expect = playwrightExpect.configure({ timeout: 30_000 });
 import { canTopUpVisualAccount } from '../../test-account';
 import { requestErrorSummary } from '../../src/support/requestError';
 
 export type RoomSession = { roomId: string; apiOrigin: string; authorization: string };
-type Account = { userId: string; username: string; authorization: string };
+export type Account = { userId: string; username: string; authorization: string };
 const ROOM_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
@@ -27,11 +27,11 @@ async function visualAccount(page: Page) {
 
 /**
  * 读取真实钱包响应中的钻石余额，拒绝缺失币种或非数值余额。
- * @param page - 执行操作的 Playwright 页面。
+ * @param request - Web 或原生测试使用的真实 API 请求客户端。
  * @param account - 包含用户 ID、账号接口与认证信息的会话。
  */
-async function readDiamondBalance(page: Page, account: Account): Promise<number> {
-  const response = await page.request.put(`https://api.shafayouxi.org/v10/wallet/${account.userId}`, {
+async function readDiamondBalance(request: APIRequestContext, account: Account): Promise<number> {
+  const response = await request.put(`https://api.shafayouxi.org/v10/wallet/${account.userId}`, {
     headers: { Authorization: account.authorization },
     data: { currencies: ['diamond'] },
   }).catch(error => {
@@ -48,11 +48,11 @@ async function readDiamondBalance(page: Page, account: Account): Promise<number>
 
 /**
  * 确认建房钻石足够，仅允许为受支持的测试账号补充余额。
- * @param page - 执行操作的 Playwright 页面。
+ * @param request - Web 或原生测试使用的真实 API 请求客户端。
  * @param account - 包含用户 ID、账号接口与认证信息的会话。
  */
-async function ensureRoomBalance(page: Page, account: Account): Promise<void> {
-  if (await readDiamondBalance(page, account) >= 10) return;
+export async function ensureRoomBalance(request: APIRequestContext, account: Account): Promise<void> {
+  if (await readDiamondBalance(request, account) >= 10) return;
   if (!canTopUpVisualAccount(account.username)) {
     throw new Error('仅允许为本轮使用的固定视觉测试账号自动补钻');
   }
@@ -70,7 +70,7 @@ async function ensureRoomBalance(page: Page, account: Account): Promise<void> {
     || body.result?.currency_name !== 'diamond' || Number(body.result?.balance) !== 60) {
     throw new Error('staging 测试账号补钻结果无效');
   }
-  await expect.poll(() => readDiamondBalance(page, account)).toBe(60);
+  await expect.poll(() => readDiamondBalance(request, account)).toBe(60);
 }
 
 /**
@@ -87,7 +87,7 @@ export async function createPrivateGameRoom(
   optionalFeatures = false,
 ): Promise<RoomSession> {
   const account = await visualAccount(page);
-  await ensureRoomBalance(page, account);
+  await ensureRoomBalance(page.request, account);
   await page.locator('[data-testid="create-game-button"]:visible').last().click();
   await page.locator(`[data-testid="game-type-button-${gameType}"]:visible`).last().click();
   await expect(page.locator('[data-testid="base-create-room-screen"]:visible')).toBeVisible();

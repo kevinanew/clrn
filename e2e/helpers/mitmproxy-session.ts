@@ -24,18 +24,20 @@ async function unusedPort(): Promise<number> {
 /**
  * 测试结束或失败时先停止代理，再删除临时证书。
  * @param task - 在已准备好的上下文或代理上执行的异步任务。
- * @param options - addonPath 可指定专用插件；未指定时使用默认弱网插件。
+ * @param options - 专用插件、进程环境和启动后的证书准备步骤；默认保持 Web 代理行为。
  */
 export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>,
-  options: { addonPath?: string } = {}): Promise<T> {
+  options: { addonPath?: string; environment?: NodeJS.ProcessEnv;
+    prepare?: (directory: string, proxy: Mitmproxy) => Promise<void> } = {}): Promise<T> {
   const directory = await mkdtemp(path.join(tmpdir(), 'test-mitmproxy-'));
   const token = randomBytes(32).toString('hex');
   try {
     const port = await unusedPort();
     const proxy = new Mitmproxy(port, token);
-    const proxyProcess = startMitmdump(port, directory, token, options.addonPath);
+    const proxyProcess = startMitmdump(port, directory, token, options.addonPath, options.environment);
     try {
       await proxyProcess.waitUntilReady(() => proxy.status());
+      await options.prepare?.(directory, proxy);
       return await task(proxy);
     } finally {
       await proxyProcess.stop();
