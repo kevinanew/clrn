@@ -41,6 +41,17 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
      * @param mask - 当前动态控件的范围。
      */
     const add = (mask: ScreenshotMask) => masks.push(...visibleMasks(mask, node, panels));
+    if (['texas-holdem-room-id-text', 'zhajinhua-room-id-text'].includes(node.res || '')) {
+      const marker = node.res === 'texas-holdem-room-id-text' ? 'texas-holdem-copy-room-number-button' : 'zhajinhua-room-copy-btn';
+      const button = nodes.find(item => item.res === marker);
+      expect(button, '真实房号必须位于复制按钮中').toBeDefined();
+      expect(button!.bounds.width).toBeLessThanOrEqual(180);
+      // 比例字体的不同数字会移动旁边的复制图标；按居中的整行固定宽度遮罩，避免随本轮房号漂移。
+      const bounds = button!.bounds;
+      add({ x: Math.round(bounds.x + bounds.width / 2) - 90, y: bounds.y - 2,
+        width: 180, height: bounds.height + 4, reason: '本轮真实房号及随数字宽度移动的复制图标' });
+      continue;
+    }
     if (/^seat-guide-\d+$/.test(node.res || '')) {
       // Android 将越出父节点的箭头边界裁短；按共用 24×20 图案及 11dp 动画行程还原范围。
       const scale = node.bounds.width / 24;
@@ -56,7 +67,7 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
         reason: `${node.res} 含两像素绘制边缘` });
       continue;
     }
-    if (['texas-holdem-room-id-text', 'zhajinhua-room-id-text', 'leader-board-room-id', 'game-network-proxy-code'].includes(node.res || '')
+    if (['leader-board-room-id', 'game-network-proxy-code'].includes(node.res || '')
       || /^\d{1,2}:\d{2}(?::\d{2})?$/.test(node.text || '')
       || (node.res === 'countdown_timer_text' && /^\d+s$/.test(node.text || ''))
       || node.res === 'view-community-cards-countdown'

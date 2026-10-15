@@ -19,6 +19,7 @@ export function foregroundPanels(nodes: NativeNode[]): NativeNode[] {
     || (node.res === 'showdown-assist-view-container' && node.children?.some(child =>
       child.res === 'showdown-assist-view-strength-text' && child.text))
     || (node.res?.startsWith('texas-holdem-shortcut-raise-button-') && node.res !== 'texas-holdem-shortcut-raise-button-group')
+    || node.res?.startsWith('zhajinhua-shortcut-raise-')
     || node.res?.startsWith('texas-holdem-player-action-')
     || node.children?.some(child => child.res === 'player_action_text'));
   for (const marker of nodes.filter(node => markers.has(node.res || ''))) {

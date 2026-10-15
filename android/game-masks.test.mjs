@@ -70,7 +70,7 @@ test('房间计时不能遮掉结算牌型和覆盖其上的牌桌按钮', () =>
   assert.deepEqual(visibleMasks({ ...source.bounds, reason: '计时' }, source, foregroundPanels([banner, text])), []);
   const empty = { ...banner, children: [{ ...text, text: '', bounds: { ...text.bounds, width: 0 } }] };
   assert.deepEqual(foregroundPanels([empty]), []);
-  for (const res of ['texas-holdem-show-remain-community-card-button', 'texas-holdem-shortcut-raise-button-two_thirds_pot']) {
+  for (const res of ['texas-holdem-show-remain-community-card-button', 'texas-holdem-shortcut-raise-button-two_thirds_pot', 'zhajinhua-shortcut-raise-second']) {
     const button = { res, bounds: { x: 248, y: 715, width: 224, height: 101 } };
     const masks = visibleMasks({ ...source.bounds, reason: '房号' }, source, foregroundPanels([button]));
     assert.equal(masks.some(mask => mask.x <= 400 && mask.x + mask.width > 400), false);
