@@ -57,8 +57,9 @@ export async function texasControlVariants(context: TexasContext): Promise<void>
   const track = (await gameReady(device, 'raise-bet-slider')).bounds;
   const thumb = (await gameReady(device, 'sliderThumb')).bounds;
   const x = Math.round(thumb.x + thumb.width / 2);
+  // 原生手势接管会消耗最初的移动距离；越过轨道顶部，确保真正抵达最大值。
   adb('shell', 'input', 'swipe', String(x), String(Math.round(thumb.y + thumb.height / 2)),
-    String(x), String(Math.max(1, Math.round(track.y - 20))), '600');
+    String(x), String(Math.max(1, Math.round(track.y - track.height / 2))), '1000');
   await gameReady(device, 'raise-bet-display-text', '1000');
   await gameReady(device, 'raise-bet-all-in-button');
   await capture('raise_maximum');
