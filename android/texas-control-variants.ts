@@ -67,8 +67,7 @@ export async function texasControlVariants(context: TexasContext): Promise<void>
   let endY = startY;
   adb('shell', 'input', 'motionevent', 'DOWN', String(x), String(startY));
   try {
-    // 等待 PanResponder 接管按压后再移动；分步拖动与 Web 的真实指针流程一致。
-    await gameReady(device, 'raise-bet-assist-text', '1000');
+    // 与 Web 一样分步拖动，移动到轨道中部后再等待辅助文字可见。
     const heldTrack = (await gameReady(device, 'raise-bet-slider')).bounds;
     const targetY = Math.round(heldTrack.y + heldTrack.height / 2);
     for (let step = 1; step <= 8; step++) {
