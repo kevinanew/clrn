@@ -31,6 +31,11 @@ on:
         type: string
   workflow_dispatch:
     inputs:
+      suite:
+        description: 需要验证的动画套件
+        type: choice
+        options: [all, app, texas, zhajinhua]
+        default: all
       update_snapshots:
         description: 生成候选基准并连续比较三次（只上传 artifact，不自动提交）
         type: boolean
@@ -54,6 +59,8 @@ jobs:
         with:
           node-version: '24'
       - id: plan
+        env:
+          CI_ANIMATION_SUITE: ${{ inputs.suite || 'all' }}
         run: node scripts/plan-ci-accounts.mjs animations
   animations:
     needs: accounts

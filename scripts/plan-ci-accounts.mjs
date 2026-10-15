@@ -5,7 +5,7 @@ if (!process.env.GITHUB_OUTPUT) throw new Error('账号调度脚本只能由 Git
 const mode = process.argv[2];
 const runId = process.env.GITHUB_RUN_ID;
 if (mode === 'animations') {
-  appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(animationAccountMatrix(runId))}\n`);
+  appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(animationAccountMatrix(runId, process.env.CI_ANIMATION_SUITE || 'all'))}\n`);
 } else if (mode === 'visual') {
   const matrix = visualAccountMatrix(runId, process.env.CI_VISUAL_SUITE || 'all', process.env.CI_VISUAL_FULL === 'true');
   appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\n`);

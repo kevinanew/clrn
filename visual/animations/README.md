@@ -45,6 +45,7 @@ npm --prefix visual run test:animations -- --update-snapshots
   这部分不声称验证浏览器实时解码播放的调度精度。
 - 夹具固定匹配与老虎机响应，避免进入真实匹配队列或实际抽奖；只固定业务数据和必要的随机输入，
   不调用应用内部状态、组件方法，不向业务源码增加测试分支。
+  拼三张结算使用固定随机种子，各金币仍保留不同轨迹；加注气泡在图片加载完成后采样。
   加载动画暂缓的单个 XHR 请求另设 120 秒真实网络超时：XHR 不受 JS 时钟控制，
   不能让慢机器的截图耗时触发业务超时。动画采样仍为 0–1600ms，结束后恢复请求行为。
 
@@ -58,6 +59,7 @@ HTML 报告位于 `visual/playwright-report/animations/<suite>/`，失败图片�
 `visual/test-results/animations/<suite>/`，CI 保存 14 天。
 每个新增用例附带实际加载的构建版本；设置 `CLRN_EXPECTED_APPLICATION_COMMIT` 时会在采样前核对版本。
 手动运行工作流可启用 `update_snapshots`，在 CI 生成候选图后连续比较三次。
+也可用 `suite` 只验证发生变化的套件；候选图在比较前单独上传，便于提前检查。
 候选图只上传 artifact，下载检查后再纳入仓库；普通 PR、部署和手动比较不会自动更新基准。
 
 关键帧比较用于检测外观、进度和终态变化，不衡量真实设备帧率。

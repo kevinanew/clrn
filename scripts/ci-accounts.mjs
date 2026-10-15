@@ -44,12 +44,15 @@ export function visualAccountMatrix(runId, suite = 'all', full = false) {
 /**
  * 动画使用 12–14 号槽位，与全量静态视觉及三组功能回归互不冲突。
  * @param runId - 当前 GitHub Actions 运行 ID。
+ * @param suite - all、app、texas 或 zhajinhua，筛选时保留原账号槽位。
  * @returns 三个动画套件的独占账号矩阵。
  */
-export function animationAccountMatrix(runId) {
-  return { include: ['app', 'texas', 'zhajinhua'].map((suite, index) => ({
-    suite, account: allocateCiAccount(runId, 12 + index),
-  })) };
+export function animationAccountMatrix(runId, suite = 'all') {
+  const suites = ['app', 'texas', 'zhajinhua'];
+  if (suite !== 'all' && !suites.includes(suite)) throw new Error('不支持的动画套件。');
+  return { include: suites.map((item, index) => ({
+    suite: item, account: allocateCiAccount(runId, 12 + index),
+  })).filter(item => suite === 'all' || item.suite === suite) };
 }
 
 /**

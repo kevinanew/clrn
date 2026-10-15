@@ -6,6 +6,7 @@ import { captureTimeline, freeze } from './timeline';
 import type { TableSession } from './tableSession';
 import { exerciseTablePopup as exercisePopup } from './popups';
 import { closeTableMask } from './tablePanels';
+import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 
 /**
  * 回放拼三张独立协议，覆盖看牌、下注、比牌往返、摊牌和结算。
@@ -44,6 +45,8 @@ export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaP
   await expect(visible(page, 'player-card-strength-text')).not.toBeEmpty();
   await proxy.replay(roomId, events([{ event: 'raise', player_id: self, amount: 40, stack: 960 },
     { event: 'pot_update', pot_amount: 160 }]));
+  await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('加注');
+  await ensureLocalImagesLoaded(page);
   await captureTimeline(page, info, 'zhajinhua-raise', visible(page, `zhajinhua-player-container-${self}`), { clip });
   await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('960');
   await proxy.replay(roomId, restoreTable(self, false, true));
@@ -72,11 +75,29 @@ export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaP
   ] }]));
   await captureTimeline(page, info, 'zhajinhua-showdown', page.getByTestId('run-game-view'), { clip });
   await expect(page.locator('[data-testid="player_cards_container"]:visible')).toHaveCount(2);
-  await proxy.replay(roomId, events([{ event: 'settlement', players: [
-    { player_id: self, net: 120, prize: 120, stack: 1120 },
-    { player_id: PLAYER_IDS[1], net: -40, prize: 0, stack: 880 },
-  ] }]));
-  await captureTimeline(page, info, 'zhajinhua-settlement', page.getByTestId('run-game-view'),
-    { clip, times: [0, 160, 320, 800, 1600, 2800] });
+  await page.evaluate(() => {
+    const state = window as typeof window & { animationParticleRandom?: typeof Math.random };
+    state.animationParticleRandom = Math.random;
+    let seed = 0x51f15e;
+    Math.random = /** 固定粒子的随机输入，仍让每枚金币获得不同的真实轨迹。 */ () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return seed / 0x100000000;
+    };
+  });
+  try {
+    await proxy.replay(roomId, events([{ event: 'settlement', players: [
+      { player_id: self, net: 120, prize: 120, stack: 1120 },
+      { player_id: PLAYER_IDS[1], net: -40, prize: 0, stack: 880 },
+    ] }]));
+    await ensureLocalImagesLoaded(page);
+    await captureTimeline(page, info, 'zhajinhua-settlement', page.getByTestId('run-game-view'),
+      { clip, times: [0, 160, 320, 800, 1600, 2800] });
+  } finally {
+    await page.evaluate(() => {
+      const state = window as typeof window & { animationParticleRandom?: typeof Math.random };
+      if (state.animationParticleRandom) Math.random = state.animationParticleRandom;
+      delete state.animationParticleRandom;
+    });
+  }
   await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('1120');
 }
