@@ -27,6 +27,7 @@
     "snapshotLocations.test.ts",
     "target.test.ts",
     "cases/**/*.ts",
+    "animations/**/*.ts",
     "src/**/*.ts",
     "tests/**/*.ts"
   ]
