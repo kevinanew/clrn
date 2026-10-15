@@ -71,7 +71,7 @@ export async function texasControlVariants(context: TexasContext): Promise<void>
   await gameTap(device, 'texas-holdem-operation-accurate-bet-number-button-1');
   await gameReady(device, 'accurate-bet-value-text', '1');
   await capture('accurate_raise_minimum_error', [], async () => {
-    await gameTap(device, 'texas-holdem-operation-accurate-bet-confirm-button');
+    await gameTap(device, 'texas-holdem-operation-accurate-bet-confirm-button', true);
     return '40';
   });
   await closeGameMask(device, 'accurate-bet-popup-container');

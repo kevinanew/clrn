@@ -99,7 +99,7 @@ export async function texasGameplay(device: AndroidDevice, proxy: Mitmproxy, roo
     String(Math.round(x + width * 0.15)), String(Math.round(y + height / 2)), '400');
   await gameReady(device, 'PlayerStatisticComponent_Item_Value_0', '1000');
   await capture('player_statistics_1000');
-  await capture('statistics_help', [], () => gameTap(device, 'PlayerStatisticComponent_Item_1'));
+  await capture('statistics_help', [], () => gameTap(device, 'PlayerStatisticComponent_Item_1', true));
   await gameGone(device, 'toastText1');
   await gameTap(device, 'player-profile-report-button');
   await gameReady(device, 'report-field-input');

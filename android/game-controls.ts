@@ -149,8 +149,9 @@ export async function gameGone(device: AndroidDevice, res: string): Promise<void
  * 根据两次一致的真实布局点击控件，使用 adb 输入避免驱动等待循环动画空闲。
  * @param device - 专用模拟器连接。
  * @param res - 与 Web 共用的 testID。
+ * @param nativeInput - 短时提示使用现有驱动点击，避免启动 shell 输入进程耗尽显示时间。
  */
-export async function gameTap(device: AndroidDevice, res: string): Promise<void> {
+export async function gameTap(device: AndroidDevice, res: string, nativeInput = false): Promise<void> {
   console.log(`ANDROID > 游戏点击 ${res}`);
   let previous: ScreenshotBounds | undefined;
   let node: NativeNode;
@@ -162,5 +163,7 @@ export async function gameTap(device: AndroidDevice, res: string): Promise<void>
     expect(previous).toEqual(before);
   }).toPass({ timeout: 45_000, intervals: [200] });
   const { x, y, width, height } = node!.bounds;
-  adb('shell', 'input', 'tap', String(Math.round(x + width / 2)), String(Math.round(y + height / 2)));
+  const point = { x: Math.round(x + width / 2), y: Math.round(y + height / 2) };
+  if (nativeInput) await device.input.tap(point);
+  else adb('shell', 'input', 'tap', String(point.x), String(point.y));
 }

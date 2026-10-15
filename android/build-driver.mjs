@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
-// 固定官方驱动源码；只修正控件查询，不修改被测 APK、绘制或游戏时钟。
+// 固定官方驱动源码；改进控件查询与真实截图采集，不修改被测 APK、绘制或游戏时钟。
 const revision = '39e3553a4f283a41134d75d7e404484bd9e6865a';
 const checkout = path.resolve(process.argv[2] || '.ttyctl/playwright-driver-source');
 const actual = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: checkout, encoding: 'utf8' }).trim();
@@ -30,7 +30,8 @@ const patched = source
       node.getBoundsInScreen(bounds);
       if (!bounds.isEmpty()) return info(node);
     }
-    for (int index = 0; index < node.getChildCount(); index++) {
+    // 浮层位于绘制树末尾；从前景向背景遍历，避免提示查询逐个跨进程读取整张牌桌。
+    for (int index = node.getChildCount() - 1; index >= 0; index--) {
       JSONObject found = marker(node.getChild(index), resource);
       if (found != null) return found;
     }
@@ -90,8 +91,8 @@ const patched = source
               response.put("result", found == null ? JSONObject.NULL : found);
               break;
             case "tree":`);
-if (!patched.includes('setWaitForIdleTimeout(100)') || !patched.includes('if (child != null)')
-  || !patched.includes('case "marker":')) throw new Error('原生驱动补丁没有完整应用。');
+if (!['setWaitForIdleTimeout(100)', 'if (child != null)', 'case "marker":', 'case "screen":', 'case "transientFrames":']
+  .every(fragment => patched.includes(fragment))) throw new Error('原生驱动补丁没有完整应用。');
 writeFileSync(java, patched);
 const gradle = path.join(directory, 'build.gradle');
 writeFileSync(gradle, readFileSync(gradle, 'utf8').replaceAll('jcenter()', 'mavenCentral()'));

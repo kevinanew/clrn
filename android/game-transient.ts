@@ -45,6 +45,10 @@ export async function captureToast(device: AndroidDevice, name: string, testInfo
     const current = maskScreenshot(original, masks);
     await testInfo.attach(`${name}-frame-${index}-original`, { body: original, contentType: 'image/png' });
     await testInfo.attach(`${name}-frame-${index}-masks`, { body: JSON.stringify(masks), contentType: 'application/json' });
+    if (JSON.stringify(frame.before.bounds) !== JSON.stringify(frame.after.bounds)) {
+      reference = undefined;
+      continue;
+    }
     if (!reference || !samePixels(current, reference)) {
       reference = current;
       stableSince = frame.capturedAt;
