@@ -88,3 +88,5 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 拼三张准备流程三语各 18 张、共 54 张基准来自 [reference 38662785911](https://github.com/kevinanew/clrn/actions/runs/38662785911)（APK 7231）。三个准备场景均通过且已审查；同次运行的牌局场景仍失败，没有将其未完成的截图计为通过。
 
 拼三张牌局三语完整 24 张来自 [reference 38665505197](https://github.com/kevinanew/clrn/actions/runs/38665505197)（APK 7231），全部通过并审查。德州简体、繁体各 34 张准备、可选准备、大厅及操作控件截图来自 [reference 38662780406](https://github.com/kevinanew/clrn/actions/runs/38662780406) 的完整通过场景；该次其余失败场景及英文未计入。
+
+拼三张全部三语 78 张基准已由 [reference 38670527851](https://github.com/kevinanew/clrn/actions/runs/38670527851)（APK 7235）重新生成并逐图审查；该轮完整六个场景全部通过，房号采用 Web 共用的 123456789，房号与复制图标不再遮罩。独立 compare 仍待验证。
