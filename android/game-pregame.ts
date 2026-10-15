@@ -2,6 +2,7 @@ import type { AndroidDevice } from 'playwright';
 import { expect } from '@playwright/test';
 import { gameTap as tap, gameReady, gameGone, gameNodes } from './game-controls';
 import { adb } from './device';
+import presentation from '../visual/fixtures/account-presentation.json';
 
 
 type Capture = (state: string) => Promise<void>;
@@ -63,6 +64,13 @@ export async function gamePreGame(device: AndroidDevice, game: 'texas-holdem' | 
     ['renew', 'renew-popup-close-button', 'renew-popup-close-button'],
   ]) {
     await gameMenu(device, state, ready);
+    if (state === 'renew') {
+      // 关闭按钮先于异步余额和续费价格出现，初始的两个 0 不能作为业务就绪。
+      await expect.poll(async () => (await gameReady(device, 'renew-popup-remain-diamond')).text?.trim(),
+        { timeout: 45_000 }).toBe(presentation.balance);
+      await expect.poll(async () => Number((await gameReady(device, 'renew-popup-spend-diamond')).text?.trim()),
+        { timeout: 45_000 }).toBeGreaterThan(0);
+    }
     await capture(state);
     await tap(device, close);
     await gameGone(device, ready);

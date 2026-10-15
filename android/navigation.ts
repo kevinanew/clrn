@@ -189,6 +189,9 @@ export async function navigateScenario(device: AndroidDevice, scenario: VisualSc
   }
   if (!inputsFilled) await fillScenarioInputs(device, scenario);
   await reveal(device, nativeSelector(scenario.visualReadySelector));
+  if (scenario.pageLabel === 'hall') {
+    await scrollToEnd(device, { res: 'hall-content-list' }, { res: 'hall-sign-in-button' });
+  }
   if (scenario.navClickTestIds.includes('advanced-options-button')) {
     await scrollToEnd(device, { scrollable: true, clazz: 'android.widget.ScrollView' }, { res: 'create-room-tips-text' });
   }
