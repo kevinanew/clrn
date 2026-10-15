@@ -40,8 +40,11 @@ export async function texasPanelVariants(context: TexasContext): Promise<void> {
   await proxy.command('texas/ui', { rpcError: 'retry' });
   await gameTap(device, 'texas-holdem-operation-button-call');
   expect((await gameReady(device, 'common-alert-message')).text).toContain('Please retry');
+  // 操作错误弹窗没有 buttonId；与 Web 一样按真实按钮文字校验和操作。
+  await expect.poll(async () => (await gameNodes(device)).some(node => /^(Retry|重试|重試)$/.test(node.text || '')),
+    { timeout: 30_000 }).toBe(true);
   await capture('alert_retry');
-  await gameTap(device, 'common-alert-button-cancel');
+  await device.tap({ text: /^(取消|Cancel)$/ });
   await restoreTexas(context, {}, 'flop', true);
   await proxy.command('texas/ui', { rpcError: 'balance' });
   await texasEvents(context, [{ event: 'settlement', players: [{ player_id: self, net: 180, prize: 180, stack: 1180 }] }]);

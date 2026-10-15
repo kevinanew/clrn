@@ -49,7 +49,7 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
         width: node.bounds.width + 2, height: height + 22 + 2, reason: `${node.res} 完整箭头动画范围` });
       continue;
     }
-    if (/^(texas-holdem|zhajinhua)-active-countdown$/.test(node.res || '')) {
+    if (/^(texas-holdem|zhajinhua)-active-countdown$/.test(node.res || '') || node.res === 'seat-progress-pie') {
       // API 35 控件边界向下取整；实测相邻帧在右侧两像素仍有倒计时填充变化。
       add({ x: node.bounds.x - 2, y: node.bounds.y - 2,
         width: node.bounds.width + 4, height: node.bounds.height + 4,

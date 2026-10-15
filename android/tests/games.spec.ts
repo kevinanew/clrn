@@ -46,7 +46,7 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
                 : state === 'level_up' ? 'level-up-title'
                   : state === 'remaining_cards' ? 'view-community-cards-countdown' : undefined;
             const expectedAlerts: Record<string, string> = {
-              quit_confirm: 'common-alert-button-quit', alert_retry: 'common-alert-button-retry',
+              quit_confirm: 'common-alert-button-quit', alert_retry: 'common-alert-message',
               alert_insufficient_balance: 'common-alert-button-go_to_mall', alert_authentication_failed: 'common-alert-button-quit',
               delay_cooldown_alert: 'common-alert-message',
             };

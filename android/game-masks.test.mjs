@@ -62,3 +62,17 @@ test('倒计时上方的小尺寸看牌和下注动作提示仍完整参与像�
   assert.equal(masks.some(mask => 120 >= mask.x && 120 < mask.x + mask.width
     && 130 >= mask.y && 130 < mask.y + mask.height), false);
 });
+
+test('房间计时不能遮掉结算牌型和覆盖其上的牌桌按钮', () => {
+  const source = { bounds: { x: 356, y: 718, width: 120, height: 30 } };
+  const text = { res: 'showdown-assist-view-strength-text', text: '3 of Kind', bounds: { x: 245, y: 718, width: 146, height: 51 } };
+  const banner = { res: 'showdown-assist-view-container', bounds: { x: 0, y: 706, width: 720, height: 75 }, children: [text] };
+  assert.deepEqual(visibleMasks({ ...source.bounds, reason: '计时' }, source, foregroundPanels([banner, text])), []);
+  const empty = { ...banner, children: [{ ...text, text: '', bounds: { ...text.bounds, width: 0 } }] };
+  assert.deepEqual(foregroundPanels([empty]), []);
+  for (const res of ['texas-holdem-show-remain-community-card-button', 'texas-holdem-shortcut-raise-button-two_thirds_pot']) {
+    const button = { res, bounds: { x: 248, y: 715, width: 224, height: 101 } };
+    const masks = visibleMasks({ ...source.bounds, reason: '房号' }, source, foregroundPanels([button]));
+    assert.equal(masks.some(mask => mask.x <= 400 && mask.x + mask.width > 400), false);
+  }
+});

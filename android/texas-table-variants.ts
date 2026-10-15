@@ -67,6 +67,7 @@ export async function texasTableVariants(context: TexasContext): Promise<void> {
   await texasEvents(context, [{ event: 'reserve_seat', seat_number: 6,
     player_id: '00000000-0000-4000-8000-000000000005', remain_reserve_seconds: 120 }]);
   await gameReady(device, 'seat-reserve-container');
+  expect((await gameReady(device, 'seat-reserve-text')).text).toMatch(/^(留座|Reserved)$/i);
   await countPlayers(5);
   expect((await gameNodes(device)).filter(node => node.res === 'player_card')).toHaveLength(8);
   await capture('reserved_seat');
