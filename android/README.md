@@ -84,3 +84,5 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 列表滚动固定后，三语高级建房基准来自 [38674831805](https://github.com/kevinanew/clrn/actions/runs/38674831805) 的八个通过场景和 [38675676317](https://github.com/kevinanew/clrn/actions/runs/38675676317) 的简体德州场景；三语新版战绩页脚来自完整通过的 [38674838931](https://github.com/kevinanew/clrn/actions/runs/38674838931)，其余 87 张新版战绩图与原基准匹配。
 
 德州新增 110 张已审查基准来自 [reference 38673123965](https://github.com/kevinanew/clrn/actions/runs/38673123965) 的完整通过场景，清单覆盖新版牌谱、牌局、主题及面板变体、满桌/旁观/保座和大厅变体；未接收同轮失败场景及使用旧 UUID 遮罩的排行榜。剩余状态和全量 compare 仍在验证。
+
+德州三语开局前与扩展面板 96 张基准来自全部通过的 [38675400987](https://github.com/kevinanew/clrn/actions/runs/38675400987)，已审查新增及变化图，并更新固定房号和 UUID 遮罩。
