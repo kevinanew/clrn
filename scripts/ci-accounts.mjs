@@ -6,6 +6,9 @@ if (ciAccounts.length !== 100 || new Set(ciAccounts.map(name => name.toLowerCase
   throw new Error('CI 账号清单必须包含 100 个不同账号。');
 }
 
+// 两个仓库固定使用互不相交的账号；GitHub concurrency 仅在本仓库生效。
+export const executionAccounts = ciAccounts.slice(0, 30);
+
 /**
  * 按运行 ID 轮转账号槽位；账号级 GitHub concurrency 才负责跨 runner 互斥。
  * 同一次重跑复用相同槽位；不同任务若选到同一账号会排队，不会重复登录。
@@ -14,10 +17,10 @@ if (ciAccounts.length !== 100 || new Set(ciAccounts.map(name => name.toLowerCase
  * @returns 本任务使用的公开账号名。
  */
 export function allocateCiAccount(runId, offset = 0) {
-  if (typeof runId !== 'string' || !runId || /\D/.test(runId) || !Number.isSafeInteger(offset) || offset < 0 || offset >= ciAccounts.length) {
+  if (typeof runId !== 'string' || !runId || /\D/.test(runId) || !Number.isSafeInteger(offset) || offset < 0 || offset >= executionAccounts.length) {
     throw new Error('CI 账号分配需要有效运行 ID 和账号槽位偏移。');
   }
-  return ciAccounts[Number((BigInt(runId) + BigInt(offset)) % BigInt(ciAccounts.length))];
+  return executionAccounts[Number((BigInt(runId) + BigInt(offset)) % BigInt(executionAccounts.length))];
 }
 
 /**
@@ -39,25 +42,6 @@ export function visualAccountMatrix(runId, suite = 'all', full = false) {
 }
 
 /**
- * 安卓各业务组与语言独占账号，仍使用 Web 的跨工作流账号锁。
- * @param runId - 当前 GitHub Actions 运行编号。
- * @param selectedGroup - 全部业务组或一个指定组。
- * @param selectedLocale - 全部语言或一种指定语言。
- */
-export function androidAccountMatrix(runId, selectedGroup = 'all', selectedLocale = 'all') {
-  // 账号槽位与 Web 共用锁保持不变，德州、拼三张的全部语言优先进入矩阵。
-  const groups = ['guest', 'account', 'social', 'rooms', 'wallet-help', 'records', 'texas', 'zhajinhua'];
-  const executionOrder = ['texas', 'zhajinhua', ...groups.filter(group => group !== 'texas' && group !== 'zhajinhua')];
-  const locales = ['zh-Hans', 'zh-Hant', 'en'];
-  if (selectedGroup !== 'all' && !groups.includes(selectedGroup)) throw new Error('未知安卓业务组。');
-  if (selectedLocale !== 'all' && !locales.includes(selectedLocale)) throw new Error('未知安卓语言。');
-  return { include: executionOrder.filter(group => selectedGroup === 'all' || group === selectedGroup)
-    .flatMap(group => locales.filter(locale => selectedLocale === 'all' || locale === selectedLocale)
-      .map(locale => ({ group, locale, account: allocateCiAccount(runId,
-        (12 + groups.indexOf(group) * 3 + locales.indexOf(locale)) % ciAccounts.length) }))) };
-}
-
-/**
  * 从 Secret 中读取指定槽位的凭据，校验完整账号池并隐藏所有解析细节。
  * @param serialized - GitHub Actions Secret 中的账号池 JSON。
  * @param username - 调度阶段选出的公开账号名，必须属于 CI 专用清单。
@@ -66,8 +50,8 @@ export function androidAccountMatrix(runId, selectedGroup = 'all', selectedLocal
 export function ciAccountCredentials(serialized, username) {
   let pool;
   try { pool = JSON.parse(serialized); } catch { throw new Error('CLRN_CI_TEST_ACCOUNTS Secret 缺失或不是有效 JSON。'); }
-  if (!Array.isArray(pool?.accounts) || pool.accounts.length !== ciAccounts.length) {
-    throw new Error('CI Secret 必须包含完整的 100 个专用账号。');
+  if (!Array.isArray(pool?.accounts) || ![executionAccounts.length, ciAccounts.length].includes(pool.accounts.length)) {
+    throw new Error('CI Secret 必须包含完整的 30 个 Web 专用账号，或迁移前的 100 个账号。');
   }
   const seen = new Set();
   for (const account of pool.accounts) {
@@ -77,6 +61,9 @@ export function ciAccountCredentials(serialized, username) {
       throw new Error('CI Secret 包含重复、未就绪或无效凭据；请核对账号池备份。');
     }
     seen.add(account.username);
+  }
+  if (!executionAccounts.every(name => seen.has(name)) || !executionAccounts.includes(username)) {
+    throw new Error('所选账号或 Secret 不属于本仓库的专用账号分区。');
   }
   const selected = pool.accounts.find(account => account.username === username);
   if (!selected) throw new Error('所选账号不属于 CI 专用池。');
