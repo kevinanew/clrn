@@ -4,7 +4,13 @@
 
 ## 测试内容
 
-首批覆盖正常初始化后的登录入口、用户名登录、找回密码方式选择和邮箱找回密码表单。通过 Playwright 的 Android 原生控件驱动操作已安装 APK，不运行 H5，也不跳过应用初始化、不发送验证码。当前不覆盖登录后的牌桌和完整业务流程；这些页面后续扩展到本目录，不能直接套用 H5 基准图。
+使用 Playwright Android 原生控件驱动操作正式构建的 Staging APK，正常完成初始化和真实账号登录。`scenarios.ts` 从 Web 的 `buildScenarios` 读取手机页面，共 70 个可达基础场景、三种语言，包含游客、认证、账号、社交、大厅、私人房建房表单、钱包和帮助页面。保留原有四张认证冒烟截图。网页的桌面留白不重复计入安卓覆盖；安卓截图独立保存，不能直接比较网页像素。
+
+Web 另外有 5 个下载帮助场景。当前 Staging APK 的发布渠道为 `default`，原生 `SettingItems._listAndroidAdSectionItems` 仅在 `self-host` 渠道显示该入口，因此在 `unavailablePages` 明确列为不可达，不计入通过数量。
+
+战绩直接复用 Web 的完整状态清单：旧版 32 个、新版 30 个状态，三种语言，共 186 张截图。覆盖加载、空列表、列表底部、分数选择汇总、侧滑删除、详情输赢展开、结算、回放入口、分页和故障恢复。与基础场景及冒烟图合计 400 张正式基准。德州完整 95 个状态、拼三张完整 26 个状态已接入同一份 Web 清单，涵盖操作控件、边池、旁观、聊天举报、带入审核、牌谱、主题、语音面板、大厅和故障恢复；三语合计 763 张截图，由 253 个测试用例执行。全部基准均来自固定 x86_64 CI 环境并经过审查；回归结果以对应提交的 compare 运行及 PR 检查为准。
+
+网络代理直接调用 Web 的 `mockVisualNetworkDependencies`，复用商品、私人房、俱乐部等响应夹具；未匹配的请求继续访问真实服务。真实登录成功后，仅将本人昵称、展示用户名、注册日期和余额固定为 `visual/fixtures/account-presentation.json`，身份和令牌保持原值，失败响应不改成成功。普通页面测试不提交表单。牌桌组通过真实界面创建本轮专用私人房，复用 Web 的余额检查与清理；退出和失败时都解散该房间。仅测试账号余额不足时复用现有 testing 接口补钻，不执行真实充值。Web 和 Android 共用 `visual/fixtures/game-presentation.json` 中的展示房号；Android 仅覆盖本轮真实房间成功响应的 `options.house_number`，保留 UUID、房主、权限、房间状态及连接和清理请求。房号及复制图标完整参与截图比较。
 
 固定环境为 Android API 35、720×1280、320 dpi、字体比例 1、英文系统。GitHub Actions 使用 Ubuntu 和 x86_64 Google APIs 模拟器。正式基准应在相同 CI 环境生成并人工检查；本机 ARM 模拟器适合验证操作流程，渲染差异不能直接当作应用回归。
 
@@ -14,9 +20,11 @@
 
 ```sh
 npm ci
+python3 -m venv e2e/.venv
+e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
 npx playwright install android
 node android/download-release.mjs
-ANDROID_SERIAL=emulator-5554 node android/run-visual.mjs
+ANDROID_SERIAL=emulator-5554 ANDROID_GROUP=guest ANDROID_LOCALE=en node android/run-visual.mjs
 ```
 
 默认扫描 `android-staging-<构建编号>-<提交前12位>` 格式的已发布 Android Staging Releases（包括 prerelease），下载 `android-staging.apk` 并选最新版本。指定版本重现问题（替换为实际标签）：
@@ -29,15 +37,19 @@ ANDROID_RELEASE_TAG='android-staging-<构建编号>-<提交前12位>' node andro
 
 ## GitHub Actions
 
-工作流为 `Android Staging 视觉回归`。发布 Android Staging Release 后自动比较该标签对应的 APK；相关 PR 和 master 修改会比较最新 APK，也可手动指定标签。Release 触发入口在工作流合入 master 后生效。定时任务要求工作流存在于 GitHub 默认分支；仓库默认分支目前仍为 main，因此该定时入口暂不生效。此工作流与现有 H5 staging 部署验证独立，不修改 `deployments/staging.json`。
+工作流为 `Android Staging 视觉回归`。发布 Android Staging Release 后自动比较该标签对应的 APK；相关 PR 和 master 修改会比较最新 APK，也可手动指定标签。本 PR 的完整矩阵须合入 master 后才用于 Release 自动验证；合入前 master 仍运行旧的认证冒烟测试和基准。定时任务要求工作流存在于 GitHub 默认分支；仓库默认分支目前仍为 main，因此该定时入口暂不生效。此工作流与现有 H5 staging 部署验证独立，不修改 `deployments/staging.json`。
 
-APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使用 GitHub Actions 内置的 `GITHUB_TOKEN`，工作流仅授予 `contents: read`，无需额外下载 Secret。Woodpecker 发布端的既有凭据需要 clrn Contents 读写权限。Release 附注标签明确指向 clrn master 分支的提交，应用提交只记录在标签说明和 `build-info.json` 中，不导入应用 Git 历史。首批测试无需账号 Secret。
+APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使用 GitHub Actions 内置的 `GITHUB_TOKEN`，工作流仅授予 `contents: read`，无需额外下载 Secret。Woodpecker 发布端的既有凭据需要 clrn Contents 读写权限。Release 附注标签明确指向 clrn master 分支的提交，应用提交只记录在标签说明和 `build-info.json` 中，不导入应用 Git 历史。登录场景使用现有 `CLRN_CI_TEST_ACCOUNTS` 账号池；八个业务组乘三种语言分别分配独占账号，并与 Web 共用账号级 concurrency，避免相互作废会话。
 
 比较失败时，从工作流产物下载 HTML 报告、实际图、预期图和差异图。附件保留 14 天，不重复上传完整 APK。缺失基准会失败，不会自动接受新截图。
 
 ## 更新基准
 
-当前四张初始基准来自 [Android Staging Release 7187](https://github.com/kevinanew/clrn/releases/tag/android-visual-staging-7187-f00365042077)，由 [GitHub Actions reference 运行 38555441478](https://github.com/kevinanew/clrn/actions/runs/38555441478) 在上述固定环境生成，尺寸均为 720×1280。图片已逐张检查，包含完成初始化后的真实页面，没有加载态。基准保留 APK 当前外观：欢迎页与用户名登录页上的 Staging 提示仍会覆盖部分内容，用户名登录页底部条款与登录按钮也存在重叠。这些已有布局问题没有在本次测试接入中修复；后续应用修复后应重新审查并更新对应基准。
+正式基准必须来自固定的 x86_64 CI 环境，并逐图检查。reference 产物会同时携带仓库已有图片，因此只能接收该轮实际通过的场景，不能将整个目录直接覆盖到仓库。更新后必须另跑 compare；基准生成成功不代表回归比较通过。
+
+应用修复集中在 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)，基准扩充及验证记录见 [clrn #25](https://github.com/kevinanew/clrn/pull/25)，其中注明测试提交、APK Release 和 CI 运行。未执行或失败的用例不计入通过数量。
+
+拼三张三语全部 78 张基准来自 [reference 38673980189](https://github.com/kevinanew/clrn/actions/runs/38673980189)，使用 [APK 7235](https://github.com/kevinanew/clrn/releases/tag/android-staging-7235-72d60d0080df)，六个场景全部通过且已审查。三语独立 compare [38676799300](https://github.com/kevinanew/clrn/actions/runs/38676799300) 全部通过。
 
 通过 GitHub CLI 指定包含工作流的分支和经确认的 Release 标签，生成候选基准：
 
@@ -47,7 +59,7 @@ gh workflow run android-visual.yml --repo kevinanew/clrn \
   -f release_tag='android-staging-<构建编号>-<提交前12位>'
 ```
 
-在 PR 验证期间，将 `--ref master` 替换为 PR 分支。工作流至少运行过一次后可通过 CLI 指定分支；Actions 网页中的手动运行入口还要求工作流存在于默认分支。成功后下载 `android-staging-reference-*` 产物，审查图片，再将 PNG 放回 `android/snapshots/android-35-x86_64-720x1280-en/`，通过 PR 更新。reference 仅生成候选基准，不代表比较通过。
+在 PR 验证期间，将 `--ref master` 替换为 PR 分支。工作流至少运行过一次后可通过 CLI 指定分支；Actions 网页中的手动运行入口还要求工作流存在于默认分支。成功后下载 `android-staging-reference-*` 产物，审查图片，再将 PNG 放回 `android/snapshots/android-35-x86_64-720x1280-<locale>/`，通过 PR 更新。reference 仅生成候选基准，不代表比较通过。
 
 本机调试可显式生成参考图，保存在被 Git 忽略的 `android/snapshots/local/`，不覆盖 CI 正式基准：
 
@@ -55,4 +67,38 @@ gh workflow run android-visual.yml --repo kevinanew/clrn \
 ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visual.mjs
 ```
 
-新增用例使用 APK 暴露的原生 `testID`，先等待目标控件就绪，再等待连续截图稳定。不要用坐标硬点、固定长等待、吞掉初始化失败或自动更新基准来让比较变绿。需要登录的后续案例必须接入现有账号池和账号级 concurrency，避免与 H5 用例互踢会话。
+牌桌组在 JDK 17 环境构建固定 Playwright 1.61.1 官方提交的原生驱动，修正持续动画时的空闲等待、无障碍树空节点遍历，并增加直接读取目标节点的命令，避免短时提示消失前反复序列化整棵牌桌树。CI 自动读取并校验源码；本机先将官方提交 `39e3553a4f283a41134d75d7e404484bd9e6865a` 检出到 `.ttyctl/playwright-driver-source`，设置 `ANDROID_HOME` 后运行 `node android/build-driver.mjs`。补丁和 APK 均位于忽略目录，不修改被测应用或游戏时钟。
+
+新增用例使用 APK 暴露的原生 `testID`，等待目标控件就绪和位置稳定后，在实时控件边界内点击或滑动，不依赖固定屏幕坐标。先等待业务就绪标记，再等待截图稳定；像素阈值保持 `maxDiffPixels: 0`。版本、日期、输入光标和横幅自动轮播图案采用显式小区域遮罩，报告同时保存原始截图与遮罩原因，遮罩面积超过 12% 会失败。
+
+`ANDROID_GROUP` 支持 `guest`、`account`、`social`、`rooms`、`wallet-help`、`records`、`texas`、`zhajinhua` 和 `all`；`ANDROID_LOCALE` 支持 `en`、`zh-Hans`、`zh-Hant`。Actions 默认全组、全语言，也可用 `filter` 缩小调试范围。compare 每组出现三次失败即停止该组，reference 则继续遍历独立场景，报告中的未执行用例不计为通过。
+
+代理仅绑定主机回环地址，控制接口和夹具服务使用每轮随机令牌。只对显式选定的专用模拟器安装临时 CA 和配置代理，结束时还原代理设置；此环境不应拿来运行个人应用。
+
+统计说明等两秒短时提示在触发前准备底层页面遮罩，触发后由原生驱动连续采集真实屏幕，再统一编码传输，避免压缩与传输耗尽提示显示时间；用设备时间验证像素连续稳定至少 250 毫秒，并断言提示在每帧截图前后都可见，背景遮罩不覆盖提示面板；普通页面继续要求连续两秒稳定，所有截图仍要求零差异像素。
+
+拼三张比牌选择框会独立闪烁，采用分区相位比较：保留一张完整真实截图作基准，页面其余像素须连续稳定两秒并匹配基准；四个玩家区域各自在真实动画帧中匹配对应区域。使用与普通截图相同的 Playwright 比较器、`threshold: 0.1` 和 `maxDiffPixels: 0`，不遮掉玩家内容，也不合成不同时间的截图。报告附上区域定义及各区域匹配时的完整原图，所有像素都有对应比较。
+
+原生套件关闭 Playwright 的后台 WebView 发现；后台 ADB 探测失败会关闭整个设备连接，而本套件不使用浏览器调试接口。原生操作、截图及应用错误仍正常失败，不自动重试场景。
+
+列表滚动固定后，三语高级建房基准来自 [38674831805](https://github.com/kevinanew/clrn/actions/runs/38674831805) 的八个通过场景和 [38675676317](https://github.com/kevinanew/clrn/actions/runs/38675676317) 的简体德州场景；三语新版战绩页脚来自完整通过的 [38674838931](https://github.com/kevinanew/clrn/actions/runs/38674838931)，其余 87 张新版战绩图与原基准匹配。
+
+德州新增 110 张已审查基准来自 [reference 38673123965](https://github.com/kevinanew/clrn/actions/runs/38673123965) 的完整通过场景，清单覆盖新版牌谱、牌局、主题及面板变体、满桌/旁观/保座和大厅变体；未接收同轮失败场景及使用旧 UUID 遮罩的排行榜。其余状态来源见后续记录。
+
+德州三语开局前与扩展面板 96 张基准来自全部通过的 [38675400987](https://github.com/kevinanew/clrn/actions/runs/38675400987)，已审查新增及变化图，并更新固定房号和 UUID 遮罩。
+
+礼品卡兑换三语基准来自 [38676970410](https://github.com/kevinanew/clrn/actions/runs/38676970410) 与 [APK 7236](https://github.com/kevinanew/clrn/releases/tag/android-staging-7236-923ccc1008dd)，已检查输入提示完整显示且不覆盖扫码入口。
+
+德州另有 24 张新增及 40 张更新基准来自 [38676785782](https://github.com/kevinanew/clrn/actions/runs/38676785782) 的完整通过场景，覆盖简体满桌/旁观、繁体面板变体、英文等待和大厅；该轮失败场景的部分截图未接收。
+
+英文牌局与操作的最后 29 张基准来自全部通过的 [38682440621](https://github.com/kevinanew/clrn/actions/runs/38682440621)，使用 APK 7236；逐图审查后已补齐 763 个正式截图状态。
+
+三语德州完整 285 个状态的 [reference 38681586730](https://github.com/kevinanew/clrn/actions/runs/38681586730) 全部通过（APK 7236）。牌谱页码仅遮罩实测光标细条，提示框完整保留；该轮变化图已单独审查，其余基准保持匹配。
+
+旧版战绩分页加载截图复用 `scrollToEnd`，在末行真正抵达底部并稳定后截图，避免仅露出房名时提前停止。三语新旧战绩共 186 个状态的 [compare 38687644002](https://github.com/kevinanew/clrn/actions/runs/38687644002) 全部通过，未修改战绩基准。
+
+原生旧版分页保留应用真实的十秒请求截止时间；快速滚至页尾后逐帧确认进度控件仍可见，采用 250 毫秒稳定期截取加载态。释放人工挂起后通过正常回滑、触底恢复可能超时的分页，再等待末行贴底；不暂停应用时钟，也不把进度控件消失后的页面算作加载态。
+
+拼三张圆形加注按钮的 PNG 外缘有透明度，背景计时遮罩按一像素内缩的实心区域裁剪，按钮文字和主体继续比较。三语未看牌、已看牌共六张基准来自全部通过的 [reference 38688512253](https://github.com/kevinanew/clrn/actions/runs/38688512253)；逐图审查确认变化仅位于倒计时与按钮顶部边缘交叠处，其余牌局基准保留。
+
+安卓密码输入字号调整为 14 后，英文提示完整保持一行。三语密码页基准来自全部通过的 [reference 38707410687](https://github.com/kevinanew/clrn/actions/runs/38707410687)，使用 [APK 7237](https://github.com/kevinanew/clrn/releases/tag/android-staging-7237-35d1407ceb85)；逐图审查后仅更新三张密码页，其余 760 张基准保持不变。
