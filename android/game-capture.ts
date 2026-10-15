@@ -2,7 +2,7 @@ import type { AndroidDevice } from 'playwright';
 import presentation from '../visual/fixtures/game-presentation.json';
 import type { TestInfo } from '@playwright/test';
 import { compareScreenshot } from './device';
-import { gameNodes, gameReady } from './game-controls';
+import { gameNodes, gameReady, gameMarker } from './game-controls';
 import { expect } from '@playwright/test';
 import type { ScreenshotMask } from './screenshot';
 import { foregroundPanels, visibleMasks, networkStatusMask } from './game-masks';
@@ -85,8 +85,8 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
   }
   /** 不允许把提示消失后的稳定页面当成提示截图。 */
   const assertTransient = async () => {
-    expect((await gameNodes(device)).some(node => node.res === transientMarker && node.text),
-      `${transientMarker} 必须在截图前后可见`).toBe(true);
+    expect((await gameMarker(device, transientMarker!))?.text,
+      `${transientMarker} 必须在截图前后可见`).toBeTruthy();
   };
   await compareScreenshot(device, name, testInfo, masks, transientMarker ? assertTransient : undefined);
 }

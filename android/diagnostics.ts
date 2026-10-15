@@ -1,6 +1,8 @@
 import type { AndroidDevice } from 'playwright';
 import type { TestInfo } from '@playwright/test';
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { adb } from './device';
 
 /**
@@ -16,7 +18,9 @@ export async function captureFailure(device: AndroidDevice, testInfo: TestInfo):
   }).catch(() => undefined);
   try {
     const filename = testInfo.outputPath('runtime.log');
-    const logs = [adb('logcat', '-d', '-b', 'all', '*:E'),
+    const hostLog = process.env.GITHUB_ACTIONS === 'true'
+      ? await readFile(path.join(tmpdir(), `adb.${process.getuid!()}.log`), 'utf8').catch(() => '') : '';
+    const logs = [adb('logcat', '-d', '-b', 'all', '*:E'), hostLog,
       adb('logcat', '-d', '-b', 'events', 'am_kill:I', 'am_proc_died:I', 'am_crash:I', 'am_anr:I', '*:S')].join('\n').split('\n')
       .filter(line => !/(access_token|refresh_token|authorization|password|Bearer\s)/i.test(line)
         && !(process.env.VISUAL_PASSWORD && line.includes(process.env.VISUAL_PASSWORD))).join('\n');

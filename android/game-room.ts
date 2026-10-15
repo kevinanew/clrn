@@ -4,7 +4,7 @@ import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 import { ensureRoomBalance, type Account, type RoomSession } from '../visual/cases/_shared/room';
 import { dismissKeyboard } from './keyboard';
 import { tap, returnToTabs, reveal } from './navigation';
-import { gameReady, gameGone } from './game-controls';
+import { gameReady, gameGone, gameNodes } from './game-controls';
 import { enterTexasRoom } from '../visual/cases/texas-holdem/room';
 
 /**
@@ -60,5 +60,11 @@ export async function createGameRoom(device: AndroidDevice, proxy: Mitmproxy,
   await gameReady(device, 'run-game-view');
   await gameGone(device, 'game-splash-screen-bg');
   await gameReady(device, 'menu-button');
+  if (game === 'zhajinhua') {
+    // 菜单比真实初始桌况更早挂载；完整九个座位就绪后才能发送牌局回放。
+    await expect.poll(async () => (await gameNodes(device)).filter(node => /^zhajinhua-seat-[1-9]$/.test(node.res || '')).length,
+      { timeout: 45_000 }).toBe(9);
+    await gameReady(device, 'zhajinhua-text-room-name', 'TestRoom');
+  }
   return room!;
 }

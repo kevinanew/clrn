@@ -60,7 +60,7 @@ export async function launchApplication(options: { gameDriver?: boolean } = {}):
   if (options.gameDriver) {
     const driver = path.resolve('.ttyctl/android-driver');
     const source = JSON.parse(readFileSync(path.join(driver, 'source.json'), 'utf8'));
-    if (source.revision !== '39e3553a4f283a41134d75d7e404484bd9e6865a' || source.patch !== 1) throw new Error('牌桌驱动构建身份无效。');
+    if (source.revision !== '39e3553a4f283a41134d75d7e404484bd9e6865a' || source.patch !== 2) throw new Error('牌桌驱动构建身份无效。');
     for (const pkg of ['com.microsoft.playwright.androiddriver.test', 'com.microsoft.playwright.androiddriver']) {
       if (adb('shell', 'pm', 'list', 'packages', pkg).includes(`package:${pkg}`)) adb('uninstall', pkg);
     }
@@ -71,17 +71,12 @@ export async function launchApplication(options: { gameDriver?: boolean } = {}):
   await Promise.all(devices.filter(item => item !== device).map(item => item.close()));
   if (!device) throw new Error('未找到指定模拟器。');
   device.setDefaultTimeout(30_000);
-  // Playwright 后台探测 WebView 出错时会关闭整个设备；保留原始原因，继续正常抛错。
+  // 此套件只操作原生控件；后台 WebView 探测的 ADB FAIL 会误关整个连接。
+  // 关闭无用的浏览器发现，不重试或吞掉原生控件、截图及应用自身的错误。
   const implementation = (device as unknown as { _connection: { toImpl(device: AndroidDevice): {
-    _refreshWebViews(): Promise<void> } } })._connection.toImpl(device);
-  const refreshWebViews = implementation._refreshWebViews.bind(implementation);
-  implementation._refreshWebViews = /** 记录后台探测失败并维持 Playwright 原有关闭行为。 */ async () => {
-    try { await refreshWebViews(); }
-    catch (error) {
-      console.error('ANDROID > WebView 后台探测失败：', String(error));
-      throw error;
-    }
-  };
+    _pollingWebViews?: NodeJS.Timeout; _refreshWebViews(): Promise<void> } } })._connection.toImpl(device);
+  clearTimeout(implementation._pollingWebViews);
+  implementation._refreshWebViews = /** 原生测试无需发现可调试的 WebView。 */ async () => {};
   return device;
 }
 

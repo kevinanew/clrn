@@ -20,8 +20,31 @@ const patched = source
   .replace('UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());',
     'androidx.test.uiautomator.Configurator.getInstance().setWaitForIdleTimeout(100);\n    UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());')
   .replace('for (int i = 0; i < node.getChildCount(); ++i)\n      children.put(serializeA11yNode(node.getChild(i)));',
-    'for (int i = 0; i < node.getChildCount(); ++i) {\n      AccessibilityNodeInfo child = node.getChild(i);\n      if (child != null) children.put(serializeA11yNode(child));\n    }');
-if (!patched.includes('setWaitForIdleTimeout(100)') || !patched.includes('if (child != null)')) throw new Error('原生驱动补丁没有完整应用。');
+    'for (int i = 0; i < node.getChildCount(); ++i) {\n      AccessibilityNodeInfo child = node.getChild(i);\n      if (child != null) children.put(serializeA11yNode(child));\n    }')
+  .replace('private static JSONObject tree(UiDevice device)', `
+  // 短时提示只查询当前节点，避免前后断言重复序列化整棵牌桌树而错过提示。
+  private static JSONObject marker(AccessibilityNodeInfo node, String resource) throws JSONException {
+    if (node == null) return null;
+    if (resource.equals(node.getViewIdResourceName())) {
+      Rect bounds = new Rect();
+      node.getBoundsInScreen(bounds);
+      if (!bounds.isEmpty()) return info(node);
+    }
+    for (int index = 0; index < node.getChildCount(); index++) {
+      JSONObject found = marker(node.getChild(index), resource);
+      if (found != null) return found;
+    }
+    return null;
+  }
+
+  private static JSONObject tree(UiDevice device)`)
+  .replace('case "tree":', `case "marker":
+              JSONObject found = marker(getRootA11yNode(device), params.getString("resource"));
+              response.put("result", found == null ? JSONObject.NULL : found);
+              break;
+            case "tree":`);
+if (!patched.includes('setWaitForIdleTimeout(100)') || !patched.includes('if (child != null)')
+  || !patched.includes('case "marker":')) throw new Error('原生驱动补丁没有完整应用。');
 writeFileSync(java, patched);
 const gradle = path.join(directory, 'build.gradle');
 writeFileSync(gradle, readFileSync(gradle, 'utf8').replaceAll('jcenter()', 'mavenCentral()'));
@@ -31,5 +54,5 @@ const output = path.resolve('.ttyctl/android-driver');
 mkdirSync(output, { recursive: true });
 copyFileSync(path.join(directory, 'app/build/outputs/apk/debug/app-debug.apk'), path.join(output, 'android-driver-target.apk'));
 copyFileSync(path.join(directory, 'app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk'), path.join(output, 'android-driver.apk'));
-writeFileSync(path.join(output, 'source.json'), JSON.stringify({ revision, patch: 1 }));
+writeFileSync(path.join(output, 'source.json'), JSON.stringify({ revision, patch: 2 }));
 console.log('原生控件驱动已构建，应用画面和动画保持原样。');

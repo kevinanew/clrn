@@ -8,6 +8,24 @@ export type NativeNode = { res?: string; text?: string; enabled?: boolean; check
   bounds: ScreenshotBounds; children?: NativeNode[] };
 
 /**
+ * 快速读取一个真实提示节点，用于截图前后的短时可见性断言。
+ * @param device - 使用固定补丁驱动的模拟器连接。
+ * @param resource - 提示控件标记。
+ */
+export async function gameMarker(device: AndroidDevice, resource: string): Promise<NativeNode | null> {
+  const implementation = (device as unknown as { _connection: { toImpl(device: AndroidDevice): {
+    _send(method: string, parameters: { resource: string }): Promise<NativeNode | null> } } })._connection.toImpl(device);
+  const timeout = new AbortController();
+  try {
+    const node = await Promise.race([
+      implementation._send('marker', { resource }),
+      setTimeout(5000, undefined, { signal: timeout.signal }).then(() => { throw new Error('原生提示节点查询超时。'); }),
+    ]);
+    return node && flattenNodes(node).length ? node : null;
+  } finally { timeout.abort(); }
+}
+
+/**
  * 一次读取原生无障碍树，避免重复 ID 及动画期间逐字段查询导致长时间阻塞。
  * 固定的 Playwright 1.61.1 驱动已提供 tree 命令；协议变化时明确失败。
  * @param device - 本机进程内创建的原生驱动连接。

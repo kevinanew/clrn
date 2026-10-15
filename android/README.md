@@ -59,7 +59,7 @@ gh workflow run android-visual.yml --repo kevinanew/clrn \
   -f release_tag='android-staging-<构建编号>-<提交前12位>'
 ```
 
-在 PR 验证期间，将 `--ref master` 替换为 PR 分支。工作流至少运行过一次后可通过 CLI 指定分支；Actions 网页中的手动运行入口还要求工作流存在于默认分支。成功后下载 `android-staging-reference-*` 产物，审查图片，再将 PNG 放回 `android/snapshots/android-35-x86_64-720x1280-en/`，通过 PR 更新。reference 仅生成候选基准，不代表比较通过。
+在 PR 验证期间，将 `--ref master` 替换为 PR 分支。工作流至少运行过一次后可通过 CLI 指定分支；Actions 网页中的手动运行入口还要求工作流存在于默认分支。成功后下载 `android-staging-reference-*` 产物，审查图片，再将 PNG 放回 `android/snapshots/android-35-x86_64-720x1280-<locale>/`，通过 PR 更新。reference 仅生成候选基准，不代表比较通过。
 
 本机调试可显式生成参考图，保存在被 Git 忽略的 `android/snapshots/local/`，不覆盖 CI 正式基准：
 
@@ -67,7 +67,7 @@ gh workflow run android-visual.yml --repo kevinanew/clrn \
 ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visual.mjs
 ```
 
-牌桌组在 JDK 17 环境构建固定 Playwright 1.61.1 官方提交的原生驱动，仅修正持续动画时的空闲等待和无障碍树空节点遍历。CI 自动读取并校验源码；本机先将官方提交 `39e3553a4f283a41134d75d7e404484bd9e6865a` 检出到 `.ttyctl/playwright-driver-source`，设置 `ANDROID_HOME` 后运行 `node android/build-driver.mjs`。补丁和 APK 均位于忽略目录，不修改被测应用或游戏时钟。
+牌桌组在 JDK 17 环境构建固定 Playwright 1.61.1 官方提交的原生驱动，修正持续动画时的空闲等待、无障碍树空节点遍历，并增加直接读取目标节点的命令，避免短时提示消失前反复序列化整棵牌桌树。CI 自动读取并校验源码；本机先将官方提交 `39e3553a4f283a41134d75d7e404484bd9e6865a` 检出到 `.ttyctl/playwright-driver-source`，设置 `ANDROID_HOME` 后运行 `node android/build-driver.mjs`。补丁和 APK 均位于忽略目录，不修改被测应用或游戏时钟。
 
 新增用例使用 APK 暴露的原生 `testID`，等待目标控件就绪和位置稳定后，在实时控件边界内点击或滑动，不依赖固定屏幕坐标。先等待业务就绪标记，再等待截图稳定；像素阈值保持 `maxDiffPixels: 0`。版本、日期、输入光标和横幅自动轮播图案采用显式小区域遮罩，报告同时保存原始截图与遮罩原因，遮罩面积超过 12% 会失败。
 
@@ -79,3 +79,6 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 
 拼三张比牌选择框会独立闪烁，采用分区相位比较：保留一张完整真实截图作基准，页面其余像素须连续稳定两秒并匹配基准；四个玩家区域各自在真实动画帧中匹配对应区域。使用与普通截图相同的 Playwright 比较器、`threshold: 0.1` 和 `maxDiffPixels: 0`，不遮掉玩家内容，也不合成不同时间的截图。报告附上区域定义及各区域匹配时的完整原图，所有像素都有对应比较。
 
+原生套件关闭 Playwright 的后台 WebView 发现；后台 ADB 探测失败会关闭整个设备连接，而本套件不使用浏览器调试接口。原生操作、截图及应用错误仍正常失败，不自动重试场景。
+
+列表滚动固定后，三语高级建房基准来自 [38674831805](https://github.com/kevinanew/clrn/actions/runs/38674831805) 的八个通过场景和 [38675676317](https://github.com/kevinanew/clrn/actions/runs/38675676317) 的简体德州场景；三语新版战绩页脚来自完整通过的 [38674838931](https://github.com/kevinanew/clrn/actions/runs/38674838931)，其余 87 张新版战绩图与原基准匹配。

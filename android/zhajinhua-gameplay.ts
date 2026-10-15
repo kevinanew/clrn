@@ -22,7 +22,10 @@ export async function zhajinhuaGameplay(device: AndroidDevice, proxy: Mitmproxy,
    */
   const send = (data: unknown) => replay(proxy, 'zhajinhua', roomId, data);
   await send(restoreTable(self));
-  await gameReady(device, `zhajinhua-player-container-${PLAYER_IDS[0]}`);
+  await expect.poll(async () => (await gameNodes(device))
+    .filter(node => node.res?.startsWith('zhajinhua-player-container-')).length, { timeout: 30_000 }).toBe(5);
+  await expect.poll(async () => (await gameNodes(device)).filter(node => node.res === 'player_card').length,
+    { timeout: 30_000 }).toBe(15);
   await send(events([restoreTable(self).queue[0]]));
   await gameGone(device, 'player_tips_text');
   await gameReady(device, 'zhajinhua-operation-button-call');
