@@ -49,6 +49,8 @@ APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使�
 
 应用修复集中在 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)。当前基准扩充和全量 compare 尚在验证，完成记录会同时注明测试提交、APK Release 及 CI 运行，未执行或失败的用例不计入通过数量。
 
+拼三张三语全部 78 张基准来自 [reference 38673980189](https://github.com/kevinanew/clrn/actions/runs/38673980189)，使用 [APK 7235](https://github.com/kevinanew/clrn/releases/tag/android-staging-7235-72d60d0080df)，六个场景全部通过且已审查。独立比较结果另行记录。
+
 通过 GitHub CLI 指定包含工作流的分支和经确认的 Release 标签，生成候选基准：
 
 ```sh
