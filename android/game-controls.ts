@@ -16,15 +16,22 @@ export async function gameNodes(device: AndroidDevice): Promise<NativeNode[]> {
   const internal = device as unknown as { _connection: { toImpl(device: AndroidDevice): {
     _send(method: string): Promise<NativeNode> } } };
   for (let attempt = 0; ; attempt++) {
+    const timeout = new AbortController();
     try {
-      const root = await internal._connection.toImpl(device)._send('tree');
+      // 内部协议不受 device.setDefaultTimeout 约束；断连时不能一直等到整例超时。
+      const root = await Promise.race([
+        internal._connection.toImpl(device)._send('tree'),
+        setTimeout(30_000, undefined, { signal: timeout.signal }).then(() => {
+          throw new Error('原生控件树查询超过 30 秒，驱动未响应。');
+        }),
+      ]);
       if (!root?.bounds || !Array.isArray(root.children)) throw new Error('原生驱动没有返回完整控件树。');
       return flattenNodes(root);
     } catch (error) {
       // 转场会在驱动遍历过程中移除子节点；重读整棵树，不返回残缺或伪造的空结果。
       if (attempt >= 4 || !/NullPointerException|StaleObjectException/.test(String(error))) throw error;
       await setTimeout(250);
-    }
+    } finally { timeout.abort(); }
   }
 }
 

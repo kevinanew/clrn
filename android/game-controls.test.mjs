@@ -52,3 +52,14 @@ test('Fabric 压平聊天文字为兄弟节点时仍按消息行边界严格校�
   const behind = { res: 'card', bounds: { x: 100, y: 1100, width: 20, height: 30 } };
   assert.deepEqual(gameNodesWithin([row, card, behind], 'message').filter(node => node.res === 'card'), [card]);
 });
+
+test('无响应的原生驱动在查询超时后失败，留出用例清理时间', async context => {
+  context.mock.timers.enable({ apis: ['setTimeout'] });
+  const query = gameNodes({ _connection: {
+    /** 模拟已连接但不返回响应的原生驱动。 */
+    toImpl: () => ({ /** 持续等待响应。 */ _send: () => new Promise(() => {}) }),
+  } });
+  const rejected = assert.rejects(query, /超过 30 秒/);
+  context.mock.timers.tick(30_000);
+  await rejected;
+});
