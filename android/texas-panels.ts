@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { REPLAY_PLAYER_IDS } from '../visual/cases/texas-holdem/replayData';
-import { gameGone, gameNodes, gameReady, gameTap, gameTextWithin } from './game-controls';
+import { flattenNodes, gameGone, gameNodes, gameReady, gameSemanticText, gameTap, gameTextWithin } from './game-controls';
 import { captureGameThemes, closeGameMask, gameMenu } from './game-pregame';
 import { gameCardNames, replay } from './game-replay';
 import { adb, applicationId } from './device';
@@ -91,8 +91,23 @@ export async function texasPanels(context: TexasContext): Promise<void> {
   await capture('buy_in_review');
   await gameTap(device, 'buy-in-review-close-button');
   await gameGone(device, 'buy-in-review-close-button');
+  // 先清除旧回合的跟注标记，避免相同牌面让恢复等待误命中上一帧。
+  /** 读取本轮本人实际可见的玩家容器。 */
+  const ownPlayer = async () => (await gameNodes(device)).find(node => node.res === `texas-holdem-player-container-${self}`);
+  /** 跟注标记由恢复玩家资料的回调设置，可作为该回调完成的证据。 */
+  const ownCalled = async () => {
+    const player = await ownPlayer();
+    return Boolean(player && flattenNodes(player).some(node => node.res === 'texas-holdem-player-action-call'));
+  };
+  await texasEvents(context, [{ event: 'new_game', game_id: 'visual-fixed-game', settings: { small_blind: 1, big_blind: 2, ante: 0 } }]);
+  await expect.poll(ownCalled, { timeout: 30_000 }).toBe(false);
   await restoreTexas(context, {}, 'flop', true);
+  await expect.poll(ownCalled, { timeout: 30_000 }).toBe(true);
+  await expect.poll(async () => gameSemanticText(await ownPlayer(), 'text-holdem-own-balance-text'),
+    { timeout: 30_000 }).toBe('1000');
   await texasEvents(context, [{ event: 'settlement', players: [{ player_id: self, net: 180, prize: 180, stack: 1180 }] }]);
+  await expect.poll(async () => gameSemanticText(await ownPlayer(), 'text-holdem-own-balance-text'),
+    { timeout: 30_000 }).toBe('1180');
   await gameReady(device, 'texas-holdem-show-hand-card-button');
   await gameReady(device, 'texas-holdem-show-remain-community-card-button');
   await capture('hand_end');
