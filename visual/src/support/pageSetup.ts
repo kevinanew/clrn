@@ -168,16 +168,16 @@ export function buildStorageStateForScenario(
  * @param context - 首次导航前配置的浏览器上下文。
  * @param scenario - 本次执行的视觉配置或代理故障场景。
  * @param page - 执行操作的 Playwright 页面。
- * @param options - useMitmproxy 指定是否由专用代理处理网络依赖。
+ * @param options - useMitmproxy 指定网络代理；animations 为 allow 时保留应用真实动效。
  */
 export async function setupContextForScenario(
   context: BrowserContext,
   scenario: VisualScenario,
   page?: Page,
-  options: { useMitmproxy?: boolean } = {},
+  options: { useMitmproxy?: boolean; animations?: 'allow' | 'disabled' } = {},
 ): Promise<void> {
   await fixNavigatorLanguage(context);
-  await disableAnimations(context);
+  if (options.animations !== 'allow') await disableAnimations(context);
   await mockVisualNetworkDependencies(context, {
     realPrivateRoom: scenario.group === 'texas-holdem' || scenario.group === 'zhajinhua',
     useMitmproxy: options.useMitmproxy,
