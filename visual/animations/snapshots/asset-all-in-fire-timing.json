@@ -1,0 +1,58 @@
+[
+  {
+    "index": 0,
+    "timestamp": 0,
+    "duration": 123000,
+    "width": 100,
+    "height": 100
+  },
+  {
+    "index": 1,
+    "timestamp": 123000,
+    "duration": 123000,
+    "width": 100,
+    "height": 100
+  },
+  {
+    "index": 2,
+    "timestamp": 246000,
+    "duration": 123000,
+    "width": 100,
+    "height": 100
+  },
+  {
+    "index": 3,
+    "timestamp": 369000,
+    "duration": 123000,
+    "width": 100,
+    "height": 100
+  },
+  {
+    "index": 4,
+    "timestamp": 492000,
+    "duration": 123000,
+    "width": 100,
+    "height": 100
+  },
+  {
+    "index": 5,
+    "timestamp": 615000,
+    "duration": 123000,
+    "width": 100,
+    "height": 100
+  },
+  {
+    "index": 6,
+    "timestamp": 738000,
+    "duration": 123000,
+    "width": 100,
+    "height": 100
+  },
+  {
+    "index": 7,
+    "timestamp": 861000,
+    "duration": 123000,
+    "width": 100,
+    "height": 100
+  }
+]
