@@ -37,3 +37,17 @@ test('Fabric 压平后的全屏兄弟节点不能误认为不透明面板', () =
   const root = { bounds: full, children: [background, touch, panel] };
   assert.deepEqual(foregroundPanels([root, background, touch, panel, marker]), [panel]);
 });
+
+test('两种玩法摊牌后的牌面必须参与比较，不能被下面的头像倒计时遮罩盖住', () => {
+  for (const res of ['player_cards_container', 'texas-holdem-player-hole-cards']) {
+    const bounds = { x: 31, y: 696, width: 100, height: 100 };
+    const countdown = { res: 'zhajinhua-active-countdown', bounds };
+    const cards = { res, bounds };
+    const panels = foregroundPanels([countdown, cards]);
+    assert.deepEqual(panels, [cards]);
+    const masks = visibleMasks({ x: 29, y: 694, width: 104, height: 104, reason: '倒计时' }, countdown, panels);
+    assert.equal(masks.some(mask => 80 >= mask.x && 80 < mask.x + mask.width
+      && 740 >= mask.y && 740 < mask.y + mask.height), false);
+    assert.equal(masks.reduce((sum, mask) => sum + mask.width * mask.height, 0), 104 ** 2 - 98 ** 2);
+  }
+});

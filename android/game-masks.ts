@@ -13,7 +13,9 @@ export function foregroundPanels(nodes: NativeNode[]): NativeNode[] {
     'in-game-audio-microphone-button', 'report-popup-title', 'BlockPlayerConfirmPopup:title', 'buy-in-review-close-button',
     'view-community-close-button', 'raise-blind-detail', 'auto-rebuy-popup', 'report-pair-play-close-button',
     'personal-leader-board-close-button', 'level-up-close-button', 'common-alert-message', 'in_game_report_message_component']);
-  const panels: NativeNode[] = nodes.filter(node => node.res === 'base-review-board-container');
+  // 摊牌位于头像倒计时之上；即使 Android 将牌面容器裁到头像范围，也必须保留其中的牌面。
+  const panels: NativeNode[] = nodes.filter(node => ['base-review-board-container',
+    'player_cards_container', 'texas-holdem-player-hole-cards'].includes(node.res || ''));
   for (const marker of nodes.filter(node => markers.has(node.res || ''))) {
     /**
      * 根据原生父子关系定位这个前景控件。
