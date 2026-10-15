@@ -94,3 +94,7 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 英文牌局与操作的最后 29 张基准来自全部通过的 [38682440621](https://github.com/kevinanew/clrn/actions/runs/38682440621)，使用 APK 7236；逐图审查后已补齐 763 个正式截图状态。
 
 三语德州完整 285 个状态的 [reference 38681586730](https://github.com/kevinanew/clrn/actions/runs/38681586730) 全部通过（APK 7236）。牌谱页码仅遮罩实测光标细条，提示框完整保留；该轮变化图已单独审查，其余基准保持匹配。
+
+旧版战绩分页加载截图复用 `scrollToEnd`，在末行真正抵达底部并稳定后截图，避免仅露出房名时提前停止。三语新旧战绩共 186 个状态的 [compare 38687644002](https://github.com/kevinanew/clrn/actions/runs/38687644002) 全部通过，未修改战绩基准。
+
+拼三张圆形加注按钮的 PNG 外缘有透明度，背景计时遮罩按一像素内缩的实心区域裁剪，按钮文字和主体继续比较。三语未看牌、已看牌共六张基准来自全部通过的 [reference 38688512253](https://github.com/kevinanew/clrn/actions/runs/38688512253)；逐图审查确认变化仅位于倒计时与按钮顶部边缘交叠处，其余牌局基准保留。
