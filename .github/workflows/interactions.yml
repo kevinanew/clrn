@@ -10,6 +10,7 @@ on:
       - 'e2e/freshchat.config.ts'
       - 'e2e/package*.json'
       - 'scripts/*ci*'
+      - 'scripts/prepare-test-account*'
       - '.github/workflows/interactions.yml'
   workflow_call:
     inputs:
@@ -53,11 +54,12 @@ jobs:
         working-directory: e2e
     steps:
       - uses: actions/checkout@v4
-      - name: 注入本任务独占的 CI 账号
+      - name: 准备本任务独占账号及金币余额
         working-directory: .
         env:
           CLRN_CI_ACCOUNT: ${{ needs.account.outputs.account }}
           CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
+          TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
         run: node scripts/configure-ci-account.mjs
       - name: 安装测试依赖
         run: npm ci

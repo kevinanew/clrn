@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -20,8 +20,8 @@ async function fixture(t, usernames = ['parallel01', 'parallel02']) {
   const directory = await mkdtemp(join(tmpdir(), 'clrn-account-lock-test-'));
   const pool = join(directory, 'accounts.json');
   await writeFile(pool, JSON.stringify({
-    accounts: usernames.map((username, index) => ({
-      username, password: 'mock-password', userId: `mock-user-${index}`,
+    accounts: usernames.map(username => ({
+      username, password: 'mock-password', userId: '11111111-2222-4333-8444-555555555555',
     })),
   }), { mode: 0o600 });
   t.after(() => rm(directory, { recursive: true, force: true }));
@@ -37,8 +37,8 @@ async function fixture(t, usernames = ['parallel01', 'parallel02']) {
  * @returns 子进程及等待其退出的 Promise。
  */
 function launch(t, pool, command) {
-  const child = spawn(process.execPath, [launcher, '--', ...command], {
-    env: { ...process.env, CLRN_TEST_ACCOUNT_POOL: pool },
+  const child = spawn(process.execPath, ['--import', fileURLToPath(new URL('./account-network-fixture.mjs', import.meta.url)), launcher, '--', ...command], {
+    env: { ...process.env, CLRN_TEST_ACCOUNT_POOL: pool, GITHUB_ENV: '', TESTING_API_TOKEN: 'test-only-token' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let stdout = '';
@@ -81,6 +81,8 @@ test('并发任务独占不同账号，池耗尽时失败，结束后可复用',
   const first = await hold(t, pool);
   const second = await hold(t, pool);
   assert.notEqual(first.identity.username, second.identity.username);
+  const prepared = (await readFile(join(directory, 'prepared-accounts'), 'utf8')).trim().split('\n');
+  assert.deepEqual(prepared.sort(), [first.identity.username, second.identity.username].sort());
   for (const run of [first, second]) {
     assert.equal(run.identity.creation, run.identity.username);
     assert.equal(run.identity.visual, run.identity.username);
@@ -162,4 +164,17 @@ test('本机启动器拒绝 CI 专用账号，包括大小写变体', async t =>
     assert.match(result.stderr, /禁止使用 CLRN 的 CI 专用账号/);
     assert.ok(!result.stdout.includes('SHOULD_NOT_START'));
   }
+});
+
+
+test('余额准备失败不启动测试命令，并释放账号锁', async t => {
+  const { directory, pool } = await fixture(t, ['parallel01']);
+  await writeFile(join(directory, 'reject-wallet'), '');
+  const run = launch(t, pool, [process.execPath, '-e', 'console.log("SHOULD_NOT_START")']);
+  const result = await run.finished;
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /准备账号登录失败/);
+  assert.ok(!result.stdout.includes('SHOULD_NOT_START'));
+  assert.ok(!result.stderr.includes('private-token'));
+  assert.deepEqual(await readdir(join(directory, 'locks')), []);
 });

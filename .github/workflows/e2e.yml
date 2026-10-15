@@ -2,7 +2,7 @@ name: H5 E2E
 
 on:
   push:
-    paths: ['e2e/**', 'scripts/*ci*', '.github/workflows/e2e.yml']
+    paths: ['e2e/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/e2e.yml']
   workflow_call:
     inputs:
       expected_application_commit:
@@ -48,11 +48,12 @@ jobs:
         working-directory: e2e
     steps:
       - uses: actions/checkout@v4
-      - name: 注入本任务独占的 CI 账号
+      - name: 准备本任务独占账号及金币余额
         working-directory: .
         env:
           CLRN_CI_ACCOUNT: ${{ needs.account.outputs.account }}
           CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
+          TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
         run: node scripts/configure-ci-account.mjs
       - name: Install dependencies
         run: npm ci

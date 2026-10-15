@@ -3,7 +3,7 @@
  *
  * @remarks
  * 例如：node scripts/with-test-account.mjs -- npm run test:functional:existing。
- * 脚本只负责分配账号和启动命令，实际测试仍由 npm/pnpm 等命令执行。
+ * 脚本负责分配账号、准备金币和启动命令，实际测试仍由 npm/pnpm 等命令执行。
  * 本机不同 worktree 共用账号池；其他机器或手工登录不会被本机锁识别。
  *
  * @packageDocumentation
@@ -13,6 +13,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ciAccounts } from './ci-accounts.mjs';
+import { prepareTestAccountCoins, readTestingApiToken } from './prepare-test-account.mjs';
 
 // node 和脚本路径占据前两个参数；可选的 -- 用于分隔脚本和测试命令。
 const args = process.argv.slice(2);
@@ -93,6 +94,8 @@ async function run() {
   try {
     // owner.json 只记录进程号和工作目录，方便排查残留锁，不保存密码。
     await writeFile(join(lock, 'owner.json'), JSON.stringify({ pid: process.pid, cwd: process.cwd() }), { mode: 0o600 });
+    await prepareTestAccountCoins(selected, await readTestingApiToken());
+    console.error('已核对本轮账号金币余额为 10000');
     // 4. 三种测试都通过环境变量读取账号；只修改子进程的配置。
     const env = {
       ...process.env,
