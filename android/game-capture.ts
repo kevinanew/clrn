@@ -62,7 +62,13 @@ export async function captureGame(device: AndroidDevice, name: string, testInfo:
         reason: `${node.res} 含两像素绘制边缘` });
       continue;
     }
-    if (['leader-board-room-id', 'game-network-proxy-code'].includes(node.res || '')
+    if (node.res === 'leader-board-room-id') {
+      // UUID 使用比例字体且每轮不同；按居中的固定文本槽遮罩，不能随字符宽度改变边缘。
+      expect(node.text).toMatch(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i);
+      add({ ...node.bounds, x: Math.round(node.bounds.x + node.bounds.width / 2) - 220, width: 440, reason: node.res });
+      continue;
+    }
+    if (node.res === 'game-network-proxy-code'
       || /^\d{1,2}:\d{2}(?::\d{2})?$/.test(node.text || '')
       || (node.res === 'countdown_timer_text' && /^\d+s$/.test(node.text || ''))
       || node.res === 'view-community-cards-countdown'

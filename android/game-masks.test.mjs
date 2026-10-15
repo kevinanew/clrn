@@ -91,3 +91,17 @@ test('网络延迟两位和三位数字引起横移时，遮罩固定且覆盖�
   const button = { x: 620, y: 72, width: 60, height: 60, reason: '牌型按钮' };
   assert.deepEqual(subtractPanel(button, twoDigits), [button]);
 });
+
+test('拼三张圆形加注按钮的透明角落仍遮罩背景计时，圆形顶部和按钮文字保持比较', () => {
+  const source = { res: 'countdown-text', bounds: { x: 345, y: 729, width: 120, height: 30 } };
+  const button = { res: 'zhajinhua-shortcut-raise-third', bounds: { x: 385, y: 750, width: 86, height: 101 }, children: [
+    { bounds: { x: 385, y: 750, width: 86, height: 83 } },
+    { text: '160', bounds: { x: 385, y: 777, width: 86, height: 29 } },
+    { text: 'Raise', bounds: { x: 398, y: 833, width: 59, height: 18 } },
+  ] };
+  const parts = visibleMasks({ ...source.bounds, reason: '真实倒计时' }, source, [button]);
+  for (const [x, y, expected] of [[413, 751, true], [414, 751, true], [415, 751, true],
+    [412, 752, true], [413, 752, true], [428, 752, false], [428, 780, false], [428, 840, false]]) {
+    assert.equal(parts.some(part => x >= part.x && x < part.x + part.width && y >= part.y && y < part.y + part.height), expected);
+  }
+});

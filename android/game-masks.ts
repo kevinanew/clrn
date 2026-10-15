@@ -57,6 +57,27 @@ export function subtractPanel(mask: ScreenshotMask, panel: ScreenshotBounds): Sc
 }
 
 /**
+ * 按圆形按钮实际图案裁剪背景遮罩，透明圆角仍属于会变化的倒计时背景。
+ * @param mask - 与按钮相交的背景动态区域。
+ * @param bounds - 原生图片节点的椭圆边界。
+ */
+function subtractRoundButton(mask: ScreenshotMask, bounds: ScreenshotBounds): ScreenshotMask[] {
+  if (mask.x >= bounds.x + bounds.width || mask.x + mask.width <= bounds.x
+    || mask.y >= bounds.y + bounds.height || mask.y + mask.height <= bounds.y) return [mask];
+  const result: ScreenshotMask[] = [];
+  const cx = bounds.x + bounds.width / 2, cy = bounds.y + bounds.height / 2;
+  for (let y = Math.floor(mask.y); y < Math.ceil(mask.y + mask.height); y++) {
+    const row = { ...mask, y, height: 1 };
+    const relative = (y + 0.5 - cy) / (bounds.height / 2);
+    if (Math.abs(relative) >= 1) { result.push(row); continue; }
+    const radius = bounds.width / 2 * Math.sqrt(1 - relative * relative);
+    const left = Math.ceil(cx - radius), right = Math.floor(cx + radius);
+    result.push(...subtractPanel(row, { x: left, y, width: right - left, height: 1 }));
+  }
+  return result;
+}
+
+/**
  * 仅裁掉覆盖当前节点的面板；面板自己的动态房号仍须排除。
  * @param mask - 当前节点对应的动态区域。
  * @param source - 对应的原生控件。
@@ -70,10 +91,18 @@ export function visibleMasks(mask: ScreenshotMask, source: NativeNode, panels: N
   const contains = (parent: NativeNode): boolean => parent === source || Boolean(parent.children?.some(contains));
   return panels.filter(panel => !contains(panel))
     // 无障碍边界取整后，面板最外一像素仍可能露出背景；买入框实测漏出两个箭头像素。
-    .reduce((parts, panel) => parts.flatMap(part => subtractPanel(part, {
+    .reduce((parts, panel) => {
+      const circle = panel.res?.startsWith('zhajinhua-shortcut-raise-') ? panel.children?.[0]?.bounds : undefined;
+      if (circle) {
+        const withoutCircle = parts.flatMap(part => subtractRoundButton(part, circle));
+        return (panel.children || []).filter(child => child.text)
+          .reduce((remaining, child) => remaining.flatMap(part => subtractPanel(part, child.bounds)), withoutCircle);
+      }
+      return parts.flatMap(part => subtractPanel(part, {
       x: panel.bounds.x + 1, y: panel.bounds.y + 1,
       width: panel.bounds.width - 2, height: panel.bounds.height - 2,
-    })), [mask]);
+      }));
+    }, [mask]);
 }
 
 /**
