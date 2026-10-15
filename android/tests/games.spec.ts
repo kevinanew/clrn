@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
 import { buildScenarios } from '../../visual/scenarios';
 import { deletePrivateGameRoom, type RoomSession } from '../../visual/cases/_shared/room';
 import { withAndroidProxy } from '../proxy';
@@ -11,13 +11,25 @@ import { gamePreGame } from '../game-pregame';
 import { runTexasScenario } from '../texas-flows';
 import { zhajinhuaGameplay } from '../zhajinhua-gameplay';
 
+const test = base.extend<{ ownedRoom: { value: RoomSession | null } }>({
+  /**
+   * 独立于用例正文的收尾阶段，确保整例超时后仍清理已登记房间。
+   * @param use - 将本轮房间登记容器交给用例，并等待框架进入收尾阶段。
+   */
+  ownedRoom: async ({}, use) => {
+    const ownedRoom: { value: RoomSession | null } = { value: null };
+    try { await use(ownedRoom); }
+    finally { if (ownedRoom.value) await deletePrivateGameRoom(ownedRoom.value); }
+  },
+});
+
 const locale = process.env.ANDROID_LOCALE || 'en';
 for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua']] as const) {
   const enabled = ['all', suite].includes(process.env.ANDROID_GROUP || 'all');
   const scenarios = enabled ? buildScenarios({ VISUAL_LOCALES: locale, VISUAL_SCOPE: 'full', VISUAL_SUITE: suite })
     .filter(scenario => scenario.viewport.label === 'mobile') : [];
   for (const scenario of scenarios) {
-    test(`${locale} / ${suite} / ${scenario.pageLabel}`, async ({}, testInfo) => {
+    test(`${locale} / ${suite} / ${scenario.pageLabel}`, async ({ ownedRoom }, testInfo) => {
       test.setTimeout(1_200_000);
       await withAndroidProxy(async proxy => {
         if (scenario.pageLabel === 'signed_in_texas_records_v2') await proxy.command('texas/records', { empty: true });
@@ -31,7 +43,7 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
           const hall = ['signed_in_texas_hall', 'signed_in_texas_hall_variants'].includes(scenario.pageLabel);
           const guest = scenario.pageLabel === 'signed_in_texas_table_states';
           if (hall || guest) await proxy.command('texas/view', { mode: hall ? 'hall' : 'guest' });
-          await createGameRoom(device, proxy, game, created => { room = created; },
+          await createGameRoom(device, proxy, game, created => { room = created; ownedRoom.value = created; },
             scenario.pageLabel === 'signed_in_texas_optional_pre_game', hall || guest);
           await testInfo.attach('created-room', { body: JSON.stringify({ roomId: room!.roomId }), contentType: 'application/json' });
           /**
@@ -67,7 +79,7 @@ for (const [suite, game] of [['texas', 'texas-holdem'], ['zhajinhua', 'zhajinhua
           try {
             // 即使创建按钮后的导航失败，也从本轮响应登记中找回房间并清理。
             room ||= (await gameSession(proxy)).room;
-            if (room) await deletePrivateGameRoom(room);
+            ownedRoom.value ||= room;
           } finally { await device.close(); }
         }
       }, game);
