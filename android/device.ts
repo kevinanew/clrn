@@ -71,6 +71,17 @@ export async function launchApplication(options: { gameDriver?: boolean } = {}):
   await Promise.all(devices.filter(item => item !== device).map(item => item.close()));
   if (!device) throw new Error('未找到指定模拟器。');
   device.setDefaultTimeout(30_000);
+  // Playwright 后台探测 WebView 出错时会关闭整个设备；保留原始原因，继续正常抛错。
+  const implementation = (device as unknown as { _connection: { toImpl(device: AndroidDevice): {
+    _refreshWebViews(): Promise<void> } } })._connection.toImpl(device);
+  const refreshWebViews = implementation._refreshWebViews.bind(implementation);
+  implementation._refreshWebViews = /** 记录后台探测失败并维持 Playwright 原有关闭行为。 */ async () => {
+    try { await refreshWebViews(); }
+    catch (error) {
+      console.error('ANDROID > WebView 后台探测失败：', String(error));
+      throw error;
+    }
+  };
   return device;
 }
 

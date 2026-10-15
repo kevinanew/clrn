@@ -45,15 +45,9 @@ APK 与构建信息发布到 **clrn 自己的 Release**。下载步骤直接使�
 
 ## 更新基准
 
-当前正在扩充并审查基准，独立 compare 全量验证完成前不能视为 CI 已通过。候选截图来自固定的 x86_64 环境，按实际通过场景和语言挑选，避免把产物中携带的旧基准误当作本轮结果。
+正式基准必须来自固定的 x86_64 CI 环境，并逐图检查。reference 产物会同时携带仓库已有图片，因此只能接收该轮实际通过的场景，不能将整个目录直接覆盖到仓库。更新后必须另跑 compare；基准生成成功不代表回归比较通过。
 
-- 账户页：每种语言的 12 个稳定场景来自 [reference 38635730370](https://github.com/kevinanew/clrn/actions/runs/38635730370)；昵称和简介另由 [reference 38637421710](https://github.com/kevinanew/clrn/actions/runs/38637421710) 补齐三语基准。
-- 游客页及四张认证冒烟图：来自 [reference 38636085095](https://github.com/kevinanew/clrn/actions/runs/38636085095)；弹窗背景中的拉霸图案使用显式遮罩后，由下述 7214 运行补齐。
-- 钱包及帮助页：三种语言各 13 个已审查场景来自 [reference 38636704445](https://github.com/kevinanew/clrn/actions/runs/38636704445)；第三方反馈页改为复用 Web 空白响应后，由下述 7214 运行补齐。
-
-另由 [reference 38638620863](https://github.com/kevinanew/clrn/actions/runs/38638620863) 的已通过部分补齐 6 张登录弹窗、3 张反馈页面和旧版战绩 60 张基准，使用 [Release 7214](https://github.com/kevinanew/clrn/releases/tag/android-staging-7214-83f9eabadfc0)。随后 [social reference 38641944393](https://github.com/kevinanew/clrn/actions/runs/38641944393) 三语全部通过，已审查并收录其中 39 张截图；搜索页统一收起输入法后再采集。[旧版战绩扩展运行 38643974954](https://github.com/kevinanew/clrn/actions/runs/38643974954) 已完成英文 32 个状态，补入 12 张新增基准。后续已补齐三语大厅搜索、英文房间 10 张及单行密码框基准，当前共审查 546 张正式基准。钱包购买历史更新了版本遮罩，英文和简体来自运行 38645206801，繁体来自 38645882574；密码框来自 38646732662，大厅搜索来自 38645201037，英文房间详情来自 38647075909。英文及繁体房间组最新完整 20 张基准来自 [reference 38650396063](https://github.com/kevinanew/clrn/actions/runs/38650396063)。简体旧版战绩另外 10 张删除和分页基准来自 38646727056，关系展开截图在改进滚动后重新验证。简体房间 10 张来自 [reference 38652547080](https://github.com/kevinanew/clrn/actions/runs/38652547080)，三语房间组均已通过基准生成。英文新版战绩完整 30 张来自 [reference 38653135207](https://github.com/kevinanew/clrn/actions/runs/38653135207)。简体新版战绩完整 30 张来自 [reference 38654314235](https://github.com/kevinanew/clrn/actions/runs/38654314235)。繁体新版战绩完整 30 张来自 [reference 38654319530](https://github.com/kevinanew/clrn/actions/runs/38654319530)。新版战绩三语基准均已完成，牌桌及全量比较仍在验证，不能算全量通过。
-
-早期运行使用 [Release 7213](https://github.com/kevinanew/clrn/releases/tag/android-staging-7213-b30e55cca0f3)。该版本包含认证页遮挡和分页组件修复，应用变更见 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)。后续大厅渐变组件修复的 APK 仍须完成全量回归。
+应用修复集中在 [laiwan_react_native #7019](https://github.com/kevinanew/laiwan_react_native/pull/7019)。当前基准扩充和全量 compare 尚在验证，完成记录会同时注明测试提交、APK Release 及 CI 运行，未执行或失败的用例不计入通过数量。
 
 通过 GitHub CLI 指定包含工作流的分支和经确认的 Release 标签，生成候选基准：
 
@@ -81,12 +75,5 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 
 统计说明等两秒短时提示采用连续 250 毫秒稳定检查，并断言提示在每次截图前后都可见；普通页面继续要求连续两秒稳定，所有截图仍要求零差异像素。
 
-三种语言旧版战绩各 32 个状态由 [reference 38655437959](https://github.com/kevinanew/clrn/actions/runs/38655437959) 在修复下拉刷新后的 7227 APK 上验证，补齐繁体 12 张缺失状态并补齐简体关系展开与切换、更新英文关系切换位置。
-
 拼三张比牌选择框会独立闪烁，采用分区相位比较：保留一张完整真实截图作基准，页面其余像素须连续稳定两秒并匹配基准；四个玩家区域各自在真实动画帧中匹配对应区域。使用与普通截图相同的 Playwright 比较器、`threshold: 0.1` 和 `maxDiffPixels: 0`，不遮掉玩家内容，也不合成不同时间的截图。报告附上区域定义及各区域匹配时的完整原图，所有像素都有对应比较。
 
-拼三张准备流程三语各 18 张、共 54 张基准来自 [reference 38662785911](https://github.com/kevinanew/clrn/actions/runs/38662785911)（APK 7231）。三个准备场景均通过且已审查；同次运行的牌局场景仍失败，没有将其未完成的截图计为通过。
-
-拼三张牌局三语完整 24 张来自 [reference 38665505197](https://github.com/kevinanew/clrn/actions/runs/38665505197)（APK 7231），全部通过并审查。德州简体、繁体各 34 张准备、可选准备、大厅及操作控件截图来自 [reference 38662780406](https://github.com/kevinanew/clrn/actions/runs/38662780406) 的完整通过场景；该次其余失败场景及英文未计入。
-
-拼三张全部三语 78 张基准已由 [reference 38670527851](https://github.com/kevinanew/clrn/actions/runs/38670527851)（APK 7235）重新生成并逐图审查；该轮完整六个场景全部通过，房号采用 Web 共用的 123456789，房号与复制图标不再遮罩。独立 compare 仍待验证。
