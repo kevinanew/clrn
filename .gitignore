@@ -19,7 +19,3 @@ visual/.visual-reference.lock/
 # 仓库检查依赖和缓存
 node_modules/
 .ruff_cache/
-android/artifacts/
-android/test-results/
-android/playwright-report/
-android/snapshots/local/
