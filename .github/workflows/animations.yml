@@ -1,0 +1,53 @@
+name: H5 动画视觉回归
+
+on:
+  pull_request:
+    paths:
+      - 'visual/**'
+      - 'e2e/helpers/staging-notice.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/animations.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'visual/**'
+      - 'e2e/helpers/staging-notice.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/animations.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  animations:
+    name: 游客搜索提示淡入
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.1-jammy
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: 安装锁定的测试依赖
+        run: npm ci
+      - name: 检查 TypeScript
+        run: npm run typecheck
+      - name: 连续三次比较动画关键帧
+        run: npx playwright test --config visual/animations/playwright.config.ts --repeat-each=3
+      - name: 保存关键帧对比和时间采样报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: animation-visual-report-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          path: |
+            visual/playwright-report/animations/
+            visual/test-results/animations/
