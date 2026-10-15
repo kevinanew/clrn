@@ -86,3 +86,5 @@ ANDROID_SERIAL=emulator-5554 ANDROID_VISUAL_MODE=reference node android/run-visu
 德州新增 110 张已审查基准来自 [reference 38673123965](https://github.com/kevinanew/clrn/actions/runs/38673123965) 的完整通过场景，清单覆盖新版牌谱、牌局、主题及面板变体、满桌/旁观/保座和大厅变体；未接收同轮失败场景及使用旧 UUID 遮罩的排行榜。剩余状态和全量 compare 仍在验证。
 
 德州三语开局前与扩展面板 96 张基准来自全部通过的 [38675400987](https://github.com/kevinanew/clrn/actions/runs/38675400987)，已审查新增及变化图，并更新固定房号和 UUID 遮罩。
+
+礼品卡兑换三语基准来自 [38676970410](https://github.com/kevinanew/clrn/actions/runs/38676970410) 与 [APK 7236](https://github.com/kevinanew/clrn/releases/tag/android-staging-7236-923ccc1008dd)，已检查输入提示完整显示且不覆盖扫码入口。
