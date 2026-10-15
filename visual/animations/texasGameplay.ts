@@ -30,12 +30,24 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     // 恢复后转入实时发牌，辅助文本仍保留恢复值；断言真正渲染的牌面数量。
     await expect(page.locator('[data-testid="community_card"] [data-testid="sprite-image-content"]')).toHaveCount(cards.length);
   }
+  // 实时 switch_player 使用牌局 operating_seconds，而不是消息中的 remain_operating_seconds。
+  await proxy.replayTexas(roomId, events(restoreTable(self, 'river').queue.map(item =>
+    item.event === 'room_status' || item.event === 'game_status'
+      ? { ...item, status: { ...(item.status as Record<string, unknown>), operating_seconds: 12 } } : item)));
+  await expect.poll(async () => {
+    await page.clock.runFor(16);
+    return page.getByTestId(`texas-holdem-player-container-${self}-operating`)
+      .getByTestId('texas-holdem-active-countdown').allTextContents();
+  }).toEqual(['120']);
+  await expect(page.getByTestId('countdown-text')).toHaveAttribute('data-seconds', '3600');
+  await page.clock.runFor(3200);
   await proxy.replayTexas(roomId, events([{ event: 'switch_player', player_id: opponent,
-    remain_operating_seconds: 12, valid_bets: { call: { amount: 20 } } }]));
+    valid_bets: { call: { amount: 20 } } }]));
   const countdown = page.getByTestId(`texas-holdem-player-container-${opponent}-operating`);
-  await expect(countdown).toBeAttached();
+  await expect(countdown.getByTestId('texas-holdem-active-countdown')).toHaveText('12');
   await captureTimeline(page, info, 'texas-countdown-operation-switch', countdown,
     { clip, times: [0, 160, 1000, 4000, 8000, 10_000] });
+  await expect(countdown.getByTestId('texas-holdem-active-countdown')).toHaveText('2');
   for (const action of ['call', 'raise', 'check', 'fold'] as const) {
     // 每个独立动作从真实的“轮到该玩家”消息开始，避免复用上个动作的已完成动画节点。
     await proxy.replayTexas(roomId, events([{ event: 'switch_player', player_id: opponent, remain_operating_seconds: 12 }]));

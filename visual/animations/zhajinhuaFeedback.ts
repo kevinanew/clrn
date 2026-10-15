@@ -30,6 +30,7 @@ export async function zhajinhuaFeedback(session: TableSession, proxy: ZhajinhuaP
   await expect(countdown).toBeInViewport();
   await captureTimeline(page, info, 'zhajinhua-countdown', countdown,
     { clip, times: [0, 1000, 3000, 6000, 9000, 11000] });
+  await expect(countdown).toHaveText('1');
   await proxy.replay(roomId, restoreTable(self, false, true));
   await expect(countdown).toHaveText('120');
   await expect(page.getByTestId('countdown-text')).toHaveAttribute('data-seconds', '3600');

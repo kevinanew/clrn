@@ -7,6 +7,21 @@ export type CaptureArea = { x: number; y: number; width: number; height: number 
 const pausedPages = new WeakSet<Page>();
 
 /**
+ * 等待浏览器真实布局通知，再运行同一虚拟时刻的测量回调；不推进动画进度。
+ * @param page - 时钟已暂停的页面。
+ */
+async function settleLayout(page: Page): Promise<void> {
+  for (let pass = 0; pass < 2; pass++) {
+    await page.evaluate(() => new Promise<void>(resolve => {
+      const observer = new ResizeObserver(() => { observer.disconnect(); resolve(); });
+      observer.observe(document.documentElement);
+    }));
+    // RN Web 的 onLayout 经 ResizeObserver -> setTimeout(0) -> React 更新后才生效。
+    await page.clock.runFor(0);
+  }
+}
+
+/**
  * 读取元素及祖先的实际呈现状态，只读样式，不修改透明度或位置。
  * @param target - 动画主体或内容标记。
  */
@@ -133,6 +148,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       await seekCssAnimations(page, milliseconds);
       // 新挂载的边框、牌面或道具可能仍在加载。时钟保持暂停，资源就绪后再比较同一关键帧。
       await ensureLocalImagesLoaded(page);
+      await settleLayout(page);
       const sampledTime = milliseconds + (options.startOffset || 0);
       samples.push({ milliseconds: sampledTime, elements: await appearance(target) });
       // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。
