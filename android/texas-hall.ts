@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { REPLAY_PLAYER_IDS } from '../visual/cases/texas-holdem/replayData';
-import { flattenNodes, gameGone, gameNodes, gameReady, gameTap } from './game-controls';
+import { gameGone, gameNodes, gameReady, gameTap, gameTextWithin } from './game-controls';
 import { closeGameMask } from './game-pregame';
 import { adb } from './device';
 import { dismissKeyboard } from './keyboard';
@@ -103,8 +103,8 @@ export async function texasHallVariants(context: TexasContext): Promise<void> {
   await enableGameSetting(device, 'operation-time');
   await gameTap(device, 'texas-holdem-delay-operation-button');
   await restoreTexas(context);
-  await expect.poll(async () => flattenNodes(await gameReady(device, 'texas-holdem-delay-operation-button'))
-    .some(node => /^\d+:\d+$/.test(node.text || '')),
+  await expect.poll(async () => gameTextWithin(await gameNodes(device), 'texas-holdem-delay-operation-button')
+    .some(text => /^\d+:\d+$/.test(text)),
     { timeout: 30_000 }).toBe(true);
   await capture('delay_cooldown');
   await gameTap(device, 'texas-holdem-delay-operation-button');

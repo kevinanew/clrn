@@ -55,6 +55,19 @@ export function gameSemanticText(root: NativeNode | undefined, marker: string): 
 }
 
 /**
+ * 读取可见容器边界内的文字，兼容 Fabric 把文字压平为容器兄弟节点的情况。
+ * @param nodes - 本次完整查询得到的可见控件。
+ * @param marker - 要限定的真实容器标记。
+ */
+export function gameTextWithin(nodes: NativeNode[], marker: string): string[] {
+  const container = nodes.find(node => node.res === marker)?.bounds;
+  if (!container) return [];
+  return nodes.filter(node => node.text && node.bounds.x >= container.x && node.bounds.y >= container.y
+    && node.bounds.x + node.bounds.width <= container.x + container.width
+    && node.bounds.y + node.bounds.height <= container.y + container.height).map(node => node.text!);
+}
+
+/**
  * 等待实际可见的游戏控件；空查询不会吞掉驱动错误。
  * @param device - 专用模拟器连接。
  * @param res - 与 Web 共用的 testID。

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { flattenNodes, gameNodes, gameSemanticText } = require('./game-controls.ts');
+const { flattenNodes, gameNodes, gameSemanticText, gameTextWithin } = require('./game-controls.ts');
 
 test('原生控件树保留重复 ID，忽略屏外历史面板但不忽略可见子节点', () => {
   const root = { bounds: { x: 0, y: 0, width: 720, height: 1280 }, children: [
@@ -39,4 +39,13 @@ test('控件树驱动协议变更和断连必须失败，不能当作空页面',
     /** 模拟原生连接失败。 */
     toImpl: () => ({ /** 传播断连异常。 */ _send: async () => { throw new Error('Device closed'); } }),
   } }), /Device closed/);
+});
+
+test('Fabric 压平聊天文字为兄弟节点时仍按消息行边界严格校验内容', () => {
+  const row = { res: 'message', bounds: { x: 39, y: 1013, width: 642, height: 44 } };
+  const text = { text: 'Player1: Good hand!', bounds: { x: 39, y: 1017, width: 241, height: 36 } };
+  const other = { text: 'Other row', bounds: { x: 39, y: 1060, width: 200, height: 36 } };
+  assert.deepEqual(gameTextWithin([row, text, other], 'message'), ['Player1: Good hand!']);
+  assert.deepEqual(gameTextWithin([text, other], 'message'), []);
+  assert.deepEqual(gameTextWithin([row, other], 'message'), []);
 });

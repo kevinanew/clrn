@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { REPLAY_PLAYER_IDS } from '../visual/cases/texas-holdem/replayData';
-import { flattenNodes, gameGone, gameNodes, gameReady, gameTap } from './game-controls';
+import { gameGone, gameNodes, gameReady, gameTap, gameTextWithin } from './game-controls';
 import { captureGameThemes, closeGameMask, gameMenu } from './game-pregame';
 import { gameCardNames, replay } from './game-replay';
 import { adb, applicationId } from './device';
@@ -50,8 +50,8 @@ export async function texasPanels(context: TexasContext): Promise<void> {
   await gameGone(device, 'barrage_text');
   await capture('chat_phrases');
   await gameTap(device, '-in-game-chat-record-tab');
-  await expect.poll(async () => flattenNodes(await gameReady(device, 'in-game-chat-text-message-0'))
-    .some(node => node.text === 'Player1: Good hand!'), { timeout: 30_000 }).toBe(true);
+  await expect.poll(async () => gameTextWithin(await gameNodes(device), 'in-game-chat-text-message-0'),
+    { timeout: 30_000 }).toContain('Player1: Good hand!');
   await capture('chat_history');
   await gameTap(device, 'in-game-chat-report-button-0');
   await gameReady(device, 'in_game_report_message_component');
