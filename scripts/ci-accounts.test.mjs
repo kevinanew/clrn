@@ -32,7 +32,7 @@ test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留�
   assert.throws(()=>visualAccountMatrix('29','typo'));
 });
 
-test('同一运行编号下 Web 的 15 个任务不重复分配账号', () => {
+test('同一运行编号下 Web 的 19 个任务不重复分配账号', () => {
   const directory = mkdtempSync(join(tmpdir(), 'clrn-deployment-accounts-'));
   const accounts = visualAccountMatrix('99', 'all', true).include
     .map(item => item.account);
@@ -52,9 +52,13 @@ test('同一运行编号下 Web 的 15 个任务不重复分配账号', () => {
     assert.equal(result.status, 0, result.stderr);
     const matrix = JSON.parse(readFileSync(output, 'utf8').slice('matrix='.length));
     assert.deepEqual(matrix, animationAccountMatrix('99'));
-    assert.deepEqual(matrix.include.map(item => item.suite), ['app', 'texas', 'zhajinhua']);
+    assert.deepEqual(matrix.include.map(item => `${item.suite}/${item.part}`),
+      ['app/application', 'app/ui',
+        'texas/table', 'texas/gameplay', 'texas/social',
+        'zhajinhua/panels', 'zhajinhua/gameplay']);
     accounts.push(...matrix.include.map(item => item.account));
-    assert.equal(new Set(accounts).size, 15);
+    assert.equal(accounts.length, 19);
+    assert.equal(new Set(accounts).size, 19);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

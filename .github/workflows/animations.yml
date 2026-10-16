@@ -64,7 +64,7 @@ jobs:
         run: node scripts/plan-ci-accounts.mjs animations
   animations:
     needs: accounts
-    name: 动画关键帧 (${{ matrix.suite }})
+    name: 动画关键帧 (${{ matrix.suite }}/${{ matrix.part }})
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     strategy:
@@ -79,6 +79,7 @@ jobs:
     env:
       CI: 'true'
       VISUAL_SUITE: ${{ matrix.suite }}
+      ANIMATION_PART: ${{ matrix.part }}
       CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
       TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
     steps:
@@ -125,15 +126,15 @@ jobs:
           git -c safe.directory="$GITHUB_WORKSPACE" ls-files -z --modified --others --exclude-standard -- visual/animations/snapshots \
             > visual/test-results/animation-candidates/files.list
           tar --null -T visual/test-results/animation-candidates/files.list \
-            -czf visual/test-results/animation-candidates/${{ matrix.suite }}.tar.gz
+            -czf visual/test-results/animation-candidates/${{ matrix.suite }}-${{ matrix.part }}.tar.gz
       - name: 提前保存候选图供检查
         if: always() && !cancelled() && inputs.update_snapshots == true
         uses: actions/upload-artifact@v4
         with:
-          name: animation-${{ matrix.suite }}-candidates-${{ github.run_id }}-${{ github.run_attempt }}
+          name: animation-${{ matrix.suite }}-${{ matrix.part }}-candidates-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 14
           if-no-files-found: error
-          path: visual/test-results/animation-candidates/${{ matrix.suite }}.tar.gz
+          path: visual/test-results/animation-candidates/${{ matrix.suite }}-${{ matrix.part }}.tar.gz
       - name: 连续三次比较手机和桌面动画关键帧
         working-directory: visual
         run: pnpm run test:animations:ci --repeat-each=3
@@ -144,7 +145,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: animation-${{ matrix.suite }}-report-${{ github.run_id }}-${{ github.run_attempt }}
+          name: animation-${{ matrix.suite }}-${{ matrix.part }}-report-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 14
           path: |
             visual/playwright-report/animations/
