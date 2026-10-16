@@ -123,8 +123,9 @@ export async function createPrivateGameRoom(
  * @param room - 本轮创建并负责清理的房间信息或 ID。
  */
 export async function deletePrivateGameRoom(room: RoomSession): Promise<void> {
-  // 清理直连，不依赖可能已退出的代理和浏览器 context。
-  const response = await fetch(`${room.apiOrigin}/v1/room/${room.roomId}`, {
+  if (!ROOM_ID_PATTERN.test(room.roomId)) throw new Error('清理房间需要本轮创建响应中的有效 UUID');
+  // 固定 staging 入口；客户端选中的地区代理可能已不可用，收尾不再依赖该节点。
+  const response = await fetch(`https://api.shafayouxi.org/v1/room/${room.roomId}`, {
     method: 'DELETE', headers: { Authorization: room.authorization },
     redirect: 'error', signal: AbortSignal.timeout(15_000),
   });

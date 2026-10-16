@@ -3,7 +3,7 @@ name: H5 Visual Regression
 on:
   push:
     branches-ignore: [release]
-    paths: ['visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', 'scripts/*ci*', '.github/workflows/visual.yml']
+    paths: ['visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml']
   schedule:
     - cron: '12 22 * * *'
   workflow_call:
@@ -81,10 +81,11 @@ jobs:
     steps:
       - name: Check out visual tests
         uses: actions/checkout@v4
-      - name: 注入本任务独占的 CI 账号
+      - name: 准备本任务独占账号及金币余额
         env:
           CLRN_CI_ACCOUNT: ${{ matrix.account }}
           CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
+          TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
         run: node scripts/configure-ci-account.mjs
       - name: Install package managers
         run: |

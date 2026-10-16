@@ -126,7 +126,9 @@ CI 凭据注入只允许在 `kevinanew/clrn` 执行；`laiwan_react_native` 的�
 禁止在主应用、其他仓库或人工调试中借用本仓库分区的 CI 账号。主应用需要真实登录测试时应使用自己的独立账号。
 视觉任务按账号派生稳定的设备标识，登录态采集与场景使用相同标识，不同账号不再共用固定设备。
 凭据注入为 `E2E_TEST_*`、`E2E_CREATION_*` 和 `VISUAL_*`；旧的 CI 自定义玩法账号变量不再使用。
-测试注册／补钻仍使用既有 `TESTING_API_TOKEN`，仅在 Node 进程中调用。
+测试账号在取得独占锁后、启动浏览器前统一设置并回读核对 10000 金币，避免普通案例触发低余额救济金提示。
+本机分配器执行同一准备；失败立即停止。测试注册、金币准备和补钻使用既有 `TESTING_API_TOKEN`，仅在 Node 进程中调用。
+准备时机和特殊余额案例约定见 [账号说明](e2e/accounts.md#测试开始前的金币准备)。
 
 账号清单统一登记在 [PRD 账号池](https://github.com/kevinanew/laiwan_prd/blob/master/docs/测试与维护仓库.html#test-account-pool)，后续优先复用现有账号。
 

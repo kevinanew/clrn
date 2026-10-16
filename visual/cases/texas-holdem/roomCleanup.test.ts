@@ -4,7 +4,7 @@ import { once } from 'node:events';
 import { test } from 'node:test';
 import { deleteTexasRoom } from './room';
 
-test('删房不依赖已关闭的浏览器/代理，且业务失败必须报错', async () => {
+test('删房不依赖已关闭的浏览器/代理，且业务失败必须报错', async context => {
   const roomId = '00000000-0000-4000-8000-000000000001';
   const requests: { method?: string; path?: string; authorization?: string }[] = [];
   let accepted = true;
@@ -19,7 +19,12 @@ test('删房不依赖已关闭的浏览器/代理，且业务失败必须报错'
   await once(server, 'listening');
   const address = server.address();
   assert.ok(address && typeof address === 'object');
-  const room = { roomId, apiOrigin: `http://127.0.0.1:${address.port}`, authorization: 'Bearer test-only' };
+  const room = { roomId, apiOrigin: 'https://unavailable-regional-proxy.invalid', authorization: 'Bearer test-only' };
+  const realFetch = globalThis.fetch;
+  context.mock.method(globalThis, 'fetch', async (input: string, options?: RequestInit) => {
+    assert.equal(input, `https://api.shafayouxi.org/v1/room/${roomId}`);
+    return realFetch(`http://127.0.0.1:${address.port}/v1/room/${roomId}`, options);
+  });
   try {
     await deleteTexasRoom(room);
     assert.deepEqual(requests, [{ method: 'DELETE', path: `/v1/room/${roomId}`,

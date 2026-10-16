@@ -113,11 +113,12 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     const {include}=JSON.parse(readFileSync(output,'utf8').slice('matrix='.length));
     const selected=include[0].account;
     const accounts=ciAccounts.map((username,i)=>({username,password:`FakePassword${i}123`,status:'ready'}));
-    const configured=spawnSync(process.execPath,['scripts/configure-ci-account.mjs'],{
+    const configured=spawnSync(process.execPath,['--import', './scripts/account-network-fixture.mjs', 'scripts/configure-ci-account.mjs'],{
       encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'kevinanew/clrn',GITHUB_ENV:environment,
-        CLRN_CI_ACCOUNT:selected,CLRN_CI_TEST_ACCOUNTS:JSON.stringify({accounts})},
+        CLRN_CI_ACCOUNT:selected,CLRN_CI_TEST_ACCOUNTS:JSON.stringify({accounts}),TESTING_API_TOKEN:'test-token'},
     });
     assert.equal(configured.status,0,configured.stderr);
+    assert.equal(readFileSync(join(directory, 'prepared-accounts'), 'utf8'), `${selected}\n`);
     const values=Object.fromEntries(readFileSync(environment,'utf8').trim().split('\n').map(line=>{
       const delimiter=line.indexOf('=');return [line.slice(0,delimiter),line.slice(delimiter+1)];
     }));
@@ -129,8 +130,23 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     assert.equal(Object.keys(values).length,6);
     assert.ok(configured.stdout.includes(`::add-mask::${password}`));
     assert.ok(!configured.stdout.includes(accounts.find(account=>account.username!==selected).password));
+    for (const failedPath of ['/set_balance/testing', '/v10/wallet/', '/v10/house/user/', '/v2/building/rooms']) {
+      writeFileSync(environment, '');
+      writeFileSync(join(directory, 'reject-wallet'), failedPath);
+      const rejected = spawnSync(process.execPath,
+        ['--import', './scripts/account-network-fixture.mjs', 'scripts/configure-ci-account.mjs'], {
+          encoding: 'utf8', env: { ...process.env, GITHUB_ACTIONS: 'true',
+            GITHUB_REPOSITORY: 'kevinanew/clrn', GITHUB_ENV: environment, TESTING_API_TOKEN: 'test-token',
+            CLRN_CI_ACCOUNT: selected, CLRN_CI_TEST_ACCOUNTS: JSON.stringify({ accounts }) },
+        });
+      assert.notEqual(rejected.status, 0);
+      assert.match(rejected.stderr, /失败（HTTP 401）/);
+      assert.equal(readFileSync(environment, 'utf8'), '');
+      assert.ok(!rejected.stderr.includes('private-token'));
+    }
+    rmSync(join(directory, 'reject-wallet'));
     writeFileSync(environment, '');
-    const foreignRepository = spawnSync(process.execPath, ['scripts/configure-ci-account.mjs'], {
+    const foreignRepository = spawnSync(process.execPath, ['--import', './scripts/account-network-fixture.mjs', 'scripts/configure-ci-account.mjs'], {
       encoding: 'utf8', env: { ...process.env, GITHUB_ACTIONS: 'true',
         GITHUB_REPOSITORY: 'kevinanew/laiwan_react_native', GITHUB_ENV: environment,
         CLRN_CI_ACCOUNT: selected, CLRN_CI_TEST_ACCOUNTS: JSON.stringify({ accounts }) },
@@ -139,7 +155,7 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     assert.match(foreignRepository.stderr, /只允许在 kevinanew\/clrn/);
     assert.equal(readFileSync(environment, 'utf8'), '');
     assert.ok(!foreignRepository.stdout.includes(password));
-    const missing=spawnSync(process.execPath,['scripts/configure-ci-account.mjs'],{
+    const missing=spawnSync(process.execPath,['--import', './scripts/account-network-fixture.mjs', 'scripts/configure-ci-account.mjs'],{
       encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'kevinanew/clrn',GITHUB_ENV:environment,
         CLRN_CI_ACCOUNT:selected,CLRN_CI_TEST_ACCOUNTS:''},
     });
