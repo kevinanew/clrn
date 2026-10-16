@@ -1,13 +1,5 @@
 # 视觉回归测试（Web）
 
-2026-10-16：同步主应用 [#7019](https://github.com/kevinanew/laiwan_react_native/pull/7019) 的认证正常排版与新版战绩列表高度修复。
-24 张登录相关基准来自全部通过的 [三语 reference 38778948952](https://github.com/kevinanew/clrn/actions/runs/38778948952)，
-12 张新版德州战绩动作／结算基准来自全部通过的 [三语 reference 38778943354](https://github.com/kevinanew/clrn/actions/runs/38778943354)。
-核对协议和测试版提示位于表单下方、战绩分页完整可见后收录；空态与其他场景的基准保留，比较阈值不变。
-同一牌谱组件在“我的战绩”中的 24 张私人房／俱乐部动作及结算图同步更新，来自全部通过的
-[三语 reference 38782193559](https://github.com/kevinanew/clrn/actions/runs/38782193559)。
-其余战绩状态仍使用原基准；礼品卡兑换的 [三语 compare 38782385636](https://github.com/kevinanew/clrn/actions/runs/38782385636) 通过，无需更新图片。
-
 测试访问已部署的 `https://h5.page.shafayouxi.org/`，不检出应用源码、不构建 Web 包、不启动应用服务器。
 用例与辅助代码使用 TypeScript；截图对比在 Docker/Linux 中运行以保持字体和渲染环境一致。
 测试账号见 [测试账号与权限](../e2e/accounts.md)。
