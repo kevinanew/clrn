@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 
@@ -168,15 +168,22 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
           frame = await page.screenshot(screenshotOptions);
           return frame.equals(previousFrame);
         }, { message: `${name} 首帧画面应稳定` }).toBe(true);
-        const actual = PNG.sync.read(frame);
-        const expected = PNG.sync.read(readFileSync(info.snapshotPath(snapshot, { kind: 'screenshot' })));
-        expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
-        expect(compareHeight, `${snapshot} 比较区域高度`).toBeGreaterThan(0);
-        expect(compareHeight, `${snapshot} 比较区域高度`).toBeLessThanOrEqual(actual.height);
-        actual.data.set(expected.data.subarray(compareHeight * actual.width * 4), compareHeight * actual.width * 4);
-        expect(PNG.sync.write(actual)).toMatchSnapshot(snapshot, {
-          threshold: 0.1, maxDiffPixels: Math.floor(actual.width * compareHeight * 0.001),
-        });
+        const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
+        const update = info.config.updateSnapshots;
+        if (update === 'all' || update === 'changed' || (update === 'missing' && !existsSync(snapshotPath))) {
+          // 显式生成候选基准时保存完整画面，不能依赖旧图或写入拼接后的比较图。
+          expect(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+        } else {
+          const actual = PNG.sync.read(frame);
+          const expected = PNG.sync.read(readFileSync(snapshotPath));
+          expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
+          expect(compareHeight, `${snapshot} 比较区域高度`).toBeGreaterThan(0);
+          expect(compareHeight, `${snapshot} 比较区域高度`).toBeLessThanOrEqual(actual.height);
+          actual.data.set(expected.data.subarray(compareHeight * actual.width * 4), compareHeight * actual.width * 4);
+          expect(PNG.sync.write(actual)).toMatchSnapshot(snapshot, {
+            threshold: 0.1, maxDiffPixels: Math.floor(actual.width * compareHeight * 0.001),
+          });
+        }
       } else {
         // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。
         await expect(page).toHaveScreenshot(snapshot, {
