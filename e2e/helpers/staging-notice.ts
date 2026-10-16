@@ -33,6 +33,7 @@ export async function confirmStagingNotice(page: StagingNoticePage): Promise<boo
   const confirm = dialog.getByTestId('confirm-button');
   // 正常点击会等待按钮启用；共享模块不加载另一套 Playwright 运行时。
   await confirm.click({ timeout: 15_000, noWaitAfter: true });
-  await dialog.waitFor({ state: 'hidden', timeout: 15_000 });
+  // 确认后会同时初始化大厅；软件渲染的动画测试环境也沿用大厅的 60 秒就绪预算。
+  await dialog.waitFor({ state: 'hidden', timeout: 60_000 });
   return true;
 }

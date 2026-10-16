@@ -1,0 +1,72 @@
+[
+  {
+    "index": 0,
+    "timestamp": 0,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  },
+  {
+    "index": 1,
+    "timestamp": 100000,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  },
+  {
+    "index": 2,
+    "timestamp": 200000,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  },
+  {
+    "index": 3,
+    "timestamp": 300000,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  },
+  {
+    "index": 4,
+    "timestamp": 400000,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  },
+  {
+    "index": 5,
+    "timestamp": 500000,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  },
+  {
+    "index": 6,
+    "timestamp": 600000,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  },
+  {
+    "index": 7,
+    "timestamp": 700000,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  },
+  {
+    "index": 8,
+    "timestamp": 800000,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  },
+  {
+    "index": 9,
+    "timestamp": 900000,
+    "duration": 100000,
+    "width": 120,
+    "height": 120
+  }
+]

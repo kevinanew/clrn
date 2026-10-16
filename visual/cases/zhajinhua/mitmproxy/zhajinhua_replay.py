@@ -16,6 +16,7 @@ class ZhajinhuaReplay:
         self.replayed_messages = 0
         self.blocked_rpcs = 0
         self.self_id = None
+        self.operation_reward = False
 
     def publish(self, room_id, data):
         if not isinstance(room_id, str) or not re.fullmatch(UUID, room_id, re.I) or not isinstance(data, dict):
@@ -41,6 +42,12 @@ class ZhajinhuaReplay:
     def release(self):
         self.room_id = None
         self.self_id = None
+        self.operation_reward = False
+
+    def set_operation_reward(self, room_id, enabled):
+        if not self.room_id or room_id != self.room_id or not isinstance(enabled, bool):
+            raise ValueError('Operation reward requires the bound replay room')
+        self.operation_reward = enabled
 
     def is_replay_publication(self, frame):
         result = frame.get('result')
@@ -132,6 +139,10 @@ class ZhajinhuaReplay:
 
     def rpc_result(self, frame):
         path = frame['params']['data']['path']
+        if self.operation_reward and re.fullmatch(
+                rf'/v\d+/zhajinhua/room/{self.room_id}/game/[^/]+/(call|raise|all_in|challenge)', path):
+            return {'ok': True, 'result': {
+                'add_level_experience': 25, 'level_up': {'new_level': 6}}}
         if path.startswith(f'/v1/chat_room/{self.room_id}/'):
             return {'ok': True, 'result': {
                 'users': [self.self_id] if self.self_id else [], 'user_id': self.self_id,

@@ -22,6 +22,14 @@ export class ZhajinhuaProxy {
   replay(roomId: string, data: unknown): Promise<ProxyStatus> {
     return this.proxy.command('zhajinhua/replay', { roomId, data });
   }
+  /**
+   * 仅为当前已绑定房间的操作响应启用经验与升级夹具。
+   * @param roomId - 本轮独占房间。
+   * @param enabled - 是否返回固定奖励。
+   */
+  operationReward(roomId: string, enabled: boolean): Promise<ProxyStatus> {
+    return this.proxy.command('zhajinhua/operation-reward', { roomId, enabled });
+  }
   /** 释放代理暂缓的响应，让测试继续进入完成状态。 */
   release(): Promise<ProxyStatus> { return this.proxy.command('zhajinhua/release', {}); }
 }
