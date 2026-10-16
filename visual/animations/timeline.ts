@@ -134,7 +134,8 @@ export async function freeze(page: Page): Promise<void> {
  */
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
   options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
-    mask?: Locator[]; requireMotion?: boolean; firstFrameCompareHeight?: number } = {}): Promise<void> {
+    mask?: Locator[]; requireMotion?: boolean;
+    foregroundBelow?: { y: number; locator: Locator } } = {}): Promise<void> {
   const times = options.times || FRAME_TIMES;
   const samples = [];
   const frames: Buffer[] = [];
@@ -157,10 +158,10 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       const snapshot = `zh-Hans-${info.project.name}-${name}-${sampledTime}ms.png`;
       const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
         caret: 'hide' as const, scale: 'css' as const };
-      const compareHeight = milliseconds === times[0] ? options.firstFrameCompareHeight : undefined;
+      const foregroundBelow = options.foregroundBelow;
       let frame: Buffer;
-      if (compareHeight !== undefined) {
-        // 首帧仍使用整张基准图，只排除与弹层无关的下方操作区。
+      if (foregroundBelow) {
+        // 弹层缩放期间保留其每帧实际覆盖的像素，排除下方未被遮住的牌桌操作区。
         // 暂停时钟后连续截图一致，才将相关区域交给 Playwright 原有像素比较器。
         frame = Buffer.alloc(0);
         await expect.poll(async () => {
@@ -177,11 +178,26 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
           const actual = PNG.sync.read(frame);
           const expected = PNG.sync.read(readFileSync(snapshotPath));
           expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
-          expect(compareHeight, `${snapshot} 比较区域高度`).toBeGreaterThan(0);
-          expect(compareHeight, `${snapshot} 比较区域高度`).toBeLessThanOrEqual(actual.height);
-          actual.data.set(expected.data.subarray(compareHeight * actual.width * 4), compareHeight * actual.width * 4);
+          expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeGreaterThan(0);
+          expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeLessThanOrEqual(actual.height);
+          const box = await foregroundBelow.locator.boundingBox();
+          expect(box, `${snapshot} 弹层必须保留在画面中`).not.toBeNull();
+          const x = Math.max(0, Math.floor(box!.x - (options.clip?.x || 0)));
+          const right = Math.min(actual.width, Math.ceil(box!.x + box!.width - (options.clip?.x || 0)));
+          const top = Math.max(foregroundBelow.y, Math.floor(box!.y - (options.clip?.y || 0)));
+          const bottom = Math.min(actual.height, Math.ceil(box!.y + box!.height - (options.clip?.y || 0)));
+          for (let row = foregroundBelow.y; row < actual.height; row++) {
+            const start = row * actual.width * 4;
+            if (row < top || row >= bottom) {
+              actual.data.set(expected.data.subarray(start, start + actual.width * 4), start);
+            } else {
+              actual.data.set(expected.data.subarray(start, start + x * 4), start);
+              actual.data.set(expected.data.subarray(start + right * 4, start + actual.width * 4), start + right * 4);
+            }
+          }
+          const comparedPixels = actual.width * foregroundBelow.y + Math.max(0, bottom - top) * Math.max(0, right - x);
           expect(PNG.sync.write(actual)).toMatchSnapshot(snapshot, {
-            threshold: 0.1, maxDiffPixels: Math.floor(actual.width * compareHeight * 0.001),
+            threshold: 0.1, maxDiffPixels: Math.floor(comparedPixels * 0.001),
           });
         }
       } else {
