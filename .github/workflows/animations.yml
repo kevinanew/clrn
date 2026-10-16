@@ -41,7 +41,7 @@ on:
         type: boolean
         default: false
       expected_application_commit:
-        description: 本轮需要验证的预发布应用完整提交编号
+        description: 本轮需要验证的 staging 应用完整提交编号
         type: string
         required: true
 
@@ -68,7 +68,7 @@ jobs:
         run: node scripts/plan-ci-accounts.mjs animations
   animations:
     needs: accounts
-    name: 动画关键帧（${{ matrix.suite == 'texas' && '德州' || matrix.suite == 'zhajinhua' && '拼三张' || '应用' }}／${{ matrix.part == 'application' && '应用' || matrix.part == 'ui' && '界面' || matrix.part == 'table' && '牌桌' || matrix.part == 'social' && '社交' || matrix.part == 'panels' && '面板' || '玩法' }}）
+    name: 动画关键帧 (${{ matrix.suite }}/${{ matrix.part }})
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     strategy:

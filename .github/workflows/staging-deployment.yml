@@ -1,4 +1,4 @@
-name: H5 预发布部署验证
+name: H5 staging 部署验证
 
 on:
   push:

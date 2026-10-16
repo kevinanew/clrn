@@ -9,7 +9,7 @@ on:
   workflow_call:
     inputs:
       expected_application_commit:
-        description: '本轮预发布部署的完整应用提交编号'
+        description: '本轮 staging 部署的完整应用提交编号'
         required: true
         type: string
   workflow_dispatch:
@@ -119,7 +119,7 @@ jobs:
           pnpm run typecheck
           pnpm run test:gallery
           if [ '${{ inputs.mode }}' != reference ]; then pnpm run test:scenarios; fi
-      - name: 等待本次预发布部署生效
+      - name: 等待本次 staging 部署生效
         id: deployment
         if: inputs.expected_application_commit != ''
         working-directory: .

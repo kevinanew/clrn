@@ -6,7 +6,7 @@ on:
   workflow_call:
     inputs:
       expected_application_commit:
-        description: '本轮预发布部署的完整应用提交编号'
+        description: '本轮 staging 部署的完整应用提交编号'
         required: true
         type: string
   workflow_dispatch:
@@ -82,7 +82,7 @@ jobs:
       - name: 检查测试账号及余额接口辅助代码
         working-directory: e2e
         run: npx playwright test test-user.spec.ts test-wallet.spec.ts --workers=1
-      - name: 等待本次预发布部署生效
+      - name: 等待本次 staging 部署生效
         id: deployment
         if: inputs.expected_application_commit != ''
         working-directory: .
