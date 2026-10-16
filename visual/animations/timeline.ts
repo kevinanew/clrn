@@ -132,7 +132,7 @@ export async function freeze(page: Page): Promise<void> {
  */
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
   options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
-    mask?: Locator[]; requireMotion?: boolean; firstFrameMaxDiffPixelRatio?: number } = {}): Promise<void> {
+    mask?: Locator[]; requireMotion?: boolean; firstFrameClip?: CaptureArea } = {}): Promise<void> {
   const times = options.times || FRAME_TIMES;
   const samples = [];
   const frames: Buffer[] = [];
@@ -154,9 +154,9 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       samples.push({ milliseconds: sampledTime, elements: await appearance(target) });
       // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。
       await expect(page).toHaveScreenshot(`zh-Hans-${info.project.name}-${name}-${sampledTime}ms.png`, {
-        clip: options.clip, mask: options.mask, animations: 'allow', caret: 'hide', scale: 'css',
-        threshold: 0.1,
-        maxDiffPixelRatio: milliseconds === times[0] ? options.firstFrameMaxDiffPixelRatio ?? 0.001 : 0.001,
+        clip: milliseconds === times[0] ? options.firstFrameClip || options.clip : options.clip,
+        mask: options.mask, animations: 'allow', caret: 'hide', scale: 'css',
+        threshold: 0.1, maxDiffPixelRatio: 0.001,
       });
       const frame = await page.screenshot({ clip: options.clip, mask: options.mask, animations: 'allow', caret: 'hide', scale: 'css' });
       frames.push(frame);
