@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { allocateCiAccount, ciAccountCredentials, ciAccounts, executionAccounts, visualAccountMatrix } from './ci-accounts.mjs';
+import { allocateCiAccount, ciAccountCredentials, ciAccounts, executionAccounts, visualAccountMatrix, animationAccountMatrix } from './ci-accounts.mjs';
 
 test('连续 30 个运行 ID 只轮转 Web 老账号，重跑和大整数 ID 分配稳定', () => {
   assert.equal(new Set(Array.from({length:30},(_,i)=>allocateCiAccount(String(100+i)))).size,30);
@@ -32,7 +32,7 @@ test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留�
   assert.throws(()=>visualAccountMatrix('29','typo'));
 });
 
-test('同一运行编号下 Web 的 12 个任务不重复分配账号', () => {
+test('同一运行编号下 Web 的 15 个任务不重复分配账号', () => {
   const directory = mkdtempSync(join(tmpdir(), 'clrn-deployment-accounts-'));
   const accounts = visualAccountMatrix('99', 'all', true).include
     .map(item => item.account);
@@ -45,10 +45,37 @@ test('同一运行编号下 Web 的 12 个任务不重复分配账号', () => {
       assert.equal(result.status, 0, result.stderr);
       accounts.push(readFileSync(output, 'utf8').trim().replace('account=', ''));
     }
-    assert.equal(new Set(accounts).size, 12);
+    const output = join(directory, 'animations');
+    const result = spawnSync(process.execPath, ['scripts/plan-ci-accounts.mjs', 'animations'], {
+      encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: output, GITHUB_RUN_ID: '99' },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const matrix = JSON.parse(readFileSync(output, 'utf8').slice('matrix='.length));
+    assert.deepEqual(matrix, animationAccountMatrix('99'));
+    assert.deepEqual(matrix.include.map(item => item.suite), ['app', 'texas', 'zhajinhua']);
+    accounts.push(...matrix.include.map(item => item.account));
+    assert.equal(new Set(accounts).size, 15);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test('动画单套件筛选保留账号槽位，调度入口支持选择且拒绝未知套件', () => {
+  const full = animationAccountMatrix('99').include;
+  const directory = mkdtempSync(join(tmpdir(), 'clrn-animation-accounts-'));
+  try {
+    for (const suite of ['app', 'texas', 'zhajinhua']) {
+      const expected = { include: full.filter(item => item.suite === suite) };
+      assert.deepEqual(animationAccountMatrix('99', suite), expected);
+      const output = join(directory, suite);
+      const result = spawnSync(process.execPath, ['scripts/plan-ci-accounts.mjs', 'animations'], {
+        encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: output, GITHUB_RUN_ID: '99', CI_ANIMATION_SUITE: suite },
+      });
+      assert.equal(result.status, 0, result.stderr);
+      assert.deepEqual(JSON.parse(readFileSync(output, 'utf8').slice('matrix='.length)), expected);
+    }
+    assert.throws(() => animationAccountMatrix('99', 'typo'));
+  } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
 test('凭据按公开账号名读取，不依赖 Secret 排序，错误不包含密码', () => {

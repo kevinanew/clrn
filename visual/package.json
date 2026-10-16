@@ -4,7 +4,8 @@
   "private": true,
   "description": "Visual regression tests for LaiWan Web (Playwright toHaveScreenshot)",
   "scripts": {
-    "test:animations": "docker compose run --rm --entrypoint bash visual animations/run.sh",
+    "test:animations": "docker compose run --rm -e TESTING_API_TOKEN -e CLRN_EXPECTED_APPLICATION_COMMIT --entrypoint bash visual animations/run.sh",
+    "test:animations:ci": "tsx animations/run.ts",
     "test": "docker compose run --rm -e VISUAL_LOCALES=zh-Hans -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_SUITE -e VISUAL_TEST_SHARDS -e TESTING_API_TOKEN visual test",
     "test:all": "docker compose run --rm -e VISUAL_LOCALES=all -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_SUITE -e VISUAL_TEST_SHARDS -e TESTING_API_TOKEN visual test",
     "test:locales": "docker compose run --rm -e VISUAL_LOCALES=zh-Hant,en -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_SUITE -e VISUAL_TEST_SHARDS -e TESTING_API_TOKEN visual test",

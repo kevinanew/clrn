@@ -48,6 +48,26 @@ class ZhajinhuaReplayTests(unittest.TestCase):
         message(self.socket, [{'id': 1, 'result': {}}], False)
         self.replay.websocket_message(self.socket)
 
+    def test_operation_reward_requires_bound_room_and_resets_on_release(self):
+        with self.assertRaises(ValueError):
+            self.replay.set_operation_reward(ROOM, True)
+        with patch('zhajinhua_replay.ctx.master', create=True):
+            self.replay.publish(ROOM, {})
+        frame = {'params': {'data': {'path': f'/v1/zhajinhua/room/{ROOM}/game/test/call'}}}
+        self.assertEqual(self.replay.rpc_result(frame), {'ok': True, 'result': {}})
+        for room_id, enabled in [(OTHER, True), (ROOM, 'true')]:
+            with self.assertRaises(ValueError):
+                self.replay.set_operation_reward(room_id, enabled)
+        self.replay.set_operation_reward(ROOM, True)
+        self.assertEqual(self.replay.rpc_result(frame)['result'], {
+            'add_level_experience': 25, 'level_up': {'new_level': 6}})
+        foreign = {'params': {'data': {'path': f'/v1/zhajinhua/room/{OTHER}/game/test/call'}}}
+        self.assertEqual(self.replay.rpc_result(foreign)['result'], {})
+        self.replay.release()
+        self.assertFalse(self.replay.operation_reward)
+        with self.assertRaises(ValueError):
+            self.replay.set_operation_reward(ROOM, True)
+
     def test_publish_waits_for_successful_subscription_ack(self):
         pending_socket = socket_flow()
         message(pending_socket, [{'id': 60, 'method': 1, 'params': {'channel': f'zhajinhua>{OTHER}#{SELF}'}}])
