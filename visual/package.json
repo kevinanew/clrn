@@ -34,6 +34,8 @@
   "devDependencies": {
     "@playwright/test": "1.61.1",
     "@types/node": "22.15.30",
+    "@types/pngjs": "6.0.5",
+    "pngjs": "7.0.0",
     "tsx": "4.20.3",
     "typescript": "5.9.3"
   }
