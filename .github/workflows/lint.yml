@@ -1,4 +1,4 @@
-name: Source file length
+name: 源文件行数检查
 
 on:
   push:
@@ -9,8 +9,10 @@ permissions:
 
 jobs:
   lint:
+    name: 检查文件行数
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Check 400-line limit
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 检查 400 行上限
         run: node lint-lines.mjs

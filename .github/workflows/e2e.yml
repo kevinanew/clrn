@@ -1,4 +1,4 @@
-name: H5 E2E
+name: H5 端到端测试
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_call:
     inputs:
       expected_application_commit:
-        description: '本轮 staging 部署的完整应用提交编号'
+        description: '本轮预发布部署的完整应用提交编号'
         required: true
         type: string
   workflow_dispatch:
@@ -16,17 +16,22 @@ permissions:
 
 jobs:
   account:
+    name: 分配测试账号
     runs-on: ubuntu-latest
     outputs:
       account: ${{ steps.plan.outputs.account }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - id: plan
+      - name: 规划测试账号
+        id: plan
         run: node scripts/plan-ci-accounts.mjs e2e
   e2e:
+    name: 运行端到端测试
     needs: account
     concurrency:
       group: h5-staging-account-${{ needs.account.outputs.account }}
@@ -47,7 +52,8 @@ jobs:
       run:
         working-directory: e2e
     steps:
-      - uses: actions/checkout@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
       - name: 准备本任务独占账号及金币余额
         working-directory: .
         env:
@@ -55,29 +61,30 @@ jobs:
           CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
           TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
         run: node scripts/configure-ci-account.mjs
-      - name: Install dependencies
+      - name: 安装测试依赖
         run: npm ci
-      - uses: actions/setup-python@v5
+      - name: 配置 Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install mitmproxy
+      - name: 安装 mitmproxy
         run: |
           python -m venv .venv
           .venv/bin/python -m pip install -r mitmproxy/requirements.txt
-      - name: Check mitmproxy addon
+      - name: 检查 mitmproxy 扩展
         run: .venv/bin/python -m unittest discover -s mitmproxy -p 'test_*.py'
-      - name: 等待本次 staging 部署生效
+      - name: 等待本次预发布部署生效
         id: deployment
         if: inputs.expected_application_commit != ''
         working-directory: .
         run: node scripts/staging-deployment.mjs wait
-      - name: Run E2E tests
+      - name: 运行端到端测试
         run: npm test
       - name: 确认测试期间应用版本未被覆盖
         if: always() && !cancelled() && steps.deployment.outcome == 'success'
         working-directory: .
         run: node scripts/staging-deployment.mjs verify
-      - name: Upload failure report
+      - name: 上传失败报告
         if: failure()
         uses: actions/upload-artifact@v4
         with:

@@ -1,4 +1,4 @@
-name: H5 Visual Regression
+name: H5 画面回归测试
 
 on:
   push:
@@ -9,27 +9,27 @@ on:
   workflow_call:
     inputs:
       expected_application_commit:
-        description: '本轮 staging 部署的完整应用提交编号'
+        description: '本轮预发布部署的完整应用提交编号'
         required: true
         type: string
   workflow_dispatch:
     inputs:
       full:
-        description: 'Run all locales and scenarios'
+        description: '运行全部语言和场景'
         type: boolean
         default: false
       suite:
-        description: 'all 三部分；app 应用；texas 德州；zhajinhua 拼三张'
+        description: 'all：全部；app：应用；texas：德州；zhajinhua：拼三张'
         type: choice
         options: [all, app, texas, zhajinhua]
         default: all
       mode:
-        description: 'compare 对比；reference 生成 Linux 基准供审查下载'
+        description: 'compare：对比；reference：生成 Linux 基准供审查下载'
         type: choice
         options: [compare, reference]
         default: compare
       filter:
-        description: '可选场景 label 正则（生成新基准时可只选新增场景）'
+        description: '可选场景标签正则（生成新基准时可只选新增场景）'
         type: string
         default: ''
 
@@ -38,22 +38,26 @@ permissions:
 
 jobs:
   accounts:
+    name: 分配画面测试账号
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - id: plan
+      - name: 规划画面测试账号
+        id: plan
         env:
           CI_VISUAL_SUITE: ${{ inputs.suite || 'all' }}
           CI_VISUAL_FULL: ${{ github.event_name == 'schedule' || inputs.full }}
         run: node scripts/plan-ci-accounts.mjs visual
   visual:
     needs: accounts
-    name: ${{ matrix.suite == 'texas' && '德州' || matrix.suite == 'zhajinhua' && '拼三张' || '应用' }} (${{ matrix.locale }})
+    name: ${{ matrix.suite == 'texas' && '德州' || matrix.suite == 'zhajinhua' && '拼三张' || '应用' }}画面（${{ matrix.locale == 'zh-Hans' && '简体中文' || matrix.locale == 'zh-Hant' && '繁体中文' || '英语' }}）
     # Python 工具缓存需与 Jammy 容器使用相同的 glibc 基线。
     runs-on: ubuntu-22.04
     timeout-minutes: 360
@@ -79,7 +83,7 @@ jobs:
       VISUAL_WORKERS: '1'
       VISUAL_FILTER: ${{ inputs.filter || '' }}
     steps:
-      - name: Check out visual tests
+      - name: 检出画面测试代码
         uses: actions/checkout@v4
       - name: 准备本任务独占账号及金币余额
         env:
@@ -87,39 +91,40 @@ jobs:
           CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
           TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
         run: node scripts/configure-ci-account.mjs
-      - name: Install package managers
+      - name: 安装包管理器
         run: |
           corepack enable
           corepack prepare pnpm@11.13.0 --activate
-      - name: Install visual dependencies
+      - name: 安装画面测试依赖
         working-directory: visual
         run: pnpm install --frozen-lockfile
-      - uses: actions/setup-python@v5
+      - name: 配置 Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install mitmproxy
+      - name: 安装 mitmproxy
         run: |
           python -m venv e2e/.venv
           e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
-      - name: Check game proxy isolation and replay
+      - name: 检查牌局代理隔离与回放
         if: matrix.suite != 'app' && matrix.locale == 'zh-Hans'
         run: e2e/.venv/bin/python -m unittest discover -s visual/cases/${{ matrix.suite == 'texas' && 'texas-holdem' || 'zhajinhua' }}/mitmproxy -v
-      - name: Check game record proxy isolation and fixtures
+      - name: 检查牌局记录代理隔离与测试数据
         if: matrix.suite == 'app' && matrix.locale == 'zh-Hans'
         run: e2e/.venv/bin/python -m unittest discover -s visual/cases/game-record/mitmproxy -v
-      - name: Check visual suite
+      - name: 检查画面测试套件
         if: matrix.locale == 'zh-Hans' && (matrix.suite == 'app' || inputs.suite == 'texas' || inputs.suite == 'zhajinhua')
         working-directory: visual
         run: |
           pnpm run typecheck
           pnpm run test:gallery
           if [ '${{ inputs.mode }}' != reference ]; then pnpm run test:scenarios; fi
-      - name: 等待本次 staging 部署生效
+      - name: 等待本次预发布部署生效
         id: deployment
         if: inputs.expected_application_commit != ''
         working-directory: .
         run: node scripts/staging-deployment.mjs wait
-      - name: Run visual suite
+      - name: 运行画面测试套件
         working-directory: visual
         env:
           VISUAL_SUITE: ${{ matrix.suite }}
@@ -130,7 +135,7 @@ jobs:
           else
             pnpm run test:ci
           fi
-      - name: Upload reference screenshots for review
+      - name: 上传基准截图供审查
         if: always() && !cancelled() && inputs.mode == 'reference'
         uses: actions/upload-artifact@v4
         with:
@@ -141,7 +146,7 @@ jobs:
         if: always() && !cancelled() && steps.deployment.outcome == 'success'
         working-directory: .
         run: node scripts/staging-deployment.mjs verify
-      - name: Upload failure report
+      - name: 上传失败报告
         if: failure()
         uses: actions/upload-artifact@v4
         with:

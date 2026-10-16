@@ -15,7 +15,7 @@ on:
   workflow_call:
     inputs:
       expected_application_commit:
-        description: '本轮 staging 部署的完整应用提交编号'
+        description: '本轮预发布部署的完整应用提交编号'
         required: true
         type: string
   workflow_dispatch:
@@ -25,17 +25,22 @@ permissions:
 
 jobs:
   account:
+    name: 分配测试账号
     runs-on: ubuntu-latest
     outputs:
       account: ${{ steps.plan.outputs.account }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - id: plan
+      - name: 规划测试账号
+        id: plan
         run: node scripts/plan-ci-accounts.mjs interactions
   interactions:
+    name: 运行交互与客服回归
     needs: account
     concurrency:
       group: h5-staging-account-${{ needs.account.outputs.account }}
@@ -53,7 +58,8 @@ jobs:
       run:
         working-directory: e2e
     steps:
-      - uses: actions/checkout@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
       - name: 准备本任务独占账号及金币余额
         working-directory: .
         env:
@@ -63,7 +69,7 @@ jobs:
         run: node scripts/configure-ci-account.mjs
       - name: 安装测试依赖
         run: npm ci
-      - name: 等待本次 staging 部署生效
+      - name: 等待本次预发布部署生效
         id: deployment
         if: inputs.expected_application_commit != ''
         working-directory: .

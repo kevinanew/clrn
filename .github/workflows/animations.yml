@@ -37,11 +37,11 @@ on:
         options: [all, app, texas, zhajinhua]
         default: all
       update_snapshots:
-        description: 生成候选基准并连续比较三次（只上传 artifact，不自动提交）
+        description: 生成候选基准并连续比较三次（只上传测试产物，不自动提交）
         type: boolean
         default: false
       expected_application_commit:
-        description: 本轮需要验证的 staging 应用完整提交编号
+        description: 本轮需要验证的预发布应用完整提交编号
         type: string
         required: true
 
@@ -50,21 +50,25 @@ permissions:
 
 jobs:
   accounts:
+    name: 分配动画测试账号
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - id: plan
+      - name: 规划动画测试账号
+        id: plan
         env:
           CI_ANIMATION_SUITE: ${{ inputs.suite || 'all' }}
         run: node scripts/plan-ci-accounts.mjs animations
   animations:
     needs: accounts
-    name: 动画关键帧 (${{ matrix.suite }}/${{ matrix.part }})
+    name: 动画关键帧（${{ matrix.suite == 'texas' && '德州' || matrix.suite == 'zhajinhua' && '拼三张' || '应用' }}／${{ matrix.part == 'application' && '应用' || matrix.part == 'ui' && '界面' || matrix.part == 'table' && '牌桌' || matrix.part == 'social' && '社交' || matrix.part == 'panels' && '面板' || '玩法' }}）
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     strategy:
@@ -83,12 +87,14 @@ jobs:
       CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
       TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
-      - name: 注入本任务独占的 CI 账号
+      - name: 注入本任务独占的测试账号
         env:
           CLRN_CI_ACCOUNT: ${{ matrix.account }}
           CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
@@ -100,7 +106,8 @@ jobs:
           corepack prepare pnpm@11.13.0 --activate
           cd visual
           pnpm install --frozen-lockfile
-      - uses: actions/setup-python@v5
+      - name: 配置 Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: 安装牌局隔离代理

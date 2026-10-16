@@ -6,13 +6,13 @@ on:
   workflow_call:
     inputs:
       expected_application_commit:
-        description: '本轮 staging 部署的完整应用提交编号'
+        description: '本轮预发布部署的完整应用提交编号'
         required: true
         type: string
   workflow_dispatch:
     inputs:
       scope:
-        description: 'existing 不创建；registration 仅注册；all 包含俱乐部和牌局创建'
+        description: 'existing：不创建；registration：仅注册；all：包含俱乐部和牌局创建'
         type: choice
         options: [existing, registration, all]
         default: existing
@@ -22,17 +22,22 @@ permissions:
 
 jobs:
   account:
+    name: 分配测试账号
     runs-on: ubuntu-latest
     outputs:
       account: ${{ steps.plan.outputs.account }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - id: plan
+      - name: 规划测试账号
+        id: plan
         run: node scripts/plan-ci-accounts.mjs functional
   functional:
+    name: 运行线上功能测试
     needs: account
     concurrency:
       group: h5-staging-account-${{ needs.account.outputs.account }}
@@ -47,7 +52,8 @@ jobs:
       E2E_STAGING_URL: ${{ vars.E2E_STAGING_URL }}
       TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
       - name: 准备本任务独占账号及金币余额
         env:
           CLRN_CI_ACCOUNT: ${{ needs.account.outputs.account }}
@@ -76,7 +82,7 @@ jobs:
       - name: 检查测试账号及余额接口辅助代码
         working-directory: e2e
         run: npx playwright test test-user.spec.ts test-wallet.spec.ts --workers=1
-      - name: 等待本次 staging 部署生效
+      - name: 等待本次预发布部署生效
         id: deployment
         if: inputs.expected_application_commit != ''
         working-directory: .
