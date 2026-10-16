@@ -62,7 +62,17 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
     { name: 'applications', open: 'buy-in-application-button', marker: 'buy-in-application-list' },
   ]) {
     await exercisePopup(page, info, { name: `${game}-${panel.name}`, target: page.getByTestId(panel.marker), clip,
-      open: /** 点击真实入口。 */ () => press(page, panel.open), close: /** 通过实际按钮或遮罩关闭。 */ () => panel.close
+      open: /** 点击真实入口；排行榜完成请求后再采样动画，避免网络快慢决定“加载中”画面。 */ async () => {
+        await press(page, panel.open);
+        if (panel.name === 'leaderboard') {
+          await expect.poll(async () => {
+            // 只提交当前时刻的异步任务，不推进弹窗动画的虚拟时间。
+            await page.clock.runFor(0);
+            return await page.getByTestId('public-leader-board-empty').isVisible()
+              || await page.getByTestId('public-leader-board-item-0').isVisible();
+          }, { timeout: 30_000, message: '排行榜应显示空数据或首条记录，而不是加载占位' }).toBe(true);
+        }
+      }, close: /** 通过实际按钮或遮罩关闭。 */ () => panel.close
         ? press(page, panel.close) : closeTableMask(page, panel.marker) });
   }
   await expect(visible(page, 'menu-button')).toBeVisible();
