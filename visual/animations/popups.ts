@@ -3,7 +3,8 @@ import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 import { appearance, captureTimeline, fixedArea, freeze, settleAnimations, type CaptureArea } from './timeline';
 
 export type PopupFlow = { name: string; target: Locator; open: () => Promise<unknown>;
-  close: () => Promise<unknown>; clip?: CaptureArea; exitAnimated?: boolean; fastPreparation?: boolean };
+  close: () => Promise<unknown>; clip?: CaptureArea; exitAnimated?: boolean; fastPreparation?: boolean;
+  firstFrameMaxDiffPixelRatio?: number };
 
 /**
  * 等待异步请求触发的挂载时同时推进任务队列，避免响应后的零延迟任务卡在暂停时钟。
@@ -54,7 +55,8 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   // BottomSheet 在下一次 requestAnimationFrame 挂载内容；时间线保留这 16ms。
   await page.clock.runFor(16);
   await waitForMount(flow.target);
-  await captureTimeline(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16, requireMotion: true });
+  await captureTimeline(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
+    requireMotion: true, firstFrameMaxDiffPixelRatio: flow.firstFrameMaxDiffPixelRatio });
   await expect(flow.target).toBeVisible();
   await flow.close();
   await captureTimeline(page, info, `${flow.name}-exit`, flow.target,

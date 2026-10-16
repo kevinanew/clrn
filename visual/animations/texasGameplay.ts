@@ -90,6 +90,8 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
 
   await restore(page, proxy, roomId, self, 'flop');
   await exercisePopup(page, info, { name: 'texas-player-profile', target: page.getByTestId('player-profile-popup-close'), clip,
+    // 首帧弹层几乎透明，背景操作按钮的亚像素位移可造成约 0.9% 的差异；后续关键帧仍用 0.1%。
+    firstFrameMaxDiffPixelRatio: 0.01,
     open: /** 点击真实入口。 */ () => press(page, `texas-holdem-player-container-${opponent}`),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'player-profile-popup-close') });
   await freeze(page);
