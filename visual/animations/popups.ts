@@ -4,7 +4,7 @@ import { appearance, captureTimeline, fixedArea, freeze, settleAnimations, type 
 
 export type PopupFlow = { name: string; target: Locator; open: () => Promise<unknown>;
   close: () => Promise<unknown>; clip?: CaptureArea; exitAnimated?: boolean; fastPreparation?: boolean;
-  firstFrameClip?: CaptureArea };
+  firstFrameCompareHeight?: number };
 
 /**
  * 等待异步请求触发的挂载时同时推进任务队列，避免响应后的零延迟任务卡在暂停时钟。
@@ -56,7 +56,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await page.clock.runFor(16);
   await waitForMount(flow.target);
   await captureTimeline(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
-    requireMotion: true, firstFrameClip: flow.firstFrameClip });
+    requireMotion: true, firstFrameCompareHeight: flow.firstFrameCompareHeight });
   await expect(flow.target).toBeVisible();
   await flow.close();
   await captureTimeline(page, info, `${flow.name}-exit`, flow.target,

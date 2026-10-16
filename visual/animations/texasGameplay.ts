@@ -91,7 +91,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await restore(page, proxy, roomId, self, 'flop');
   await exercisePopup(page, info, { name: 'texas-player-profile', target: page.getByTestId('player-profile-popup-close'), clip,
     // 手机首帧弹层位于上半屏；下方操作按钮尚未被弹层遮住，不属于此动画的比较区域。
-    firstFrameClip: info.project.name === 'mobile' ? { ...clip, height: 500 } : undefined,
+    firstFrameCompareHeight: info.project.name === 'mobile' ? 500 : undefined,
     open: /** 点击真实入口。 */ () => press(page, `texas-holdem-player-container-${opponent}`),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'player-profile-popup-close') });
   await freeze(page);

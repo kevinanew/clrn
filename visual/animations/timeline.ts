@@ -1,4 +1,6 @@
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { PNG } from 'pngjs';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
@@ -132,7 +134,7 @@ export async function freeze(page: Page): Promise<void> {
  */
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
   options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
-    mask?: Locator[]; requireMotion?: boolean; firstFrameClip?: CaptureArea } = {}): Promise<void> {
+    mask?: Locator[]; requireMotion?: boolean; firstFrameCompareHeight?: number } = {}): Promise<void> {
   const times = options.times || FRAME_TIMES;
   const samples = [];
   const frames: Buffer[] = [];
@@ -152,13 +154,36 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       await settleLayout(page);
       const sampledTime = milliseconds + (options.startOffset || 0);
       samples.push({ milliseconds: sampledTime, elements: await appearance(target) });
-      // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。
-      await expect(page).toHaveScreenshot(`zh-Hans-${info.project.name}-${name}-${sampledTime}ms.png`, {
-        clip: milliseconds === times[0] ? options.firstFrameClip || options.clip : options.clip,
-        mask: options.mask, animations: 'allow', caret: 'hide', scale: 'css',
-        threshold: 0.1, maxDiffPixelRatio: 0.001,
-      });
-      const frame = await page.screenshot({ clip: options.clip, mask: options.mask, animations: 'allow', caret: 'hide', scale: 'css' });
+      const snapshot = `zh-Hans-${info.project.name}-${name}-${sampledTime}ms.png`;
+      const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
+        caret: 'hide' as const, scale: 'css' as const };
+      const compareHeight = milliseconds === times[0] ? options.firstFrameCompareHeight : undefined;
+      let frame: Buffer;
+      if (compareHeight !== undefined) {
+        // 首帧仍使用整张基准图，只排除与弹层无关的下方操作区。
+        // 暂停时钟后连续截图一致，才将相关区域交给 Playwright 原有像素比较器。
+        frame = Buffer.alloc(0);
+        await expect.poll(async () => {
+          const previousFrame = await page.screenshot(screenshotOptions);
+          frame = await page.screenshot(screenshotOptions);
+          return frame.equals(previousFrame);
+        }, { message: `${name} 首帧画面应稳定` }).toBe(true);
+        const actual = PNG.sync.read(frame);
+        const expected = PNG.sync.read(readFileSync(info.snapshotPath(snapshot, { kind: 'screenshot' })));
+        expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
+        expect(compareHeight, `${snapshot} 比较区域高度`).toBeGreaterThan(0);
+        expect(compareHeight, `${snapshot} 比较区域高度`).toBeLessThanOrEqual(actual.height);
+        actual.data.set(expected.data.subarray(compareHeight * actual.width * 4), compareHeight * actual.width * 4);
+        expect(PNG.sync.write(actual)).toMatchSnapshot(snapshot, {
+          threshold: 0.1, maxDiffPixels: Math.floor(actual.width * compareHeight * 0.001),
+        });
+      } else {
+        // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。
+        await expect(page).toHaveScreenshot(snapshot, {
+          ...screenshotOptions, threshold: 0.1, maxDiffPixelRatio: 0.001,
+        });
+        frame = await page.screenshot(screenshotOptions);
+      }
       frames.push(frame);
       previous = milliseconds;
     }
