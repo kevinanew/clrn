@@ -9,6 +9,24 @@ const selected = getVisualSuite();
 const suites = selected === 'all' ? ['app', 'texas', 'zhajinhua'] : [selected];
 const files = { app: ['search-prompt.spec.ts', 'application.spec.ts', 'ambient.spec.ts', 'dialogs.spec.ts', 'skeleton.spec.ts', 'slot.spec.ts', 'slotPopups.spec.ts'],
   texas: ['texas.spec.ts'], zhajinhua: ['zhajinhua.spec.ts'] };
+const parts: Record<Exclude<typeof selected, 'all'>, Record<string, { files: string[]; grep?: string }>> = {
+  app: {
+    application: { files: ['application.spec.ts'] },
+    ui: { files: ['search-prompt.spec.ts', 'ambient.spec.ts', 'dialogs.spec.ts',
+      'skeleton.spec.ts', 'slot.spec.ts', 'slotPopups.spec.ts'] },
+  },
+  texas: {
+    table: { files: ['texas.spec.ts'], grep: 'texas (panels animations|hall panel animations)' },
+    gameplay: { files: ['texas.spec.ts'], grep: 'texas gameplay animations' },
+    social: { files: ['texas.spec.ts'], grep: 'texas (social|assets) animations' },
+  },
+  zhajinhua: Object.fromEntries(['panels', 'gameplay'].map(part => [part,
+    { files: ['zhajinhua.spec.ts'], grep: `zhajinhua ${part} animations` }])),
+};
+const selectedPart = process.env.ANIMATION_PART || 'all';
+if (selectedPart !== 'all' && (selected === 'all' || !parts[selected][selectedPart])) {
+  throw new Error(`ANIMATION_PART 无效: suite=${selected}, part=${selectedPart}`);
+}
 
 /**
  * 串行执行登录采集和动画套件；失败立即终止，防止后续登录覆盖待诊断会话。
@@ -24,13 +42,16 @@ function run(args: string[], environment: NodeJS.ProcessEnv): void {
 const temporary = mkdtempSync(path.join(tmpdir(), 'clrn-animations-'));
 try {
   for (const suite of suites) {
+    const selection: { files: string[]; grep?: string } = selectedPart === 'all' ? { files: files[suite as keyof typeof files] }
+      : parts[suite as keyof typeof parts][selectedPart];
     const environment = { ...process.env, VISUAL_SUITE: suite,
       VISUAL_AUTH_STATE_PATH: path.join(temporary, `${suite}-auth.json`),
       VISUAL_AUTH_USES_MITMPROXY: suite === 'app' ? 'false' : 'true',
       PLAYWRIGHT_HTML_OUTPUT_DIR: path.join(directory, 'playwright-report', 'animations', suite) };
     run(['tsx', 'src/captureAuthState.ts'], environment);
     run(['playwright', 'test', '--config', 'animations/playwright.config.ts',
-      ...files[suite as keyof typeof files], `--output=test-results/animations/${suite}`,
+      ...selection.files, ...(selection.grep ? [`--grep=${selection.grep}`] : []),
+      `--output=test-results/animations/${suite}`,
       ...process.argv.slice(2)], environment);
   }
 } finally { rmSync(temporary, { recursive: true, force: true }); }

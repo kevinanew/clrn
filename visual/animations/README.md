@@ -21,7 +21,7 @@ npm --prefix visual run test:animations -- --update-snapshots
 ```
 
 缺失基准在普通比较中直接失败。正式基准只在 Docker/Linux 生成。
-运行器为每组先采集登录态，再运行用例；CI 为三组分配不同账号，账号锁与其他回归共用。
+运行器为每组先采集登录态，再运行用例；CI 将应用拆为两组、德州拆为三组、拼三张拆为两组，每组使用独立账号，账号锁与其他回归共用。
 牌桌测试通过真实入口创建独立房间，消息回放和 RPC 夹具只绑定该房间，结束或断言失败均解散。
 测试账号建房余额不足时，沿用现有 `TESTING_API_TOKEN` 补充机制。
 
@@ -61,7 +61,7 @@ npm --prefix visual run test:animations -- --update-snapshots
 
 ## CI 与报告
 
-`H5 动画视觉回归` 支持 PR、master 更新、手动和部署后触发，三组独立运行，比较三遍，零重试。
+`H5 动画视觉回归` 支持 PR、master 更新、手动和部署后触发，七个分片独立运行，每个分片比较三遍，零重试。
 HTML 报告位于 `visual/playwright-report/animations/<suite>/`，失败图片和时间线附件位于
 `visual/test-results/animations/<suite>/`，CI 保存 14 天。
 每个新增用例附带实际加载的构建版本；设置 `CLRN_EXPECTED_APPLICATION_COMMIT` 时会在采样前核对版本。
