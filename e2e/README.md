@@ -48,9 +48,9 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 冒烟测试覆盖 `E2E_STAGING_URL` 指定的 staging 站点，以及 `https://h5.laiwan.life/`、`https://h5.laiwanpai.com/` 和 `https://h5.goplay360.com/`，检查 HTTP 状态、标题、应用根节点和首屏内容。设置 `E2E_EXPECT_BUILD_SHA` 后还会验证 `meta[name="build-version"]`。
 
-Staging 公开产物测试读取真实页面引用的本域 JavaScript 和 CSS，检查生产模式与
-压缩后的 JavaScript、无源码映射引用，以及对应 `.map` 地址返回 404；还会检查
-本次部署版本的 Service Worker 已压缩，且常见原始项目文件地址返回 404。它在 `npm test` 和
+Staging 公开产物测试读取真实页面引用的本域 JavaScript、CSS 和本次部署版本的
+Service Worker，检查生产模式、压缩后的 JavaScript 和 Service Worker、这些资源均无
+源码映射引用，以及对应 `.map` 地址返回 404；还会检查常见原始项目文件地址返回 404。它在 `npm test` 和
 `npm run test:smoke` 中运行；无法枚举未被页面引用的任意 URL，因此应用构建流水线
 还会扫描完整的 `build/` 目录。
 

@@ -5,6 +5,7 @@
 
 import { expect, test } from '@playwright/test';
 import { environment } from './helpers/environment';
+import { readPublicResourceContents } from './helpers/public-source-maps';
 
 const originalSourcePaths = [
   '/App.js',
@@ -31,13 +32,12 @@ test('staging 公开产物不暴露源码映射或原始源码', async ({ page, 
 
   expect(bundleAddresses.length, '页面必须加载本站 JavaScript 产物').toBeGreaterThan(0);
 
+  const workerAddress = new URL('/serviceWorker.js', environment.stagingUrl).href;
+  const publicAddresses = [...bundleAddresses, workerAddress, ...styleAddresses];
+  const contentsByAddress = await readPublicResourceContents(publicAddresses, origin, request);
+
   for (const address of bundleAddresses) {
-    const response = await request.get(address);
-    expect(response.ok(), `无法读取已部署的 JavaScript：${address}`).toBeTruthy();
-    const contents = await response.text();
-    expect(contents, `${address} 含有源码映射引用`).not.toMatch(
-      /(?:\/\/[#@]|\/\*[#@])\s*sourceMappingURL\s*=/,
-    );
+    const contents = contentsByAddress.get(address) ?? '';
 
     if (new URL(address).pathname.includes('/_expo/static/js/web/')) {
       expect(contents, `${address} 不是生产模式 bundle`).toContain('__DEV__=false');
@@ -46,16 +46,13 @@ test('staging 公开产物不暴露源码映射或原始源码', async ({ page, 
     }
   }
 
-  const workerAddress = new URL('/serviceWorker.js', environment.stagingUrl).href;
-  const workerResponse = await request.get(workerAddress);
-  expect(workerResponse.ok(), `无法读取 Service Worker：${workerAddress}`).toBeTruthy();
-  const workerContents = await workerResponse.text();
+  const workerContents = contentsByAddress.get(workerAddress) ?? '';
   if (environment.expectedBuildSha) {
     expect(workerContents.trim().split('\n').length, 'Service Worker 未压缩').toBe(1);
     expect(workerContents, 'Service Worker 保留了源码注释').not.toContain('/*');
   }
 
-  for (const address of [...bundleAddresses, workerAddress, ...styleAddresses]) {
+  for (const address of publicAddresses) {
     if (new URL(address).origin !== origin) {
       continue;
     }
