@@ -1,11 +1,12 @@
 name: H5 画面回归测试
 
 on:
-  push:
-    branches-ignore: [release]
+  pull_request:
     paths: ['visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml']
-  schedule:
-    - cron: '12 22 * * *'
+  push:
+    branches: [master]
+    # 单独的部署记录由 staging-deployment.yml 调用本工作流，避免重复运行全量画面。
+    paths-ignore: ['deployments/staging.json']
   workflow_call:
     inputs:
       expected_application_commit:
