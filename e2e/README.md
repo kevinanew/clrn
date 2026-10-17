@@ -48,6 +48,12 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 冒烟测试覆盖 `E2E_STAGING_URL` 指定的 staging 站点，以及 `https://h5.laiwan.life/`、`https://h5.laiwanpai.com/` 和 `https://h5.goplay360.com/`，检查 HTTP 状态、标题、应用根节点和首屏内容。设置 `E2E_EXPECT_BUILD_SHA` 后还会验证 `meta[name="build-version"]`。
 
+Staging 公开产物测试读取真实页面引用的本域 JavaScript、CSS 和本次部署版本的
+Service Worker，检查生产模式、压缩后的 JavaScript 和 Service Worker、这些资源均无
+源码映射引用，以及对应 `.map` 地址返回 404；还会检查常见原始项目文件地址返回 404。它在 `npm test` 和
+`npm run test:smoke` 中运行；无法枚举未被页面引用的任意 URL，因此应用构建流水线
+还会扫描完整的 `build/` 目录。
+
 弱网测试覆盖大厅接口超时、登录接口失败和俱乐部列表接口失败后的降级与重试 UI，并确认俱乐部重试会再次发出请求。失败页面错误上下文保存在 `test-results/`，HTML 报告保存在 `playwright-report/`。
 
 弱网流量经过真实 mitmproxy，不使用 Playwright route 模拟网络故障。

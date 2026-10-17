@@ -4,11 +4,13 @@
 
 ## 应用部署联动
 
-`laiwan_react_native` 的 `master` 完成 staging Web 部署后，向本仓库 `master`
-提交 `deployments/staging.json`，字段为 `environment: "staging"`、`sha`（40 位应用提交编号）
-和 `deployed_at`（部署时间）。文件由发布流水线创建，不需要维护占位记录。
-`.github/workflows/staging-deployment.yml` 读取记录，调用现有四组工作流：
-站点与弱网、现有账号功能、交互与 Freshchat、简中核心视觉。创建账号、俱乐部和牌局的手动范围保持原入口，
+`laiwan_react_native` 的 `master` 完成 staging Web 部署后，先把已清除源码映射的
+`web-staging.tar.gz` 与 `build-info.json` 上传到本仓库的 H5 Staging Release，核对
+附件大小和 SHA-256 后公开，再向本仓库 `master` 提交 `deployments/staging.json`。
+记录包含 `environment: "staging"`、`sha`（40 位应用提交编号）、`deployed_at`（部署时间）
+和 `artifact`（Release 标签、地址、包名、大小、SHA-256）。文件由发布流水线创建。
+`.github/workflows/staging-deployment.yml` 先核对 Release 附件摘要，再调用五组工作流：
+站点与弱网、现有账号功能、交互与 Freshchat、简中核心视觉、动画。创建账号、俱乐部和牌局的手动范围保持原入口，
 三语言全量视觉保持每日运行。
 
 `scripts/staging-deployment.mjs` 在每个测试任务前最多等待 10 分钟，要求 staging 的
@@ -16,14 +18,17 @@
 站点冒烟中的正式站不使用 staging 的版本断言。代码 push、定时和手动测试维持现有行为，
 只有部署调用传入版本约束。
 
-四组工作流共用部署运行编号，静态视觉使用账号槽位 0–8，站点、功能、交互分别使用 9、10、11，动画使用 12–18；
+五组工作流共用部署运行编号，静态视觉使用账号槽位 0–8，站点、功能、交互分别使用 9、10、11，动画使用 12–18；
 跨运行仍通过账号并发锁排队。部署入口使用 GitHub 的
 [排队并发配置](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)
-保留等待运行，应用仓库也将发布与验证串行，避免连续部署互相覆盖。
-上游按本次部署记录的 CLRN 提交查询此入口，失败、取消、跳过、权限错误或超过 90 分钟均失败。
+保留等待运行。应用仓库的 Web Staging 流水线在部署和 H5 Release 上传后，
+先保存本入口上一轮运行编号和状态：上一轮未完成时不提交新部署记录；
+已完成或无历史运行时，提交记录触发新一轮。最后只检查保存的上一轮：
+成功则通过，失败、取消或跳过则报错，仍在运行则报告状态并通过。
+应用仓库不等待新一轮测试完成。
 
-启用时先合入本仓库，再在应用仓库 Woodpecker 配置 `clrn_contents_token`
-（仅需本仓库 Contents 读写、Actions 读取），最后启用应用仓库的通知步骤。
+应用仓库 Woodpecker 使用 `clrn_contents_token`（需本仓库 Contents 读写、Actions 读取权限）。
+附件核验变更需在应用仓库的 H5 Release 上传流程合入并完成一次部署后合入。
 该联动覆盖 staging Web，测试失败时已发布的应用不会自动回滚。
 
 2026-10-14 本机验收：全仓检查及 95 项本机单元测试通过；真实站点版本为
