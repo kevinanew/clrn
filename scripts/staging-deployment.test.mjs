@@ -1,3 +1,8 @@
+/**
+ * 验证 Staging 部署记录、H5 Release 附件与站点版本的核对逻辑。
+ * 通过可替换的网络边界覆盖匹配和不匹配的部署结果。
+ */
+
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readDeploymentRecord, verifyDeploymentArtifact, waitForDeployment } from './staging-deployment.mjs';

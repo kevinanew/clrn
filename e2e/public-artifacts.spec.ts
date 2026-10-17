@@ -1,3 +1,8 @@
+/**
+ * 检查已部署的 Staging H5 是否只公开生产构建文件。
+ * 验证脚本已压缩、源码映射无法下载，且原始项目文件不会由站点提供。
+ */
+
 import { expect, test } from '@playwright/test';
 import { environment } from './helpers/environment';
 

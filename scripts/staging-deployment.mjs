@@ -1,3 +1,8 @@
+/**
+ * 核对 Staging 部署记录所指向的 H5 Release，并等待站点提供指定应用版本。
+ * 供 CLRN 的部署回归流水线读取应用提交和验证公开附件使用。
+ */
+
 import { appendFileSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
