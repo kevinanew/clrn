@@ -21,9 +21,9 @@
 五组工作流共用部署运行编号，静态视觉使用账号槽位 0–8，站点、功能、交互分别使用 9、10、11，动画使用 12–18；
 跨运行仍通过账号并发锁排队。部署入口使用 GitHub 的
 [排队并发配置](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)
-保留等待运行。应用仓库的 Web Staging 流水线在构建前即时检查本入口最近一次运行：
-成功则继续，排队或运行中则继续，失败、取消或跳过则停止本次部署。
-部署后应用仓库写入本次记录以触发新一轮运行，不等待新一轮测试完成。
+保留等待运行。应用仓库的 Web Staging 流水线在部署后上传 H5 Release，
+再写入本次部署记录，并等待本次部署验证结束。验证失败、取消、跳过、权限错误
+或超过 90 分钟时，应用仓库的 Web Staging 流水线失败。
 
 应用仓库 Woodpecker 使用 `clrn_contents_token`（需本仓库 Contents 读写、Actions 读取权限）。
 附件核验变更需在应用仓库的 H5 Release 上传流程合入并完成一次部署后合入。
