@@ -65,8 +65,18 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await exercisePopup(page, info, { name: 'texas-raise', target: page.getByTestId('raise-bet-popup'), clip,
     open: /** 点击真实入口。 */ () => press(page, 'texas-holdem-operation-button-raise'),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'raise-bet-cancel-button'), exitAnimated: false });
+  // 偶发牌桌重连会遮住真实入口；等待连接恢复后再采样下一段动画。
+  const openAccurateRaise = async () => {
+    const reconnecting = page.getByText('重连中...', { exact: true });
+    await expect.poll(async () => {
+      if (!(await reconnecting.isVisible())) return true;
+      await page.clock.runFor(250);
+      return !(await reconnecting.isVisible());
+    }, { message: '牌桌必须在重连完成后打开精确加注', timeout: 30_000 }).toBe(true);
+    await press(page, 'texas-holdem-operation-accurate-bet-button');
+  };
   await exercisePopup(page, info, { name: 'texas-accurate-raise', target: page.getByTestId('accurate-bet-popup-container'), clip,
-    open: /** 点击真实入口。 */ () => press(page, 'texas-holdem-operation-accurate-bet-button'),
+    open: openAccurateRaise,
     close: /** 通过实际按钮或遮罩关闭。 */ () => closeTableMask(page, 'accurate-bet-popup-container') });
   await freeze(page);
   await proxy.replayTexas(roomId, events([{ event: 'all_in', player_id: opponent, amount: 960, stack: 0 },
