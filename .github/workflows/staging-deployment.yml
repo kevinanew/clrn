@@ -1,3 +1,4 @@
+# 读取应用写入的 Staging 部署记录，验证 H5 Release 附件及已部署站点版本。
 name: H5 staging 部署验证
 
 on:
