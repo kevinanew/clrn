@@ -60,7 +60,8 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await expect(flow.target).toBeVisible();
   await flow.close();
   await captureTimeline(page, info, `${flow.name}-exit`, flow.target,
-    { clip, requireChange: flow.exitAnimated !== false, requireMotion: flow.exitAnimated !== false });
+    { clip, requireChange: flow.exitAnimated !== false, requireMotion: flow.exitAnimated !== false,
+      foregroundBelow: flow.foregroundBelow });
   await settleAnimations(page, 32);
   await expectDismissed(flow.target);
   await flow.open();
