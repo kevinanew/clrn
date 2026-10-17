@@ -180,12 +180,17 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
           expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
           expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeGreaterThan(0);
           expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeLessThanOrEqual(actual.height);
-          const box = await foregroundBelow.locator.boundingBox();
-          expect(box, `${snapshot} 弹层必须保留在画面中`).not.toBeNull();
-          const x = Math.max(0, Math.floor(box!.x - (options.clip?.x || 0)));
-          const right = Math.min(actual.width, Math.ceil(box!.x + box!.width - (options.clip?.x || 0)));
-          const top = Math.max(foregroundBelow.y, Math.floor(box!.y - (options.clip?.y || 0)));
-          const bottom = Math.min(actual.height, Math.ceil(box!.y + box!.height - (options.clip?.y || 0)));
+          // 退场末帧弹层可能已卸载；此时只比较指定高度以上的画面。
+          const box = await foregroundBelow.locator.evaluateAll(nodes => {
+            if (!nodes[0]) return null;
+            const rect = nodes[0].getBoundingClientRect();
+            return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+          });
+          if (name.endsWith('-enter')) expect(box, `${snapshot} 弹层必须保留在画面中`).not.toBeNull();
+          const x = box ? Math.max(0, Math.floor(box.x - (options.clip?.x || 0))) : 0;
+          const right = box ? Math.min(actual.width, Math.ceil(box.x + box.width - (options.clip?.x || 0))) : 0;
+          const top = box ? Math.max(foregroundBelow.y, Math.floor(box.y - (options.clip?.y || 0))) : foregroundBelow.y;
+          const bottom = box ? Math.min(actual.height, Math.ceil(box.y + box.height - (options.clip?.y || 0))) : foregroundBelow.y;
           for (let row = foregroundBelow.y; row < actual.height; row++) {
             const start = row * actual.width * 4;
             if (row < top || row >= bottom) {
