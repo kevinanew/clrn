@@ -1,11 +1,12 @@
 name: H5 画面回归测试
 
 on:
-  push:
-    branches-ignore: [release]
+  pull_request:
     paths: ['visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml']
-  schedule:
-    - cron: '12 22 * * *'
+  push:
+    branches: [master]
+    # 单独的部署记录由 staging-deployment.yml 调用本工作流，避免重复运行全量画面。
+    paths-ignore: ['deployments/staging.json']
   workflow_call:
     inputs:
       expected_application_commit:
@@ -14,10 +15,6 @@ on:
         type: string
   workflow_dispatch:
     inputs:
-      full:
-        description: '运行全部语言和场景'
-        type: boolean
-        default: false
       suite:
         description: 'all：全部；app：应用；texas：德州；zhajinhua：拼三张'
         type: choice
@@ -53,7 +50,7 @@ jobs:
         id: plan
         env:
           CI_VISUAL_SUITE: ${{ inputs.suite || 'all' }}
-          CI_VISUAL_FULL: ${{ github.event_name == 'schedule' || inputs.full }}
+          CI_VISUAL_FULL: 'true'
         run: node scripts/plan-ci-accounts.mjs visual
   visual:
     needs: accounts
@@ -78,7 +75,7 @@ jobs:
       VISUAL_SKIP_VISUAL_INSTALL: 'true'
       VISUAL_BASE_URL: https://h5.page.shafayouxi.org/
       VISUAL_LOCALES: ${{ matrix.locale }}
-      VISUAL_SCOPE: ${{ (github.event_name == 'schedule' || inputs.full) && 'full' || 'core' }}
+      VISUAL_SCOPE: full
       VISUAL_SKIP_SUPPORT_TESTS: ${{ matrix.locale != 'zh-Hans' || matrix.suite != 'app' }}
       VISUAL_WORKERS: '1'
       VISUAL_FILTER: ${{ inputs.filter || '' }}

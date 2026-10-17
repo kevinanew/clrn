@@ -44,9 +44,9 @@ import { pages as gameRecordPages } from './cases/game-record/scenarios';
 import { pages as helpPages } from './cases/help/scenarios';
 import { getVisualSuite, selectVisualSuite } from './visual-suite';
 
-/** push CI 核心范围（VISUAL_SCOPE=core）：核心页面，全量矩阵由 cron 覆盖 */
+/** 本地定向检查的核心范围（VISUAL_SCOPE=core）；CI 始终运行完整场景。 */
 export const CORE_PAGE_LABELS = new Set([
-  // 新增覆盖同步纳入 push CI，避免只有 reference 而未持续对比。
+  // 本地按核心范围检查时也覆盖新增场景。
   'guest_message',
   'guest_me',
   'login_language',

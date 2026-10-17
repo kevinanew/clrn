@@ -21,7 +21,7 @@ describe('visual scenarios', () => {
   const originalLocales = process.env.VISUAL_LOCALES;
   const originalScope = process.env.VISUAL_SCOPE;
 
-  // push CI 步骤会带 VISUAL_SCOPE=core；单测默认测全量矩阵，用例内再显式设置范围
+  // CI 使用完整场景；单测默认检查全量矩阵，需要核心范围时在用例内显式设置。
   beforeEach(() => {
     delete process.env.VISUAL_SCOPE;
   });
