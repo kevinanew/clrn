@@ -246,9 +246,9 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 | 值 | 用途 |
 | --- | --- |
-| `zh-Hans`（默认） | 日常线上（468 张）；push CI 再叠加 `VISUAL_SCOPE=core`（406 张） |
+| `zh-Hans`（默认） | 本地单语言检查（468 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 1404 张（GitHub Actions 定时任务） |
+| `all` | 全量 1404 张（GitHub Actions 默认范围） |
 
 环境变量 `VISUAL_SCOPE`：
 
@@ -259,10 +259,10 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 ## CI
 
-[视觉工作流](../.github/workflows/visual.yml) 在非 `release` 分支的视觉代码或工作流变更后，
-访问线上并检查简中核心 406 张截图；每日及手动 `full` 运行三种语言的完整场景。
-CI 按「应用 app」「德州 texas」和「拼三张 zhajinhua」拆为独立任务并行执行；每套内部各语言仍顺序执行。
-应用覆盖核心 164 张 / 全量 226 张，德州每种语言覆盖 190 张，拼三张覆盖 52 张，各任务分别保存失败报告。
+[视觉工作流](../.github/workflows/visual.yml) 在非 `release` 分支的视觉代码或工作流变更后、
+每日定时运行和应用部署调用时，均访问线上并检查三种语言的完整场景，共 1404 张截图。
+CI 按「应用 app」「德州 texas」「拼三张 zhajinhua」和三种语言拆为九个独立任务并行执行。
+应用每种语言覆盖 226 张，德州每种语言覆盖 190 张，拼三张覆盖 52 张，各任务分别保存失败报告。
 不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 手动触发可用 `suite` 选择 `all`、`app`、`texas` 或 `zhajinhua`，只重跑所需部分。
 手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
