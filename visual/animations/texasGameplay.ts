@@ -66,6 +66,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     open: /** 点击真实入口。 */ () => press(page, 'texas-holdem-operation-button-raise'),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'raise-bet-cancel-button'), exitAnimated: false });
   // 偶发牌桌重连会遮住真实入口；等待连接恢复后再采样下一段动画。
+  /** 等待牌桌连接恢复，再点击真实的精确加注入口。 */
   const openAccurateRaise = async () => {
     const reconnecting = page.getByText('重连中...', { exact: true });
     await expect.poll(async () => {
