@@ -1,4 +1,6 @@
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
+import { existsSync, readFileSync } from 'node:fs';
+import { PNG } from 'pngjs';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
@@ -131,7 +133,9 @@ export async function freeze(page: Page): Promise<void> {
  * @param options - 固定裁切区域、绝对采样时间及是否要求画面发生变化。
  */
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
-  options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number; mask?: Locator[]; requireMotion?: boolean } = {}): Promise<void> {
+  options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
+    mask?: Locator[]; requireMotion?: boolean;
+    foregroundBelow?: { y: number; locator: Locator } } = {}): Promise<void> {
   const times = options.times || FRAME_TIMES;
   const samples = [];
   const frames: Buffer[] = [];
@@ -151,12 +155,58 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       await settleLayout(page);
       const sampledTime = milliseconds + (options.startOffset || 0);
       samples.push({ milliseconds: sampledTime, elements: await appearance(target) });
-      // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。
-      await expect(page).toHaveScreenshot(`zh-Hans-${info.project.name}-${name}-${sampledTime}ms.png`, {
-        clip: options.clip, mask: options.mask, animations: 'allow', caret: 'hide', scale: 'css',
-        threshold: 0.1, maxDiffPixelRatio: 0.001,
-      });
-      const frame = await page.screenshot({ clip: options.clip, mask: options.mask, animations: 'allow', caret: 'hide', scale: 'css' });
+      const snapshot = `zh-Hans-${info.project.name}-${name}-${sampledTime}ms.png`;
+      const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
+        caret: 'hide' as const, scale: 'css' as const };
+      const foregroundBelow = options.foregroundBelow;
+      let frame: Buffer;
+      if (foregroundBelow) {
+        // 弹层缩放期间保留其每帧实际覆盖的像素，排除下方未被遮住的牌桌操作区。
+        // 暂停时钟后连续截图一致，才将相关区域交给 Playwright 原有像素比较器。
+        frame = Buffer.alloc(0);
+        await expect.poll(async () => {
+          const previousFrame = await page.screenshot(screenshotOptions);
+          frame = await page.screenshot(screenshotOptions);
+          return frame.equals(previousFrame);
+        }, { message: `${name} 首帧画面应稳定` }).toBe(true);
+        const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
+        const update = info.config.updateSnapshots;
+        if (update === 'all' || update === 'changed' || (update === 'missing' && !existsSync(snapshotPath))) {
+          // 显式生成候选基准时保存完整画面，不能依赖旧图或写入拼接后的比较图。
+          expect(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+        } else {
+          const actual = PNG.sync.read(frame);
+          const expected = PNG.sync.read(readFileSync(snapshotPath));
+          expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
+          expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeGreaterThan(0);
+          expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeLessThanOrEqual(actual.height);
+          const box = await foregroundBelow.locator.boundingBox();
+          expect(box, `${snapshot} 弹层必须保留在画面中`).not.toBeNull();
+          const x = Math.max(0, Math.floor(box!.x - (options.clip?.x || 0)));
+          const right = Math.min(actual.width, Math.ceil(box!.x + box!.width - (options.clip?.x || 0)));
+          const top = Math.max(foregroundBelow.y, Math.floor(box!.y - (options.clip?.y || 0)));
+          const bottom = Math.min(actual.height, Math.ceil(box!.y + box!.height - (options.clip?.y || 0)));
+          for (let row = foregroundBelow.y; row < actual.height; row++) {
+            const start = row * actual.width * 4;
+            if (row < top || row >= bottom) {
+              actual.data.set(expected.data.subarray(start, start + actual.width * 4), start);
+            } else {
+              actual.data.set(expected.data.subarray(start, start + x * 4), start);
+              actual.data.set(expected.data.subarray(start + right * 4, start + actual.width * 4), start + right * 4);
+            }
+          }
+          const comparedPixels = actual.width * foregroundBelow.y + Math.max(0, bottom - top) * Math.max(0, right - x);
+          expect(PNG.sync.write(actual)).toMatchSnapshot(snapshot, {
+            threshold: 0.1, maxDiffPixels: Math.floor(comparedPixels * 0.001),
+          });
+        }
+      } else {
+        // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。
+        await expect(page).toHaveScreenshot(snapshot, {
+          ...screenshotOptions, threshold: 0.1, maxDiffPixelRatio: 0.001,
+        });
+        frame = await page.screenshot(screenshotOptions);
+      }
       frames.push(frame);
       previous = milliseconds;
     }

@@ -90,6 +90,9 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
 
   await restore(page, proxy, roomId, self, 'flop');
   await exercisePopup(page, info, { name: 'texas-player-profile', target: page.getByTestId('player-profile-popup-close'), clip,
+    // 手机端下方操作按钮会独立变化；每帧仍保留资料弹层实际覆盖的全部像素。
+    foregroundBelow: info.project.name === 'mobile' ? { y: 500,
+      locator: page.getByTestId('player-profile-popup-close').locator('xpath=../..') } : undefined,
     open: /** 点击真实入口。 */ () => press(page, `texas-holdem-player-container-${opponent}`),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'player-profile-popup-close') });
   await freeze(page);
