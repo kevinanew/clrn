@@ -27,6 +27,44 @@ export function readDeploymentRecord(content) {
 }
 
 /**
+ * 核对部署记录指向的 H5 Release 和 GitHub 保存的附件摘要。
+ * @param options - 部署记录、GitHub 凭据和可替换的网络边界。
+ */
+export async function verifyDeploymentArtifact(options) {
+  const { content, token, fetcher = fetch } = options;
+  const commit = readDeploymentRecord(content);
+  const artifact = JSON.parse(content).artifact;
+  const expectedTag = new RegExp(`^web-staging-[1-9][0-9]{0,8}-${commit.slice(0, 12)}$`);
+  if (!artifact || !expectedTag.test(artifact.release_tag) ||
+    artifact.release_url !== `https://github.com/kevinanew/clrn/releases/tag/${artifact.release_tag}` ||
+    artifact.name !== 'web-staging.tar.gz' || !Number.isSafeInteger(artifact.size) || artifact.size < 1 ||
+    !/^[a-f0-9]{64}$/.test(artifact.sha256 || '')) {
+    throw new Error('staging 部署记录缺少有效的 H5 构建包信息');
+  }
+  const response = await fetcher(
+    `https://api.github.com/repos/kevinanew/clrn/releases/tags/${artifact.release_tag}`,
+    { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'clrn-staging-deployment',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    signal: AbortSignal.timeout(15000), redirect: 'error' },
+  );
+  if (!response.ok) {
+    throw new Error(`读取 CLRN H5 Release 失败：HTTP ${response.status}`);
+  }
+  const release = await response.json();
+  const archive = release.assets?.find(candidate => candidate.name === artifact.name);
+  const information = release.assets?.find(candidate => candidate.name === 'build-info.json');
+  if (release.tag_name !== artifact.release_tag || release.draft || !release.prerelease ||
+    !release.body?.includes('<!-- laiwan-web-staging-package -->') ||
+    !release.body.includes(`应用提交：${commit}`) ||
+    !archive || archive.state !== 'uploaded' || archive.size !== artifact.size ||
+    archive.digest !== `sha256:${artifact.sha256}` ||
+    !information || information.state !== 'uploaded') {
+    throw new Error('CLRN H5 Release 与 staging 部署记录不一致');
+  }
+  return artifact;
+}
+
+/**
  * 等待站点实际提供指定版本；校验模式只读取一次，防止测试被其他部署覆盖。
  * @param options - 目标提交、站点、等待上限和可替换的网络及时钟边界。
  */
@@ -69,7 +107,9 @@ export async function waitForDeployment({ expectedCommit, baseUrl,
 async function main() {
   const command = process.argv[2];
   if (command === 'record') {
-    const commit = readDeploymentRecord(readFileSync(new URL('../deployments/staging.json', import.meta.url), 'utf8'));
+    const content = readFileSync(new URL('../deployments/staging.json', import.meta.url), 'utf8');
+    const commit = readDeploymentRecord(content);
+    await verifyDeploymentArtifact({ content, token: process.env.GITHUB_TOKEN });
     if (!process.env.GITHUB_OUTPUT) throw new Error('缺少 GITHUB_OUTPUT');
     appendFileSync(process.env.GITHUB_OUTPUT, `application_commit=${commit}\n`);
     console.log(`本轮验证应用提交：${commit}`);

@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "node ../lint-lines.mjs",
     "test": "playwright test",
-    "test:smoke": "playwright test sites-availability.spec.ts",
+    "test:smoke": "playwright test sites-availability.spec.ts public-artifacts.spec.ts",
     "test:network-resilience": "playwright test network-resilience.spec.ts",
     "test:mitmproxy": "playwright test mitmproxy.spec.ts",
     "report": "playwright show-report playwright-report",

@@ -25,6 +25,8 @@ jobs:
         uses: actions/checkout@v4
       - name: 记录部署版本
         id: record
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/staging-deployment.mjs record
   e2e:
     name: H5 端到端测试
