@@ -88,7 +88,7 @@ export async function fixNavigatorLanguage(context: BrowserContext, locale = 'en
       });
       Object.defineProperty(Navigator.prototype, 'languages', {
         /** 返回固定浏览器语言值，避免平台语言后缀影响国际化组件。 */
-        get() { return [language]; },
+        get() { return [language, language.split('-')[0]]; },
         configurable: true,
       });
     } catch {
