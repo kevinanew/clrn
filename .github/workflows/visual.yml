@@ -1,6 +1,6 @@
-# 使用 100 个 Web 专用账号的新凭据，保留账号并发锁并兼容旧分支继续运行。
 name: H5 画面回归测试
 
+# 使用 100 个 Web 专用账号的新凭据，保留账号并发锁并兼容旧分支继续运行。
 on:
   pull_request:
     paths: ['visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/mitmproxy*.ts', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml']
