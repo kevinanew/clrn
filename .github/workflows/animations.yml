@@ -150,6 +150,7 @@ jobs:
         run: node scripts/staging-deployment.mjs verify
       - name: 保存关键帧对比和时间采样报告
         if: always()
+        id: report
         uses: actions/upload-artifact@v4
         with:
           name: animation-${{ matrix.suite }}-${{ matrix.part }}-report-${{ github.run_id }}-${{ github.run_attempt }}
@@ -158,3 +159,27 @@ jobs:
             visual/playwright-report/animations/
             visual/test-results/animations/
             visual/test-results/animation-candidates/
+      - name: 单独保存失败截图
+        if: always()
+        id: screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: animation-${{ matrix.suite }}-${{ matrix.part }}-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: ignore
+          path: |
+            visual/test-results/animations/**/failure.png
+            visual/test-results/animations/**/test-failed-*.png
+      - name: 在运行摘要中给出截图入口
+        if: always()
+        env:
+          SCREENSHOTS_URL: ${{ steps.screenshots.outputs.artifact-url }}
+          REPORT_URL: ${{ steps.report.outputs.artifact-url }}
+        run: |
+          echo '### 动画测试产物' >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$SCREENSHOTS_URL" ]; then
+            echo "[下载失败截图 PNG]($SCREENSHOTS_URL)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -n "$REPORT_URL" ]; then
+            echo "[下载完整 Playwright 报告]($REPORT_URL)" >> "$GITHUB_STEP_SUMMARY"
+          fi
