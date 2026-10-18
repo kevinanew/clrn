@@ -10,16 +10,15 @@
     "skipLibCheck": true,
     "strict": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "run-visual.ts",
     "run-visual-config.ts",
     "run-visual-config.test.ts",
     "open-report.ts",
-    "snapshot-gallery.ts",
-    "snapshot-gallery-page.ts",
-    "snapshot-gallery.test.ts",
     "playwright.config.ts",
     "scenarios.ts",
     "scenarios.test.ts",

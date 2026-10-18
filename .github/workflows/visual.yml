@@ -123,7 +123,6 @@ jobs:
         working-directory: visual
         run: |
           pnpm run typecheck
-          pnpm run test:gallery
           if [ '${{ inputs.mode }}' != reference ]; then pnpm run test:scenarios; fi
       - name: 准备本轮 Release 构建包
         uses: ./.github/actions/prepare-release-web
