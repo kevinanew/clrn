@@ -1,8 +1,12 @@
+# 每个浏览器任务使用固定 Release 包启动独立服务器，账号锁继续隔离共享后端。
 name: H5 动画视觉回归
 
 on:
   pull_request:
     paths:
+      - 'scripts/*release*'
+      - 'scripts/extract-web-package.py'
+      - '.github/actions/prepare-release-web/**'
       - 'visual/**'
       - 'e2e/mitmproxy/**'
       - 'scripts/*accounts*'
@@ -15,6 +19,9 @@ on:
   push:
     branches: [master]
     paths:
+      - 'scripts/*release*'
+      - 'scripts/extract-web-package.py'
+      - '.github/actions/prepare-release-web/**'
       - 'visual/**'
       - 'e2e/mitmproxy/**'
       - 'scripts/*accounts*'
@@ -26,6 +33,10 @@ on:
       - '.github/workflows/animations.yml'
   workflow_call:
     inputs:
+      release_record:
+        description: 本轮固定的 Release 发布记录
+        required: false
+        type: string
       expected_application_commit:
         required: true
         type: string
@@ -57,6 +68,8 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       - name: 配置 Node.js
         uses: actions/setup-node@v4
         with:
@@ -89,6 +102,8 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       - name: 配置 Node.js
         uses: actions/setup-node@v4
         with:
@@ -117,14 +132,16 @@ jobs:
           e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
       - name: 检查 TypeScript
         run: npm run typecheck
-      - name: 等待本轮部署生效
-        id: deployment
-        if: inputs.expected_application_commit != ''
-        run: node scripts/staging-deployment.mjs wait
+      - name: 准备本轮 Release 构建包
+        uses: ./.github/actions/prepare-release-web
+        with:
+          release-record: ${{ inputs.release_record || '' }}
+          expected-application-commit: ${{ inputs.expected_application_commit || '' }}
+          github-token: ${{ github.token }}
       - name: 生成本轮候选基准
         if: inputs.update_snapshots == true
         working-directory: visual
-        run: pnpm run test:animations:ci --update-snapshots
+        run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --update-snapshots
       - name: 打包本套件改动的候选图
         if: always() && !cancelled() && inputs.update_snapshots == true
         shell: bash
@@ -144,10 +161,7 @@ jobs:
           path: visual/test-results/animation-candidates/${{ matrix.suite }}-${{ matrix.part }}.tar.gz
       - name: 连续三次比较手机和桌面动画关键帧
         working-directory: visual
-        run: pnpm run test:animations:ci --repeat-each=3
-      - name: 确认测试期间应用版本未改变
-        if: always() && !cancelled() && steps.deployment.outcome == 'success'
-        run: node scripts/staging-deployment.mjs verify
+        run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --repeat-each=3
       - name: 准备首张失败截图供网页预览
         if: always()
         id: preview

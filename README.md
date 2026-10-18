@@ -1,6 +1,6 @@
 # 来玩 H5 E2E
 
-已部署站点的 Playwright 端到端测试位于 [e2e/](e2e/README.md)，弱网故障由 mitmproxy 注入。GitHub Actions 在 E2E 代码或工作流 push 变更和手动触发时运行完整测试，结果见仓库的 Actions 页面。
+Release 构建及正式站可用性的 Playwright 端到端测试位于 [e2e/](e2e/README.md)，弱网故障由 mitmproxy 注入。GitHub Actions 在 E2E 代码或工作流 push 变更和手动触发时运行完整测试，结果见仓库的 Actions 页面。
 
 ## 应用部署联动
 
@@ -14,19 +14,34 @@
 创建账号、俱乐部和牌局的手动范围保持原入口；三语言全量视觉也在每次视觉相关 PR
 和 `master` 代码合入后运行。单独的部署记录由上述部署流程检查一次，不再安排每日画面定时任务。
 
-`scripts/staging-deployment.mjs` 在每个测试任务前最多等待 10 分钟，要求 staging 的
-`meta[name="build-version"]` 对应指定提交；测试后再次读取，发现版本被覆盖就失败。
-站点冒烟中的正式站不使用 staging 的版本断言。视觉相关 PR、`master` 代码推送和手动测试均运行三语言完整场景；
-只有部署调用传入版本约束。
+每轮先从触发提交的 `deployments/staging.json` 固定 Release 标签、完整应用提交、附件大小和 SHA-256，
+再把完整记录传给五组测试。每个任务下载该 Release 的 `web-staging.tar.gz` 和 `build-info.json`，
+计算实际字节摘要、核对构建信息和 `index.html` 版本后，解包到独立临时目录。不会重新构建应用，
+也不会在排队或重跑时读取 master 最新记录或“最新 Release”。
 
-五组工作流共用部署运行编号，静态视觉使用账号槽位 0–8，站点、功能、交互分别使用 9、10、11，动画使用 12–18；
-跨运行仍通过账号并发锁排队。部署入口使用 GitHub 的
-[排队并发配置](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)
-保留等待运行。应用仓库的 Web Staging 流水线在部署和 H5 Release 上传后，
-先保存本入口上一轮运行编号和状态：上一轮未完成时不提交新部署记录；
-已完成或无历史运行时，提交记录触发新一轮。最后只检查保存的上一轮：
-成功则通过，失败、取消或跳过则报错，仍在运行则报告状态并通过。
-应用仓库不等待新一轮测试完成。
+`scripts/with-release-web-server.mjs` 在测试命令执行期间监听 `127.0.0.1` 随机端口，
+把同一地址传给登录态采集、Playwright 和截图分片；命令结束或取消后关闭服务器。
+视觉、动画、功能、交互和 Staging 冒烟均访问本轮构建；正式站可用性检查继续访问正式域名。
+代码 push、拉取请求和手动运行使用各自检出提交里的发布记录。下载或版本校验失败会终止任务，
+不会回退共享 Staging 页面。每个任务的运行摘要记录 Release 标签、应用提交和摘要。
+
+五组工作流共用发布运行编号，账号锁继续防止跨运行使用同一账号。
+部署入口保留 `cancel-in-progress: false` 和 `queue: max`：最多允许 100 个待运行任务，
+超过 GitHub 的队列上限会取消额外任务，需要检查并重跑，不能视为已验证。
+上传之前检查 CLRN master 当前提交的全部 push 工作流；失败阻止上传，运行中或尚无记录允许继续。
+每次成功上传后均写入发布记录并触发测试，不再因上一轮尚未完成而跳过新版本。
+应用仓库不等待本轮回归完成，部署、检查、上传、触发的顺序保持不变。
+
+前端包的版本相互隔离，账号、登录、房间、WebSocket 和 Freshchat 仍依赖 Staging 后端及第三方服务。
+后端变更或共享数据冲突仍可能影响结果，不能据此取消账号锁或用测试开关跳过正常初始化。
+本地浏览器入口是 HTTP 回环地址，CI 保持原有 Linux 浏览器和字体版本。
+需要验证线上域名、证书或部署状态时应单独运行站点冒烟。
+
+本地检查需要 Node.js 24、Python 3.12 或更新版本和 uv。手动下载构建可运行
+`node scripts/prepare-release-web.mjs`；按输出设置 `CLRN_RELEASE_WEB_ROOT`、
+`CLRN_EXPECTED_APPLICATION_COMMIT` 和 `CLRN_RELEASE_TAG` 后，在测试目录用
+`node ../scripts/with-release-web-server.mjs <原测试命令>` 启动本轮服务器。
+访问私有附件时给准备命令传入 `GITHUB_TOKEN`；测试命令无需继承该凭据。
 
 应用仓库 Woodpecker 使用 `clrn_contents_token`（需本仓库 Contents 读写、Actions 读取权限）。
 附件核验变更需在应用仓库的 H5 Release 上传流程合入并完成一次部署后合入。
@@ -54,7 +69,7 @@
 
 ## 线上功能案例
 
-默认测试入口为 `https://h5.page.shafayouxi.org/`。新增案例统一用 TypeScript，
+CI 使用本轮 Release 的独立服务器；未配置 Release 的本地手动运行默认入口为 `https://h5.page.shafayouxi.org/`。新增案例统一用 TypeScript，
 按 [案例维护约定](e2e/cases/README.md) 将说明与 `test.spec.ts` 放在同一个目录。
 运行 `cd e2e && npm ci && npm run test:functional`，不需要应用源码或本地开发服务。
 

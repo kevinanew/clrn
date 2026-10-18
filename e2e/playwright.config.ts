@@ -1,9 +1,10 @@
+/** H5 构建与正式站冒烟配置；CI 的 Release 服务器由外层测试命令统一管理。 */
 import { defineConfig, devices } from '@playwright/test';
 import { runtime } from './helpers/environment';
 
 /**
- * H5 站点可用性冒烟测试（访问已部署的 staging / production）。
- * 不启动本地服务，直接请求线上域名。
+ * H5 站点可用性冒烟测试（访问本轮 Release 或指定的 staging / production）。
+ * 登录态和多个 Playwright 命令共用外层包装器启动的服务器。
  */
 export default defineConfig({
   testDir: './',

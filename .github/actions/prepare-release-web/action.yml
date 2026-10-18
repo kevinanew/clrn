@@ -1,0 +1,28 @@
+# 测试前下载并校验固定版本的 H5 Release，准备本任务独占的静态目录。
+name: 准备 H5 Release
+description: 校验发布记录、附件内容及入口版本，供后续测试命令启动服务器。
+inputs:
+  release-record:
+    description: 调用方固定的发布记录，留空时读取当前检出提交中的记录。
+    required: false
+  expected-application-commit:
+    description: 可选的完整应用提交编号。
+    required: false
+  github-token:
+    description: 仅读取 Release 附件的 GitHub 凭据。
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: 配置安全解包工具
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: 下载并校验本轮构建包
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        CLRN_RELEASE_RECORD: ${{ inputs.release-record }}
+        CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected-application-commit }}
+      run: node scripts/prepare-release-web.mjs
