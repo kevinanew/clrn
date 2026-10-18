@@ -1,1 +1,1 @@
-{"environment":"staging","sha":"4862730342b85326f5161e2d497b20c4929f35d2","deployed_at":"2026-10-16T10:56:47.245Z"}
+{"environment":"staging","sha":"856f052cfdd8cfd7f95cc5f5cecb783aa871279d","deployed_at":"2026-10-18T05:53:57.707Z","artifact":{"release_tag":"web-staging-7304-856f052cfdd8","release_url":"https://github.com/kevinanew/clrn/releases/tag/web-staging-7304-856f052cfdd8","name":"web-staging.tar.gz","size":24949906,"sha256":"42bba75ae7d5d3f33f099bbabbc7d56a7ac777918b4be98260703d6b9f29262e"}}

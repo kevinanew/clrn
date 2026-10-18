@@ -1,6 +1,11 @@
+/**
+ * 验证 Staging 部署记录、H5 Release 附件与站点版本的核对逻辑。
+ * 通过可替换的网络边界覆盖匹配和不匹配的部署结果。
+ */
+
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readDeploymentRecord, waitForDeployment } from './staging-deployment.mjs';
+import { readDeploymentRecord, verifyDeploymentArtifact, waitForDeployment } from './staging-deployment.mjs';
 
 const expectedCommit = 'a'.repeat(40);
 const previousCommit = 'b'.repeat(40);
@@ -20,6 +25,47 @@ test('部署记录只接受 staging、完整提交和有效时间', () => {
     { ...record, deployed_at: '' }, { ...record, deployed_at: 1 }]) {
     assert.throws(() => readDeploymentRecord(JSON.stringify(value)));
   }
+});
+
+test('部署记录必须指向已公开且摘要匹配的 CLRN H5 构建包', async () => {
+  const releaseTag = `web-staging-42-${expectedCommit.slice(0, 12)}`;
+  const artifact = { release_tag: releaseTag,
+    release_url: `https://github.com/kevinanew/clrn/releases/tag/${releaseTag}`,
+    name: 'web-staging.tar.gz', size: 1234, sha256: 'c'.repeat(64) };
+  const content = JSON.stringify({ environment: 'staging', sha: expectedCommit,
+    deployed_at: '2026-10-14T00:00:00Z', artifact });
+  const release = { tag_name: releaseTag, draft: false, prerelease: true,
+    body: `<!-- laiwan-web-staging-package -->\n应用提交：${expectedCommit}`,
+    assets: [
+      { name: artifact.name, state: 'uploaded', size: artifact.size,
+        digest: `sha256:${artifact.sha256}` },
+      { name: 'build-info.json', state: 'uploaded' },
+    ] };
+  const requests = [];
+  const fetcher = /**
+   * 仅替换 GitHub 网络边界。
+   * @param address - 请求的 Release 地址。
+   * @param options - 请求选项。
+   */ async (address, options) => {
+    requests.push({ address, options });
+    return Response.json(release);
+  };
+  assert.deepEqual(await verifyDeploymentArtifact({ content, token: 'test-token', fetcher }), artifact);
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].address,
+    `https://api.github.com/repos/kevinanew/clrn/releases/tags/${releaseTag}`);
+  assert.equal(requests[0].options.headers.Authorization, 'Bearer test-token');
+  for (const invalidContent of [JSON.stringify({ environment: 'staging', sha: expectedCommit,
+    deployed_at: '2026-10-14T00:00:00Z' }),
+  JSON.stringify({ environment: 'staging', sha: expectedCommit,
+    deployed_at: '2026-10-14T00:00:00Z', artifact: { ...artifact, release_tag: 'web-staging-42-bad' } })]) {
+    await assert.rejects(verifyDeploymentArtifact({ content: invalidContent, fetcher }), /构建包信息/);
+  }
+  assert.equal(requests.length, 1);
+  await assert.rejects(verifyDeploymentArtifact({ content,
+    fetcher: /** 返回摘要不匹配的公开附件。 */ async () =>
+      Response.json({ ...release, assets: [{ ...release.assets[0], digest: 'sha256:bad' }, release.assets[1]] }) }),
+  /不一致/);
 });
 
 test('先读到旧版本时等待，实际提供目标提交后才放行', async () => {

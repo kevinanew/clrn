@@ -148,8 +148,21 @@ jobs:
       - name: 确认测试期间应用版本未改变
         if: always() && !cancelled() && steps.deployment.outcome == 'success'
         run: node scripts/staging-deployment.mjs verify
+      - name: 准备首张失败截图供网页预览
+        if: always()
+        id: preview
+        shell: bash
+        run: |
+          if [ -d visual/test-results/animations ]; then
+            screenshot=$(find visual/test-results/animations -type f \( -name 'failure.png' -o -name 'test-failed-*.png' \) -print -quit)
+          fi
+          if [ -n "${screenshot:-}" ]; then
+            cp -- "$screenshot" visual/test-results/animations/failure-preview.png
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+          fi
       - name: 保存关键帧对比和时间采样报告
         if: always()
+        id: report
         uses: actions/upload-artifact@v4
         with:
           name: animation-${{ matrix.suite }}-${{ matrix.part }}-report-${{ github.run_id }}-${{ github.run_attempt }}
@@ -158,3 +171,39 @@ jobs:
             visual/playwright-report/animations/
             visual/test-results/animations/
             visual/test-results/animation-candidates/
+      - name: 单独保存失败截图
+        if: always()
+        id: screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: animation-${{ matrix.suite }}-${{ matrix.part }}-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: ignore
+          path: |
+            visual/test-results/animations/**/failure.png
+            visual/test-results/animations/**/test-failed-*.png
+      - name: 上传可直接预览的失败截图
+        if: always() && steps.preview.outputs.available == 'true'
+        id: preview_image
+        uses: actions/upload-artifact@v7
+        with:
+          path: visual/test-results/animations/failure-preview.png
+          archive: false
+          retention-days: 14
+      - name: 在运行摘要中给出截图入口
+        if: always()
+        env:
+          PREVIEW_URL: ${{ steps.preview_image.outputs.artifact-url }}
+          SCREENSHOTS_URL: ${{ steps.screenshots.outputs.artifact-url }}
+          REPORT_URL: ${{ steps.report.outputs.artifact-url }}
+        run: |
+          echo '### 动画测试产物' >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$PREVIEW_URL" ]; then
+            echo "[直接预览首张失败截图]($PREVIEW_URL)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -n "$SCREENSHOTS_URL" ]; then
+            echo "[下载失败截图 PNG]($SCREENSHOTS_URL)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -n "$REPORT_URL" ]; then
+            echo "[下载完整 Playwright 报告]($REPORT_URL)" >> "$GITHUB_STEP_SUMMARY"
+          fi

@@ -36,7 +36,15 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     }, game === 'texas' ? 'texas_react_native' : 'zhajinhua');
     const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
     if (hall) await enterTexasRoom(page, room);
-    else await expect(visible(page, `${prefix}-start-room-timer-button`)).toBeVisible({ timeout: 90_000 });
+    else {
+      const connection = { state: 'loading' };
+      await expect.poll(async () => {
+        if (await visible(page, 'common-alert-button-retry').isVisible()) connection.state = 'timeout';
+        else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
+        return connection.state;
+      }, { timeout: 90_000, message: `${game} 牌桌应完成连接或明确显示超时弹窗` }).not.toBe('loading');
+      if (connection.state === 'timeout') throw new Error(`${game} 牌桌显示连接超时，未自动重试；请查看失败截图`);
+    }
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
     await freeze(page);
     console.log('TABLE > 牌桌已就绪，开始动画采样');
