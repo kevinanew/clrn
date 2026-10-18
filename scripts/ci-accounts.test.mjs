@@ -1,17 +1,18 @@
+/** 验证 100 个 Web 账号轮转、本机隔离、完整凭据及工作流注入。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { allocateCiAccount, ciAccountCredentials, ciAccounts, executionAccounts, visualAccountMatrix, animationAccountMatrix } from './ci-accounts.mjs';
+import { allocateCiAccount, ciAccountCredentials, ciAccounts, visualAccountMatrix, animationAccountMatrix } from './ci-accounts.mjs';
 
-test('连续 30 个运行 ID 只轮转 Web 老账号，重跑和大整数 ID 分配稳定', () => {
-  assert.equal(new Set(Array.from({length:30},(_,i)=>allocateCiAccount(String(100+i)))).size,30);
+test('连续 100 个运行 ID 轮转完整 Web 账号池，重跑和大整数 ID 分配稳定', () => {
+  assert.equal(new Set(Array.from({length:100},(_,i)=>allocateCiAccount(String(100+i)))).size,100);
   assert.equal(allocateCiAccount('90071992547409931'), allocateCiAccount('90071992547409931'));
-  assert.equal(allocateCiAccount('90071992547409931'), executionAccounts[Number(90071992547409931n % 30n)]);
+  assert.equal(allocateCiAccount('90071992547409931'), ciAccounts[Number(90071992547409931n % 100n)]);
   for (const id of ['', '1\n', 'abc', '-1', undefined]) assert.throws(()=>allocateCiAccount(id));
-  for (const offset of [-1,30,0.5]) assert.throws(()=>allocateCiAccount('1',offset));
+  for (const offset of [-1,100,0.5]) assert.throws(()=>allocateCiAccount('1',offset));
 });
 
 test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留原账号槽位', () => {
@@ -169,16 +170,31 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
 });
 
 
-test('仓库账号分区固定，不能选用另一仓库账号，接受分区凭据', () => {
-  assert.equal(executionAccounts.length, 30);
-  const reserved = ciAccounts.slice(30);
-  const accounts = executionAccounts.map(username => ({ username, password: 'Partition123', status: 'ready' }));
+test('公开清单仅含 100 个 Web 账号，凭据必须完整且不能混入池外账号', () => {
+  const expected = [
+    ...Array.from({ length: 30 }, (_, index) => `clrnci261009${String(index + 1).padStart(2, '0')}`),
+    ...Array.from({ length: 70 }, (_, index) => `clrnci261018${String(index + 1).padStart(3, '0')}`),
+  ];
+  assert.deepEqual(ciAccounts, expected);
+  const accounts = ciAccounts.map(username => ({ username, password: 'AccountPool123', status: 'ready' }));
   const serialized = JSON.stringify({ accounts });
-  for (let run = 0; run < 200; run += 1) {
-    assert.ok(!reserved.includes(allocateCiAccount(String(run))));
+  for (const username of expected) {
+    assert.equal(ciAccountCredentials(serialized, username).username, username);
   }
-  assert.equal(ciAccountCredentials(serialized, executionAccounts[0]).username, executionAccounts[0]);
-  assert.throws(() => ciAccountCredentials(serialized, reserved[0]));
-  const full = JSON.stringify({ accounts: ciAccounts.map(username => ({ username, password: 'Partition123', status: 'ready' })) });
-  assert.throws(() => ciAccountCredentials(full, reserved[0]));
+  assert.throws(() => ciAccountCredentials(serialized, 'unmanagedaccount'));
+  assert.throws(() => ciAccountCredentials(JSON.stringify({ accounts: accounts.slice(0, 30) }), ciAccounts[0]));
+  const foreign = { username: 'unmanagedaccount', password: 'AccountPool123', status: 'ready' };
+  assert.throws(() => ciAccountCredentials(JSON.stringify({ accounts: [...accounts.slice(0, -1), foreign] }), ciAccounts[0]));
+  assert.throws(() => ciAccountCredentials(JSON.stringify({ accounts: [...accounts, foreign] }), ciAccounts[0]));
+});
+
+test('五组工作流统一引用新版 Web 凭据并保留账号互斥', () => {
+  for (const workflow of ['e2e', 'functional', 'interactions', 'visual', 'animations']) {
+    const source = readFileSync(`.github/workflows/${workflow}.yml`, 'utf8');
+    assert.match(source, /secrets\.CLRN_CI_TEST_ACCOUNTS_V3/);
+    assert.doesNotMatch(source, /secrets\.CLRN_CI_TEST_ACCOUNTS_V2/);
+    assert.match(source, /group: h5-staging-account-/);
+    assert.match(source, /cancel-in-progress: false/);
+    assert.match(source, /queue: max/);
+  }
 });

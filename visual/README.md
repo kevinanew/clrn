@@ -304,7 +304,7 @@ VISUAL_SUITE=texas pnpm run test:all # 德州三种语言
 在 PRD 登记后复用；管理 token 不发送给浏览器。
 牌桌账号余额不足时允许为本轮使用的这三个固定账号或 GitHub Actions 专用池账号通过 `TESTING_API_TOKEN`
 补钻，任意自定义账号不会自动补钻；新建房间仍在用例结束时解散。
-CI 从 `CLRN_CI_TEST_ACCOUNTS_V2` Secret 为每个任务注入 `VISUAL_USERNAME` / `VISUAL_PASSWORD`，
+CI 从 `CLRN_CI_TEST_ACCOUNTS_V3` Secret 为每个任务注入 `VISUAL_USERNAME` / `VISUAL_PASSWORD`，
 使用 100 个 CI 专用账号。旧 `VISUAL_TEXAS_*` / `VISUAL_ZHAJINHUA_*` CI 覆盖配置不再使用。
 本机覆盖凭据仍用 `VISUAL_USERNAME` / `VISUAL_PASSWORD`。
 账号页中的昵称、展示用户名和注册日期固定为既有视觉基准值，避免账号池轮转改变截图；

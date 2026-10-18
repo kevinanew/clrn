@@ -1,13 +1,13 @@
+/** 维护 100 个 Web 专用账号的稳定分配和凭据校验，与本机账号隔离。 */
 import { readFileSync } from 'node:fs';
 
-// 这里只维护公开账号名，密码统一保存在 CLRN_CI_TEST_ACCOUNTS_V2 Secret。
+// 仅维护本仓库的 Web 账号；凭据由 CLRN_CI_TEST_ACCOUNTS_V3 Secret 单独维护。
 export const ciAccounts = JSON.parse(readFileSync(new URL('./ci-test-accounts.json', import.meta.url), 'utf8')).accounts;
-if (ciAccounts.length !== 100 || new Set(ciAccounts.map(name => name.toLowerCase())).size !== 100) {
-  throw new Error('CI 账号清单必须包含 100 个不同账号。');
+if (!Array.isArray(ciAccounts) || ciAccounts.length !== 100
+  || ciAccounts.some(name => typeof name !== 'string' || !/^[a-z0-9]{6,30}$/.test(name))
+  || new Set(ciAccounts).size !== 100) {
+  throw new Error('Web CI 账号清单必须包含 100 个不同账号');
 }
-
-// 两个仓库固定使用互不相交的账号；GitHub concurrency 仅在本仓库生效。
-export const executionAccounts = ciAccounts.slice(0, 30);
 
 /**
  * 按运行 ID 轮转账号槽位；账号级 GitHub concurrency 才负责跨 runner 互斥。
@@ -17,10 +17,10 @@ export const executionAccounts = ciAccounts.slice(0, 30);
  * @returns 本任务使用的公开账号名。
  */
 export function allocateCiAccount(runId, offset = 0) {
-  if (typeof runId !== 'string' || !runId || /\D/.test(runId) || !Number.isSafeInteger(offset) || offset < 0 || offset >= executionAccounts.length) {
+  if (typeof runId !== 'string' || !runId || /\D/.test(runId) || !Number.isSafeInteger(offset) || offset < 0 || offset >= ciAccounts.length) {
     throw new Error('CI 账号分配需要有效运行 ID 和账号槽位偏移。');
   }
-  return executionAccounts[Number((BigInt(runId) + BigInt(offset)) % BigInt(executionAccounts.length))];
+  return ciAccounts[Number((BigInt(runId) + BigInt(offset)) % BigInt(ciAccounts.length))];
 }
 
 /**
@@ -69,9 +69,9 @@ export function animationAccountMatrix(runId, suite = 'all') {
  */
 export function ciAccountCredentials(serialized, username) {
   let pool;
-  try { pool = JSON.parse(serialized); } catch { throw new Error('CLRN_CI_TEST_ACCOUNTS Secret 缺失或不是有效 JSON。'); }
-  if (!Array.isArray(pool?.accounts) || ![executionAccounts.length, ciAccounts.length].includes(pool.accounts.length)) {
-    throw new Error('CI Secret 必须包含完整的 30 个 Web 专用账号，或迁移前的 100 个账号。');
+  try { pool = JSON.parse(serialized); } catch { throw new Error('CLRN_CI_TEST_ACCOUNTS_V3 Secret 缺失或不是有效 JSON。'); }
+  if (!Array.isArray(pool?.accounts) || pool.accounts.length !== ciAccounts.length) {
+    throw new Error('CI Secret 必须包含完整的 100 个 Web 专用账号。');
   }
   const seen = new Set();
   for (const account of pool.accounts) {
@@ -82,8 +82,8 @@ export function ciAccountCredentials(serialized, username) {
     }
     seen.add(account.username);
   }
-  if (!executionAccounts.every(name => seen.has(name)) || !executionAccounts.includes(username)) {
-    throw new Error('所选账号或 Secret 不属于本仓库的专用账号分区。');
+  if (!ciAccounts.every(name => seen.has(name)) || !ciAccounts.includes(username)) {
+    throw new Error('所选账号或 Secret 不属于本仓库的 Web 专用账号池。');
   }
   const selected = pool.accounts.find(account => account.username === username);
   if (!selected) throw new Error('所选账号不属于 CI 专用池。');

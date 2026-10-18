@@ -118,7 +118,7 @@ CI 因此使用 100 个专用账号，功能、弱网、交互与 Freshchat、�
 创建俱乐部消耗 50 钻，俱乐部内建局另需 10 钻。每个创建用例（含桌面和手机）独立重设 60 钻，
 未开始牌局解散后退还其费用。
 
-功能 CI 从 `CLRN_CI_TEST_ACCOUNTS_V2` Secret 按所选用户名注入 `E2E_TEST_*` 和 `E2E_CREATION_*`，
+功能 CI 从 `CLRN_CI_TEST_ACCOUNTS_V3` Secret 按所选用户名注入 `E2E_TEST_*` 和 `E2E_CREATION_*`，
 从 Secret 读取 `TESTING_API_TOKEN`，从 Actions Variables 读取 `E2E_STAGING_URL`。
 账号池必需；scope=all 额外检查创建凭据和 token，scope=registration 检查 token；缺失明确失败。
 在仓库 Settings → Secrets and variables → Actions 配置凭据，勿写入代码或报告。

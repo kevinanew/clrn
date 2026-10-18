@@ -1,3 +1,4 @@
+/** 为视觉测试生成稳定设备标识，并限制补充余额只能使用当前 Web 专用账号。 */
 import { getVisualSuite } from './visual-suite';
 import ciManifest from '../scripts/ci-test-accounts.json';
 import { createHash } from 'node:crypto';

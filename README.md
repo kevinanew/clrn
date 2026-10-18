@@ -106,7 +106,7 @@ node ../scripts/with-test-account.mjs -- pnpm run test:ci
 可通过 `CLRN_TEST_ACCOUNT_POOL` 指定其他账号池文件；共用账号必须共用同一文件，
 占用锁保存在其旁边的 `locks/`。池用完时明确报错，不复用正在被占用的账号。
 进程被 SIGKILL 强制终止会留下占用锁，确认对应测试已结束后再删除该目录。
-本机锁只协调本机任务。CI 清单共 100 个账号，Web 固定使用老 30 个，另外 70 个归 clrn-az，和本机池分开，避免跨机器登录冲突。
+本机锁只协调本机任务。Web CI 清单包含 100 个专用账号，和本机池分开，避免跨机器登录冲突。
 本机启动器会拒绝 CI 专用账号，即使通过自定义账号池文件传入也不能借用。
 
 测试账号创建方式见相邻 PRD 的
@@ -132,14 +132,15 @@ GitHub Actions 在每次 push 和 PR 上运行同样的全仓库检查，包含 
 
 ## CI 专用账号池
 
-公开清单保留全部 100 个 CI 账号，防止本机工具误用；本仓库只调度老 30 个 `clrnci26100901`–`clrnci26100930`。新 70 个 `clrnci261015001`–`clrnci261015070` 专供 [clrn-az](https://github.com/albitsj/clrn-az) 使用。两个仓库的账号分区固定且互不重叠；GitHub concurrency 只在单个仓库内生效。
-完整凭据由仓库 Actions Secret **`CLRN_CI_TEST_ACCOUNTS_V2`** 维护，结构为 `{ "accounts": [{ "username": "…", "password": "…", "status": "ready" }] }`；Git 中的 `scripts/ci-test-accounts.json` 只维护公开账号名。
-旧的 `CLRN_CI_TEST_ACCOUNTS` Secret 保留 30 个账号，供尚未切换的旧分支及历史任务使用；本仓库兼容包含老 30 个或完整 100 个账号的 V2 Secret，但仅允许注入 Web 分区账号。
-本机恢复备份为 Git 元数据目录中的 `clrn-test-accounts/ci-accounts-v2.json`，权限 0600。
+公开清单 `scripts/ci-test-accounts.json` 的 `accounts` 仅维护本仓库使用的 100 个 Web CI 账号：原有 `clrnci26100901`–`clrnci26100930` 加上新增的 `clrnci261018001`–`clrnci261018070`。调度、凭据校验、视觉测试与本机隔离共用这一份清单。
+Web 凭据由仓库 Actions Secret **`CLRN_CI_TEST_ACCOUNTS_V3`** 维护，结构为 `{ "accounts": [{ "username": "…", "password": "…", "status": "ready" }] }`，必须恰好包含这 100 个 Web 账号。Git 只保存公开账号名。
+旧的 `CLRN_CI_TEST_ACCOUNTS` 和 `CLRN_CI_TEST_ACCOUNTS_V2` Secret 保持原内容，供旧分支及历史任务使用。新工作流拒绝旧 30 个账号或混入池外账号的凭据。
+本机恢复备份为 Git 元数据目录中的 `clrn-test-accounts/ci-web-accounts-v3.json`，权限 0600。
+2026-10-18 新增的 70 个账号均已通过真实注册、登录及钱包回读验证，初始准备 10000 金币和 60 钻石。
 
 E2E、功能、交互与 Freshchat、视觉工作流先规划账号，再以 `h5-staging-account-<用户名>` 作为 job 并发组。
 GitHub 在 job 开始前取得账号锁，任务的所有步骤结束后释放；`queue: max` 保留等待任务。
-运行 ID 决定轮转起点，视觉套件与语言使用不同偏移。同一运行编号下，九个静态视觉任务、三个其他 Web 回归任务和七个动画回归任务共使用 19 个独立槽位，不会重复分配账号；跨轮次选中同一账号时仍需排队，分配器不会查询服务器在线状态。
+运行 ID 决定轮转起点，视觉套件与语言使用不同偏移。同一运行编号下，九个静态视觉任务、三个其他 Web 回归任务和七个动画回归任务共使用 19 个独立槽位，不会重复分配账号；账号轮转范围由 30 扩为 100，减少跨轮次碰撞；选中同一账号时仍需排队，分配器不会查询服务器在线状态。
 不同账号的任务可以并行，实际任务数还受 GitHub runner 配额限制。缺少 Secret 或账号池不完整时直接失败。
 Web 视觉矩阵优先创建德州、拼三张任务（包含本轮选中的全部语言），再创建其他业务任务，以减少长任务排在末尾的等待。动画应用拆成两组、德州三组、拼三张两组，仍对每组连续比较三次。实际启动仍受 runner 和账号锁可用性影响；任务顺序不改变账号槽位或并行机制。
 同一账号的测试保持一个 worker，账号级锁覆盖任务全部步骤；静态检查和单元测试不占用真实账号，可以并行。
