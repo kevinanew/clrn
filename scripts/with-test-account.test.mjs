@@ -157,7 +157,7 @@ test('30 个并发任务使用 30 个不同账号，第 31 个任务不能复用
 
 
 test('本机启动器拒绝 CI 专用账号，包括大小写变体', async t => {
-  for (const username of ['clrnci26100908', 'CLRNCI26100908', 'clrnci261015001', 'clrnci261018001', 'CLRNCI261018070']) {
+  for (const username of ['clrnci26100908', 'CLRNCI26100908', 'clrnci261018001', 'CLRNCI261018070']) {
     const { pool } = await fixture(t, [username]);
     const run = launch(t, pool, [process.execPath, '-e', 'console.log("SHOULD_NOT_START")']);
     const result = await run.finished;

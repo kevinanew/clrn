@@ -91,7 +91,7 @@ node ../scripts/with-test-account.mjs -- pnpm run test:ci
 可通过 `CLRN_TEST_ACCOUNT_POOL` 指定其他账号池文件；共用账号必须共用同一文件，
 占用锁保存在其旁边的 `locks/`。池用完时明确报错，不复用正在被占用的账号。
 进程被 SIGKILL 强制终止会留下占用锁，确认对应测试已结束后再删除该目录。
-本机锁只协调本机任务。CI 完整清单共 170 个账号，Web 专用 100 个，另外 70 个归 clrn-az，和本机池分开，避免跨机器登录冲突。
+本机锁只协调本机任务。Web CI 清单包含 100 个专用账号，和本机池分开，避免跨机器登录冲突。
 本机启动器会拒绝 CI 专用账号，即使通过自定义账号池文件传入也不能借用。
 
 测试账号创建方式见相邻 PRD 的
@@ -117,9 +117,9 @@ GitHub Actions 在每次 push 和 PR 上运行同样的全仓库检查，包含 
 
 ## CI 专用账号池
 
-公开清单 `scripts/ci-test-accounts.json` 的 `accounts` 保留全部 170 个 CI 账号，防止本机工具误用；`webAccounts` 明确列出本仓库调度的 100 个账号：原有 `clrnci26100901`–`clrnci26100930` 加上新增的 `clrnci261018001`–`clrnci261018070`。另外 70 个 `clrnci261015001`–`clrnci261015070` 继续专供 [clrn-az](https://github.com/albitsj/clrn-az) 使用。两个仓库的账号分区固定且互不重叠；GitHub concurrency 只在单个仓库内生效。
+公开清单 `scripts/ci-test-accounts.json` 的 `accounts` 仅维护本仓库使用的 100 个 Web CI 账号：原有 `clrnci26100901`–`clrnci26100930` 加上新增的 `clrnci261018001`–`clrnci261018070`。调度、凭据校验、视觉测试与本机隔离共用这一份清单。
 Web 凭据由仓库 Actions Secret **`CLRN_CI_TEST_ACCOUNTS_V3`** 维护，结构为 `{ "accounts": [{ "username": "…", "password": "…", "status": "ready" }] }`，必须恰好包含这 100 个 Web 账号。Git 只保存公开账号名。
-旧的 `CLRN_CI_TEST_ACCOUNTS` 和 `CLRN_CI_TEST_ACCOUNTS_V2` Secret 保持原内容，供旧分支及历史任务使用。新工作流拒绝旧 30 个账号或包含安卓账号的混合凭据，避免分区误用。
+旧的 `CLRN_CI_TEST_ACCOUNTS` 和 `CLRN_CI_TEST_ACCOUNTS_V2` Secret 保持原内容，供旧分支及历史任务使用。新工作流拒绝旧 30 个账号或混入池外账号的凭据。
 本机恢复备份为 Git 元数据目录中的 `clrn-test-accounts/ci-web-accounts-v3.json`，权限 0600。
 2026-10-18 新增的 70 个账号均已通过真实注册、登录及钱包回读验证，初始准备 10000 金币和 60 钻石。
 

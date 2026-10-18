@@ -4,14 +4,14 @@
 
 ## 并行测试账号池
 
-本机使用 30 个既有账号，CLRN Web 持续集成使用 100 个专用账号，clrn-az 安卓另有 70 个独立账号。完整 170 个 CI 用户名及 Web 专用分区见 [`scripts/ci-test-accounts.json`](../scripts/ci-test-accounts.json) 的 `accounts` 与 `webAccounts`。账号及获取方式登记在
+本机使用 30 个既有账号，CLRN Web 持续集成使用 100 个专用账号。完整 Web CI 用户名清单见 [`scripts/ci-test-accounts.json`](../scripts/ci-test-accounts.json) 的 `accounts`。账号及获取方式登记在
 [PRD 账号清单](https://github.com/kevinanew/laiwan_prd/blob/master/docs/测试与维护仓库.html#test-account-pool)。
 本机凭据维护在 Git 共同元数据目录的 `clrn-test-accounts/accounts.json`，Web CI 凭据维护在
 `CLRN_CI_TEST_ACCOUNTS_V3` Actions Secret，恢复备份为同目录下的 `ci-web-accounts-v3.json`；凭据文件权限为 0600。
 
 Web 保留原有 `clrnci26100901`–`clrnci26100930`，新增 `clrnci261018001`–`clrnci261018070`，合计 100 个。
 新增 70 个账号于 2026-10-18 全部通过真实注册、登录和钱包余额回读，准备 10000 金币与 60 钻石。
-`clrnci261015001`–`clrnci261015070` 继续归安卓专用；旧版两个 Secret 保持原内容以兼容历史任务。
+旧版两个 Secret 保持原内容以兼容历史任务。
 
 本机与 Web 两组账号仅供 CLRN 使用，不与 `laiwan_react_native` 的独立测试或人工调试共用。
 主应用部署后只触发 CLRN，由 CLRN 自己取得 CI 账号锁。其他项目需要登录时使用自己的账号。

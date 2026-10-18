@@ -41,6 +41,6 @@ export function canTopUpVisualAccount(username: string, env: NodeJS.ProcessEnv =
   const isFixedTestAccount = username === APP_TEST_USERNAME || username === TEXAS_TEST_USERNAME
     || username === ZHAJINHUA_TEST_USERNAME;
   const isCurrentAccount = username === getVisualTestAccount(env).username;
-  const isCiPoolAccount = env.GITHUB_ACTIONS === 'true' && ciManifest.webAccounts.includes(username);
+  const isCiPoolAccount = env.GITHUB_ACTIONS === 'true' && ciManifest.accounts.includes(username);
   return (isFixedTestAccount || isCiPoolAccount) && isCurrentAccount;
 }
