@@ -1,14 +1,12 @@
+/** 视觉回归优先使用本轮 Release 服务器，本地手动运行保留 Staging 入口。 */
+import { readTestWebUrl } from '../e2e/helpers/web-target';
+
 /**
- * 视觉回归只访问已部署的 staging，不依赖应用源码或本地服务器。
+ * 返回所有视觉场景共用的测试地址。
  * @param env - 环境配置，默认读取当前进程。
  */
 export function readVisualUrl(env: NodeJS.ProcessEnv = process.env): string {
-  const url = new URL(env.VISUAL_BASE_URL || 'https://h5.page.shafayouxi.org/');
-  const stagingHosts = ['h5.page.shafayouxi.org', 'h5.shafayouxi.org'];
-  if (url.protocol !== 'https:' || !stagingHosts.includes(url.hostname)) {
-    throw new Error('VISUAL_BASE_URL 必须是已部署的来玩 staging HTTPS 地址');
-  }
-  return url.href;
+  return readTestWebUrl(env.VISUAL_BASE_URL, env);
 }
 
 export const visualBaseUrl = readVisualUrl();

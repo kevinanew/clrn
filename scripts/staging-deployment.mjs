@@ -1,5 +1,5 @@
 /**
- * 核对 Staging 部署记录所指向的 H5 Release，并等待站点提供指定应用版本。
+ * 核对发布记录所指向的 H5 Release；保留线上站点版本探测供独立部署诊断。
  * 供 CLRN 的部署回归流水线读取应用提交和验证公开附件使用。
  */
 
@@ -35,7 +35,7 @@ export function readDeploymentRecord(content) {
  * 核对部署记录指向的 H5 Release 和 GitHub 保存的附件摘要。
  * @param options - 部署记录、GitHub 凭据和可替换的网络边界。
  */
-export async function verifyDeploymentArtifact(options) {
+export async function loadDeploymentRelease(options) {
   const { content, token, fetcher = fetch } = options;
   const commit = readDeploymentRecord(content);
   const artifact = JSON.parse(content).artifact;
@@ -66,7 +66,15 @@ export async function verifyDeploymentArtifact(options) {
     !information || information.state !== 'uploaded') {
     throw new Error('CLRN H5 Release 与 staging 部署记录不一致');
   }
-  return artifact;
+  return { artifact, release, commit };
+}
+
+/**
+ * 核对发布记录中的构建信息，保留原有调用接口。
+ * @param options - 发布记录及网络边界。
+ */
+export async function verifyDeploymentArtifact(options) {
+  return (await loadDeploymentRelease(options)).artifact;
 }
 
 /**
@@ -116,7 +124,7 @@ async function main() {
     const commit = readDeploymentRecord(content);
     await verifyDeploymentArtifact({ content, token: process.env.GITHUB_TOKEN });
     if (!process.env.GITHUB_OUTPUT) throw new Error('缺少 GITHUB_OUTPUT');
-    appendFileSync(process.env.GITHUB_OUTPUT, `application_commit=${commit}\n`);
+    appendFileSync(process.env.GITHUB_OUTPUT, `application_commit=${commit}\nrelease_record=${JSON.stringify(JSON.parse(content))}\n`);
     console.log(`本轮验证应用提交：${commit}`);
   } else if (command === 'wait' || command === 'verify') {
     const commit = await waitForDeployment({ expectedCommit: process.env.CLRN_EXPECTED_APPLICATION_COMMIT,

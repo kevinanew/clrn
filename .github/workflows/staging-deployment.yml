@@ -1,5 +1,5 @@
-# 读取应用写入的 Staging 部署记录，验证 H5 Release 附件及已部署站点版本。
-name: H5 staging 部署验证
+# 固定触发提交中的 Release 记录；所有套件下载同一构建，独立启动静态服务器。
+name: H5 Release 构建验证
 
 on:
   push:
@@ -17,13 +17,16 @@ concurrency:
 
 jobs:
   deployment:
-    name: 确认部署版本
+    name: 确认 Release 版本
     runs-on: ubuntu-latest
     outputs:
       application_commit: ${{ steps.record.outputs.application_commit }}
+      release_record: ${{ steps.record.outputs.release_record }}
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       - name: 记录部署版本
         id: record
         env:
@@ -35,6 +38,7 @@ jobs:
     uses: ./.github/workflows/e2e.yml
     with:
       expected_application_commit: ${{ needs.deployment.outputs.application_commit }}
+      release_record: ${{ needs.deployment.outputs.release_record }}
     secrets: inherit
   functional:
     name: H5 线上功能测试
@@ -42,6 +46,7 @@ jobs:
     uses: ./.github/workflows/functional.yml
     with:
       expected_application_commit: ${{ needs.deployment.outputs.application_commit }}
+      release_record: ${{ needs.deployment.outputs.release_record }}
     secrets: inherit
   interactions:
     name: H5 交互与客服回归
@@ -49,6 +54,7 @@ jobs:
     uses: ./.github/workflows/interactions.yml
     with:
       expected_application_commit: ${{ needs.deployment.outputs.application_commit }}
+      release_record: ${{ needs.deployment.outputs.release_record }}
     secrets: inherit
   visual:
     name: H5 画面回归
@@ -56,6 +62,7 @@ jobs:
     uses: ./.github/workflows/visual.yml
     with:
       expected_application_commit: ${{ needs.deployment.outputs.application_commit }}
+      release_record: ${{ needs.deployment.outputs.release_record }}
     secrets: inherit
   animations:
     name: H5 动画回归
@@ -63,4 +70,5 @@ jobs:
     uses: ./.github/workflows/animations.yml
     with:
       expected_application_commit: ${{ needs.deployment.outputs.application_commit }}
+      release_record: ${{ needs.deployment.outputs.release_record }}
     secrets: inherit

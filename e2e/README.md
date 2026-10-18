@@ -2,7 +2,7 @@
 
 弱网测试使用 staging 测试账号。账号及权限记录在 [测试账号与权限](accounts.md)。
 
-这是一个自包含的 npm 子项目，只通过 URL、DOM、`data-testid`、localStorage key、HTTP API 路径和环境变量测试已部署的 staging / production H5。它不构建应用，也不依赖仓库根目录的依赖、配置或源代码。
+这是一个 npm 测试子项目，通过 URL、DOM、`data-testid`、localStorage key、HTTP API 路径和环境变量测试 H5。CI 从固定 Release 下载构建包，在任务独占的静态服务器上运行；业务接口仍使用 Staging，正式站另做可用性检查。测试不重新构建应用，构建下载与服务器由根目录的 `scripts/prepare-release-web.mjs` 和 `scripts/with-release-web-server.mjs` 管理。
 
 ## 运行
 
@@ -33,7 +33,7 @@ E2E_EXPECT_BUILD_SHA=abc1234 npm run test:smoke
 
 目标站点：
 
-- `E2E_STAGING_URL`：默认 `https://h5.page.shafayouxi.org/`，也允许旧 staging 域名 `h5.shafayouxi.org`；拒绝本地环境和其他域名。
+- `E2E_STAGING_URL`：默认 `https://h5.page.shafayouxi.org/`，也允许旧 staging 域名 `h5.shafayouxi.org`；Release 包装命令会强制改为本轮已校验的回环服务器，其他本地地址和正式域名仍不能用作登录目标。
 
 可选环境变量：
 
@@ -81,7 +81,12 @@ Production E2E 仅允许不会修改用户资产和业务数据的只读检查�
 
 ## CI
 
-先在 GitHub 仓库 Settings → Secrets and variables → Actions → Variables 中设置 `E2E_STAGING_URL`。`.github/workflows/e2e.yml` 在 `e2e/**` 或工作流文件 push 变更及手动触发时，将这个仓库变量传给测试，并使用 Playwright `v1.59.1-jammy` 镜像执行 `npm ci`、安装 Python 3.12 与锁定的 mitmproxy，再运行代理检查和 `npm test`。变量缺失时使用默认线上 staging；非 HTTPS 或非 staging 域名会直接报错。失败时上传 HTML 报告；真实账号登录请求含私有凭据，因此关闭网络 trace。镜像版本与本目录 `package-lock.json` 锁定的 Playwright `1.59.1` 一致。测试访问已部署站点，push 触发的结果反映当时站点状态，不代表当前提交已经部署。可在部署后手动运行工作流，并用 `E2E_EXPECT_BUILD_SHA` 本地验证指定版本。
+`.github/workflows/e2e.yml` 在代码变更、手动触发和发布调用时运行。每个任务固定检出事件提交，
+下载该提交记录的 Release，核对实际字节摘要、构建信息和页面版本后启动独立静态服务器。
+`with-release-web-server.mjs` 将本轮地址和完整版本传给 `npm test`；下载失败不会回退线上站点。
+运行环境保持 Playwright `v1.59.1-jammy`、Python 3.12 和锁定的 mitmproxy。
+失败时上传 HTML 报告，真实登录关闭网络 trace；正式站可用性检查继续访问正式域名。
+发布记录固定和账号排队规则见[仓库说明](../README.md#应用部署联动)。
 
 部署说明见 [应用仓库的 Web 文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/web/README.md)。
 

@@ -1,3 +1,5 @@
+/** 通过 Staging 后端创建独立测试账号，在指定前端入口验证真实登录和余额。 */
+import { environment } from "../../helpers/environment";
 import { randomBytes, randomUUID } from 'node:crypto';
 import { expect, type Page } from '@playwright/test';
 import { signIn, type Session } from './auth';
@@ -60,8 +62,7 @@ async function registerOnStaging(page: Page): Promise<ProvisionedAccount> {
   await prepareContext(page.context(), randomUUID());
   await openHall(page);
   const target = new URL(page.url());
-  expect(target.protocol).toBe('https:');
-  expect(['h5.page.shafayouxi.org', 'h5.shafayouxi.org']).toContain(target.hostname);
+  expect(target.origin).toBe(new URL(environment.stagingUrl).origin);
   const username = `e2e${randomBytes(7).toString('hex')}`;
   const password = `T${randomBytes(7).toString('hex')}9`;
   let created;

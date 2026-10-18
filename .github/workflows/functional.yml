@@ -1,12 +1,17 @@
+# 每个浏览器任务使用固定 Release 包启动独立服务器，账号锁继续隔离共享后端。
 name: H5 线上功能案例
 
 on:
   push:
-    paths: ['e2e/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/functional.yml']
+    paths: ['scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'e2e/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/functional.yml']
   workflow_call:
     inputs:
+      release_record:
+        description: 本轮固定的 Release 发布记录
+        required: false
+        type: string
       expected_application_commit:
-        description: '本轮 staging 部署的完整应用提交编号'
+        description: '本轮 Release 的完整应用提交编号'
         required: true
         type: string
   workflow_dispatch:
@@ -29,6 +34,8 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       - name: 配置 Node.js
         uses: actions/setup-node@v4
         with:
@@ -43,7 +50,7 @@ jobs:
       group: h5-staging-account-${{ needs.account.outputs.account }}
       cancel-in-progress: false
       queue: max
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 35
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-jammy
@@ -54,6 +61,8 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       - name: 准备本任务独占账号及金币余额
         env:
           CLRN_CI_ACCOUNT: ${{ needs.account.outputs.account }}
@@ -82,29 +91,26 @@ jobs:
       - name: 检查测试账号及余额接口辅助代码
         working-directory: e2e
         run: npx playwright test test-user.spec.ts test-wallet.spec.ts --workers=1
-      - name: 等待本次 staging 部署生效
-        id: deployment
-        if: inputs.expected_application_commit != ''
-        working-directory: .
-        run: node scripts/staging-deployment.mjs wait
+      - name: 准备本轮 Release 构建包
+        uses: ./.github/actions/prepare-release-web
+        with:
+          release-record: ${{ inputs.release_record || '' }}
+          expected-application-commit: ${{ inputs.expected_application_commit || '' }}
+          github-token: ${{ github.token }}
       - name: 运行线上 TypeScript 案例
         working-directory: e2e
         env:
           FUNCTIONAL_SCOPE: ${{ inputs.scope || 'existing' }}
         run: |
           if [ "$FUNCTIONAL_SCOPE" = all ]; then
-            npm run test:functional
+            node ../scripts/with-release-web-server.mjs npm run test:functional
           elif [ "$FUNCTIONAL_SCOPE" = registration ]; then
-            npm run test:functional:registration
+            node ../scripts/with-release-web-server.mjs npm run test:functional:registration
           else
             # 已有账号只读案例允许网络瞬态故障重试一次，失败的断言仍会再次执行。
             # 注册／创建场景维持零重试，避免重复创建数据。
-            npm run test:functional:existing -- --retries=1
+            node ../scripts/with-release-web-server.mjs npm run test:functional:existing -- --retries=1
           fi
-      - name: 确认测试期间应用版本未被覆盖
-        if: always() && !cancelled() && steps.deployment.outcome == 'success'
-        working-directory: .
-        run: node scripts/staging-deployment.mjs verify
       - name: 上传失败报告
         if: failure()
         uses: actions/upload-artifact@v4

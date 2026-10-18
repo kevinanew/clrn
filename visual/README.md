@@ -1,6 +1,6 @@
 # 视觉回归测试（Web）
 
-测试访问已部署的 `https://h5.page.shafayouxi.org/`，不检出应用源码、不构建 Web 包、不启动应用服务器。
+CI 下载触发提交中指定的 H5 Release，校验后启动任务独占的静态 Web Server，登录态采集和所有截图分片访问同一入口。测试不检出应用源码、不重新构建 Web 包；业务接口仍连接 Staging。未配置 Release 的本地手动运行默认访问 `https://h5.page.shafayouxi.org/`。准备和运行命令见[仓库说明](../README.md#应用部署联动)。
 用例与辅助代码使用 TypeScript；截图对比在 Docker/Linux 中运行以保持字体和渲染环境一致。
 测试账号见 [测试账号与权限](../e2e/accounts.md)。
 
@@ -323,7 +323,7 @@ CI 从 `CLRN_CI_TEST_ACCOUNTS_V2` Secret 为每个任务注入 `VISUAL_USERNAME`
 4. `preparePage` 完成稳定化后与基准图比较，最多允许 0.3% 差异像素。
 
 视觉测试仍保留现有的接口 mock 和固定文本填充，用于稳定余额、房间列表、国家码等截图内容；
-它验证线上前端的视觉表现。真实认证行为由 `e2e/cases/auth-002*` 和 `auth-003*` 检查。
+它验证指定构建的视觉表现。真实认证行为由 `e2e/cases/auth-002*` 和 `auth-003*` 检查。
 `tests/preparePage.spec.ts` 与 `tests/authValidation.spec.ts` 检查测试工具自身的 DOM/HTTP fixture，不启动应用开发环境。
 
 ### WebP 图片与商城预览覆盖范围
