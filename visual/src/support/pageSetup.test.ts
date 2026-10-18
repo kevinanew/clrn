@@ -14,9 +14,10 @@ async function serializedScript(setup: (context: BrowserContext) => Promise<void
     /**
      * 捕获注册的浏览器初始化脚本，供单元测试序列化执行。
      * @param script - 待注册的浏览器初始化脚本或函数。
+     * @param argument - 初始化脚本接收的可序列化参数。
      */
-    addInitScript: async (script: string | (() => void)) => {
-    source = typeof script === 'string' ? script : `(${script.toString()})()`;
+    addInitScript: async (script: string | ((argument?: string) => void), argument?: string) => {
+    source = typeof script === 'string' ? script : `(${script.toString()})(${JSON.stringify(argument) ?? 'undefined'})`;
   } } as unknown as BrowserContext);
   return source;
 }
@@ -67,4 +68,17 @@ test('tsx auth collector animation script installs one stylesheet before and aft
   assert.ok(onReady);
   onReady();
   assert.equal(styles.length, 1);
+});
+
+
+test('startup system language is initialized before the bundle for each requested locale', async () => {
+  for (const locale of ['zh-CN', 'zh-TW', 'en-US']) {
+    /** 每次模拟独立浏览器上下文，避免前一个语言残留。 */
+    class NavigatorMock {}
+    const source = await serializedScript(context => fixNavigatorLanguage(context, locale));
+    runInNewContext(source, { Navigator: NavigatorMock });
+    const navigator = new NavigatorMock() as unknown as { language: string; languages: string[] };
+    assert.equal(navigator.language, locale);
+    assert.deepEqual(Array.from(navigator.languages), [locale, locale.split('-')[0]]);
+  }
 });

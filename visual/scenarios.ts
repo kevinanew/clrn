@@ -47,6 +47,8 @@ import { getVisualSuite, selectVisualSuite } from './visual-suite';
 /** 本地定向检查的核心范围（VISUAL_SCOPE=core）；CI 始终运行完整场景。 */
 export const CORE_PAGE_LABELS = new Set([
   // 本地按核心范围检查时也覆盖新增场景。
+  'launch_staging_notice',
+  'launch_branding',
   'guest_message',
   'guest_me',
   'login_language',
@@ -348,6 +350,12 @@ function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef):
     );
   }
 
+  for (const pageLabel of ['launch_staging_notice', 'launch_branding']) {
+    scenarios.push(buildScenario(hallPage, locale, viewport, {
+      label: scenarioLabel(locale, viewport, pageLabel), group: 'launch', pageLabel,
+      visualReadySelector: '[data-testid="launch-screen-container"]', readyText: undefined,
+    }));
+  }
   return scenarios;
 }
 
@@ -373,8 +381,8 @@ export function buildScenarios(env: NodeJS.ProcessEnv = process.env): VisualScen
  * @param viewportLabel - 要统计的视口名称。
  */
 export function pageCountForViewport(viewportLabel: ViewportLabel): number {
-  // 游客主页面 9 页；登录支线 9 页仅 mobile。
-  const unauthenticated = viewportLabel === 'mobile' ? 18 : 9;
+  // 游客主页面 9 页及启动页 2 页；登录支线 9 页仅 mobile。
+  const unauthenticated = viewportLabel === 'mobile' ? 20 : 11;
   const signedIn = SIGNED_IN_PAGES.filter(
     (page) => !page.viewports || page.viewports.includes(viewportLabel),
   ).length;

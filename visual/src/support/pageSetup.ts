@@ -76,24 +76,25 @@ function readAuthStateEntries(): Record<string, string> | null {
 /**
  * 将 Chromium 的 `en-US@posix` 语言值规范化，避免 Intl 或 react-native-localize 抛错。
  * @param context - 首次导航前配置的浏览器上下文。
+ * @param locale - 浏览器语言，启动品牌按系统语言显示，缺省沿用英语。
  */
-export async function fixNavigatorLanguage(context: BrowserContext): Promise<void> {
-  await context.addInitScript(() => {
+export async function fixNavigatorLanguage(context: BrowserContext, locale = 'en-US'): Promise<void> {
+  await context.addInitScript((language: string) => {
     try {
       Object.defineProperty(Navigator.prototype, 'language', {
         /** 返回固定浏览器语言值，避免平台语言后缀影响国际化组件。 */
-        get() { return 'en-US'; },
+        get() { return language; },
         configurable: true,
       });
       Object.defineProperty(Navigator.prototype, 'languages', {
         /** 返回固定浏览器语言值，避免平台语言后缀影响国际化组件。 */
-        get() { return ['en-US', 'en']; },
+        get() { return [language, language.split('-')[0]]; },
         configurable: true,
       });
     } catch {
       // 浏览器不允许覆盖语言属性时继续使用默认值。
     }
-  });
+  }, locale);
 }
 
 /**
@@ -171,15 +172,15 @@ export function buildStorageStateForScenario(
  * @param context - 首次导航前配置的浏览器上下文。
  * @param scenario - 本次执行的视觉配置或代理故障场景。
  * @param page - 执行操作的 Playwright 页面。
- * @param options - useMitmproxy 指定网络代理；animations 为 allow 时保留应用真实动效。
+ * @param options - useMitmproxy 指定网络代理；animations 为 allow 时保留应用真实动效；navigatorLocale 指定系统语言。
  */
 export async function setupContextForScenario(
   context: BrowserContext,
   scenario: VisualScenario,
   page?: Page,
-  options: { useMitmproxy?: boolean; animations?: 'allow' | 'disabled' } = {},
+  options: { useMitmproxy?: boolean; animations?: 'allow' | 'disabled'; navigatorLocale?: string } = {},
 ): Promise<void> {
-  await fixNavigatorLanguage(context);
+  await fixNavigatorLanguage(context, options.navigatorLocale);
   if (options.animations !== 'allow') await disableAnimations(context);
   await mockVisualNetworkDependencies(context, {
     realPrivateRoom: scenario.group === 'texas-holdem' || scenario.group === 'zhajinhua',
