@@ -1,3 +1,4 @@
+/** 游戏测试代理及脱敏诊断历史访问入口。 */
 import { test as base, expect as playwrightExpect, type BrowserContextOptions } from '@playwright/test';
 import path from 'node:path';
 import type { Mitmproxy, ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
@@ -12,6 +13,10 @@ export class ZhajinhuaProxy {
   constructor(private readonly proxy: Mitmproxy) {}
   /** 读取当前专用代理的本机访问地址。 */
   get server(): string { return this.proxy.server; }
+  /** 读取本任务代理的脱敏网络历史。 */
+  diagnostics(): Promise<{ events: unknown[]; dropped: number }> {
+    return this.proxy.command('diagnostics', undefined, 2000);
+  }
   /** 读取当前代理场景、拦截统计及回放状态。 */
   status(): Promise<ProxyStatus & { replayedMessages: number; blockedRpcs: number }> { return this.proxy.command('status'); }
   /**

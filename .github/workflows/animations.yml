@@ -10,6 +10,8 @@ on:
       - '.github/actions/prepare-release-web/**'
       - 'visual/**'
       - 'e2e/mitmproxy/**'
+      - 'e2e/helpers/*diagnostic*'
+      - 'scripts/connection-diagnostic-summary.mjs'
       - 'scripts/*accounts*'
       - 'scripts/configure-ci-account.mjs'
       - 'scripts/staging-deployment.mjs'
@@ -25,6 +27,8 @@ on:
       - '.github/actions/prepare-release-web/**'
       - 'visual/**'
       - 'e2e/mitmproxy/**'
+      - 'e2e/helpers/*diagnostic*'
+      - 'scripts/connection-diagnostic-summary.mjs'
       - 'scripts/*accounts*'
       - 'scripts/configure-ci-account.mjs'
       - 'scripts/staging-deployment.mjs'
@@ -163,6 +167,9 @@ jobs:
       - name: 连续三次比较手机和桌面动画关键帧
         working-directory: visual
         run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --repeat-each=3
+      - name: 展示连接诊断摘要
+        if: always()
+        run: node scripts/connection-diagnostic-summary.mjs
       - name: 准备首张失败截图供网页预览
         if: always()
         id: preview

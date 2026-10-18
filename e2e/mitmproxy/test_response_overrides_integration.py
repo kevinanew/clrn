@@ -100,6 +100,20 @@ class LiveOverrideTests(unittest.TestCase):
                 self.assertEqual(self.fetch(port, health)[2], {
                     'backend_delay': 37, 'server_load': 'normal', 'new_health': True})
                 self.assertEqual(self.fetch(port, health + '?failed')[0], 503)
+                if 'texas-holdem' in addon or 'zhajinhua' in addon:
+                    blocked = 'http://offline.api.staging.laiwan.shafayouxi.com/node/v1/status'
+                    self.assertEqual(self.fetch(port, blocked)[0], 503)
+                    status, _, diagnostic = self.fetch(port, 'http://test-mitmproxy.invalid/diagnostics')
+                    self.assertEqual(status, 200)
+                    self.assertEqual(self.fetch(port, 'http://test-mitmproxy.invalid/diagnostics', token='wrong')[0], 403)
+                    events = diagnostic['events']
+                    self.assertTrue(any(item['event'] == 'proxy.nodes-filtered' for item in events))
+                    self.assertTrue(any(item['event'] == 'proxy.response' and item['source'] == 'fixture'
+                                        and item['node'].startswith('offline.') for item in events))
+                    self.assertTrue(any(item['event'] == 'proxy.response' and item['source'] == 'upstream'
+                                        and item['node'].startswith('64.') for item in events))
+                    self.assertNotIn('shafayouxi.com', json.dumps(diagnostic))
+                    self.assertNotIn('offline-token', json.dumps(diagnostic))
                 for url in (metadata, health):
                     status, headers, _ = self.fetch(port, url, 'OPTIONS')
                     self.assertEqual(status, 204)
@@ -112,11 +126,11 @@ class LiveOverrideTests(unittest.TestCase):
                     process.kill()
                     process.wait(timeout=5)
 
-    def fetch(self, port, url, method='GET', body=None):
+    def fetch(self, port, url, method='GET', body=None, token='offline-token'):
         client = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
         try:
             client.request(method, url, None if body is None else json.dumps(body),
-                           {'X-E2E-Control-Token': 'offline-token', 'Content-Type': 'application/json'})
+                           {'X-E2E-Control-Token': token, 'Content-Type': 'application/json'})
             response = client.getresponse()
             raw = response.read()
             return response.status, {key.lower(): value for key, value in response.getheaders()}, json.loads(raw) if raw else None
