@@ -9,7 +9,8 @@ import { CLOCK_START } from '../../animations/timeline';
 for (const scenario of buildScenarios().filter(item => item.group === 'launch')) {
   test(scenario.label, async ({ page, context }, info) => {
     await page.setViewportSize(scenario.viewport);
-    await setupContextForScenario(context, scenario, page, { animations: 'allow' });
+    await setupContextForScenario(context, scenario, page, { animations: 'allow',
+      navigatorLocale: { 'zh-Hans': 'zh-CN', 'zh-Hant': 'zh-TW', en: 'en-US' }[scenario.locale] });
     // 延迟真实启动依赖的网络响应，让确认提示后的加载页有稳定采样窗口。
     // 不删除弹窗、覆盖业务组件或修改页面样式；保留真实点击和初始化等待。
     let releaseRequests!: () => void;
@@ -34,6 +35,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'launch'))
       await ensureLocalImagesLoaded(page);
       await page.clock.runFor(800);
       await expect(brand.locator('..')).toHaveCSS('opacity', '1');
+      await expect(brand).toHaveText({ 'zh-Hans': '来玩', 'zh-Hant': '來玩', en: 'GoPlay360' }[scenario.locale]);
       await expect(dialog.getByTestId('staging-dialog-title')).toBeVisible();
       if (scenario.pageLabel === 'launch_branding') {
         await expect.poll(() => heldRequests, { message: '启动网络必须仍在等待响应' }).toBeGreaterThan(0);
@@ -47,8 +49,10 @@ for (const scenario of buildScenarios().filter(item => item.group === 'launch'))
       }
       await ensureLocalImagesLoaded(page);
       const options = { fullPage: false, animations: 'allow' as const, caret: 'hide' as const, scale: 'css' as const };
+      const buffer = await page.screenshot(options);
+      await info.attach('complete-startup-page', { body: buffer, contentType: 'image/png' });
       await expect(page).toHaveScreenshot(`${scenario.label}.png`, options);
-      const screenshot = PNG.sync.read(await page.screenshot(options));
+      const screenshot = PNG.sync.read(buffer);
       expect([screenshot.width, screenshot.height], '保留完整视口，不裁切、不遮罩').toEqual([
         scenario.viewport.width, scenario.viewport.height,
       ]);
