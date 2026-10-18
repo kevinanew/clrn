@@ -102,7 +102,9 @@ export async function createPrivateGameRoom(
   const clickError = await page.locator('[data-testid="creat-room-button"]:visible').last()
     .click().then(() => null, error => error as Error);
   const response = await responsePromise;
-  const body = await response.json();
+  const body = await response.json().catch(() => {
+    throw new Error(`${gameType} 房间创建接口返回非 JSON：HTTP ${response.status()}，类型 ${response.headers()['content-type'] || '未知'}，地址 ${response.url()}`);
+  });
   const roomId = body?.result?.room_id;
   if (!response.ok() || body?.ok !== true || !ROOM_ID_PATTERN.test(roomId || '')) {
     const errorCode = body?.error_type ?? body?.error?.code ?? body?.error_code ?? body?.code ?? 'unknown';
