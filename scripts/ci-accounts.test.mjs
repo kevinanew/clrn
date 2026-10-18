@@ -1,3 +1,4 @@
+/** 验证 100 个 Web 账号轮转、跨平台隔离、完整凭据及工作流注入。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -6,12 +7,12 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { allocateCiAccount, ciAccountCredentials, ciAccounts, executionAccounts, visualAccountMatrix, animationAccountMatrix } from './ci-accounts.mjs';
 
-test('连续 30 个运行 ID 只轮转 Web 老账号，重跑和大整数 ID 分配稳定', () => {
-  assert.equal(new Set(Array.from({length:30},(_,i)=>allocateCiAccount(String(100+i)))).size,30);
+test('连续 100 个运行 ID 轮转完整 Web 账号池，重跑和大整数 ID 分配稳定', () => {
+  assert.equal(new Set(Array.from({length:100},(_,i)=>allocateCiAccount(String(100+i)))).size,100);
   assert.equal(allocateCiAccount('90071992547409931'), allocateCiAccount('90071992547409931'));
-  assert.equal(allocateCiAccount('90071992547409931'), executionAccounts[Number(90071992547409931n % 30n)]);
+  assert.equal(allocateCiAccount('90071992547409931'), executionAccounts[Number(90071992547409931n % 100n)]);
   for (const id of ['', '1\n', 'abc', '-1', undefined]) assert.throws(()=>allocateCiAccount(id));
-  for (const offset of [-1,30,0.5]) assert.throws(()=>allocateCiAccount('1',offset));
+  for (const offset of [-1,100,0.5]) assert.throws(()=>allocateCiAccount('1',offset));
 });
 
 test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留原账号槽位', () => {
@@ -84,14 +85,14 @@ test('动画单套件筛选保留账号槽位，调度入口支持选择且拒�
 
 test('凭据按公开账号名读取，不依赖 Secret 排序，错误不包含密码', () => {
   const password='SensitiveTest1234';
-  const accounts=ciAccounts.map(username=>({username,password,status:'ready'}));
-  assert.deepEqual(ciAccountCredentials(JSON.stringify({accounts:[...accounts].reverse()}),ciAccounts[5]),{username:ciAccounts[5],password});
+  const accounts=executionAccounts.map(username=>({username,password,status:'ready'}));
+  assert.deepEqual(ciAccountCredentials(JSON.stringify({accounts:[...accounts].reverse()}),executionAccounts[5]),{username:executionAccounts[5],password});
   for (const invalid of [password,JSON.stringify({accounts:accounts.slice(1)}),
     JSON.stringify({accounts:[accounts[0],...accounts.slice(0,-1)]}),
     JSON.stringify({accounts:accounts.map((a,i)=>i===0?{...a,status:'registered'}:a)}),
     JSON.stringify({accounts:accounts.map((a,i)=>i===0?{...a,password:'x'.repeat(21)}:a)}),
     JSON.stringify({accounts:accounts.map((a,i)=>i===0?{...a,password:'injected\nKEY=value'}:a)})]) {
-    assert.throws(()=>ciAccountCredentials(invalid,ciAccounts[5]), error=>!error.message.includes(password));
+    assert.throws(()=>ciAccountCredentials(invalid,executionAccounts[5]), error=>!error.message.includes(password));
   }
   assert.throws(()=>ciAccountCredentials(JSON.stringify({accounts}),'laiwanvisual01'));
 });
@@ -116,7 +117,7 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     assert.equal(planned.status,0,planned.stderr);
     const {include}=JSON.parse(readFileSync(output,'utf8').slice('matrix='.length));
     const selected=include[0].account;
-    const accounts=ciAccounts.map((username,i)=>({username,password:`FakePassword${i}123`,status:'ready'}));
+    const accounts=executionAccounts.map((username,i)=>({username,password:`FakePassword${i}123`,status:'ready'}));
     const configured=spawnSync(process.execPath,['--import', './scripts/account-network-fixture.mjs', 'scripts/configure-ci-account.mjs'],{
       encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'kevinanew/clrn',GITHUB_ENV:environment,
         CLRN_CI_ACCOUNT:selected,CLRN_CI_TEST_ACCOUNTS:JSON.stringify({accounts}),TESTING_API_TOKEN:'test-token'},
@@ -170,8 +171,12 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
 
 
 test('仓库账号分区固定，不能选用另一仓库账号，接受分区凭据', () => {
-  assert.equal(executionAccounts.length, 30);
-  const reserved = ciAccounts.slice(30);
+  assert.equal(executionAccounts.length, 100);
+  assert.equal(ciAccounts.length, 170);
+  const reserved = ciAccounts.filter(username => !executionAccounts.includes(username));
+  assert.equal(reserved.length, 70);
+  assert.deepEqual(reserved, Array.from({ length: 70 }, (_, index) => `clrnci261015${String(index + 1).padStart(3, '0')}`));
+  assert.deepEqual(executionAccounts.slice(0, 30), Array.from({ length: 30 }, (_, index) => `clrnci261009${String(index + 1).padStart(2, '0')}`));
   const accounts = executionAccounts.map(username => ({ username, password: 'Partition123', status: 'ready' }));
   const serialized = JSON.stringify({ accounts });
   for (let run = 0; run < 200; run += 1) {
@@ -181,4 +186,19 @@ test('仓库账号分区固定，不能选用另一仓库账号，接受分区�
   assert.throws(() => ciAccountCredentials(serialized, reserved[0]));
   const full = JSON.stringify({ accounts: ciAccounts.map(username => ({ username, password: 'Partition123', status: 'ready' })) });
   assert.throws(() => ciAccountCredentials(full, reserved[0]));
+  assert.throws(() => ciAccountCredentials(full, executionAccounts[0]));
+  assert.throws(() => ciAccountCredentials(JSON.stringify({ accounts: accounts.slice(0, 30) }), executionAccounts[0]));
+  const previous = [...accounts.slice(0, 30), ...reserved.map(username => ({ username, password: 'Partition123', status: 'ready' }))];
+  assert.throws(() => ciAccountCredentials(JSON.stringify({ accounts: previous }), executionAccounts[0]));
+});
+
+test('五组工作流统一引用新版 Web 凭据并保留账号互斥', () => {
+  for (const workflow of ['e2e', 'functional', 'interactions', 'visual', 'animations']) {
+    const source = readFileSync(`.github/workflows/${workflow}.yml`, 'utf8');
+    assert.match(source, /secrets\.CLRN_CI_TEST_ACCOUNTS_V3/);
+    assert.doesNotMatch(source, /secrets\.CLRN_CI_TEST_ACCOUNTS_V2/);
+    assert.match(source, /group: h5-staging-account-/);
+    assert.match(source, /cancel-in-progress: false/);
+    assert.match(source, /queue: max/);
+  }
 });

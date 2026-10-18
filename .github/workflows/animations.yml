@@ -1,3 +1,4 @@
+# 使用 100 个 Web 专用账号的新凭据，保留账号并发锁并兼容旧分支继续运行。
 name: H5 动画视觉回归
 
 on:
@@ -97,7 +98,7 @@ jobs:
       - name: 注入本任务独占的测试账号
         env:
           CLRN_CI_ACCOUNT: ${{ matrix.account }}
-          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V2 }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V3 }}
         run: node scripts/configure-ci-account.mjs
       - name: 安装锁定的测试依赖
         run: |

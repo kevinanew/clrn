@@ -1,13 +1,19 @@
+/** 维护 Web 专用账号分区、稳定分配和凭据校验，避免占用安卓与本机账号。 */
 import { readFileSync } from 'node:fs';
 
-// 这里只维护公开账号名，密码统一保存在 CLRN_CI_TEST_ACCOUNTS_V2 Secret。
-export const ciAccounts = JSON.parse(readFileSync(new URL('./ci-test-accounts.json', import.meta.url), 'utf8')).accounts;
-if (ciAccounts.length !== 100 || new Set(ciAccounts.map(name => name.toLowerCase())).size !== 100) {
-  throw new Error('CI 账号清单必须包含 100 个不同账号。');
+// 完整清单用于本机隔离；Web 凭据由 CLRN_CI_TEST_ACCOUNTS_V3 Secret 单独维护。
+const accountCatalog = JSON.parse(readFileSync(new URL('./ci-test-accounts.json', import.meta.url), 'utf8'));
+export const ciAccounts = accountCatalog.accounts;
+export const executionAccounts = accountCatalog.webAccounts;
+if (!Array.isArray(ciAccounts) || ciAccounts.length !== 170
+  || ciAccounts.some(name => typeof name !== 'string' || !/^[a-z0-9]{6,30}$/.test(name))
+  || new Set(ciAccounts).size !== 170) {
+  throw new Error('CI 完整清单必须包含 170 个不同账号');
 }
-
-// 两个仓库固定使用互不相交的账号；GitHub concurrency 仅在本仓库生效。
-export const executionAccounts = ciAccounts.slice(0, 30);
+if (!Array.isArray(executionAccounts) || executionAccounts.length !== 100
+  || new Set(executionAccounts).size !== 100 || executionAccounts.some(name => !ciAccounts.includes(name))) {
+  throw new Error('Web CI 分区必须包含完整清单中的 100 个不同账号');
+}
 
 /**
  * 按运行 ID 轮转账号槽位；账号级 GitHub concurrency 才负责跨 runner 互斥。
@@ -69,13 +75,13 @@ export function animationAccountMatrix(runId, suite = 'all') {
  */
 export function ciAccountCredentials(serialized, username) {
   let pool;
-  try { pool = JSON.parse(serialized); } catch { throw new Error('CLRN_CI_TEST_ACCOUNTS Secret 缺失或不是有效 JSON。'); }
-  if (!Array.isArray(pool?.accounts) || ![executionAccounts.length, ciAccounts.length].includes(pool.accounts.length)) {
-    throw new Error('CI Secret 必须包含完整的 30 个 Web 专用账号，或迁移前的 100 个账号。');
+  try { pool = JSON.parse(serialized); } catch { throw new Error('CLRN_CI_TEST_ACCOUNTS_V3 Secret 缺失或不是有效 JSON。'); }
+  if (!Array.isArray(pool?.accounts) || pool.accounts.length !== executionAccounts.length) {
+    throw new Error('CI Secret 必须包含完整的 100 个 Web 专用账号。');
   }
   const seen = new Set();
   for (const account of pool.accounts) {
-    if (!ciAccounts.includes(account?.username) || seen.has(account.username)
+    if (!executionAccounts.includes(account?.username) || seen.has(account.username)
       || account.status !== 'ready' || typeof account.password !== 'string'
       || !account.password.trim() || account.password.length > 20 || /[\r\n\0]/.test(account.password)) {
       throw new Error('CI Secret 包含重复、未就绪或无效凭据；请核对账号池备份。');

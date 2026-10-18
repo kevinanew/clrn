@@ -1,3 +1,4 @@
+/** 为视觉测试生成稳定设备标识，并限制补充余额只能使用当前 Web 专用账号。 */
 import { getVisualSuite } from './visual-suite';
 import ciManifest from '../scripts/ci-test-accounts.json';
 import { createHash } from 'node:crypto';
@@ -40,6 +41,6 @@ export function canTopUpVisualAccount(username: string, env: NodeJS.ProcessEnv =
   const isFixedTestAccount = username === APP_TEST_USERNAME || username === TEXAS_TEST_USERNAME
     || username === ZHAJINHUA_TEST_USERNAME;
   const isCurrentAccount = username === getVisualTestAccount(env).username;
-  const isCiPoolAccount = env.GITHUB_ACTIONS === 'true' && ciManifest.accounts.includes(username);
+  const isCiPoolAccount = env.GITHUB_ACTIONS === 'true' && ciManifest.webAccounts.includes(username);
   return (isFixedTestAccount || isCiPoolAccount) && isCurrentAccount;
 }

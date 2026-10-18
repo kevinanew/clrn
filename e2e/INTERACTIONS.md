@@ -51,7 +51,7 @@ E2E_INTERACTION_BASE_URL=http://127.0.0.1:9087 npm run test:interactions -- --pr
 也支持手动触发。先运行不含客服的交互场景，再单独运行 Freshchat，桌面与触屏串行执行。
 任务从 100 个 CI 专用账号中按运行 ID 分配账号，以 `h5-staging-account-<用户名>`
 作为 job 并发组，并设置 `queue: max`。不同账号的任务可以并行，同一账号的任务排队。
-凭据从 `CLRN_CI_TEST_ACCOUNTS_V2` Actions Secret 注入，与本机账号池分开。
+凭据从 `CLRN_CI_TEST_ACCOUNTS_V3` Actions Secret 注入，与本机账号池分开。
 目标读取仓库变量 `E2E_STAGING_URL`；Playwright 镜像与本目录锁文件均为 `1.59.1`。
 失败上传页面错误上下文、截图与 HTML 报告。
 部署说明见 [应用仓库 Web 文档](https://github.com/kevinanew/laiwan_react_native/blob/master/docs/web/README.md)。
