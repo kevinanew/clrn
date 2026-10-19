@@ -13,7 +13,7 @@ export function validateTestBranch(record, { branch } = {}) {
   if (application.repository !== 'kevinanew/laiwan_react_native' ||
     typeof application.branch !== 'string' || !application.branch ||
     !Number.isSafeInteger(application.build_number) || application.build_number < 1 ||
-    !['branch', 'staging'].includes(application.channel)) {
+    application.channel !== 'branch') {
     throw new Error('应用分支关联信息无效');
   }
   if (application.channel === 'branch' && branch && application.branch !== branch) {
