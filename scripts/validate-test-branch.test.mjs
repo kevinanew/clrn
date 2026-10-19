@@ -11,6 +11,7 @@ test('候选包固定同名分支，主干构建提升后可用于 master', /** 
   record.application.channel = 'staging';
   assert.throws(/** 拒绝已废弃的状态标记。 */ () => validateTestBranch(record, { branch: 'master' }), /无效/);
   assert.doesNotThrow(/** 提升后复制主干记录，不保留分支字段。 */ () => validateTestBranch({}, { branch: 'master' }));
+  record.application.channel = 'branch';
   record.application.repository = 'another/repository';
   assert.throws(/** 不接受其他应用的身份。 */ () => validateTestBranch(record), /无效/);
 });
