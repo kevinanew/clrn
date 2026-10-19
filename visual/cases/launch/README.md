@@ -9,7 +9,7 @@
 
 截图前检查实际 `staging-dialog-surface` 面板的四边均在视口内，且水平、垂直中心与视口中心的误差不超过 1 像素。检查覆盖提示页和确认前的品牌页流程，在 compare 与 reference 模式下都执行，防止把越界或偏移的弹窗接受为新基准。`staging-dialog` 是全屏遮罩，不能用于代替面板几何检查。
 
-旧基准来自应用提交 `fcf7a0a22576923b0a2053154402cf39f68ccf3e`，其中手机视口的提示确实越界，旧构建会被新增断言拒绝。更新基准前须先合并并发布 [应用修复 #7039](https://github.com/kevinanew/laiwan_react_native/pull/7039)，确认固定 Release 包含该修复，再按下方流程重新生成三种语言的启动页面基准。应用根容器宽度变化还会影响完整品牌页及手机启动动画，须一并比较、审查；不能只替换提示图，也不能扩大截图画幅或覆盖应用样式。
+当前测试固定使用 [修复版 Release `web-staging-7323-4d4d5a9c6a3e`](https://github.com/kevinanew/clrn/releases/tag/web-staging-7323-4d4d5a9c6a3e)，应用提交 `4d4d5a9c6a3ed10d243d53684b842540889be1b8`，包含 [弹窗修复 #7039](https://github.com/kevinanew/laiwan_react_native/pull/7039)。通过分支发布即可在合并 master 前运行 Linux reference；三种语言的完整启动页与受影响的手机启动动画须生成、审查后提交。旧应用 `fcf7a0a22576923b0a2053154402cf39f68ccf3e` 的手机提示越界，会被新增断言拒绝。
 
 沿用应用视觉测试矩阵及 CI，定向运行：
 
