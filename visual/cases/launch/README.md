@@ -21,3 +21,5 @@ VISUAL_FILTER=launch_ pnpm run test:all
 Linux 基准通过 `visual.yml` 的手动任务生成：`suite=app`、`mode=reference`、`filter=launch_`；审查下载的完整 PNG 后提交，再以 `mode=compare` 验证。
 
 应用修复把窄视口下的根容器限制在真实窗口宽度内，因此也会修正其他手机弹层的中心位置、右侧圆角及动画采样区域。本轮启动页基准来自 [Linux 启动页 reference](https://github.com/kevinanew/clrn/actions/runs/39208212622)，完整应用与动画分别通过 [应用 reference](https://github.com/kevinanew/clrn/actions/runs/39208596979) 和 [动画候选及连续比较](https://github.com/kevinanew/clrn/actions/runs/39208216629) 验证。所有任务使用上述同一 Release。
+
+同一宽度修正也影响手机牌桌的玩家位置、操作面板及右侧工具按钮。牌桌动画的 590 张手机关键帧来自 [德州候选任务](https://github.com/kevinanew/clrn/actions/runs/39213252491) 和 [拼三张候选任务](https://github.com/kevinanew/clrn/actions/runs/39213258163)，逐组核对首尾画面后纳入基准；这些任务及 PR 比较均连续运行三次。桌面关键帧没有改动，像素比较阈值及动画位移断言保持原有要求。
