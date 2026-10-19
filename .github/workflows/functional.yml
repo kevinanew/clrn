@@ -4,6 +4,7 @@ name: H5 线上功能案例
 # 使用 100 个 Web 专用账号的新凭据，保留账号并发锁并兼容旧分支继续运行。
 on:
   push:
+    branches: [master]
     paths: ['scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'e2e/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/functional.yml']
   workflow_call:
     inputs:

@@ -157,3 +157,7 @@ CI 凭据注入只允许在 `kevinanew/clrn` 执行；`laiwan_react_native` 的�
 ## Android Staging 视觉回归
 
 原生安卓测试、下载脚本、模拟器工作流和全部 763 张截图基准已迁至 [albitsj/clrn-az 的 master](https://github.com/albitsj/clrn-az/tree/master)。本仓库保留 H5 测试及 APK Release 托管；Woodpecker 仍向 [CLRN Releases](https://github.com/kevinanew/clrn/releases) 上传 APK，上传完成后更新 clrn-az 的 `deployments/staging.json` 触发安卓回归。H5 部署继续更新本仓库同名 JSON。
+
+应用普通分支发布测试包后，会同步本仓库的同名分支、`deployments/staging.json` 和普通 PR。
+后续测试修复直接提交到同名分支；新的应用构建只更新部署记录，保留已有修复。
+应用合并并发布后自动提升部署记录，再复验合并测试 PR。接入顺序、权限和协议见[应用测试项目对接说明](https://github.com/kevinanew/laiwan_prd/blob/master/docs/frontends/laiwan_react_native.html#branch-testing)。

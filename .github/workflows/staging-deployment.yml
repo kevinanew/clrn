@@ -2,6 +2,9 @@
 name: H5 Release 构建验证
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths: ['deployments/staging.json', 'scripts/**', 'e2e/**', 'visual/**', '.github/workflows/**', '.github/actions/**', 'package.json', 'package-lock.json']
   push:
     branches: [master]
     paths: ['deployments/staging.json']
@@ -11,12 +14,16 @@ permissions:
 
 # 保留每次发布的测试，账号并发锁继续由各套件管理。
 concurrency:
-  group: h5-staging-deployment
+  group: h5-staging-deployment-${{ github.ref }}
   cancel-in-progress: false
   queue: max
 
 jobs:
   deployment:
+    # 只有同仓库普通 PR 可以运行带测试账号的回归。
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository && !github.event.pull_request.draft)
     name: 确认 Release 版本
     runs-on: ubuntu-latest
     outputs:
@@ -27,6 +34,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
+      - name: 核对应用分支
+        run: node scripts/validate-test-branch.mjs
       - name: 记录部署版本
         id: record
         env:
