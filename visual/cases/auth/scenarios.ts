@@ -1,3 +1,4 @@
+// 定义真实登录导航场景；国家列表以返回栏为就绪锚点，避免截图前滚走导航。
 import { type LocaleCode } from '../../scenarioTypes';
 
 /**
@@ -76,7 +77,8 @@ export const LOGIN_PICK_COUNTRY_CODE_SCENARIO = {
   pageLabel: 'hall',
   labelSuffix: 'login_pick_country_code',
   navClickTestIds: ['hall-sign-in-button', 'sign-in-button', 'country-code-selector'],
-  visualReadySelector: '[data-testid="pick-country-code-container"]',
+  // 列表占满可用高度，对它 scrollIntoView 会把导航祖先滚动 64px。
+  visualReadySelector: '[data-testid="back-button"]',
 };
 
 /** 登录首页 → 用户协议（未登录即可到达） */

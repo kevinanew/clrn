@@ -1,3 +1,4 @@
+// 通过真实导航采集场景，并验证关键页面控件仍完整位于截图视口。
 import { expect, type Browser } from '@playwright/test';
 import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
@@ -40,6 +41,12 @@ export async function runVisualScenario(scenario: VisualScenario, browser: Brows
       // preparePage 内的稳定化步骤可能耗时较长。截图前再次断言就绪元素仍可见，
       // 避免「更多」菜单等短暂出现后又消失时，被空白页面静默写入视觉基准图。
       await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
+      if (scenario.pageLabel === 'login_pick_country_code') {
+        await expect(page.getByTestId('pick-country-code-container')).toBeVisible();
+        await expect(page.getByTestId('country-code-list-item-86').first()).toBeVisible();
+        await expect(page.locator('[data-testid="back-button"]:visible').last(),
+          '国家区号列表首屏必须完整保留返回按钮').toBeInViewport({ ratio: 1 });
+      }
       if (scenario.pageLabel === 'signed_in_daily_bonus') {
         await expect(page.getByTestId('CheckInDateListItem.checkInDetailDate')).toHaveText('01/01');
       }
