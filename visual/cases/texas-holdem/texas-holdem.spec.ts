@@ -1,3 +1,6 @@
+/** 真实牌桌视觉回归，失败前保存节点探测和连接诊断。 */
+import { installConnectionDiagnostics, recordDiagnostic } from '../../src/support/connectionDiagnostics';
+import { diagnosticNode, diagnosticText } from '../../../e2e/helpers/diagnostic-privacy';
 import { type Page } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 import { expect, test, texasProxyOptions } from './proxy';
@@ -87,7 +90,7 @@ async function waitForGameConnection(page: Page): Promise<void> {
   await expect.poll(async () => {
     if (await visible(page, 'countdown-text').isVisible()) return true;
     const retry = visible(page, 'common-alert-button-retry');
-    if (await retry.isVisible()) await retry.click();
+    if (await retry.isVisible()) { recordDiagnostic(page, '点击应用重试按钮'); await retry.click(); }
     return false;
   }, { timeout: 90_000, message: '德州牌桌应连上游戏服务' }).toBe(true);
   await expect(visible(page, 'texas-holdem-start-room-timer-button')).toBeVisible({ timeout: 30_000 });
@@ -199,12 +202,13 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
       storageState: buildStorageStateForScenario(scenario, visualBaseUrl),
     });
     const page = await context.newPage();
-    page.on('pageerror', error => console.error(`TEXAS PAGE ERROR > ${error.message}`));
+    const diagnostics = await installConnectionDiagnostics(context, page, test.info(), mitmproxy);
+    page.on('pageerror', error => console.error(`TEXAS PAGE ERROR > ${diagnosticText(error.message)}`));
     page.on('response', response => {
       if (response.status() < 400) return;
       const url = new URL(response.url());
       if (url.pathname === '/node/v1/status') return; // 未选节点的 503 是启动夹具。
-      console.error(`TEXAS HTTP ERROR > ${response.status()} ${url.host}${url.pathname}`);
+      console.error(`TEXAS HTTP ERROR > ${response.status()} ${diagnosticNode(url.origin)}${url.pathname}`);
     });
     let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     try {
@@ -230,10 +234,11 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
       if (scenario.pageLabel === 'signed_in_texas_table_states') await mitmproxy.configureGuestView();
       room = await createTexasRoom(page, created => {
         room = created;
+        recordDiagnostic(page, '建房成功', { roomId: created.roomId, node: diagnosticNode(created.apiOrigin) });
         console.log(`TEXAS CREATED ROOM > ${created.roomId}`);
         // 不记录凭据；强制中断时仍可从失败 artifact 核实本轮创建的 UUID。
         writeFileSync(test.info().outputPath('created-room.json'), JSON.stringify({
-          roomId: created.roomId, apiOrigin: created.apiOrigin,
+          roomId: created.roomId, apiNode: diagnosticNode(created.apiOrigin),
         }));
       }, optional);
       if (['signed_in_texas_controls', 'signed_in_texas_table_states', 'signed_in_texas_panel_variants', 'signed_in_texas_hall_variants'].includes(scenario.pageLabel)) {
@@ -243,7 +248,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
         await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
         await expect.poll(async () => {
           const retry = visible(page, 'common-alert-button-retry');
-          if (await retry.isVisible()) await retry.click();
+          if (await retry.isVisible()) { recordDiagnostic(page, '点击应用重试按钮'); await retry.click(); }
           return !(await visible(page, 'game-splash-screen-bg').isVisible());
         }, { timeout: 90_000, message: '等待德州加载完成，重试 staging 瞬时连接失败' }).toBe(true);
         if (['signed_in_texas_controls', 'signed_in_texas_panel_variants'].includes(scenario.pageLabel)) {
@@ -269,8 +274,11 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
         await captureNewRecords(page, scenario, mitmproxy, room.roomId, capture);
       } else if (optional) await captureOptionalPreGame(page, scenario);
       else await capturePreGame(page, scenario);
+      await diagnostics.save();
     } catch (error) {
+      await diagnostics.save(error).catch(failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
       await page.screenshot({ path: test.info().outputPath('failure.png') }).catch(() => undefined);
+      if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
       throw error;
     } finally {
       try {

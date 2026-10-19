@@ -1,9 +1,11 @@
+/** 动画场景初始化及可点击位置检查，记录操作和遮挡现场。 */
 import { expect, type BrowserContext, type Locator, type Page, type TestInfo } from '@playwright/test';
 import { buildScenarios } from '../scenarios';
 import { setupContextForScenario } from '../src/support/pageSetup';
 import { dismissSignedInPopups, ensureAppReadyPastStaging, waitForSignInState } from '../src/support/authFlow';
 import { applyContentStabilizers } from '../src/support/pageStabilizers';
 import { CLOCK_START } from './timeline';
+import { recordDiagnostic, recordBlockedTarget } from '../src/support/connectionDiagnostics';
 
 /**
  * 定位当前显示的真实入口，避免命中导航保留的隐藏页面。
@@ -17,29 +19,43 @@ export const visible = (page: Page, id: string) => page.locator(`[data-testid="$
  * @param target - 当前真实业务控件。
  */
 export async function pressTarget(target: Locator): Promise<void> {
+  const page = target.page();
+  recordDiagnostic(page, '点击控件', { target: String(target) });
   await expect(target).toBeVisible();
   await expect(target).toBeEnabled();
-  const page = target.page();
   let point: { x: number; y: number } | null = null;
-  await expect.poll(async () => {
-    point = await target.evaluate(node => {
-      const box = node.getBoundingClientRect();
-      const left = Math.max(0, box.left), right = Math.min(innerWidth, box.right);
-      const top = Math.max(0, box.top), bottom = Math.min(innerHeight, box.bottom);
-      // 遮罩的一部分会被面板盖住，只点击真实命中该控件的可见位置。
-      for (const y of [0.5, 0.1, 0.9, 0.25, 0.75]) {
-        for (const x of [0.5, 0.1, 0.9, 0.25, 0.75]) {
-          const point = { x: left + (right - left) * x, y: top + (bottom - top) * y };
-          const hit = document.elementFromPoint(point.x, point.y);
-          if (right > left && bottom > top && hit && (node === hit || node.contains(hit))) return point;
+  try {
+    await expect.poll(async () => {
+      point = await target.evaluate(node => {
+        const box = node.getBoundingClientRect();
+        const left = Math.max(0, box.left), right = Math.min(innerWidth, box.right);
+        const top = Math.max(0, box.top), bottom = Math.min(innerHeight, box.bottom);
+        // 遮罩的一部分会被面板盖住，只点击真实命中该控件的可见位置。
+        for (const y of [0.5, 0.1, 0.9, 0.25, 0.75]) {
+          for (const x of [0.5, 0.1, 0.9, 0.25, 0.75]) {
+            const point = { x: left + (right - left) * x, y: top + (bottom - top) * y };
+            const hit = document.elementFromPoint(point.x, point.y);
+            if (right > left && bottom > top && hit && (node === hit || node.contains(hit))) return point;
+          }
         }
-      }
-      return null;
-    });
+        return null;
+      });
 
-    if (!point) await page.clock.runFor(16);
-    return Boolean(point);
-  }, { message: `入口必须在视口内且未被遮罩拦截：${target}` }).toBe(true);
+      if (!point) await page.clock.runFor(16);
+      return Boolean(point);
+    }, { message: `入口必须在视口内且未被遮罩拦截：${target}` }).toBe(true);
+  } catch (error) {
+    const details = await target.evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      const hit = document.elementFromPoint(Math.max(0, Math.min(innerWidth - 1, rect.x + rect.width / 2)),
+        Math.max(0, Math.min(innerHeight - 1, rect.y + rect.height / 2)));
+      return { rect: rect.toJSON(), viewport: { width: innerWidth, height: innerHeight },
+        hit: hit?.closest('[data-testid]')?.getAttribute('data-testid') || hit?.tagName,
+        pointerEvents: getComputedStyle(node).pointerEvents };
+    }).catch(() => ({ unavailable: true }));
+    recordBlockedTarget(page, String(target), details);
+    throw error;
+  }
   await page.mouse.click(point!.x, point!.y);
 }
 

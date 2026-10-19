@@ -1,9 +1,12 @@
+/** 创建真实牌桌并在清理前保留操作、网络和连接诊断。 */
 import { expect, type Browser, type Page, type TestInfo } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 import { createPrivateGameRoom, deletePrivateGameRoom, type RoomSession } from '../cases/_shared/room';
 import { navigate, openApplication, visible } from './appSession';
 import { enterTexasRoom } from '../cases/texas-holdem/room';
 import { freeze, type CaptureArea } from './timeline';
+import { installConnectionDiagnostics, recordDiagnostic } from '../src/support/connectionDiagnostics';
+import { diagnosticNode, diagnosticText } from '../../e2e/helpers/diagnostic-privacy';
 
 export type TableSession = { page: Page; roomId: string; self: string; clip: CaptureArea };
 
@@ -17,48 +20,62 @@ export type TableSession = { page: Page; roomId: string; self: string; clip: Cap
  * @param hall - 是否使用大厅显示夹具和本房间观察者连接。
  */
 export async function withTable(browser: Browser, info: TestInfo, game: 'texas' | 'zhajinhua',
-  proxy: { server: string }, task: (session: TableSession) => Promise<void>, hall = false): Promise<void> {
+  proxy: { server: string; diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> }, task: (session: TableSession) => Promise<void>, hall = false): Promise<void> {
   const viewport = info.project.use.viewport!;
   const context = await browser.newContext({ viewport, locale: 'en-US', deviceScaleFactor: 1,
     proxy: { server: proxy.server, bypass: '<-loopback>' }, ignoreHTTPSErrors: true,
     reducedMotion: 'no-preference' });
   const page = await context.newPage();
   let room: RoomSession | undefined;
+  const diagnostics = await installConnectionDiagnostics(context, page, info, proxy);
   try {
+    recordDiagnostic(page, '初始化大厅');
     console.log(`TABLE > ${game}/${info.project.name} 初始化大厅`);
     await openApplication(context, page, info, `signed_in_${game}_pre_game`, true);
     await navigate(page, 'private-room-tab');
     await expect(visible(page, 'create-game-button')).toBeVisible();
+    recordDiagnostic(page, '创建本轮房间');
     console.log('TABLE > 从真实入口创建本轮房间');
     room = await createPrivateGameRoom(page, created => {
       room = created;
-      writeFileSync(info.outputPath('created-room.json'), JSON.stringify({ roomId: created.roomId, apiOrigin: created.apiOrigin }));
+      recordDiagnostic(page, '建房成功', { roomId: created.roomId, node: diagnosticNode(created.apiOrigin) });
+      writeFileSync(info.outputPath('created-room.json'), JSON.stringify({ roomId: created.roomId, apiNode: diagnosticNode(created.apiOrigin) }));
     }, game === 'texas' ? 'texas_react_native' : 'zhajinhua');
+    recordDiagnostic(page, '等待牌桌连接及订阅就绪');
     const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
     if (hall) await enterTexasRoom(page, room);
     else {
       const connection = { state: 'loading' };
       await expect.poll(async () => {
-        if (await visible(page, 'common-alert-button-retry').isVisible()) connection.state = 'timeout';
+        if (await visible(page, 'common-alert-button-retry').isVisible()) connection.state = 'alert';
         else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
         return connection.state;
-      }, { timeout: 90_000, message: `${game} 牌桌应完成连接或明确显示超时弹窗` }).not.toBe('loading');
-      if (connection.state === 'timeout') throw new Error(`${game} 牌桌显示连接超时，未自动重试；请查看失败截图`);
+      }, { timeout: 90_000, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
+      if (connection.state === 'alert') {
+        const message = (await page.locator('[data-testid="common-alert-container"]:visible')
+          .locator('[data-testid="common-alert-title"], [data-testid="common-alert-message"], [data-testid="common-alert-sub-message"]')
+          .allTextContents()).join('；') || '应用显示重试弹窗';
+        throw new Error(`${game} 牌桌未就绪，应用提示：${diagnosticText(message)}；详见 connection-summary`);
+      }
     }
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
     await freeze(page);
     console.log('TABLE > 牌桌已就绪，开始动画采样');
     const self = await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
     const width = info.project.name === 'mobile' ? 375 : 450;
+    recordDiagnostic(page, '牌桌就绪，开始动画采样');
     await task({ page, roomId: room.roomId, self,
       clip: { x: Math.floor((viewport.width - width) / 2), y: 0, width, height: viewport.height } });
+    await diagnostics.save();
   } catch (error) {
+    await diagnostics.save(error).catch(failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
     const overlays = await page.evaluate(() => Array.from(document.querySelectorAll('[data-testid="screen-mask-touch-to-close"]')).map(mask => ({
       rect: mask.getBoundingClientRect().toJSON(),
       contents: Array.from(mask.parentElement?.querySelectorAll('[data-testid]') || []).map(node => node.getAttribute('data-testid')),
     }))).catch(() => []);
     writeFileSync(info.outputPath('overlays.json'), JSON.stringify(overlays, null, 2));
     await page.screenshot({ path: info.outputPath('failure.png'), timeout: 5000 }).catch(() => undefined);
+    if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
     throw error;
   } finally {
     try { if (room) await deletePrivateGameRoom(room); }

@@ -70,3 +70,24 @@ HTML 报告位于 `visual/playwright-report/animations/<suite>/`，失败图片�
 候选图只上传 artifact，下载检查后再纳入仓库；普通 PR、部署和手动比较不会自动更新基准。
 
 关键帧比较用于检测外观、进度和终态变化，不衡量真实设备帧率。
+
+## 连接失败诊断
+
+德州、拼三张的动画和画面测试会在导航前开始采集，并在清理房间前保存：
+
+- `connection-summary.md`：节点汇总、最近操作与网络事件；CI 作业摘要也会展示，失败用例优先。
+- `connection-diagnostics.json`：完整的有界时间线（最多保留最近 5000 条，超出明确标记），包含请求编号、节点、方法、路径、状态和耗时。
+- 节点列表区分 v12 牌桌列表、v13 启动列表及代理过滤前后；健康响应区分真实上游和测试代理模拟。
+- 应用构建带有 `laiwan:connection-diagnostic` 事件时，还能查看失败缓存、候选排除、选中线路和断线切换原因。旧构建会明确提示这些决策未知，不能从“没看到请求”推断缓存命中。
+- WebSocket 记录连接、关闭码及订阅/RPC 的编号与结果，不保存认证帧和游戏消息正文。浏览器发出请求不代表上游一定收到，服务端确认仍须结合后端日志。
+
+所有新增诊断文本去掉共享域名后缀 `shafayouxi.com`，保留如 `64.kr-seoul.api.staging.laiwan` 的节点名。地址查询参数、认证头和业务正文不进入诊断附件。采集时间使用测试进程的真实时间，不受动画虚拟时钟影响。
+
+离线验证（无需登录或访问 staging）：
+
+```sh
+node --import tsx --test e2e/helpers/diagnostic-recorder.test.ts
+node --import tsx --test e2e/helpers/connection-diagnostics.browser.ts
+# 使用系统 Chrome 时设置 DIAGNOSTIC_CHROME_PATH 为浏览器可执行文件路径。
+e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
+```

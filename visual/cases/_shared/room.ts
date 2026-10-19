@@ -1,8 +1,10 @@
+/** 真实建房及清理，保留建房操作与请求等待阶段。 */
 import type { APIRequestContext, Page } from '@playwright/test';
 import { expect as playwrightExpect } from '@playwright/test';
 const expect = playwrightExpect.configure({ timeout: 30_000 });
 import { canTopUpVisualAccount } from '../../test-account';
 import { requestErrorSummary } from '../../src/support/requestError';
+import { recordDiagnostic } from '../../src/support/connectionDiagnostics';
 
 export type RoomSession = { roomId: string; apiOrigin: string; authorization: string };
 export type Account = { userId: string; username: string; authorization: string };
@@ -86,8 +88,10 @@ export async function createPrivateGameRoom(
   gameType: 'texas_react_native' | 'zhajinhua',
   optionalFeatures = false,
 ): Promise<RoomSession> {
+  recordDiagnostic(page, '检查建房账号及余额');
   const account = await visualAccount(page);
   await ensureRoomBalance(page.request, account);
+  recordDiagnostic(page, '打开创建房间表单');
   await page.locator('[data-testid="create-game-button"]:visible').last().click();
   await page.locator(`[data-testid="game-type-button-${gameType}"]:visible`).last().click();
   await expect(page.locator('[data-testid="base-create-room-screen"]:visible')).toBeVisible();
@@ -96,6 +100,7 @@ export async function createPrivateGameRoom(
     await page.locator('[data-testid="advanced-options-button"]:visible').last().click();
     await page.locator('[data-testid="BlindsEnableFlipSwitch"]:visible').last().click();
   }
+  recordDiagnostic(page, '提交建房并等待响应', { method: 'POST', path: '/v3/pay_action/do', timeoutMs: 60_000 });
   const responsePromise = page.waitForResponse(response =>
     response.request().method() === 'POST'
     && new URL(response.url()).pathname === '/v3/pay_action/do', { timeout: 60_000 });
