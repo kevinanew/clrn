@@ -4,7 +4,7 @@ name: H5 Release 构建验证
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    paths: ['deployments/staging.json', 'scripts/**', 'e2e/**', 'visual/**', '.github/workflows/**', '.github/actions/**', 'package.json', 'package-lock.json']
+    # 每次 PR 提交都回归，使结果可匹配当前测试提交，避免路径过滤造成永久等待。
   push:
     branches: [master]
     paths: ['deployments/staging.json']
