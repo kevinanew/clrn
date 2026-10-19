@@ -1,3 +1,4 @@
+// 验证真实启动页面、弹窗视口边界及完整截图，不接受越界布局作为新基准。
 import { expect, test } from '@playwright/test';
 import { PNG } from 'pngjs';
 import { buildScenarios } from '../../scenarios';
@@ -37,6 +38,20 @@ for (const scenario of buildScenarios().filter(item => item.group === 'launch'))
       await expect(brand.locator('..')).toHaveCSS('opacity', '1');
       await expect(brand).toHaveText({ 'zh-Hans': '来玩', 'zh-Hant': '來玩', en: 'GoPlay360' }[scenario.locale]);
       await expect(dialog.getByTestId('staging-dialog-title')).toBeVisible();
+      // 检查实际弹窗面板；staging-dialog 本身是覆盖整页的遮罩，不能代表面板边界。
+      const surface = dialog.getByTestId('staging-dialog-surface');
+      await expect(surface).toBeVisible();
+      const bounds = await surface.boundingBox();
+      if (!bounds) throw new Error('无法读取测试环境提示面板的边界');
+      expect(bounds.x, '弹窗左侧必须完整位于视口内').toBeGreaterThanOrEqual(0);
+      expect(bounds.y, '弹窗顶部必须完整位于视口内').toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width, '弹窗右侧不得超出视口').toBeLessThanOrEqual(scenario.viewport.width);
+      expect(bounds.y + bounds.height, '弹窗底部不得超出视口').toBeLessThanOrEqual(scenario.viewport.height);
+      // 允许浏览器布局的小数像素舍入，不放宽明显偏移。
+      expect(Math.abs(bounds.x + bounds.width / 2 - scenario.viewport.width / 2),
+        '弹窗必须水平居中').toBeLessThanOrEqual(1);
+      expect(Math.abs(bounds.y + bounds.height / 2 - scenario.viewport.height / 2),
+        '弹窗必须垂直居中').toBeLessThanOrEqual(1);
       if (scenario.pageLabel === 'launch_branding') {
         await expect.poll(() => heldRequests, { message: '启动网络必须仍在等待响应' }).toBeGreaterThan(0);
         const input = dialog.locator('input').first();
