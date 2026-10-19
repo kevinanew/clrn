@@ -25,6 +25,7 @@ export async function pressTarget(target: Locator): Promise<void> {
   await expect(target).toBeEnabled();
   let point: { x: number; y: number } | null = null;
   try {
+    // 时钟已冻结，逐帧连续推进；默认真实时间轮询会在超时前只推进少量虚拟帧。
     await expect.poll(async () => {
       point = await target.evaluate(node => {
         const box = node.getBoundingClientRect();
@@ -43,7 +44,7 @@ export async function pressTarget(target: Locator): Promise<void> {
 
       if (!point) await page.clock.runFor(16);
       return Boolean(point);
-    }, { message: `入口必须在视口内且未被遮罩拦截：${target}` }).toBe(true);
+    }, { intervals: [0], message: `入口必须在视口内且未被遮罩拦截：${target}` }).toBe(true);
   } catch (error) {
     const details = await target.evaluate(node => {
       const rect = node.getBoundingClientRect();
