@@ -13,6 +13,10 @@ from zhajinhua_replay import UUID, PLAYER_IDS, ZhajinhuaReplay
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
 from response_overrides import VisualNetwork, is_staging, prepare_profiles, patch_profiles  # noqa: E402
 
+from connection_diagnostics import ConnectionDiagnostics  # noqa: E402
+
+diagnostics = ConnectionDiagnostics()
+
 CONTROL_HOST = 'test-mitmproxy.invalid'
 
 
@@ -105,6 +109,9 @@ class ZhajinhuaVisualProxy:
 
     def request(self, flow):
         if flow.request.host == CONTROL_HOST:
+            if flow.request.method == 'GET' and urlsplit(flow.request.path).path == '/diagnostics':
+                diagnostics.control(flow)
+                return
             self.control(flow)
             return
         self.proxied_requests += 1
@@ -130,4 +137,4 @@ class ZhajinhuaVisualProxy:
         self.stabilized_requests += 1
 
 
-addons = [ZhajinhuaVisualProxy()]
+addons = [ZhajinhuaVisualProxy(), diagnostics]

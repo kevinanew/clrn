@@ -120,6 +120,7 @@ class VisualNetwork:
                 raise ValueError('Selected node missing from metadata')
             if len(servers) == 1:
                 return False
+            flow.metadata['diagnostic_candidates_before'] = list(servers)
             result['servers'] = {PROXY_HOST: servers[PROXY_HOST]}
             return True
         return patch_result(flow, change)
