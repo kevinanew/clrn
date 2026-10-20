@@ -18,9 +18,11 @@ test('slot reels and all three reward animations', async ({ context, page }, inf
       fixture.reward(currency as 'coin' | 'currency_diamond' | 'energy');
       await press(page, 'spin-button');
       await expect.poll(async () => {
-        await page.clock.runFor(16);
+        // RPC 准备阶段保持同一虚拟时刻，避免响应快慢改变滚轮动画的起点。
+        await page.clock.runFor(0);
         return fixture.spins;
       }, { message: '老虎机旋转请求必须由本轮夹具处理' }).toBe(index + 1);
+      await page.clock.runFor(16);
       await captureTimeline(page, info, `slot-${currency}`, panel,
         { clip, times: [0, 160, 500, 1000, 1080, 1160, 1400, 2400] });
       const reward = currency === 'currency_diamond' ? 'diamond' : currency;
