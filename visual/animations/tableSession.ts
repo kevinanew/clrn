@@ -60,7 +60,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
       }
     }
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
-    await paceNetworkClock(page);
+    paceNetworkClock(page);
     await freeze(page);
     console.log('TABLE > 牌桌已就绪，开始动画采样');
     const self = await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
