@@ -5,6 +5,7 @@ import { createPrivateGameRoom, deletePrivateGameRoom, type RoomSession } from '
 import { navigate, openApplication, visible } from './appSession';
 import { enterTexasRoom } from '../cases/texas-holdem/room';
 import { freeze, type CaptureArea } from './timeline';
+import { paceNetworkClock } from './networkClock';
 import { installConnectionDiagnostics, recordDiagnostic } from '../src/support/connectionDiagnostics';
 import { diagnosticNode, diagnosticText } from '../../e2e/helpers/diagnostic-privacy';
 
@@ -59,6 +60,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
       }
     }
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
+    paceNetworkClock(page);
     await freeze(page);
     console.log('TABLE > 牌桌已就绪，开始动画采样');
     const self = await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
