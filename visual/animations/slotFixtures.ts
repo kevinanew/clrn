@@ -12,8 +12,8 @@ export async function mockSlotMessages(page: Page) {
   const observed: string[] = [];
   await page.route(/\/v10\/wallet\/[^/?]+$/, route => route.request().method() === 'PUT'
     ? route.fulfill({ json: { ok: true, result: { currencies: [
-      { code: 'coin', name: '金币', balance: '10000' },
-      { code: 'diamond', name: '钻石', balance: '60' },
+      { code: 'coin', name: 'Coins', balance: '10000' },
+      { code: 'diamond', name: 'Diamonds', balance: '60' },
     ] } } }) : route.fallback());
   const energy = { user_energy: { total_energy: 0 },
     energy_factory: { capacity: 50, quantity: 50, remaining_production_time: '00:00:00' } };

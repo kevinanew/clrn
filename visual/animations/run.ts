@@ -44,7 +44,7 @@ try {
   for (const suite of suites) {
     const selection: { files: string[]; grep?: string } = selectedPart === 'all' ? { files: files[suite as keyof typeof files] }
       : parts[suite as keyof typeof parts][selectedPart];
-    const environment = { ...process.env, VISUAL_SUITE: suite,
+    const environment = { ...process.env, VISUAL_SUITE: suite, VISUAL_LOCALES: 'en',
       VISUAL_AUTH_STATE_PATH: path.join(temporary, `${suite}-auth.json`),
       VISUAL_AUTH_USES_MITMPROXY: suite === 'app' ? 'false' : 'true',
       PLAYWRIGHT_HTML_OUTPUT_DIR: path.join(directory, 'playwright-report', 'animations', suite) };

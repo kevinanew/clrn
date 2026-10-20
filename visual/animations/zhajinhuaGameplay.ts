@@ -46,7 +46,7 @@ export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaP
   await expect(visible(page, 'player-card-strength-text')).not.toBeEmpty();
   await proxy.replay(roomId, events([{ event: 'raise', player_id: self, amount: 40, stack: 960 },
     { event: 'pot_update', pot_amount: 160 }]));
-  await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('加注');
+  await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('Raise');
   await captureTimeline(page, info, 'zhajinhua-raise', visible(page, `zhajinhua-player-container-${self}`), { clip });
   await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('960');
   await proxy.replay(roomId, restoreTable(self, false, true));

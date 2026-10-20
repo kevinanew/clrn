@@ -68,7 +68,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   // 偶发牌桌重连会遮住真实入口；等待连接恢复后再采样下一段动画。
   /** 等待牌桌连接恢复，再点击真实的精确加注入口。 */
   const openAccurateRaise = async () => {
-    const reconnecting = page.getByText('重连中...', { exact: true });
+    const reconnecting = page.getByText('Connecting...', { exact: true });
     await expect.poll(async () => {
       if (!(await reconnecting.isVisible())) return true;
       await page.clock.runFor(250);

@@ -73,6 +73,6 @@ export async function texasSocial(session: TableSession, proxy: TexasProxy, info
       await restore(page, proxy, roomId, self, 'river');
       await press(page, 'texas-holdem-operation-button-call');
     },
-    close: /** 错误响应未提供 buttonId，通过实际按钮文字取消。 */ () => pressTarget(page.getByTestId('common-alert-button-undefined').filter({ hasText: '取消' })) });
+    close: /** 错误响应未提供 buttonId，通过实际按钮文字取消。 */ () => pressTarget(page.getByTestId('common-alert-button-undefined').filter({ hasText: 'Cancel' })) });
   await proxy.configureUI({ rpcError: null });
 }
