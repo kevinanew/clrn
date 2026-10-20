@@ -92,7 +92,7 @@ export async function recordApplicationBuild(page: Page, info: TestInfo): Promis
  */
 export async function openApplication(context: BrowserContext, page: Page, info: TestInfo,
   pageLabel = 'signed_in_hall', proxy = false) {
-  const scenario = buildScenarios({ VISUAL_LOCALES: 'zh-Hans', VISUAL_SUITE: 'all' })
+  const scenario = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SUITE: 'all' })
     .find(item => item.pageLabel === pageLabel && item.viewport.label === info.project.name);
   if (!scenario) throw new Error(`缺少动画基础场景 ${pageLabel}/${info.project.name}`);
   await setupContextForScenario(context, scenario, page, { animations: 'allow', useMitmproxy: proxy });

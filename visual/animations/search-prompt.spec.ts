@@ -24,10 +24,10 @@ async function popupOpacity(content: Locator): Promise<number> {
   });
 }
 
-test('zh-Hans mobile guest search prompt fades in', async ({ context, page }, testInfo) => {
-  const scenario = buildScenarios({ VISUAL_LOCALES: 'zh-Hans', VISUAL_SUITE: 'app' })
-    .find(item => item.label === 'zh-Hans_mobile_hall');
-  if (!scenario) throw new Error('缺少简中手机大厅场景');
+test('en mobile guest search prompt fades in', async ({ context, page }, testInfo) => {
+  const scenario = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SUITE: 'app' })
+    .find(item => item.label === 'en_mobile_hall');
+  if (!scenario) throw new Error('缺少英文手机大厅场景');
   await setupContextForScenario(context, scenario, page, { animations: 'allow' });
   await page.clock.install({ time: CLOCK_START });
   await page.goto('/');
@@ -39,7 +39,7 @@ test('zh-Hans mobile guest search prompt fades in', async ({ context, page }, te
 
   // 先走一次真实开关流程，将弹窗图片和字体加载进缓存，再开始计时采样。
   await search.click();
-  await expect(message).toHaveText('请先登录以使用搜索功能');
+  await expect(message).toHaveText('Please sign in to use search');
   await expect.poll(() => popupOpacity(message)).toBe(1);
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await ensureLocalImagesLoaded(page);
@@ -64,7 +64,7 @@ test('zh-Hans mobile guest search prompt fades in', async ({ context, page }, te
       await page.clock.runFor(milliseconds - previousTime);
       const opacity = await popupOpacity(message);
       samples.push({ milliseconds, opacity });
-      await expect(page).toHaveScreenshot(`zh-Hans-mobile-search-prompt-${milliseconds}ms.png`, {
+      await expect(page).toHaveScreenshot(`en-mobile-search-prompt-${milliseconds}ms.png`, {
         clip: CAPTURE_AREA,
       });
       previousTime = milliseconds;
@@ -88,6 +88,6 @@ test('zh-Hans mobile guest search prompt fades in', async ({ context, page }, te
   await expect(message).toBeHidden();
   await search.click();
   await page.clock.runFor(400);
-  await expect(message).toHaveText('请先登录以使用搜索功能');
+  await expect(message).toHaveText('Please sign in to use search');
   expect(await popupOpacity(message)).toBe(1);
 });

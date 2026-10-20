@@ -155,7 +155,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       await settleLayout(page);
       const sampledTime = milliseconds + (options.startOffset || 0);
       samples.push({ milliseconds: sampledTime, elements: await appearance(target) });
-      const snapshot = `zh-Hans-${info.project.name}-${name}-${sampledTime}ms.png`;
+      const snapshot = `en-${info.project.name}-${name}-${sampledTime}ms.png`;
       const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
         caret: 'hide' as const, scale: 'css' as const };
       const foregroundBelow = options.foregroundBelow;

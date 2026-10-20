@@ -7,7 +7,7 @@ import { exercisePopup } from './popups';
 import { appearance, captureTimeline, CLOCK_START } from './timeline';
 
 test('staging notice fades and scales in on launch', async ({ context, page }, info) => {
-  const scenario = buildScenarios({ VISUAL_LOCALES: 'zh-Hans', VISUAL_SUITE: 'app' })
+  const scenario = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SUITE: 'app' })
     .find(item => item.pageLabel === 'hall' && item.viewport.label === info.project.name)!;
   await setupContextForScenario(context, scenario, page, { animations: 'allow' });
   await page.clock.install({ time: CLOCK_START });

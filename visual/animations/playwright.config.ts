@@ -32,6 +32,7 @@ export default defineConfig({
   },
   use: {
     ...visualConfig.use,
+    locale: 'en-US',
     launchOptions: { ...visualConfig.use?.launchOptions,
       args: [...(visualConfig.use?.launchOptions?.args || []), '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] },
     viewport: { width: 375, height: 812 },
