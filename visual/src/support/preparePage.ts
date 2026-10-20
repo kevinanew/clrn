@@ -5,7 +5,7 @@
  */
 import type { Locator, Page } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
-import { stabilizeVideos, stabilizeBackdropFilter, alignPersonalHouseTitlesToDevicePixels, applyContentStabilizers, ensureLocalImagesLoaded, lockPageWidth } from './pageStabilizers';
+import { stabilizeVideos, stabilizeBackdropFilter, alignPersonalHouseTitlesToDevicePixels, applyContentStabilizers, assertMatchingArtworkVisible, ensureLocalImagesLoaded, lockPageWidth, scrollVisualReadyElementIntoView } from './pageStabilizers';
 import { accountPresentationRules } from '../../cases/account/presentation';
 export { applyContentStabilizers, ensureLocalImagesLoaded, lockPageWidth } from './pageStabilizers';
 import {
@@ -297,7 +297,7 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
       }
       await ready.waitFor({ state: 'attached', timeout: 60000 });
     }
-    await ready.scrollIntoViewIfNeeded().catch(() => undefined);
+    await scrollVisualReadyElementIntoView(ready).catch(() => undefined);
   }
 
   // 过渡弹层（如选玩法 BottomSheet）：选中后导航可能打断 dismiss，DOM 残留须主动清掉
@@ -376,6 +376,9 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
   await dismissSignedInPopups(page);
   if (scenario.resetScrollSelector) {
     await resetScrollToStart(page, scenario.resetScrollSelector);
+  }
+  if (['hall', 'signed_in_hall', 'signed_in_hall_match'].includes(scenario.pageLabel)) {
+    await assertMatchingArtworkVisible(page);
   }
   // 不再额外 delay：toHaveScreenshot 自带「连续两帧一致才截图」的稳定等待
 }

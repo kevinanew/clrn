@@ -1,4 +1,5 @@
-import type { Page } from '@playwright/test';
+// 稳定截图中的易变内容，并在保存大厅截图前检查扑克牌图标没有被容器裁切。
+import type { Locator, Page } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
 
 /**
@@ -258,4 +259,44 @@ export async function lockPageWidth(page: Page, width: number): Promise<void> {
       }
     });
   }, width);
+}
+
+/**
+ * 检查两种游戏图标的完整高度，拒绝把被限宽逻辑裁掉顶部的画面保存为基准。
+ * @param page - 已完成页面准备的大厅页面。
+ */
+export async function assertMatchingArtworkVisible(page: Page): Promise<void> {
+  await page.getByTestId('matching-title-switch-button').evaluateAll(
+    /**
+     * 核对图标与滚动列表内部祖先的真实边界；列表本身允许正常滚动。
+     * @param elements - 德州扑克和拼三张的图标元素。
+     */
+    (elements) => {
+      if (elements.length !== 2) throw new Error('大厅应包含两种游戏的扑克牌图标');
+      for (const [index, element] of elements.entries()) {
+        const artwork = element.getBoundingClientRect();
+        if (artwork.height <= 0) throw new Error('大厅扑克牌图标没有可见高度');
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+          if (parent.dataset.testid === 'hall-content-list') break;
+          const bounds = parent.getBoundingClientRect();
+          if (getComputedStyle(parent).overflowY !== 'visible'
+            && (artwork.top < bounds.top - 0.5 || artwork.bottom > bounds.bottom + 0.5)) {
+            throw new Error(`大厅第 ${index + 1} 个扑克牌图标被祖先容器裁切`);
+          }
+        }
+      }
+    },
+  );
+}
+
+/**
+ * 就绪标记是长列表容器且顶部已经可见时，保留导航栏及当前滚动位置。
+ * @param ready - 当前可见页面的就绪标记。
+ */
+export async function scrollVisualReadyElementIntoView(ready: Locator): Promise<void> {
+  const visibleLongContainer = await ready.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    return bounds.height > window.innerHeight && bounds.top >= 0 && bounds.top < window.innerHeight;
+  });
+  if (!visibleLongContainer) await ready.scrollIntoViewIfNeeded();
 }
