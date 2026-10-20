@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { Page } from '@playwright/test';
 import { paceNetworkClock } from './networkClock';
 
@@ -35,6 +36,9 @@ test('真实网络心跳不会被虚拟动画快进提前判为超时', async ()
   try {
     await page.clock.fastForward(240);
     await page.clock.runFor('00:00.160');
+    // 截图期间服务端持续发心跳，但虚拟时间暂停；这段等待不能变成快进额度。
+    await delay(200);
+    await page.clock.fastForward(240);
     await page.clock.pauseAt(new Date(now + 80));
     await page.clock.runFor(0);
     assert.equal(disconnected, false);

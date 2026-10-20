@@ -3,7 +3,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 
 /**
  * 逐段推进虚拟时钟，让服务器心跳有机会在应用超时前到达。
- * 保留真实协议、应用超时和每个采样时刻；截图及布局耗时可抵扣等待。
+ * 保留真实协议、应用超时和每个采样时刻；截图等待不能积攒后续快进额度。
  * @param page - 已安装 Playwright 时钟、即将进行牌桌动画采样的页面。
  */
 export async function paceNetworkClock(page: Page): Promise<void> {
@@ -12,8 +12,6 @@ export async function paceNetworkClock(page: Page): Promise<void> {
   const fastForward = clock.fastForward.bind(clock);
   // 先停止自动走时；100ms 留给协议往返，远短于真实连接的心跳窗口。
   await clock.pauseAt(await page.evaluate(() => Date.now()) + 100);
-  const virtualStart = await page.evaluate(() => Date.now());
-  const realStart = performance.now();
   /**
    * 让每段虚拟时间获得对应的真实网络时间，避免一次快进跨过整个心跳窗口。
    * @param ticks - 毫秒或 Playwright 支持的冒号分隔时间。
@@ -23,9 +21,7 @@ export async function paceNetworkClock(page: Page): Promise<void> {
     let remaining = milliseconds(ticks);
     while (remaining > 0) {
       const step = Math.min(16, remaining);
-      const target = await page.evaluate(() => Date.now()) + step;
-      const wait = target - virtualStart - (performance.now() - realStart);
-      if (wait > 0) await delay(wait);
+      await delay(step);
       await advance(step);
       remaining -= step;
     }
