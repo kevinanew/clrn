@@ -178,10 +178,10 @@ async function main(): Promise<void> {
     const playwrightArgs = ['exec', 'playwright', 'test'];
     if (action === 'reference') {
       // 牌桌和独立战绩重写所选基准，避免容差保留旧倒计时或错误的滚动位置。
-      // App 其他生成任务继续只更新有显著差异的截图。
+      // 显式刷新时也保存容差内的文案变化；默认仍只更新有显著差异的截图。
       const selected = selectScenariosByLabel(buildScenarios(), process.env.VISUAL_FILTER);
       const recordsOnly = selected.length > 0 && selected.every(scenario => scenario.group === 'game-record');
-      playwrightArgs.push(getVisualSuite() !== 'app' || recordsOnly
+      playwrightArgs.push(getVisualSuite() !== 'app' || recordsOnly || isEnvTrue('VISUAL_REFERENCE_UPDATE_ALL')
         ? '--update-snapshots=all' : '--update-snapshots=changed');
     } else if (action === 'approve') {
       // approve：只接受上次 test 里真正 diff/失败的场景为新基准，未变化的不动
