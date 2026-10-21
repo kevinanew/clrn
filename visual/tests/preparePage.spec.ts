@@ -1,4 +1,6 @@
+// 验证截图准备流程的真实浏览器行为，防止稳定化逻辑改变页面或掩盖图标裁切。
 import { expect, test } from '@playwright/test';
+import { assertMatchingArtworkVisible, scrollVisualReadyElementIntoView } from '../src/support/pageStabilizers';
 import type { VisualScenario } from '../scenarios';
 import {
   ensureAppReadyPastStaging,
@@ -31,6 +33,41 @@ const FIXTURE_HTML = `
     <button role="button" aria-label="Bottom sheet backdrop"></button>
   </div>
 `;
+
+test('大厅图标检查拒绝横向限宽造成的纵向裁切', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.setContent(`
+    <div data-testid="hall-content-list">
+      <div style="position:relative; margin-top:30px; width:390px; height:60px">
+        <div data-testid="matching-title-switch-button"
+          style="position:absolute; bottom:0; width:95px; height:80px"></div>
+      </div>
+      <div style="position:relative; margin-top:30px; width:350px; height:60px">
+        <div data-testid="matching-title-switch-button"
+          style="position:absolute; bottom:0; width:95px; height:80px"></div>
+      </div>
+    </div>
+  `);
+  await assertMatchingArtworkVisible(page);
+  await lockPageWidth(page, 375);
+  await expect(assertMatchingArtworkVisible(page)).rejects.toThrow('扑克牌图标被祖先容器裁切');
+});
+
+test('已可见的长列表不会因就绪滚动推走返回栏，屏外标记仍会滚入视口', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.setContent(`
+    <div data-testid="navigation" style="height:812px;overflow:hidden">
+      <header style="height:64px">返回</header>
+      <div data-testid="long-list" style="height:3000px">国家区号列表</div>
+      <button data-testid="offscreen-ready">就绪</button>
+    </div>
+  `);
+  await scrollVisualReadyElementIntoView(page.getByTestId('long-list'));
+  await expect(page.getByTestId('navigation')).toHaveJSProperty('scrollTop', 0);
+  await expect(page.locator('header')).toBeInViewport();
+  await scrollVisualReadyElementIntoView(page.getByTestId('offscreen-ready'));
+  await expect(page.getByTestId('offscreen-ready')).toBeInViewport();
+});
 
 test('startup proxy failures retry initialization before entering the hall', async ({ page }) => {
   await page.setContent(`
