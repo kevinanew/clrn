@@ -7,6 +7,7 @@ from mitmproxy import http
 
 PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com'
 METADATA_PATH = '/public/v13/metadata/servers'
+METADATA_PATHS = ('/public/v12/metadata/servers', METADATA_PATH)
 
 
 def is_staging(host):
@@ -111,7 +112,7 @@ class VisualNetwork:
 
     def response(self, flow):
         if (not is_staging(flow.request.host) or flow.request.method != 'GET'
-                or urlsplit(flow.request.path).path != METADATA_PATH):
+                or urlsplit(flow.request.path).path not in METADATA_PATHS):
             return False
 
         def change(result):

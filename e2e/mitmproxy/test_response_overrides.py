@@ -3,13 +3,13 @@
 import json
 import unittest
 from mitmproxy import http
-from response_overrides import PROXY_HOST, METADATA_PATH, VisualNetwork, prepare_profiles, patch_profiles, patch_version
+from response_overrides import PROXY_HOST, METADATA_PATH, METADATA_PATHS, VisualNetwork, prepare_profiles, patch_profiles, patch_version
 from test_network_faults import flow
 
 
 class ResponseOverrideTests(unittest.TestCase):
-    def metadata(self, body, status=200, method='GET', host='api.shafayouxi.org'):
-        request = flow(f'https://{host}{METADATA_PATH}', method)
+    def metadata(self, body, status=200, method='GET', host='api.shafayouxi.org', path=METADATA_PATH):
+        request = flow(f'https://{host}{path}', method)
         request.response = http.Response.make(status, json.dumps(body).encode(), {
             'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'https://app.test',
             'X-Upstream': 'kept', 'ETag': 'old',
@@ -19,16 +19,18 @@ class ResponseOverrideTests(unittest.TestCase):
     def test_metadata_only_filters_servers_and_preserves_compression_headers_and_unknown_fields(self):
         original = {'ok': True, 'trace': 'new-trace', 'result': {'extra': {'new': True},
             'servers': {PROXY_HOST: 'real-ip', 'other': 'another-ip'}}}
-        request = self.metadata(original)
-        request.response.encode('gzip')
-        self.assertTrue(VisualNetwork().response(request))
-        original['result']['servers'].pop('other')
-        self.assertEqual(request.response.json(), original)
-        self.assertEqual(request.response.headers['Content-Encoding'], 'gzip')
-        self.assertEqual(request.response.headers['X-Upstream'], 'kept')
-        self.assertEqual(request.response.headers['Access-Control-Allow-Origin'], 'https://app.test')
-        self.assertNotIn('ETag', request.response.headers)
-        self.assertEqual(int(request.response.headers['Content-Length']), len(request.response.raw_content))
+        for path in METADATA_PATHS:
+            with self.subTest(path=path):
+                request = self.metadata(original, path=path)
+                request.response.encode('gzip')
+                self.assertTrue(VisualNetwork().response(request))
+                self.assertEqual(request.response.json()['result']['servers'], {PROXY_HOST: 'real-ip'})
+                self.assertEqual(request.response.json()['result']['extra'], {'new': True})
+                self.assertEqual(request.response.headers['Content-Encoding'], 'gzip')
+                self.assertEqual(request.response.headers['X-Upstream'], 'kept')
+                self.assertEqual(request.response.headers['Access-Control-Allow-Origin'], 'https://app.test')
+                self.assertNotIn('ETag', request.response.headers)
+                self.assertEqual(int(request.response.headers['Content-Length']), len(request.response.raw_content))
 
     def test_metadata_errors_or_contract_changes_preserve_original_bytes(self):
         for body, status in (({'ok': False, 'error': 'auth'}, 200), ({'ok': True}, 503),
