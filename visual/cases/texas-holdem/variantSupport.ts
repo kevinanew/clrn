@@ -19,10 +19,11 @@ export function sequence(page: Page, scenario: VisualScenario, states: readonly 
     /**
      * 推进页面动效并按当前场景标签保存指定状态的截图。
      * @param state - 用于截图文件名的场景状态。
+     * @param settleMs - 截图前推进的虚拟时间；瞬时弹窗可设为零。
      */
-    snapshot: async (state: string) => {
+    snapshot: async (state: string, settleMs = 500) => {
       expect(state).toBe(states[index++]);
-      await page.clock.runFor(500);
+      if (settleMs > 0) await page.clock.runFor(settleMs);
       await capture(page, scenario, state);
     },
     /** 确认本分支已按清单截取全部状态。 */
