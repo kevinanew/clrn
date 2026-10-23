@@ -20,17 +20,18 @@ class ResponseOverrideTests(unittest.TestCase):
         original = {'ok': True, 'trace': 'new-trace', 'result': {'extra': {'new': True},
             'servers': {PROXY_HOST: 'real-ip', 'other': 'another-ip'}}}
         for path in METADATA_PATHS:
-            with self.subTest(path=path):
-                request = self.metadata(original, path=path)
-                request.response.encode('gzip')
-                self.assertTrue(VisualNetwork().response(request))
-                self.assertEqual(request.response.json()['result']['servers'], {PROXY_HOST: 'real-ip'})
-                self.assertEqual(request.response.json()['result']['extra'], {'new': True})
-                self.assertEqual(request.response.headers['Content-Encoding'], 'gzip')
-                self.assertEqual(request.response.headers['X-Upstream'], 'kept')
-                self.assertEqual(request.response.headers['Access-Control-Allow-Origin'], 'https://app.test')
-                self.assertNotIn('ETag', request.response.headers)
-                self.assertEqual(int(request.response.headers['Content-Length']), len(request.response.raw_content))
+            for method in ('GET', 'POST'):
+                with self.subTest(path=path, method=method):
+                    request = self.metadata(original, path=path, method=method)
+                    request.response.encode('gzip')
+                    self.assertTrue(VisualNetwork().response(request))
+                    self.assertEqual(request.response.json()['result']['servers'], {PROXY_HOST: 'real-ip'})
+                    self.assertEqual(request.response.json()['result']['extra'], {'new': True})
+                    self.assertEqual(request.response.headers['Content-Encoding'], 'gzip')
+                    self.assertEqual(request.response.headers['X-Upstream'], 'kept')
+                    self.assertEqual(request.response.headers['Access-Control-Allow-Origin'], 'https://app.test')
+                    self.assertNotIn('ETag', request.response.headers)
+                    self.assertEqual(int(request.response.headers['Content-Length']), len(request.response.raw_content))
 
     def test_metadata_errors_or_contract_changes_preserve_original_bytes(self):
         for body, status in (({'ok': False, 'error': 'auth'}, 200), ({'ok': True}, 503),
@@ -50,7 +51,7 @@ class ResponseOverrideTests(unittest.TestCase):
     def test_network_overrides_are_staging_only_and_read_only(self):
         network = VisualNetwork()
         body = {'ok': True, 'result': {'servers': {PROXY_HOST: 'ip', 'other': 'ip2'}}}
-        for method in ('POST', 'PUT', 'DELETE'):
+        for method in ('PUT', 'DELETE'):
             self.assertFalse(network.response(self.metadata(body, method=method)))
             self.assertFalse(network.request(flow('https://offline.api.staging.laiwan.shafayouxi.com/node/v1/status', method)))
         for host in ('production.example.com', 'api.staging.laiwan.shafayouxi.com.evil.test'):
