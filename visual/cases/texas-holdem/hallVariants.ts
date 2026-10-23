@@ -67,8 +67,9 @@ export async function captureHallVariants(page: Page, scenario: VisualScenario, 
   await page.clock.runFor(6000);
   await expect(visible(page, 'texas-holdem-delay-operation-button')).toContainText(':');
   await snapshot('delay_cooldown');
-  // 冷却提示出现后立即截图；额外推进虚拟时钟会触发应用的 no ping 重连并关闭弹窗。
+  // QueueAlertManager 延迟 50ms 显示弹窗；只推进这段时间，避免触发 no ping 重连。
   await visible(page, 'texas-holdem-delay-operation-button').click();
+  await page.clock.runFor(100);
   await expect(visible(page, 'common-alert-message')).toContainText(/冷却|冷卻|cool/i);
   await snapshot('delay_cooldown_alert', 0);
   done();
