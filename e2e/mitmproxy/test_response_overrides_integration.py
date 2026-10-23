@@ -36,6 +36,9 @@ class Upstream(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(body).encode())
 
+    def do_POST(self):
+        self.do_GET()
+
     def do_OPTIONS(self):
         self.send_response(204)
         self.send_header('X-Upstream', 'real-preflight')
@@ -88,15 +91,17 @@ class LiveOverrideTests(unittest.TestCase):
                 self.fetch(port, 'http://test-mitmproxy.invalid/scenario', 'POST', {'scenario': 'visual-stable'})
                 for path in METADATA_PATHS:
                     metadata = 'http://api.shafayouxi.org' + path
-                    status, headers, body = self.fetch(port, metadata)
-                    self.assertEqual(status, 200)
-                    self.assertEqual(body, {'ok': True, 'new_envelope': 42, 'result': {
-                        'servers': {PROXY_HOST: 'real-address'}, 'new_field': True}})
-                    self.assertEqual(headers['x-upstream'], 'real')
-                    self.assertEqual(headers['access-control-allow-origin'], 'https://app.test')
-                    self.assertEqual(self.fetch(port, metadata + '?failed')[0], 503)
-                    self.assertEqual(self.fetch(port, metadata + '?changed')[2]['result']['servers'],
-                                     {'new-node': 'new-address'})
+                    for method in ('GET', 'POST'):
+                        with self.subTest(path=path, method=method):
+                            status, headers, body = self.fetch(port, metadata, method)
+                            self.assertEqual(status, 200)
+                            self.assertEqual(body, {'ok': True, 'new_envelope': 42, 'result': {
+                                'servers': {PROXY_HOST: 'real-address'}, 'new_field': True}})
+                            self.assertEqual(headers['x-upstream'], 'real')
+                            self.assertEqual(headers['access-control-allow-origin'], 'https://app.test')
+                            self.assertEqual(self.fetch(port, metadata + '?failed', method)[0], 503)
+                            self.assertEqual(self.fetch(port, metadata + '?changed', method)[2]['result']['servers'],
+                                             {'new-node': 'new-address'})
                 health = f'http://{PROXY_HOST}/node/v1/status'
                 self.assertEqual(self.fetch(port, health)[2], {
                     'backend_delay': 37, 'server_load': 'normal', 'new_health': True})

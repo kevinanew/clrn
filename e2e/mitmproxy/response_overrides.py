@@ -111,7 +111,7 @@ class VisualNetwork:
         return True
 
     def response(self, flow):
-        if (not is_staging(flow.request.host) or flow.request.method != 'GET'
+        if (not is_staging(flow.request.host) or flow.request.method not in ('GET', 'POST')
                 or urlsplit(flow.request.path).path not in METADATA_PATHS):
             return False
 
