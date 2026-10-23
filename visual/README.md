@@ -268,6 +268,8 @@ CI 按「应用 app」「德州 texas」「拼三张 zhajinhua」和三种语言
 手动触发可用 `suite` 选择 `all`、`app`、`texas` 或 `zhajinhua`，只重跑所需部分。
 手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
 不会自动提交图片；`filter` 可只选新增场景。生成新图片时跳过依赖已有图片的完整性检查，
+小幅文案变化可能落在截图容差内；此时配合 `filter` 和 `refresh_all=true` 重采所选基准
+（本地 Linux 入口对应 `VISUAL_REFERENCE_UPDATE_ALL=true`），审核后再独立运行 compare。
 失败时的 reference artifact 可能不完整，需先修复并跑通；提交后 `mode=compare` 和 push CI
 会执行完整检查和截图对比。
 类型检查和场景配置测试只在简中应用任务运行一次（仅跑某个玩法时由其简中任务执行）；
