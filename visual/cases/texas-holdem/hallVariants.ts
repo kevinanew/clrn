@@ -69,9 +69,9 @@ export async function captureHallVariants(page: Page, scenario: VisualScenario, 
   await page.clock.runFor(1000);
   await expect(visible(page, 'texas-holdem-delay-operation-button')).toContainText(':');
   await snapshot('delay_cooldown');
-  // 弹窗延迟 50ms 显示，再播放 300ms zoomIn；逐帧完成动画后截图。
+  // 弹窗延迟显示且 zoomIn 从渲染后才开始；沿用基准截图的 1.7 秒等待完整入场。
   await visible(page, 'texas-holdem-delay-operation-button').click();
-  await page.clock.runFor(400);
+  await page.clock.runFor(1700);
   await expect(visible(page, 'common-alert-message')).toContainText(/冷却|冷卻|cool/i);
   await snapshot('delay_cooldown_alert', 0);
   done();
