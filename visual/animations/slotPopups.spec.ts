@@ -21,7 +21,7 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
   fixture.exhaustEnergy();
   const dialog = page.getByTestId('slot-no-energy-popup-container');
   await exercisePopup(page, info, { name: 'slot-no-energy', target: dialog, clip,
-    requirePresentation: true,
+    requirePresentation: true, excludedBackground: [page.getByTestId('slot-banner')],
     open: /** 从旋转失败响应触发能量不足提示。 */ async () => {
       await page.clock.fastForward(12_000);
       await press(page, 'slot-banner');

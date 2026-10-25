@@ -181,9 +181,14 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
 export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
   await page.evaluate(async () => {
     const images = Array.from(document.images);
-    /** 等待图片请求结束，之后仍以实际解码尺寸决定是否通过。 */
+    /**
+     * 等待图片请求结束，之后仍以实际解码尺寸决定是否通过。
+     * @param img - 待检查的页面图片。
+     */
     const waitForImage = (img: HTMLImageElement) => new Promise<void>((resolve) => {
+      /** 图片加载后继续检查实际尺寸。 */
       img.onload = () => resolve();
+      /** 图片报错后继续检查实际尺寸。 */
       img.onerror = () => resolve();
       setTimeout(resolve, 10000);
     });
@@ -195,6 +200,10 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
 
     // `img.complete` 在加载失败时同样为 true。远端头像允许失败，但同源构建
     // 资源必须有真实尺寸，否则中止场景，禁止污染快照。
+    /**
+     * 判断同源构建图片是否仍无可解码的尺寸。
+     * @param img - 待检查的页面图片。
+     */
     const isFailedLocalImage = (img: HTMLImageElement) => {
       if (!img.src) {
         return false;

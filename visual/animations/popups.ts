@@ -4,9 +4,13 @@ import { appearance, captureTimeline, fixedArea, freeze, settleAnimations, type 
 
 export type PopupFlow = { name: string; target: Locator; open: () => Promise<unknown>;
   close: () => Promise<unknown>; clip?: CaptureArea; exitAnimated?: boolean; fastPreparation?: boolean;
-  foregroundBelow?: { y: number; locator: Locator }; requirePresentation?: boolean };
+  foregroundBelow?: { y: number; locator: Locator }; requirePresentation?: boolean;
+  excludedBackground?: Locator[] };
 
-/** 判断弹层是否已经进入视口且实际绘制，不能把尚未卸载的透明旧节点算作新弹层。 */
+/**
+ * 判断弹层是否已经进入视口且实际绘制，不能把尚未卸载的透明旧节点算作新弹层。
+ * @param target - 待检查的弹层内容。
+ */
 async function isPresented(target: Locator): Promise<boolean> {
   if (!(await target.isVisible())) return false;
   const viewport = target.page().viewportSize()!;
@@ -18,8 +22,10 @@ async function isPresented(target: Locator): Promise<boolean> {
 /**
  * 逐帧推进异步请求和原生弹窗退场，直到新弹层真正出现在画面中。
  * @param target - 真实弹层内容。
+ * @param requirePresentation - 是否要求弹层实际绘制，而不是只保留节点。
  */
 async function waitForMount(target: Locator, requirePresentation = false): Promise<void> {
+  /** 判断本次打开是否已达到所需状态。 */
   const mounted = async () => requirePresentation ? isPresented(target) : (await target.count()) > 0;
   await expect.poll(async () => {
     if (await mounted()) return true;
@@ -67,12 +73,12 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await page.clock.runFor(16);
   await waitForMount(flow.target, flow.requirePresentation);
   await captureTimeline(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
-    requireMotion: true, foregroundBelow: flow.foregroundBelow });
+    requireMotion: true, foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground });
   await expect(flow.target).toBeVisible();
   await flow.close();
   await captureTimeline(page, info, `${flow.name}-exit`, flow.target,
     { clip, requireChange: flow.exitAnimated !== false, requireMotion: flow.exitAnimated !== false,
-      foregroundBelow: flow.foregroundBelow });
+      foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground });
   await settleAnimations(page, 32);
   await expectDismissed(flow.target);
   await flow.open();
