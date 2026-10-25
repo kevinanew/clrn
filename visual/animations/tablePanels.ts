@@ -32,13 +32,14 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
   if (game === 'zhajinhua') {
     const arrows = page.locator('[data-testid^="seat-guide-"] img').locator('..');
     await expect(arrows).toHaveCount(9);
-    // 只推进真实循环到顶部起点；网络建房耗时不能决定循环的截图相位。
+    // 等待全部箭头回到循环顶部；各座位的挂载时刻可能不同。
     await expect.poll(async () => {
-      const offset = await arrows.first().evaluate(node => new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
-      if (Math.abs(offset) < 0.000001) return true;
+      const offsets = await arrows.evaluateAll(nodes => nodes.map(node =>
+        new DOMMatrixReadOnly(getComputedStyle(node).transform).m42));
+      if (offsets.length === 9 && offsets.every(offset => Math.abs(offset) < 0.000001)) return true;
       await page.clock.runFor(16);
       return false;
-    }, { timeout: 30_000, intervals: [0], message: '空座引导应回到真实循环起点' }).toBe(true);
+    }, { timeout: 30_000, intervals: [0], message: '全部空座引导应回到真实循环起点' }).toBe(true);
     await captureTimeline(page, info, 'zhajinhua-seat-guides', arrows,
       { clip, times: [0, 160, 500, 1000, 1500, 2000], requireMotion: true });
   }
