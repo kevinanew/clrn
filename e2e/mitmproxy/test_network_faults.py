@@ -120,6 +120,38 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         await self.addon.request(preflight)
         self.assertIsNone(preflight.response)
 
+    async def test_俱乐部搜索只返回指定的固定俱乐部(self):
+        await self.configure("club-search-result")
+        origin = "https://h5.page.shafayouxi.org"
+        search = flow("https://api.shafayouxi.org/v10/club/search?keyword=VisualClubSearch")
+        search.request.headers["Origin"] = origin
+        await self.addon.request(search)
+        self.assertEqual(search.response.json()["result"], ["12f2cb6e-9045-4910-b58a-7d3903f56a39"])
+        self.assertEqual(search.response.headers["Access-Control-Allow-Origin"], origin)
+
+        preflight = flow("https://api.shafayouxi.org/v10/clubs", "OPTIONS")
+        preflight.request.headers["Origin"] = origin
+        preflight.request.headers["Access-Control-Request-Headers"] = "authorization,content-type"
+        await self.addon.request(preflight)
+        self.assertEqual(preflight.response.status_code, 204)
+        self.assertEqual(preflight.response.headers["Access-Control-Allow-Headers"],
+                         "authorization,content-type")
+
+        details = flow("https://api.shafayouxi.org/v10/clubs", "PUT",
+                       b'{"club_ids":["12f2cb6e-9045-4910-b58a-7d3903f56a39"]}')
+        await self.addon.request(details)
+        self.assertEqual(details.response.json()["result"][0]["name"], "搜索测试俱乐部")
+        self.assertEqual(self.addon.club_search_requests, 1)
+        self.assertEqual(self.addon.club_details_requests, 1)
+
+        unrelated = flow("https://api.shafayouxi.org/v10/club?user_id=42")
+        await self.addon.request(unrelated)
+        self.assertIsNone(unrelated.response)
+        wrong_keyword = flow("https://api.shafayouxi.org/v10/club/search?keyword=other")
+        await self.addon.request(wrong_keyword)
+        self.assertEqual(wrong_keyword.response.status_code, 400)
+        self.assertEqual(self.addon.club_search_requests, 1)
+
     async def test_visual_mode_reads_real_metadata_and_selected_health(self):
         await self.configure("visual-stable")
         host = "64.kr-seoul.api.staging.laiwan.shafayouxi.com"
