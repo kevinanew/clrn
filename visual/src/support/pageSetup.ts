@@ -172,13 +172,14 @@ export function buildStorageStateForScenario(
  * @param context - 首次导航前配置的浏览器上下文。
  * @param scenario - 本次执行的视觉配置或代理故障场景。
  * @param page - 执行操作的 Playwright 页面。
- * @param options - useMitmproxy 指定网络代理；animations 为 allow 时保留应用真实动效；navigatorLocale 指定系统语言。
+ * @param options - useMitmproxy 指定网络代理；clubDetailsFromProxy 保留搜索代理提供的俱乐部资料；animations 为 allow 时保留应用真实动效；navigatorLocale 指定系统语言。
  */
 export async function setupContextForScenario(
   context: BrowserContext,
   scenario: VisualScenario,
   page?: Page,
-  options: { useMitmproxy?: boolean; animations?: 'allow' | 'disabled'; navigatorLocale?: string } = {},
+  options: { useMitmproxy?: boolean; clubDetailsFromProxy?: boolean;
+    animations?: 'allow' | 'disabled'; navigatorLocale?: string } = {},
 ): Promise<void> {
   await fixNavigatorLanguage(context, options.navigatorLocale);
   if (options.animations !== 'allow') await disableAnimations(context);
@@ -186,6 +187,7 @@ export async function setupContextForScenario(
     realPrivateRoom: scenario.group === 'texas-holdem' || scenario.group === 'zhajinhua',
     useMitmproxy: options.useMitmproxy,
     recordFixtures: scenario.group === 'game-record',
+    clubDetailsFromProxy: options.clubDetailsFromProxy,
   });
   if (scenario.pageLabel === 'signed_in_daily_bonus') await mockDailyBonusWallet(context);
 

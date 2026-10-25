@@ -249,6 +249,16 @@ describe('visual scenarios', () => {
       assert.equal(scenario.visualGoneSelector, '[data-testid="club-more-popup"]');
       assert.deepEqual(scenario.navClickTestIds, ['show-more-button', 'search-club-button']);
     });
+    const resultScenarios = scenarios.filter(
+      (scenario) => scenario.pageLabel === 'signed_in_club_search_result',
+    );
+    assert.equal(resultScenarios.length, 2);
+    resultScenarios.forEach((scenario) => {
+      assert.equal(scenario.signIn, true);
+      assert.equal(scenario.visualReadySelector, '[data-testid="club-search-input"]');
+      assert.equal(scenario.visualGoneSelector, '[data-testid="club-more-popup"]');
+      assert.deepEqual(scenario.navClickTestIds, ['show-more-button', 'search-club-button']);
+    });
   });
 
   test('账号安全二级页仅 mobile，经列表项进入且不提交', () => {

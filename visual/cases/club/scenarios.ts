@@ -31,6 +31,14 @@ export const pages: SignedInPageDef[] = [
     visualGoneSelector: '[data-testid="club-more-popup"]',
   },
   {
+    // 搜索命中态由独立用例在进入页面后启用定向代理响应。
+    label: 'signed_in_club_search_result',
+    tabTestId: 'club-tab',
+    navClickTestIds: ['show-more-button', 'search-club-button'],
+    visualReadySelector: '[data-testid="club-search-input"]',
+    visualGoneSelector: '[data-testid="club-more-popup"]',
+  },
+  {
     label: 'signed_in_create_club',
     viewports: ['mobile'],
     tabTestId: 'settings-tab',
