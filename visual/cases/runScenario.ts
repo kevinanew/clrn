@@ -14,18 +14,30 @@ const backAccessibilityLabels = {
  * 为单个视觉场景创建隔离上下文，准备页面并执行截图后清理资源。
  * @param scenario - 本次执行的视觉配置或代理故障场景。
  * @param browser - 用于创建隔离上下文的浏览器实例。
+ * @param options - 仅有数据的俱乐部牌局场景使用的独立代理地址。
  */
-export async function runVisualScenario(scenario: VisualScenario, browser: Browser): Promise<void> {
+export async function runVisualScenario(
+  scenario: VisualScenario,
+  browser: Browser,
+  options: { clubRoomProxyServer?: string } = {},
+): Promise<void> {
     const context = await browser.newContext({
       viewport: { width: scenario.viewport.width, height: scenario.viewport.height },
       locale: 'en-US',
       deviceScaleFactor: 1,
       storageState: buildStorageStateForScenario(scenario, baseUrl),
+      ...(options.clubRoomProxyServer ? {
+        proxy: { server: options.clubRoomProxyServer, bypass: '<-loopback>' },
+        ignoreHTTPSErrors: true,
+      } : {}),
     });
     const page = await context.newPage();
 
     try {
-      await setupContextForScenario(context, scenario, page);
+      await setupContextForScenario(context, scenario, page, {
+        useMitmproxy: Boolean(options.clubRoomProxyServer),
+        clubRoomsFromProxy: Boolean(options.clubRoomProxyServer),
+      });
       await page.goto(scenario.path);
       await preparePage(page, scenario);
       if (scenario.spriteImageCount) {
@@ -40,6 +52,15 @@ export async function runVisualScenario(scenario: VisualScenario, browser: Brows
       // preparePage 内的稳定化步骤可能耗时较长。截图前再次断言就绪元素仍可见，
       // 避免「更多」菜单等短暂出现后又消失时，被空白页面静默写入视觉基准图。
       await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
+      if (scenario.pageLabel === 'signed_in_club_rooms_populated') {
+        // 大厅也会挂载同一批牌局；断言只检查当前俱乐部页，避免把两处卡片合并计数。
+        const clubRoomScreen = page.locator('[data-testid="club-rooms-screen"]:visible').last();
+        await expect(clubRoomScreen.locator('[data-testid^="club-room-item-visual-club-room-"]')).toHaveCount(2);
+        await expect(clubRoomScreen.locator('[data-testid="club-room-name"]')).toHaveText(['德州体验局', '周末牌局']);
+        await expect(clubRoomScreen.locator('[data-testid="club-room-club-name"]')).toHaveText(['演示俱乐部', '演示俱乐部']);
+        await expect(clubRoomScreen.locator('[data-testid="club-room-player-count"]')).toHaveText(['2/9', '4/9']);
+        await expect(clubRoomScreen.locator('[data-testid="club-rooms-empty-view"]')).toHaveCount(0);
+      }
       if (scenario.pageLabel === 'signed_in_daily_bonus') {
         await expect(page.getByTestId('CheckInDateListItem.checkInDetailDate')).toHaveText('01/01');
       }

@@ -147,6 +147,20 @@ describe('visual scenarios', () => {
     });
   });
 
+  test('俱乐部有数据牌局经顶部 tab 进入并等待列表', () => {
+    process.env.VISUAL_LOCALES = 'zh-Hans';
+    const scenarios = buildScenarios().filter(
+      (scenario) => scenario.pageLabel === 'signed_in_club_rooms_populated',
+    );
+    assert.equal(scenarios.length, 2);
+    scenarios.forEach((scenario) => {
+      assert.equal(scenario.signIn, true);
+      assert.equal(scenario.tabTestId, 'club-tab');
+      assert.equal(scenario.visualReadySelector, '[data-testid="club-rooms-list"]');
+      assert.deepEqual(scenario.navClickTestIds, ['club_tab_room']);
+    });
+  });
+
   test('大厅匹配场景在截图前恢复列表首屏位置', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     const scenarios = buildScenarios().filter(

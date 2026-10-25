@@ -15,6 +15,13 @@ export const pages: SignedInPageDef[] = [
     visualReadySelector: '[data-testid="club-rooms-empty-view"]',
   },
   {
+    // 俱乐部与牌局数据由本场景的 mitmproxy 代理提供。
+    label: 'signed_in_club_rooms_populated',
+    tabTestId: 'club-tab',
+    navClickTestIds: ['club_tab_room'],
+    visualReadySelector: '[data-testid="club-rooms-list"]',
+  },
+  {
     // 俱乐部 tab → 右上角更多弹层（仅打开，不点选项）
     label: 'signed_in_club_more',
     tabTestId: 'club-tab',
