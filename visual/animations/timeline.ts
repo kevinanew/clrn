@@ -154,7 +154,8 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       await ensureLocalImagesLoaded(page);
       await settleLayout(page);
       const sampledTime = milliseconds + (options.startOffset || 0);
-      samples.push({ milliseconds: sampledTime, elements: await appearance(target) });
+      const elements = await appearance(target);
+      samples.push({ milliseconds: sampledTime, elements });
       const snapshot = `en-${info.project.name}-${name}-${sampledTime}ms.png`;
       const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
         caret: 'hide' as const, scale: 'css' as const };
@@ -222,12 +223,17 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
           const expected = PNG.sync.read(readFileSync(snapshotPath));
           expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
           for (const background of options.excludedBackground) {
-            const box = await background.boundingBox();
+            const box = await background.evaluateAll(nodes => {
+              if (!nodes[0]) return null;
+              const rect = nodes[0].getBoundingClientRect();
+              return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+            });
             expect(box, `${snapshot} 背景排除区域必须存在`).not.toBeNull();
-            const subject = await target.boundingBox();
-            if (subject) expect(box!.x + box!.width <= subject.x || subject.x + subject.width <= box!.x
-              || box!.y + box!.height <= subject.y || subject.y + subject.height <= box!.y,
-            `${snapshot} 背景排除区域不能遮住弹层`).toBe(true);
+            for (const subject of elements) {
+              expect(box!.x + box!.width <= subject.x || subject.x + subject.width <= box!.x
+                || box!.y + box!.height <= subject.y || subject.y + subject.height <= box!.y,
+              `${snapshot} 背景排除区域不能遮住弹层`).toBe(true);
+            }
             const left = Math.max(0, Math.floor(box!.x - (options.clip?.x || 0)));
             const right = Math.min(actual.width, Math.ceil(box!.x + box!.width - (options.clip?.x || 0)));
             const top = Math.max(0, Math.floor(box!.y - (options.clip?.y || 0)));
