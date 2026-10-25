@@ -1,7 +1,9 @@
+/** 执行独立视觉场景，并在截图前核对场景内容仍然完整可见。 */
 import { expect, type Browser } from '@playwright/test';
 import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
 import { preparePage } from '../src/support/preparePage';
+import { assertGuestClubReady } from './club/guestReadiness';
 
 import { visualBaseUrl as baseUrl } from '../target';
 const backAccessibilityLabels = {
@@ -40,6 +42,9 @@ export async function runVisualScenario(scenario: VisualScenario, browser: Brows
       // preparePage 内的稳定化步骤可能耗时较长。截图前再次断言就绪元素仍可见，
       // 避免「更多」菜单等短暂出现后又消失时，被空白页面静默写入视觉基准图。
       await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
+      if (scenario.pageLabel === 'guest_club') {
+        await assertGuestClubReady(page);
+      }
       if (scenario.pageLabel === 'signed_in_daily_bonus') {
         await expect(page.getByTestId('CheckInDateListItem.checkInDetailDate')).toHaveText('01/01');
       }
