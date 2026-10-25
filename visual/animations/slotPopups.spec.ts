@@ -21,6 +21,7 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
   fixture.exhaustEnergy();
   const dialog = page.getByTestId('slot-no-energy-popup-container');
   await exercisePopup(page, info, { name: 'slot-no-energy', target: dialog, clip,
+    requirePresentation: true, excludedBackground: [page.getByTestId('slot-banner')],
     open: /** 从旋转失败响应触发能量不足提示。 */ async () => {
       await page.clock.fastForward(12_000);
       await press(page, 'slot-banner');
@@ -28,8 +29,6 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
       const previous = fixture.spins;
       await press(page, 'spin-button');
       await expect.poll(async () => { await page.clock.runFor(0); return fixture.spins; }).toBe(previous + 1);
-      await page.clock.runFor(16);
-      // 应用在老虎机关闭后延迟 500ms 打开提示。
-      await page.clock.runFor(500);
+      // exercisePopup 按真实挂载逐帧推进，不能在入场采样前固定跳过 500ms。
     }, close: /** 点击提示的确认按钮。 */ () => pressTarget(dialog.getByTestId('confirm-button')) });
 });

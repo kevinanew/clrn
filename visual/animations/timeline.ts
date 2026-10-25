@@ -135,7 +135,7 @@ export async function freeze(page: Page): Promise<void> {
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
   options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
     mask?: Locator[]; requireMotion?: boolean;
-    foregroundBelow?: { y: number; locator: Locator } } = {}): Promise<void> {
+    foregroundBelow?: { y: number; locator: Locator }; excludedBackground?: Locator[] } = {}): Promise<void> {
   const times = options.times || FRAME_TIMES;
   const samples = [];
   const frames: Buffer[] = [];
@@ -154,7 +154,8 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       await ensureLocalImagesLoaded(page);
       await settleLayout(page);
       const sampledTime = milliseconds + (options.startOffset || 0);
-      samples.push({ milliseconds: sampledTime, elements: await appearance(target) });
+      const elements = await appearance(target);
+      samples.push({ milliseconds: sampledTime, elements });
       const snapshot = `en-${info.project.name}-${name}-${sampledTime}ms.png`;
       const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
         caret: 'hide' as const, scale: 'css' as const };
@@ -204,6 +205,47 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
           expect(PNG.sync.write(actual)).toMatchSnapshot(snapshot, {
             threshold: 0.1, maxDiffPixels: Math.floor(comparedPixels * 0.001),
           });
+        }
+      } else if (options.excludedBackground?.length) {
+        // 比较仍保存完整原图；只在比对弹层时排除独立用例已覆盖的背景动画。
+        frame = Buffer.alloc(0);
+        await expect.poll(async () => {
+          const previousFrame = await page.screenshot(screenshotOptions);
+          frame = await page.screenshot(screenshotOptions);
+          return frame.equals(previousFrame);
+        }, { message: `${name} 首帧画面应稳定` }).toBe(true);
+        const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
+        const update = info.config.updateSnapshots;
+        if (update === 'all' || update === 'changed' || (update === 'missing' && !existsSync(snapshotPath))) {
+          expect(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+        } else {
+          const actual = PNG.sync.read(frame);
+          const expected = PNG.sync.read(readFileSync(snapshotPath));
+          expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
+          for (const background of options.excludedBackground) {
+            const box = await background.evaluateAll(nodes => {
+              if (!nodes[0]) return null;
+              const rect = nodes[0].getBoundingClientRect();
+              return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+            });
+            expect(box, `${snapshot} 背景排除区域必须存在`).not.toBeNull();
+            for (const subject of elements) {
+              expect(box!.x + box!.width <= subject.x || subject.x + subject.width <= box!.x
+                || box!.y + box!.height <= subject.y || subject.y + subject.height <= box!.y,
+              `${snapshot} 背景排除区域不能遮住弹层`).toBe(true);
+            }
+            const left = Math.max(0, Math.floor(box!.x - (options.clip?.x || 0)));
+            const right = Math.min(actual.width, Math.ceil(box!.x + box!.width - (options.clip?.x || 0)));
+            const top = Math.max(0, Math.floor(box!.y - (options.clip?.y || 0)));
+            const bottom = Math.min(actual.height, Math.ceil(box!.y + box!.height - (options.clip?.y || 0)));
+            for (let row = top; row < bottom; row++) {
+              const start = (row * actual.width + left) * 4;
+              const end = (row * actual.width + right) * 4;
+              actual.data.set(expected.data.subarray(start, end), start);
+            }
+          }
+          expect(PNG.sync.write(actual)).toMatchSnapshot(snapshot,
+            { threshold: 0.1, maxDiffPixelRatio: 0.001 });
         }
       } else {
         // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。
