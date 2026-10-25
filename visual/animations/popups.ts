@@ -4,18 +4,29 @@ import { appearance, captureTimeline, fixedArea, freeze, settleAnimations, type 
 
 export type PopupFlow = { name: string; target: Locator; open: () => Promise<unknown>;
   close: () => Promise<unknown>; clip?: CaptureArea; exitAnimated?: boolean; fastPreparation?: boolean;
-  foregroundBelow?: { y: number; locator: Locator } };
+  foregroundBelow?: { y: number; locator: Locator }; requirePresentation?: boolean };
+
+/** 判断弹层是否已经进入视口且实际绘制，不能把尚未卸载的透明旧节点算作新弹层。 */
+async function isPresented(target: Locator): Promise<boolean> {
+  if (!(await target.isVisible())) return false;
+  const viewport = target.page().viewportSize()!;
+  return (await appearance(target)).some(state => state.opacity > 0 && state.width > 0 && state.height > 0
+    && state.x < viewport.width && state.x + state.width > 0
+    && state.y < viewport.height && state.y + state.height > 0);
+}
 
 /**
- * 等待异步请求触发的挂载时同时推进任务队列，避免响应后的零延迟任务卡在暂停时钟。
+ * 逐帧推进异步请求和原生弹窗退场，直到新弹层真正出现在画面中。
  * @param target - 真实弹层内容。
  */
-async function waitForMount(target: Locator): Promise<void> {
+async function waitForMount(target: Locator, requirePresentation = false): Promise<void> {
+  const mounted = async () => requirePresentation ? isPresented(target) : (await target.count()) > 0;
   await expect.poll(async () => {
-    if (await target.count()) return true;
+    if (await mounted()) return true;
     await target.page().clock.runFor(16);
-    return (await target.count()) > 0;
-  }, { message: `弹层应从真实入口挂载：${target}` }).toBe(true);
+    return mounted();
+  }, { intervals: [20], timeout: 30_000,
+    message: `弹层应从真实入口${requirePresentation ? '进入画面' : '挂载'}：${target}` }).toBe(true);
 }
 
 /**
@@ -42,7 +53,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await freeze(page);
   await flow.open();
   await page.clock.runFor(16);
-  await waitForMount(flow.target);
+  await waitForMount(flow.target, flow.requirePresentation);
   await settleAnimations(page, 1600, flow.fastPreparation);
   await expect(flow.target).toBeVisible();
   await ensureLocalImagesLoaded(page);
@@ -54,7 +65,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await flow.open();
   // BottomSheet 在下一次 requestAnimationFrame 挂载内容；时间线保留这 16ms。
   await page.clock.runFor(16);
-  await waitForMount(flow.target);
+  await waitForMount(flow.target, flow.requirePresentation);
   await captureTimeline(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
     requireMotion: true, foregroundBelow: flow.foregroundBelow });
   await expect(flow.target).toBeVisible();
@@ -65,7 +76,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await settleAnimations(page, 32);
   await expectDismissed(flow.target);
   await flow.open();
-  await waitForMount(flow.target);
+  await waitForMount(flow.target, flow.requirePresentation);
   await settleAnimations(page, 1600, flow.fastPreparation);
   await expect(flow.target).toBeVisible();
   await flow.close();

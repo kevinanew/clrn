@@ -341,6 +341,25 @@ test('ensureLocalImagesLoaded accepts a decoded same-origin WebP asset', async (
   }))).toEqual({ width: 2, height: 1 });
 });
 
+test('ensureLocalImagesLoaded retries a dropped same-origin image once', async ({ page }) => {
+  const webpImage = Buffer.from('UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAA+w//Mf8x8VMqL/AQA=', 'base64');
+  let imageRequests = 0;
+  await page.route('http://visual.test/**', async (route) => {
+    if (new URL(route.request().url()).pathname === '/') {
+      await route.fulfill({ contentType: 'text/html', body: '<img src="/visual-asset.webp" alt="WebP">' });
+      return;
+    }
+    imageRequests++;
+    if (imageRequests === 1) await route.abort('failed');
+    else await route.fulfill({ contentType: 'image/webp', body: webpImage });
+  });
+  await page.goto('http://visual.test/');
+
+  await ensureLocalImagesLoaded(page);
+  expect(imageRequests).toBe(2);
+  expect(await page.getByAltText('WebP').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBe(2);
+});
+
 for (const asset of [
   { name: 'missing-visual-asset.png', status: 404, contentType: 'image/png' },
   { name: 'missing-visual-asset.webp', status: 404, contentType: 'image/webp' },

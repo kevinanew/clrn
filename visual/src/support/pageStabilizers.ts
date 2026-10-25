@@ -181,24 +181,21 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
 export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
   await page.evaluate(async () => {
     const images = Array.from(document.images);
+    /** 等待图片请求结束，之后仍以实际解码尺寸决定是否通过。 */
+    const waitForImage = (img: HTMLImageElement) => new Promise<void>((resolve) => {
+      img.onload = () => resolve();
+      img.onerror = () => resolve();
+      setTimeout(resolve, 10000);
+    });
     await Promise.all(
       images
         .filter((img) => !img.complete)
-        .map(
-          (img) =>
-            new Promise<void>((resolve) => {
-              /** 结束图片加载等待，让稳定化流程继续执行。 */
-              img.onload = () => resolve();
-              /** 结束图片加载等待；后续统一检测并报告缺失图片。 */
-              img.onerror = () => resolve();
-              setTimeout(resolve, 10000);
-            }),
-        ),
+        .map(waitForImage),
     );
 
     // `img.complete` 在加载失败时同样为 true。远端头像允许失败，但同源构建
     // 资源必须有真实尺寸，否则中止场景，禁止污染快照。
-    const failedLocalImages = images.filter((img) => {
+    const isFailedLocalImage = (img: HTMLImageElement) => {
       if (!img.src) {
         return false;
       }
@@ -211,7 +208,18 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
       } catch {
         return false;
       }
-    });
+    };
+    // 本地代理偶尔会在并发取图时关闭连接。只对失败的同源图片重新请求一次；
+    // 如果文件缺失或内容无法解码，第二次仍会在下面报错。
+    await Promise.all(images.filter(isFailedLocalImage).map(async (img) => {
+      const url = new URL(img.src, window.location.href);
+      if (url.searchParams.has('__clrn_retry')) return;
+      url.searchParams.set('__clrn_retry', '1');
+      const loaded = waitForImage(img);
+      img.src = url.href;
+      await loaded;
+    }));
+    const failedLocalImages = images.filter(isFailedLocalImage);
     if (failedLocalImages.length > 0) {
       const failedSources = failedLocalImages
         .slice(0, 5)
