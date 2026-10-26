@@ -92,7 +92,7 @@ def patch_profiles(flow, self_id, profiles):
 
 
 class VisualNetwork:
-    """只排除其他 staging 节点；选中节点的健康检查和 metadata 都访问真实上游。"""
+    """过滤真实元数据中的其他节点，并让选中节点的健康检查访问真实上游。"""
 
     def request(self, flow):
         path = urlsplit(flow.request.path).path
@@ -117,11 +117,16 @@ class VisualNetwork:
 
         def change(result):
             servers = result.get('servers')
-            if not isinstance(servers, dict) or PROXY_HOST not in servers:
+            if isinstance(servers, dict) and PROXY_HOST in servers:
+                selected = {PROXY_HOST: servers[PROXY_HOST]}
+            elif (isinstance(servers, list) and all(isinstance(host, str) for host in servers)
+                    and PROXY_HOST in servers):
+                selected = [PROXY_HOST]
+            else:
                 raise ValueError('Selected node missing from metadata')
-            if len(servers) == 1:
+            if servers == selected:
                 return False
             flow.metadata['diagnostic_candidates_before'] = list(servers)
-            result['servers'] = {PROXY_HOST: servers[PROXY_HOST]}
+            result['servers'] = selected
             return True
         return patch_result(flow, change)

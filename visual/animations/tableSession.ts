@@ -47,9 +47,16 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     if (hall) await enterTexasRoom(page, room);
     else {
       const connection = { state: 'loading' };
+      let retries = 0;
       await expect.poll(async () => {
-        if (await visible(page, 'common-alert-button-retry').isVisible()) connection.state = 'alert';
-        else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
+        if (await visible(page, 'common-alert-button-retry').isVisible()) {
+          if (retries >= 3) connection.state = 'alert';
+          else {
+            retries += 1;
+            recordDiagnostic(page, '重试牌桌连接', { attempt: retries });
+            await visible(page, 'common-alert-button-retry').click();
+          }
+        } else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
         return connection.state;
       }, { timeout: 90_000, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
       if (connection.state === 'alert') {
