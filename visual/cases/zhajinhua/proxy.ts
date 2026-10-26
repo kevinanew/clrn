@@ -45,7 +45,7 @@ export class ZhajinhuaProxy {
  */
 export function withZhajinhuaProxy<T>(task: (proxy: ZhajinhuaProxy) => Promise<T>): Promise<T> {
   return withMitmproxy(async proxy => {
-    await proxy.stabilizeVisualNetwork();
+    await proxy.enableVisualFixtures();
     return task(new ZhajinhuaProxy(proxy));
   }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });
 }

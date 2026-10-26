@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 from mitmproxy import http
 
-from test_texas_replay import flow, ROOM, OTHER, SELF
+from test_texas_replay import flow, socket_flow, message, CHANNEL, ROOM, OTHER, SELF
 from texas_replay import PLAYER_IDS
 from addon import TexasVisualProxy
 
@@ -23,6 +23,25 @@ class TexasAddonTests(unittest.TestCase):
                        b'' if body is None else json.dumps(body).encode())
         self.addon.request(request)
         return request
+
+    def test_回放绑定实际订阅房间而不依赖固定节点(self):
+        for host in ('64.kr-seoul', '67.hk-sn', '68.kr'):
+            with self.subTest(host=host), patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
+                addon = TexasVisualProxy()
+                addon.scenario = 'visual-stable'
+                selected_socket = socket_flow()
+                selected_socket.request.host = host + '.api.staging.laiwan.shafayouxi.com'
+                message(selected_socket, [{'id': 1, 'method': 1, 'params': {'channel': CHANNEL}}])
+                addon.websocket_message(selected_socket)
+                message(selected_socket, [{'id': 1, 'result': {}}], False)
+                addon.websocket_message(selected_socket)
+                with patch('texas_replay.ctx.master', create=True) as master:
+                    addon.texas.publish(ROOM, {'stream': 'texas_holdem', 'queue': []})
+                    injected_arguments = master.commands.call.call_args.args
+                    self.assertEqual(injected_arguments[:3], ('inject.websocket', selected_socket, True))
+                    self.assertEqual(json.loads(injected_arguments[3])['result']['channel'], CHANNEL)
+                    with self.assertRaises(ValueError):
+                        addon.texas.publish(OTHER, {})
 
     def test_read_fixtures_do_not_hide_mutations_or_other_users(self):
         player = PLAYER_IDS[0]

@@ -57,7 +57,7 @@ export const test = base.extend<{ recordProxy: RecordProxy }>({
    */
   recordProxy: async ({}, use) => {
     await withMitmproxy(async proxy => {
-      await proxy.stabilizeVisualNetwork();
+      await proxy.enableVisualFixtures();
       await use(new RecordProxy(proxy));
     }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });
   },

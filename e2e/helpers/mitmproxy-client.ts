@@ -80,8 +80,8 @@ export class Mitmproxy {
     return this.command('scenario', { scenario });
   }
 
-  /** 启用视觉测试的稳定网络场景，固定易漂移的响应。 */
-  stabilizeVisualNetwork(): Promise<ProxyStatus> {
+  /** 启用视觉业务夹具；节点列表和健康探测始终透传。 */
+  enableVisualFixtures(): Promise<ProxyStatus> {
     return this.command('scenario', { scenario: 'visual-stable' });
   }
 

@@ -17,7 +17,7 @@ export const test = base.extend<{ clubRoomProxy: ClubRoomProxy }>({
    */
   clubRoomProxy: async ({}, use) => {
     await withMitmproxy(async proxy => {
-      await proxy.stabilizeVisualNetwork();
+      await proxy.enableVisualFixtures();
       await use({
         server: proxy.server,
         /** 读取当前场景的业务接口命中次数。 */

@@ -8,8 +8,8 @@ CI 下载触发提交中指定的 H5 Release，校验后启动任务独占的静
 `npm run test:animations`，普通静态套件不收集动画用例。
 
 德州与拼三张视觉用例及其登录态采集使用独立的 `mitmdump`，浏览器流量经过本机代理。
-代理默认透传真实请求；metadata 在真实成功响应中仅保留选中节点，保留真实地址及其他字段。
-选中节点的健康检查和 CORS 预检透传；其他 staging 节点的测速被本地排除，不再伪造节点健康。
+正常视觉场景完整透传 v12/v13 节点列表、所有候选节点的健康响应和 CORS 预检，由应用动态选线。
+不指定首尔或其他固定节点，不将正常节点改成 503，也不把真实故障改成健康。登录态采集遵循相同规则。
 App 登录态采集直连；我的战绩用例通过独立 mitmproxy 提供数据。德州代理脚本位于 `cases/texas-holdem/mitmproxy/`，
 复用 `../e2e/helpers/mitmproxy-*.ts` 的进程与控制客户端，以及
 `../e2e/mitmproxy/response_overrides.py` 的响应字段覆盖工具；E2E 故障场景仍独立。
@@ -36,7 +36,8 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的全部视觉任务�
 e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 ```
 
-其中响应覆盖集成检查会分别启动四个真实 mitmdump 入口，连接本机模拟上游，检查成功、失败、结构变化及 CORS 预检。
+其中集成检查启动五个真实 mitmdump 入口（通用故障、德州、拼三张、战绩、俱乐部），连接本机模拟上游。
+覆盖 v12 数组、v13 字典、候选节点变化、首尔延迟 1065 与其他节点健康并存、真实 503、非 JSON、压缩和 CORS 预检。
 
 ## 场景
 
@@ -181,9 +182,8 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
   触发导航重置，杀掉刚打开的登录 modal
 - staging 在 Web 端稳定失败的俱乐部接口（`/v10/club?user_id=`、`/v10/clubs`）
   已 mock 成空列表，避免「网络有点问题」alert 在随机时刻弹出污染截图
-- 代理元数据和健康检查固定选择
-  `64.kr-seoul.api.staging.laiwan.shafayouxi.com`，避免测速把已断连节点误判为可用，
-  导致业务 API 延迟报错或全局 Alert 污染后续截图
+- 代理元数据和健康检查保留真实响应；应用、牌桌和登录态采集均由应用动态选线。
+  节点故障只在专门的异常用例中注入；正常视觉场景不固定节点或伪造可用状态。
 - 大厅可用版本接口（`/public/v1/hall_matching/available.json`）已固定为 `v3`；
   该接口失败会在 10 秒后弹「取消 / 重试」alert，即使已切换 tab 仍会污染截图
 - 按 IP 取国家码接口（`/public/v10/profile/country`）已 mock 为固定 `86`（中国），

@@ -44,26 +44,3 @@ test('mitmproxy 在真实 HTTPS 请求中断开登录接口并记录命中', asy
     await client.dispose();
   }
 });
-
-test('mitmproxy 只隔离其他 staging 节点并处理其 CORS 预检', async ({ playwright, mitmproxy }) => {
-  await mitmproxy.stabilizeVisualNetwork();
-  const client = await playwright.request.newContext({
-    proxy: { server: mitmproxy.server }, ignoreHTTPSErrors: true,
-    extraHTTPHeaders: { Origin: 'https://h5.page.shafayouxi.org' },
-  });
-  const url = 'https://offline.api.staging.laiwan.shafayouxi.com/node/v1/status';
-  try {
-    const unavailable = await client.get(url);
-    expect(unavailable.status()).toBe(503);
-    expect(await unavailable.json()).toEqual({ server_load: 'unavailable' });
-    const preflight = await client.fetch(url, {
-      method: 'OPTIONS', headers: { 'Access-Control-Request-Headers': 'authorization' },
-    });
-    expect(preflight.status()).toBe(204);
-    expect(preflight.headers()['access-control-allow-origin']).toBe('https://h5.page.shafayouxi.org');
-    expect(preflight.headers()['access-control-allow-headers']).toBe('authorization');
-    expect((await mitmproxy.status()).stabilizedRequests).toBe(2);
-  } finally {
-    await client.dispose();
-  }
-});

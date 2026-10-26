@@ -37,7 +37,7 @@ describe('visual suite selection and account isolation', () => {
     });
   }
 
-  test('game suites use real house and building APIs rather than App placeholder fixtures', async () => {
+  test('视觉场景保留真实选线，牌桌同时保留真实房间接口', async () => {
     for (const suite of ['app', 'texas', 'zhajinhua'] as const) {
       const routes: RegExp[] = [];
       const context = {
@@ -51,7 +51,13 @@ describe('visual suite selection and account isolation', () => {
       } as unknown as BrowserContext;
       const scenario = buildScenarios({ VISUAL_SUITE: suite, VISUAL_LOCALES: 'zh-Hans' })
         .find(item => item.signIn)!;
-      await setupContextForScenario(context, scenario, undefined, { useMitmproxy: suite !== 'app' });
+      await setupContextForScenario(context, scenario, undefined);
+      for (const host of ['64.kr-seoul', '67.hk-sn', '69.us-la']) {
+        for (const path of ['/node/v1/status', '/public/v12/metadata/servers', '/public/v13/metadata/servers']) {
+          assert.equal(routes.some(matcher => matcher.test(`https://${host}.api.staging.laiwan.shafayouxi.com${path}`)),
+            false, `${suite} 必须保留真实选线：${host}${path}`);
+        }
+      }
       for (const path of ['/v10/house/user/user-id', '/v2/building/rooms']) {
         assert.equal(routes.some(matcher => matcher.test(`https://api.shafayouxi.org${path}`)),
           suite === 'app', `${suite}: ${path}`);

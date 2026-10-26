@@ -79,7 +79,7 @@ class ConnectionDiagnostics:
         if after is not None:
             self.record('proxy.nodes', flow, candidates=after)
         if before is not None:
-            self.record('proxy.nodes-filtered', flow, before=before, after=after or [], reason='视觉测试固定节点')
+            self.record('proxy.nodes-filtered', flow, before=before, after=after or [], reason='代理改写节点列表')
 
     def error(self, flow):
         if flow.request.host != CONTROL_HOST:

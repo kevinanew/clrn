@@ -3,12 +3,6 @@
 import json
 import logging
 from urllib.parse import urlsplit
-from mitmproxy import http
-
-PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com'
-METADATA_PATH = '/public/v13/metadata/servers'
-METADATA_PATHS = ('/public/v12/metadata/servers', METADATA_PATH)
-
 
 def is_staging(host):
     return host == 'api.shafayouxi.org' or host.endswith('.api.staging.laiwan.shafayouxi.com')
@@ -89,44 +83,3 @@ def patch_profiles(flow, self_id, profiles):
             result[user] = {**(result.get(user) or {}), **profile}
         return True
     return patch_result(flow, change)
-
-
-class VisualNetwork:
-    """过滤真实元数据中的其他节点，并让选中节点的健康检查访问真实上游。"""
-
-    def request(self, flow):
-        path = urlsplit(flow.request.path).path
-        if (not is_staging(flow.request.host) or flow.request.host == PROXY_HOST
-                or path != '/node/v1/status' or flow.request.method not in ('GET', 'OPTIONS')):
-            return False
-        preflight = flow.request.method == 'OPTIONS'
-        flow.response = http.Response.make(204 if preflight else 503,
-            b'' if preflight else b'{"server_load":"unavailable"}', {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': flow.request.headers.get('Origin', '*'),
-                'Access-Control-Allow-Credentials': 'true', 'Vary': 'Origin',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': flow.request.headers.get('Access-Control-Request-Headers', ''),
-            })
-        return True
-
-    def response(self, flow):
-        if (not is_staging(flow.request.host) or flow.request.method not in ('GET', 'POST')
-                or urlsplit(flow.request.path).path not in METADATA_PATHS):
-            return False
-
-        def change(result):
-            servers = result.get('servers')
-            if isinstance(servers, dict) and PROXY_HOST in servers:
-                selected = {PROXY_HOST: servers[PROXY_HOST]}
-            elif (isinstance(servers, list) and all(isinstance(host, str) for host in servers)
-                    and PROXY_HOST in servers):
-                selected = [PROXY_HOST]
-            else:
-                raise ValueError('Selected node missing from metadata')
-            if servers == selected:
-                return False
-            flow.metadata['diagnostic_candidates_before'] = list(servers)
-            result['servers'] = selected
-            return True
-        return patch_result(flow, change)

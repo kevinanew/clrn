@@ -24,7 +24,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'zhajinhua
     page.on('pageerror', error => console.error(`ZHAJINHUA PAGE ERROR > ${diagnosticText(error.message)}`));
     let room: RoomSession | undefined;
     try {
-      await setupContextForScenario(context, scenario, page, { useMitmproxy: true });
+      await setupContextForScenario(context, scenario, page);
       const gameplay = scenario.pageLabel === 'signed_in_zhajinhua_game';
       if (gameplay) await page.clock.install({ time: Date.now() });
       await page.goto(scenario.path);

@@ -207,12 +207,11 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
     page.on('response', response => {
       if (response.status() < 400) return;
       const url = new URL(response.url());
-      if (url.pathname === '/node/v1/status') return; // 未选节点的 503 是启动夹具。
       console.error(`TEXAS HTTP ERROR > ${response.status()} ${diagnosticNode(url.origin)}${url.pathname}`);
     });
     let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     try {
-      await setupContextForScenario(context, scenario, page, { useMitmproxy: true });
+      await setupContextForScenario(context, scenario, page);
       if (!['signed_in_texas_pre_game', 'signed_in_texas_optional_pre_game'].includes(scenario.pageLabel)) {
         await page.clock.install({ time: Date.now() });
       }

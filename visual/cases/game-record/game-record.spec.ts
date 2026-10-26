@@ -178,7 +178,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
     page.on('pageerror', error => errors.push(error.message));
     const { snapshot, complete } = captureStates(page, scenario);
     try {
-      await setupContextForScenario(context, scenario, page, { useMitmproxy: true });
+      await setupContextForScenario(context, scenario, page);
       await context.addInitScript(newVersion => {
         localStorage.setItem('use.new.game.record.key', String(newVersion));
       }, version === 'v2');

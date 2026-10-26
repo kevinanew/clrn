@@ -32,7 +32,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
   try {
     recordDiagnostic(page, '初始化大厅');
     console.log(`TABLE > ${game}/${info.project.name} 初始化大厅`);
-    await openApplication(context, page, info, `signed_in_${game}_pre_game`, true);
+    await openApplication(context, page, info, `signed_in_${game}_pre_game`);
     await navigate(page, 'private-room-tab');
     await expect(visible(page, 'create-game-button')).toBeVisible();
     recordDiagnostic(page, '创建本轮房间');
