@@ -182,11 +182,14 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
   await page.evaluate(async () => {
     /**
      * 不检查保留在页面结构中、但当前画面不可见的其他界面图片。
+     * 可见牌面的图集在加载期间透明，仍须等待其实际图片。
      * @param img - 待判断是否出现在当前画面的图片。
      */
     const isVisibleImage = (img: HTMLImageElement) => {
-      if (!img.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
-      const rect = img.getBoundingClientRect();
+      const subject = img.dataset.testid === 'sprite-image-view'
+        ? img.closest('[data-testid="card-flip"]') || img.closest('[data-testid="sprite-image-container"]') || img : img;
+      if (!subject.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
+      const rect = subject.getBoundingClientRect();
       return rect.width > 0 && rect.height > 0 && rect.right > 0 && rect.bottom > 0
         && rect.left < window.innerWidth && rect.top < window.innerHeight;
     };

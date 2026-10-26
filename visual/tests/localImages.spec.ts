@@ -70,3 +70,20 @@ test('隐藏界面的缺图不会阻断当前画面，显示后仍会报错', as
   await page.locator('section').evaluate(section => { (section as HTMLElement).style.display = 'block'; });
   await expect(ensureLocalImagesLoaded(page)).rejects.toThrow('本地图片加载失败: /missing.png');
 });
+
+test('可见牌面中暂时透明的图集图片也必须成功加载', async ({ page }) => {
+  await page.route('http://visual.test/**', async route => {
+    if (new URL(route.request().url()).pathname === '/') {
+      await route.fulfill({ contentType: 'text/html', body:
+        '<div data-testid="card-flip" style="width:20px;height:20px">'
+        + '<div style="opacity:0"><div data-testid="sprite-image-container" style="width:20px;height:20px">'
+        + '<img data-testid="sprite-image-view" src="/missing.png" '
+        + 'style="width:20px;height:20px"></div></div></div>' });
+      return;
+    }
+    await route.fulfill({ status: 404, contentType: 'image/png', body: '' });
+  });
+  await page.goto('http://visual.test/');
+
+  await expect(ensureLocalImagesLoaded(page)).rejects.toThrow('本地图片加载失败: /missing.png');
+});
