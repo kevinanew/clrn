@@ -180,7 +180,10 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
  */
 export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
   await page.evaluate(async () => {
-    /** 不检查保留在页面结构中、但当前画面不可见的其他界面图片。 */
+    /**
+     * 不检查保留在页面结构中、但当前画面不可见的其他界面图片。
+     * @param img - 待判断是否出现在当前画面的图片。
+     */
     const isVisibleImage = (img: HTMLImageElement) => {
       if (!img.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
       const rect = img.getBoundingClientRect();
