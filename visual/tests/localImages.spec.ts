@@ -6,7 +6,8 @@ test('页面切换后不把已移除图片误判为当前画面的缺图', async
   const imageResponse = new Promise<void>(resolve => { releaseImage = resolve; });
   await page.route('http://visual.test/**', async route => {
     if (new URL(route.request().url()).pathname === '/') {
-      await route.fulfill({ contentType: 'text/html', body: '<img src="/delayed.png" alt="旧画面">' });
+      await route.fulfill({ contentType: 'text/html', body:
+        '<img src="/delayed.png" alt="旧画面" style="width:20px;height:20px">' });
       return;
     }
     await imageResponse;

@@ -26,9 +26,11 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     ['river', ['ah', 'kd', '7c', '2s', 'qs']],
   ] as const) {
     await proxy.replayTexas(roomId, events([{ event: 'start_street', street, community_card: cards }]));
+    // 每张公共牌先异步读取牌面样式再启动翻转；全部牌面挂载后才开始采样同一动画相位。
+    await page.clock.runFor(0);
+    await expect(page.locator('[data-testid="community_card"] [data-testid="sprite-image-content"]'))
+      .toHaveCount(cards.length);
     await captureTimeline(page, info, `texas-${street}`, page.getByTestId('community_card_name_text'), { clip });
-    // 恢复后转入实时发牌，辅助文本仍保留恢复值；断言真正渲染的牌面数量。
-    await expect(page.locator('[data-testid="community_card"] [data-testid="sprite-image-content"]')).toHaveCount(cards.length);
   }
   // 实时 switch_player 使用牌局 operating_seconds，而不是消息中的 remain_operating_seconds。
   await proxy.replayTexas(roomId, events(restoreTable(self, 'river').queue.map(item =>
