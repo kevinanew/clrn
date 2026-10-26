@@ -197,11 +197,17 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
      * @param img - 待检查的页面图片。
      */
     const waitForImage = (img: HTMLImageElement) => new Promise<void>((resolve) => {
-      /** 图片加载后继续检查实际尺寸。 */
-      img.onload = () => resolve();
-      /** 图片报错后继续检查实际尺寸。 */
-      img.onerror = () => resolve();
-      setTimeout(resolve, 10000);
+      let timeout = 0;
+      /** 保留应用原有的加载回调，结束等待后移除临时监听。 */
+      const finish = () => {
+        img.removeEventListener('load', finish);
+        img.removeEventListener('error', finish);
+        window.clearTimeout(timeout);
+        resolve();
+      };
+      img.addEventListener('load', finish, { once: true });
+      img.addEventListener('error', finish, { once: true });
+      timeout = window.setTimeout(finish, 10000);
     });
     const initialImages = currentImages();
     await Promise.all(initialImages.filter((img) => !img.complete).map(waitForImage));

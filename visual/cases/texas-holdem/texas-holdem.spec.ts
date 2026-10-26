@@ -7,7 +7,7 @@ import { expect, test, texasProxyOptions } from './proxy';
 import { buildScenarios, type VisualScenario } from '../../scenarios';
 import { visualBaseUrl } from '../../target';
 import { buildStorageStateForScenario, setupContextForScenario } from '../../src/support/pageSetup';
-import { ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
+import { applyContentStabilizers, ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
 import { preparePage } from '../../src/support/preparePage';
 import { createTexasRoom, deleteTexasRoom, enterTexasRoom } from './room';
 import { OPTIONAL_PRE_GAME_STATES, PRE_GAME_STATES } from './scenarios';
@@ -107,6 +107,7 @@ async function waitForGameConnection(page: Page): Promise<void> {
 async function capture(page: Page, scenario: VisualScenario, state: string): Promise<void> {
   await alignGameToViewport(page);
   await ensureLocalImagesLoaded(page);
+  await applyContentStabilizers(page, scenario);
   await expect(page).toHaveScreenshot(`${scenario.label}_${state}.png`, { timeout: 20_000 });
 }
 
