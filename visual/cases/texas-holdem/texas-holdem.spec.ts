@@ -20,6 +20,7 @@ import { captureControls } from './controlVariants';
 import { captureTableStates } from './tableVariants';
 import { capturePanelVariants } from './panelVariants';
 import { captureHallVariants } from './hallVariants';
+import { selfId } from './replay';
 import config from '../../playwright.config';
 
 // 德州语音弹窗只检查界面，使用浏览器的虚拟麦克风，不读取开发机设备。
@@ -107,7 +108,18 @@ async function waitForGameConnection(page: Page): Promise<void> {
 async function capture(page: Page, scenario: VisualScenario, state: string): Promise<void> {
   await alignGameToViewport(page);
   await ensureLocalImagesLoaded(page);
-  await applyContentStabilizers(page, scenario);
+  // 首次显示的按钮图片加载后，推进一帧让页面完成图片回调和布局。
+  if (await visible(page, 'texas-holdem-operation-button-check').isVisible()) {
+    await page.clock.runFor(16);
+    await ensureLocalImagesLoaded(page);
+  }
+  const nickname = scenario.fixedTexts.find(rule => rule.selector === '[data-testid="texas-holdem-nickname-text"]')?.text;
+  const self = nickname ? await selfId(page) : undefined;
+  const visibleNickname = self
+    ? [{ selector: `[data-testid^="texas-holdem-player-container-${self}"] `
+      + '[data-testid="adaptable-text-web"]:has(+ [data-testid="texas-holdem-nickname-text"])', text: nickname }]
+    : [];
+  await applyContentStabilizers(page, { ...scenario, fixedTexts: [...scenario.fixedTexts, ...visibleNickname] });
   await expect(page).toHaveScreenshot(`${scenario.label}_${state}.png`, { timeout: 20_000 });
 }
 
