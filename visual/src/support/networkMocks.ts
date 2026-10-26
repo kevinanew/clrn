@@ -134,9 +134,16 @@ async function mockHallMatchingGames(context: BrowserContext): Promise<void> {
  * @param context - 首次导航前配置的浏览器上下文。
  * @param realPrivateRoom - 是否保留真实私人房接口，而非返回固定房间数据。
  * @param recordFixtures - 是否由战绩代理提供俱乐部与战绩数据。
+ * @param clubRoomsFromProxy - 是否将俱乐部资料及牌局请求交给本场景代理。
+ * @param clubDetailsFromProxy - 是否由搜索代理提供俱乐部资料。
  */
-async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom = false,
-  recordFixtures = false, clubDetailsFromProxy = false): Promise<void> {
+async function mockSignedInDynamicState(
+  context: BrowserContext,
+  realPrivateRoom = false,
+  recordFixtures = false,
+  clubRoomsFromProxy = false,
+  clubDetailsFromProxy = false,
+): Promise<void> {
   /**
    * 将固定业务结果包装为成功 API 响应，交给 Playwright 路由返回。
    * @param route - 需要返回固定响应的 Playwright 路由。
@@ -149,8 +156,8 @@ async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom
       body: JSON.stringify({ ok: true, result }),
     });
 
-  // 战绩用例的俱乐部资料由 mitmproxy 提供。
-  if (!recordFixtures) {
+  // 按场景决定是否模拟俱乐部列表与资料响应。
+  if (!recordFixtures && !clubRoomsFromProxy) {
     await context.route(
       (url) => url.pathname === '/v10/club' && url.searchParams.has('user_id'),
       (route) => fulfill(route, { clubs: [] }),
@@ -173,7 +180,9 @@ async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom
     await context.route(/\/v10\/house\/users\/[^/]+\/visit_history(?:\?|$)/, (route) =>
       fulfill(route, { house_numbers: [] }),
     );
-    await context.route(/\/v2\/building\/rooms(?:\?|$)/, (route) => fulfill(route, []));
+    if (!clubRoomsFromProxy) {
+      await context.route(/\/v2\/building\/rooms(?:\?|$)/, (route) => fulfill(route, []));
+    }
   }
   // 商城商品接口在 staging 偶发超时/返回空列表，会让商城只剩余额卡。
   // 固定为现有视觉基准使用的商品，避免 reference 依赖远端商品配置与网络时序。
@@ -260,12 +269,12 @@ async function mockSignedInDynamicState(context: BrowserContext, realPrivateRoom
  * 登录态采集会在场景开始前单独创建 context；它若跳过代理 metadata / 健康检查
  * mock，就会在应用启动阶段随机选中不可用的 staging 节点，根本无法进入登录页。
  * @param context - 首次导航前配置的浏览器上下文。
- * @param options - realPrivateRoom 保留真实建房接口；useMitmproxy 使用专用代理；recordFixtures 保留战绩代理数据；clubDetailsFromProxy 保留搜索代理提供的俱乐部资料。
+ * @param options - 指定哪些网络响应交给真实接口或专用代理处理。
  */
 export async function mockVisualNetworkDependencies(
   context: BrowserContext,
   options: { realPrivateRoom?: boolean; useMitmproxy?: boolean; recordFixtures?: boolean;
-    clubDetailsFromProxy?: boolean } = {},
+    clubRoomsFromProxy?: boolean; clubDetailsFromProxy?: boolean } = {},
 ): Promise<void> {
   // Freshchat 在线客服脚本是外部第三方资源（web 构建用占位 token），
   // 拉取慢且与视觉测试无关，直接屏蔽。
@@ -285,5 +294,5 @@ export async function mockVisualNetworkDependencies(
   await mockRoomDisallowRuleReminder(context);
   await mockHallMatchingGames(context);
   await mockSignedInDynamicState(context, options.realPrivateRoom, options.recordFixtures,
-    options.clubDetailsFromProxy);
+    options.clubRoomsFromProxy, options.clubDetailsFromProxy);
 }

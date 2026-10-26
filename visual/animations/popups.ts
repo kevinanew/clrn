@@ -5,7 +5,7 @@ import { appearance, captureTimeline, fixedArea, freeze, settleAnimations, type 
 export type PopupFlow = { name: string; target: Locator; open: () => Promise<unknown>;
   close: () => Promise<unknown>; clip?: CaptureArea; exitAnimated?: boolean; fastPreparation?: boolean;
   foregroundBelow?: { y: number; locator: Locator }; requirePresentation?: boolean;
-  excludedBackground?: Locator[] };
+  excludedBackground?: Locator[]; waitForUnmountBeforeReopen?: boolean };
 
 /**
  * 判断弹层是否已经进入视口且实际绘制，不能把尚未卸载的透明旧节点算作新弹层。
@@ -49,6 +49,18 @@ async function expectDismissed(target: Locator): Promise<void> {
 }
 
 /**
+ * 某些弹层在退场动画结束后才清除内部打开状态；重开前等待旧节点卸载。
+ * @param target - 退场后应卸载的弹层内容。
+ */
+async function waitForUnmount(target: Locator): Promise<void> {
+  await expect.poll(async () => {
+    if (await target.count() === 0) return true;
+    await target.page().clock.runFor(16);
+    return await target.count() === 0;
+  }, { intervals: [20], timeout: 30_000, message: `重开前旧弹层应卸载：${target}` }).toBe(true);
+}
+
+/**
  * 真实开关预热资源后采样入退场；最后重新打开，检查遮罩没有阻断入口。
  * @param page - 初始化后的页面。
  * @param info - 用例报告信息。
@@ -67,6 +79,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await flow.close();
   await settleAnimations(page, 1600, flow.fastPreparation);
   await expectDismissed(flow.target);
+  if (flow.waitForUnmountBeforeReopen) await waitForUnmount(flow.target);
   await freeze(page);
   await flow.open();
   // BottomSheet 在下一次 requestAnimationFrame 挂载内容；时间线保留这 16ms。
@@ -81,6 +94,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
       foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground });
   await settleAnimations(page, 32);
   await expectDismissed(flow.target);
+  if (flow.waitForUnmountBeforeReopen) await waitForUnmount(flow.target);
   await flow.open();
   await waitForMount(flow.target, flow.requirePresentation);
   await settleAnimations(page, 1600, flow.fastPreparation);
@@ -88,6 +102,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await flow.close();
   await settleAnimations(page, 1600, flow.fastPreparation);
   await expectDismissed(flow.target);
+  if (flow.waitForUnmountBeforeReopen) await waitForUnmount(flow.target);
 }
 
 /**

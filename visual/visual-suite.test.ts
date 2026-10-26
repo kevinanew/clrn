@@ -8,7 +8,7 @@ import { setupContextForScenario } from './src/support/pageSetup';
 
 describe('visual suite selection and account isolation', () => {
   for (const scope of ['core', 'full']) {
-    test(`${scope}: app, texas and zhajinhua partition all locales without losing or duplicating scenarios`, () => {
+    test(`${scope}：应用、德州和拼三张场景无遗漏且不重复`, () => {
       const env = { VISUAL_LOCALES: 'all', VISUAL_SCOPE: scope };
       const all = buildScenarios(env);
       const app = buildScenarios({ ...env, VISUAL_SUITE: 'app' });
@@ -16,7 +16,7 @@ describe('visual suite selection and account isolation', () => {
       const zhajinhua = buildScenarios({ ...env, VISUAL_SUITE: 'zhajinhua' });
       assert.equal(zhajinhua.length, 12);
       assert.equal(texas.length, 60);
-      assert.equal(app.length, (scope === 'core' ? 50 : 112) * 3);
+      assert.equal(app.length, (scope === 'core' ? 50 : 114) * 3);
       assert.ok(app.every(scenario => scenario.group !== 'texas-holdem' && scenario.group !== 'zhajinhua'));
       assert.ok(texas.every(scenario => scenario.group === 'texas-holdem'));
       assert.deepEqual(
@@ -31,7 +31,7 @@ describe('visual suite selection and account isolation', () => {
         (sum, scenario) => sum + (scenario.snapshotStates?.length || 1), 0,
       );
       assert.equal(screenshots(texas), 570);
-      assert.equal(screenshots(app), scope === 'core' ? 510 : 696);
+      assert.equal(screenshots(app), scope === 'core' ? 510 : 702);
       assert.equal(screenshots(zhajinhua), 156);
       assert.equal(screenshots(app) + screenshots(texas) + screenshots(zhajinhua), screenshots(all));
     });

@@ -73,6 +73,7 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 | 私人局 tab | 底部 `private-room-tab`（等 `copy-house-number-button`，确认房屋数据加载完成） | 测试账号 | |
 | 俱乐部 tab | 底部 `club-tab`（club API mock 为空列表，默认落在「我的俱乐部」） | 测试账号 | |
 | 俱乐部-牌局空态 | 俱乐部 tab → `club_tab_room`（空态） | 测试账号 | |
+| 俱乐部-牌局有数据 | 俱乐部 tab → `club_tab_room`；独立 mitmproxy 提供一间俱乐部和两条固定牌局 | 测试账号 | 仅本场景启用代理，核对俱乐部和牌局接口均经过代理 |
 | 俱乐部-更多弹层 | 俱乐部 tab → `show-more-button`（不点选项） | 测试账号 | |
 | 俱乐部-搜索 | 更多弹层 → `search-club-button`（空态，不输入） | 测试账号 | |
 | 俱乐部-搜索命中结果 | 更多弹层 → 搜索页 → 输入固定关键字，由 mitmproxy 返回固定俱乐部资料 | 测试账号 | 搜索响应与俱乐部资料 |
@@ -129,8 +130,8 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 
 主干新增德州状态的 198 张三语言基准与本次战绩的 372 张基准均纳入执行清单。
 
-- 全量（`VISUAL_LOCALES=all`）= 每语言 **474 张**，三语言共 **1422 张**（408 个场景）
-- 默认仅简中 = **474 张**（136 个场景）
+- 全量（`VISUAL_LOCALES=all`）= 每语言 **476 张**，三语言共 **1428 张**（414 个场景）
+- 默认仅简中 = **476 张**（138 个场景）
 - 核心范围（`VISUAL_SCOPE=core`）= 简中 **412 张**（74 个场景）
   （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、游客牌局登录提示、搜索登录提示、登录后大厅/消息/私人局/俱乐部/我的/商城）
 
@@ -195,8 +196,8 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 
 ```bash
 cd visual
-pnpm run test          # 简中 474 张
-pnpm run test:all      # 全部语言 1422 张
+pnpm run test          # 简中 476 张
+pnpm run test:all      # 全部语言 1428 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
@@ -247,9 +248,9 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 | 值 | 用途 |
 | --- | --- |
-| `zh-Hans`（默认） | 本地单语言检查（474 张） |
+| `zh-Hans`（默认） | 本地单语言检查（476 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 1422 张（GitHub Actions 默认范围） |
+| `all` | 全量 1428 张（GitHub Actions 默认范围） |
 
 环境变量 `VISUAL_SCOPE`：
 
@@ -261,10 +262,10 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 ## CI
 
 [视觉工作流](../.github/workflows/visual.yml) 在视觉相关 PR、`master` 代码合入和应用部署调用时，
-均访问线上并检查三种语言的完整场景，共 1422 张截图。部署记录单独推送到 `master` 时，
+均访问线上并检查三种语言的完整场景，共 1428 张截图。部署记录单独推送到 `master` 时，
 由部署工作流调用画面测试，避免同一部署重复运行；仓库没有定时画面任务。
 CI 按「应用 app」「德州 texas」「拼三张 zhajinhua」和三种语言拆为九个独立任务并行执行。
-应用每种语言覆盖 232 张，德州每种语言覆盖 190 张，拼三张覆盖 52 张，各任务分别保存失败报告。
+应用每种语言覆盖 234 张，德州每种语言覆盖 190 张，拼三张覆盖 52 张，各任务分别保存失败报告。
 不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 手动触发可用 `suite` 选择 `all`、`app`、`texas` 或 `zhajinhua`，只重跑所需部分。
 手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
@@ -280,7 +281,7 @@ CI 按「应用 app」「德州 texas」「拼三张 zhajinhua」和三种语言
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
 原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
-因此已从执行清单移除。历史图片保留，不计入当前 1422 张有效截图。
+因此已从执行清单移除。历史图片保留，不计入当前 1428 张有效截图。
 德州通过 mitmproxy 回放固定牌局和弹窗数据，所有入口仍由实际 UI 点击打开。
 覆盖清单、协议和当前源码限制见 [COVERAGE.md](cases/texas-holdem/COVERAGE.md)。
 服务端房间保持等待状态，回放房间的操作 RPC 被代理隔离，每例精确解散本次真实创建的房间。
@@ -347,6 +348,31 @@ CI 从 `CLRN_CI_TEST_ACCOUNTS_V3` Secret 为每个任务注入 `VISUAL_USERNAME`
 
 visual 专用的认证校验、mock、等待、重试、稳定化及截图判定逻辑必须保留在
 `visual/`，不得为视觉测试向应用业务代码增加测试状态、测试组件或视觉测试专用分支。
+
+### 俱乐部分页与游客登录横幅
+
+俱乐部使用横向分页轨道；手机上两页总宽度为 750 像素，展示第二页时平移 375 像素。
+`lockPageWidth` 只在页面边界限制该区域，不向 `club-tab-screen` 内部追加限宽或裁切，
+避免把第二页的登录横幅和背景裁掉。其他页面与扑克牌精灵图仍沿用原有规则。
+同一轨道也承载已登录的俱乐部空态，包含创建和加入入口；“更多”弹层后方保留该页面，
+因此这些手机基准也需要按真实内容更新，不能继续接受原先的空白背景。
+
+游客场景在全部稳定化步骤之后，由 `cases/club/guestReadiness.ts` 核对俱乐部活动页签内
+唯一的登录横幅及图片完整位于可见区域，并确认图片成功解码。只找到页面外壳或其他
+页面残留的横幅不能视为就绪。`tests/guestClubReadiness.spec.ts` 使用真实浏览器覆盖
+手机、桌面、游客及已登录内容的双页轨道，以及裁切、缺少横幅和图片损坏的拒绝路径。
+
+此问题已在应用发布包 `c451f743aad61ddfc5b7125e8479241c3ec1bb44` 完成限宽前后对照：
+正常应用可显示横幅并打开登录选项，旧截图限宽操作造成空白，因此只修复本测试仓库。
+Android、iOS 已有基准均显示横幅；这不代表其最新构建已完成原生回归，需操作者另行安排。
+
+2026-10-25 使用固定 Release `web-staging-200000901-c451f743aad6`，在
+`mcr.microsoft.com/playwright:v1.61.1-jammy` 的 Linux amd64 环境采集并审查三张
+手机游客俱乐部基准；三语言、双视口的六项截图比较随后全部通过，桌面基准保持不变。
+2026-10-26 对同根因的已登录首页和“更多”背景追加采集并逐图审查六张手机基准。
+九张更新均来自上述固定发布包，未更新牌局、搜索或其他场景。
+已登录首页及“更多”的三语言、双视口十二项比较全部通过；简体手机的牌局与搜索
+页面比较也通过。连同游客六项，共完成二十项定向截图比较，未执行全量视觉回归。
 
 ## 排障
 

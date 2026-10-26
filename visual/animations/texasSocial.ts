@@ -53,6 +53,7 @@ export async function texasSocial(session: TableSession, proxy: TexasProxy, info
     stream.getTracks().forEach(track => track.stop());
   });
   await exercisePopup(page, info, { name: 'texas-voice', target: page.getByTestId('in-game-audio-microphone-button'), clip,
+    waitForUnmountBeforeReopen: true,
     open: /** 等待真实麦克风权限检查和面板挂载，再从固定时刻推进动画。 */ async () => {
       await press(page, 'texas-holdem-voice-button');
       await expect(page.getByTestId('in-game-audio-microphone-button')).toBeAttached();

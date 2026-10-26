@@ -9,6 +9,11 @@ import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
 const keyword = 'VisualClubSearch';
 const clubId = '12f2cb6e-9045-4910-b58a-7d3903f56a39';
 
+/**
+ * 使用独立代理采集搜索命中结果，并核对请求、卡片和截图。
+ * @param scenario - 本次执行的视觉场景。
+ * @param browser - 用于创建隔离上下文的浏览器。
+ */
 export async function runClubSearchResultScenario(scenario: VisualScenario, browser: Browser): Promise<void> {
   await withMitmproxy(async proxy => {
     const context = await browser.newContext({
