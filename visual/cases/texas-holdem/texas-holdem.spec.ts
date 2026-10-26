@@ -115,7 +115,7 @@ async function capture(page: Page, scenario: VisualScenario, state: string): Pro
   }
   const nickname = scenario.fixedTexts.find(rule => rule.selector === '[data-testid="texas-holdem-nickname-text"]')?.text;
   const self = nickname ? await selfId(page) : undefined;
-  const visibleNickname = self
+  const visibleNickname = self && nickname
     ? [{ selector: `[data-testid^="texas-holdem-player-container-${self}"] `
       + '[data-testid="adaptable-text-web"]:has(+ [data-testid="texas-holdem-nickname-text"])', text: nickname }]
     : [];
