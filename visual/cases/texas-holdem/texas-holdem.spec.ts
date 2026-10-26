@@ -108,8 +108,8 @@ async function waitForGameConnection(page: Page): Promise<void> {
 async function capture(page: Page, scenario: VisualScenario, state: string): Promise<void> {
   await alignGameToViewport(page);
   await ensureLocalImagesLoaded(page);
-  // 首次显示的按钮图片加载后，推进一帧让页面完成图片回调和布局。
-  if (await visible(page, 'texas-holdem-operation-button-check').isVisible()) {
+  // 操作和快捷按钮切换后，图片虽已加载，页面仍需一帧完成尺寸与裁切。
+  if (scenario.pageLabel === 'signed_in_texas_controls') {
     await page.clock.runFor(16);
     await ensureLocalImagesLoaded(page);
   }
