@@ -175,13 +175,20 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
 }
 
 /**
- * 等待页面图片并拒绝缺失的同源构建资源，避免 reference 接受缺图页面。
+ * 等待当前画面的图片并拒绝缺失的同源构建资源，避免截图接受缺图页面。
  * @param page - 执行操作的 Playwright 页面。
  */
 export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
   await page.evaluate(async () => {
-    /** 页面切换期间图片节点可能被替换，只检查仍在当前文档中的节点。 */
-    const currentImages = () => Array.from(document.images);
+    /** 不检查保留在页面结构中、但当前画面不可见的其他界面图片。 */
+    const isVisibleImage = (img: HTMLImageElement) => {
+      if (!img.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
+      const rect = img.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && rect.right > 0 && rect.bottom > 0
+        && rect.left < window.innerWidth && rect.top < window.innerHeight;
+    };
+    /** 页面切换期间图片节点可能被替换，每次只读取当前文档中的可见节点。 */
+    const currentImages = () => Array.from(document.images).filter(isVisibleImage);
     /**
      * 等待图片请求结束，之后仍以实际解码尺寸决定是否通过。
      * @param img - 待检查的页面图片。
