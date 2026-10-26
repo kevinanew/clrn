@@ -1,13 +1,15 @@
 import { request } from 'node:http';
 
 const CONTROL_HOST = 'test-mitmproxy.invalid';
-export type FaultScenario = 'hall-timeout' | 'login-failure' | 'club-failure';
-type ProxyScenario = FaultScenario | 'visual-stable';
+export type InjectableScenario = 'hall-timeout' | 'login-failure' | 'club-failure' | 'club-search-result';
+type ProxyScenario = InjectableScenario | 'visual-stable';
 export type ProxyStatus = {
   scenario: ProxyScenario | null;
   interceptedRequests: number;
   proxiedRequests: number;
   stabilizedRequests: number;
+  clubSearchRequests?: number;
+  clubDetailsRequests?: number;
 };
 
 /** 通过代理内的认证接口控制插件，不把控制 token 传入浏览器。 */
@@ -71,10 +73,10 @@ export class Mitmproxy {
   }
 
   /**
-   * 启用指定弱网故障场景，使后续业务请求由代理注入故障。
-   * @param scenario - 本次执行的视觉配置或代理故障场景。
+   * 启用指定代理场景，在目标接口注入故障或固定搜索结果。
+   * @param scenario - 本次启用的代理场景。
    */
-  inject(scenario: FaultScenario): Promise<ProxyStatus> {
+  inject(scenario: InjectableScenario): Promise<ProxyStatus> {
     return this.command('scenario', { scenario });
   }
 

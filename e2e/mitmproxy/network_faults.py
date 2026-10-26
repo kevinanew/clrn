@@ -14,7 +14,19 @@ FAULT_PATHS = {
     "login-failure": "/public/v10/user/login/username/password",
     "club-failure": "/v10/club",
 }
-SCENARIOS = (None, *FAULT_PATHS, "visual-stable")
+SCENARIOS = (None, *FAULT_PATHS, "visual-stable", "club-search-result")
+CLUB_SEARCH_KEYWORD = "VisualClubSearch"
+CLUB_SEARCH_ID = "12f2cb6e-9045-4910-b58a-7d3903f56a39"
+CLUB_SEARCH_RESULT = {
+    "id": CLUB_SEARCH_ID,
+    "club_no": "12345678",
+    "name": "搜索测试俱乐部",
+    "area": "测试地区",
+    "member_count": 7,
+    "description": "用于验证搜索结果的固定俱乐部",
+    "owner_id": "visual-club-owner",
+    "admin_ids": [],
+}
 
 
 def json_response(flow, payload, status=200):
@@ -38,6 +50,8 @@ class NetworkFaults:
         self.intercepted_requests = 0
         self.proxied_requests = 0
         self.stabilized_requests = 0
+        self.club_search_requests = 0
+        self.club_details_requests = 0
 
     def control(self, flow):
         if flow.request.headers.get("X-E2E-Control-Token") != self.token:
@@ -55,6 +69,8 @@ class NetworkFaults:
             self.scenario = scenario
             if scenario is not None:
                 self.intercepted_requests = 0
+                self.club_search_requests = 0
+                self.club_details_requests = 0
         elif flow.request.method != "GET" or path != "/status":
             flow.response = http.Response.make(404, b"Not found")
             return
@@ -63,6 +79,8 @@ class NetworkFaults:
             "interceptedRequests": self.intercepted_requests,
             "proxiedRequests": self.proxied_requests,
             "stabilizedRequests": self.stabilized_requests,
+            "clubSearchRequests": self.club_search_requests,
+            "clubDetailsRequests": self.club_details_requests,
         })
 
     def response(self, flow):
@@ -83,6 +101,43 @@ class NetworkFaults:
             return "user_id" in parse_qs(url.query, keep_blank_values=True)
         return True
 
+    def mock_club_search_result(self, flow, url):
+        """只替换本例只读搜索和指定俱乐部资料，其他业务流量继续透传。"""
+        if self.scenario != "club-search-result":
+            return False
+        search_path = url.path == "/v10/club/search"
+        details_path = url.path == "/v10/clubs"
+        if not search_path and not details_path:
+            return False
+        if flow.request.method == "OPTIONS":
+            flow.response = http.Response.make(204, b"", {
+                "Access-Control-Allow-Origin": flow.request.headers.get("Origin", "*"),
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Allow-Methods": "GET, PUT, OPTIONS",
+                "Access-Control-Allow-Headers": flow.request.headers.get(
+                    "Access-Control-Request-Headers", ""),
+                "Vary": "Origin",
+            })
+            return True
+        if search_path:
+            keyword = parse_qs(url.query, keep_blank_values=True).get("keyword")
+            if flow.request.method != "GET" or keyword != [CLUB_SEARCH_KEYWORD]:
+                flow.response = json_response(flow, {"ok": False}, 400)
+                return True
+            self.club_search_requests += 1
+            flow.response = json_response(flow, {"ok": True, "result": [CLUB_SEARCH_ID]})
+            return True
+        try:
+            body = json.loads(flow.request.content)
+        except (ValueError, TypeError):
+            body = None
+        if flow.request.method != "PUT" or body != {"club_ids": [CLUB_SEARCH_ID]}:
+            flow.response = json_response(flow, {"ok": False}, 400)
+            return True
+        self.club_details_requests += 1
+        flow.response = json_response(flow, {"ok": True, "result": [CLUB_SEARCH_RESULT]})
+        return True
+
     async def request(self, flow: http.HTTPFlow):
         if flow.request.host == CONTROL_HOST:
             self.control(flow)
@@ -93,7 +148,11 @@ class NetworkFaults:
             self.stabilized_requests += 1
             return
         # 故障注入放行 CORS 预检和非 staging 流量。
-        if flow.request.method == "OPTIONS" or not is_staging_api(flow.request.host):
+        if not is_staging_api(flow.request.host):
+            return
+        if self.mock_club_search_result(flow, url):
+            return
+        if flow.request.method == "OPTIONS":
             return
         if self.mock_existing_username(flow, url.path) or not self.matches_fault(url):
             return

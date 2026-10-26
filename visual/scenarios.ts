@@ -56,6 +56,7 @@ export const CORE_PAGE_LABELS = new Set([
   'signed_in_slot',
   'signed_in_daily_bonus',
   'signed_in_hall_search',
+  'signed_in_club_search_result',
   'signed_in_create_room_advanced_texas',
   'signed_in_create_room_advanced_zhajinhua',
   'signed_in_create_room_advanced_six_plus',

@@ -89,6 +89,18 @@ jobs:
       - name: 安装测试依赖
         working-directory: e2e
         run: npm ci
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装 mitmproxy
+        working-directory: e2e
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r mitmproxy/requirements.txt
+      - name: 检查 mitmproxy 扩展
+        working-directory: e2e
+        run: .venv/bin/python -m unittest discover -s mitmproxy -p 'test_*.py'
       - name: 检查测试账号及余额接口辅助代码
         working-directory: e2e
         run: npx playwright test test-user.spec.ts test-wallet.spec.ts --workers=1
