@@ -33,11 +33,25 @@ class ResponseOverrideTests(unittest.TestCase):
                     self.assertNotIn('ETag', request.response.headers)
                     self.assertEqual(int(request.response.headers['Content-Length']), len(request.response.raw_content))
 
-    def test_metadata_errors_or_contract_changes_preserve_original_bytes(self):
+    def test_v12_节点列表仅保留已验证节点并保留其他字段(self):
+        original = {'ok': True, 'trace': 'new-trace', 'result': {'extra': {'new': True},
+            'servers': ['www.twitter.com', PROXY_HOST, 'europe.tencent.com']}}
+        request = self.metadata(original, method='POST', path=METADATA_PATHS[0])
+        self.assertTrue(VisualNetwork().response(request))
+        self.assertEqual(request.response.json()['result'], {
+            'extra': {'new': True}, 'servers': [PROXY_HOST],
+        })
+        self.assertEqual(request.response.json()['trace'], 'new-trace')
+        self.assertEqual(request.response.headers['X-Upstream'], 'kept')
+        self.assertNotIn('ETag', request.response.headers)
+        self.assertEqual(request.metadata['diagnostic_candidates_before'], original['result']['servers'])
+
+    def test_元数据错误或结构变化时保留原始响应(self):
         for body, status in (({'ok': False, 'error': 'auth'}, 200), ({'ok': True}, 503),
                              ({'ok': True, 'result': []}, 200),
                              ({'ok': True, 'result': {'servers': {}}}, 200),
-                             ({'ok': True, 'result': {'servers': []}}, 200)):
+                             ({'ok': True, 'result': {'servers': []}}, 200),
+                             ({'ok': True, 'result': {'servers': [PROXY_HOST, None]}}, 200)):
             request = self.metadata(body, status)
             original = request.response.raw_content
             self.assertFalse(VisualNetwork().response(request))
