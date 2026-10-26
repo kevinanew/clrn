@@ -42,6 +42,7 @@ test('等待图片时保留页面原有的加载回调', async ({ page }) => {
   await page.goto('http://visual.test/', { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => {
     (window as typeof window & { imageLoaded?: boolean }).imageLoaded = false;
+    /** 记录页面原有的图片加载回调是否执行。 */
     document.querySelector('img')!.onload = () => {
       (window as typeof window & { imageLoaded?: boolean }).imageLoaded = true;
     };
