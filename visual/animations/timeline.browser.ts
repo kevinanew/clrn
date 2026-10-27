@@ -6,11 +6,10 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 
-const directory = path.dirname(fileURLToPath(import.meta.url));
-const require = createRequire(import.meta.url);
-const playwrightCommand = path.join(path.dirname(require.resolve('@playwright/test/package.json')), 'cli.js');
+const directory = __dirname;
+const moduleRequire = createRequire(path.join(directory, 'timeline.browser.ts'));
+const playwrightCommand = path.join(path.dirname(moduleRequire.resolve('@playwright/test/package.json')), 'cli.js');
 
 type ReportResult = {
   status: string;
