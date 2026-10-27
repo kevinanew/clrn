@@ -115,9 +115,15 @@ class ZhajinhuaVisualProxy:
         self.proxied_requests += 1
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
             return
+        path = urlsplit(flow.request.path).path
+        # 仅当前真实创建的房间使用固定空榜；其他房间和节点健康请求继续透传。
+        if (self.created_room_id and flow.request.method == 'GET'
+                and path == f'/v1/game_log/room/{self.created_room_id}/settlement'):
+            respond(flow, {'ok': True, 'result': {'settlements': []}})
+            self.stabilized_requests += 1
+            return
         if self.replay.room_id and prepare_profiles(flow, self.replay.self_id, PLAYER_IDS):
             return
-        path = urlsplit(flow.request.path).path
         if flow.request.method == 'GET' or (flow.request.method == 'PUT' and path == '/v10/profile/users'):
             try:
                 fixture = self.replay.http_fixture(path, flow.request.content)

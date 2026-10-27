@@ -55,6 +55,27 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.assertIsNone(self.addon.created_room_id)
         self.assertIsNone(self.addon.replay.room_id)
 
+    def test_only_created_room_get_receives_empty_leaderboard(self):
+        path = f'/v1/game_log/room/{ROOM}/settlement'
+        request = flow(f'https://api.shafayouxi.org{path}')
+        self.addon.request(request)
+        self.assertIsNone(request.response)
+        self.creation()
+        for url, method in ((f'https://api.shafayouxi.org{path}', 'POST'),
+                            (f'https://api.shafayouxi.org/v1/game_log/room/{OTHER}/settlement', 'GET'),
+                            (f'https://production.example.com{path}', 'GET'),
+                            ('https://api.shafayouxi.org/node/v1/status', 'GET')):
+            request = flow(url, method)
+            self.addon.request(request)
+            self.assertIsNone(request.response)
+        request = flow(f'https://api.shafayouxi.org{path}')
+        self.addon.request(request)
+        self.assertEqual(request.response.json(), {'ok': True, 'result': {'settlements': []}})
+        self.control('/zhajinhua/release', {})
+        request = flow(f'https://api.shafayouxi.org{path}')
+        self.addon.request(request)
+        self.assertIsNone(request.response)
+
     def test_http_fixtures_preserve_mutations_other_users_and_hosts(self):
         self.addon.replay.room_id, self.addon.replay.self_id = ROOM, SELF
         path = f'/v10/profile/{PLAYER_IDS[0]}'
