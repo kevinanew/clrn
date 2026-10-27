@@ -31,7 +31,12 @@ export async function waitForTexasCardSprites(page: Page, scope: string): Promis
           && content && Number(getComputedStyle(content).opacity) > 0.99
           && transform && Math.abs(transform.m11) > 0.001 && Math.abs(transform.m22) > 0.001
           && image && image.complete && image.naturalWidth > 0;
-        return ready ? [] : [`牌面 ${index} 图集尚未完成加载或布局`];
+        if (ready) return [];
+        const containerBox = container.getBoundingClientRect();
+        return [`牌面 ${index} 图集未就绪：回退显示=${fallback ? getComputedStyle(fallback).display : '缺失'}；`
+          + `内容透明度=${content ? getComputedStyle(content).opacity : '缺失'}；`
+          + `裁切变换=${clipperTransform}；图片加载=${image?.complete ?? '缺失'}；`
+          + `图片原宽=${image?.naturalWidth ?? '缺失'}；牌面宽高=${containerBox.width}×${containerBox.height}`];
       });
     }, scope);
   }, { message: '德州可见牌面应显示完整图集', timeout: 10_000 }).toEqual([]);
