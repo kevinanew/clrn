@@ -1,5 +1,7 @@
 import type { Page } from '@playwright/test';
 
+export const SLOT_WALLET_BALANCES = { coin: 10_000, diamond: 60 };
+
 /**
  * 仅替换当前页面的老虎机 RPC，混合批次内其他 RPC、订阅和心跳仍透传。
  * @param page - 尚未导航的浏览器页面。
@@ -12,8 +14,8 @@ export async function mockSlotMessages(page: Page) {
   const observed: string[] = [];
   await page.route(/\/v10\/wallet\/[^/?]+$/, route => route.request().method() === 'PUT'
     ? route.fulfill({ json: { ok: true, result: { currencies: [
-      { code: 'coin', name: 'Coins', balance: '10000' },
-      { code: 'diamond', name: 'Diamonds', balance: '60' },
+      { code: 'coin', name: 'Coins', balance: String(SLOT_WALLET_BALANCES.coin) },
+      { code: 'diamond', name: 'Diamonds', balance: String(SLOT_WALLET_BALANCES.diamond) },
     ] } } }) : route.fallback());
   const energy = { user_energy: { total_energy: 0 },
     energy_factory: { capacity: 50, quantity: 50, remaining_production_time: '00:00:00' } };

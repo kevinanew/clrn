@@ -137,6 +137,9 @@ jobs:
           e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
       - name: 检查 TypeScript
         run: npm run typecheck
+      - name: 验证关键帧差异汇总与失败退出
+        if: matrix.suite == 'texas' && matrix.part == 'gameplay'
+        run: node --import tsx --test visual/animations/timeline.browser.ts
       - name: 准备本轮 Release 构建包
         uses: ./.github/actions/prepare-release-web
         with:

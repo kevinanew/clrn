@@ -1,8 +1,9 @@
 /** 游戏测试代理及脱敏诊断历史访问入口。 */
-import { test as base, expect as playwrightExpect, request, type BrowserContextOptions } from '@playwright/test';
+import { test as base, expect as playwrightExpect, type BrowserContextOptions } from '@playwright/test';
 import path from 'node:path';
 import { type Mitmproxy, type ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
+import { recordHealthyNode } from '../_shared/healthyNode';
 
 /** 封装德州专用代理的牌局回放、大厅及面板响应控制。 */
 export class TexasProxy {
@@ -64,15 +65,7 @@ export class TexasProxy {
 export async function withTexasProxy<T>(task: (proxy: TexasProxy) => Promise<T>): Promise<T> {
   return withMitmproxy(async proxy => {
     await proxy.stabilizeVisualNetwork();
-    // 首次 HTTPS 连接会生成临时证书，先预热固定节点，避免浏览器的 5 秒测速超时。
-    const client = await request.newContext(texasProxyOptions(new TexasProxy(proxy)));
-    try {
-      const response = await client.get('https://64.kr-seoul.api.staging.laiwan.shafayouxi.com/node/v1/status',
-        { timeout: 90_000 });
-      if (!response.ok() || (await response.json()).server_load !== 'normal') {
-        throw new Error('德州固定代理节点未就绪');
-      }
-    } finally { await client.dispose(); }
+    await recordHealthyNode(proxy, '德州');
     return task(new TexasProxy(proxy));
   }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });
 }

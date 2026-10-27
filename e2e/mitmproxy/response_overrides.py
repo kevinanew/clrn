@@ -92,10 +92,24 @@ def patch_profiles(flow, self_id, profiles):
 
 
 class VisualNetwork:
-    """过滤真实元数据中的其他节点，并让选中节点的健康检查访问真实上游。"""
+    """过滤其他节点；视觉用例可录制并回放选中节点的合格真实健康响应。"""
+
+    def __init__(self, replay_healthy_status=False):
+        self.replay_healthy_status = replay_healthy_status
+        self.healthy_status = None
 
     def request(self, flow):
         path = urlsplit(flow.request.path).path
+        if (self.replay_healthy_status and self.healthy_status is not None
+                and flow.request.host == PROXY_HOST and flow.request.path == '/node/v1/status'
+                and flow.request.method == 'GET'):
+            flow.response = self.healthy_status.copy()
+            origin = flow.request.headers.get('Origin')
+            if origin:
+                flow.response.headers['Access-Control-Allow-Origin'] = origin
+                flow.response.headers['Access-Control-Allow-Credentials'] = 'true'
+                flow.response.headers['Vary'] = 'Origin'
+            return True
         if (not is_staging(flow.request.host) or flow.request.host == PROXY_HOST
                 or path != '/node/v1/status' or flow.request.method not in ('GET', 'OPTIONS')):
             return False
@@ -111,6 +125,18 @@ class VisualNetwork:
         return True
 
     def response(self, flow):
+        if (self.replay_healthy_status and self.healthy_status is None
+                and flow.request.host == PROXY_HOST and flow.request.method == 'GET'
+                and flow.request.path == '/node/v1/status'
+                and flow.response and flow.response.status_code == 200):
+            try:
+                data = flow.response.json()
+                delay = data.get('backend_delay') if isinstance(data, dict) else None
+                if (data.get('server_load') == 'normal' and isinstance(delay, (int, float))
+                        and not isinstance(delay, bool) and 0 <= delay < 1000):
+                    self.healthy_status = flow.response.copy()
+            except (ValueError, TypeError, AttributeError):
+                pass
         if (not is_staging(flow.request.host) or flow.request.method not in ('GET', 'POST')
                 or urlsplit(flow.request.path).path not in METADATA_PATHS):
             return False

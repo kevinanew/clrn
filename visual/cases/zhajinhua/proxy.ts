@@ -3,6 +3,7 @@ import { test as base, expect as playwrightExpect, type BrowserContextOptions } 
 import path from 'node:path';
 import type { Mitmproxy, ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
+import { recordHealthyNode } from '../_shared/healthyNode';
 
 /** 封装拼三张专用代理的固定牌局回放与响应释放。 */
 export class ZhajinhuaProxy {
@@ -46,6 +47,7 @@ export class ZhajinhuaProxy {
 export function withZhajinhuaProxy<T>(task: (proxy: ZhajinhuaProxy) => Promise<T>): Promise<T> {
   return withMitmproxy(async proxy => {
     await proxy.stabilizeVisualNetwork();
+    await recordHealthyNode(proxy, '拼三张');
     return task(new ZhajinhuaProxy(proxy));
   }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });
 }

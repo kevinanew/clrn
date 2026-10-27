@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: lint
+        name: 检查全部源码、工作流与文件长度
+        entry: npm run lint
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: typecheck
+        name: 检查根目录与视觉子项目的 TypeScript 类型
+        entry: npm run typecheck
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -72,6 +72,37 @@ class ResponseOverrideTests(unittest.TestCase):
             self.assertFalse(network.response(self.metadata(body, host=host)))
             self.assertFalse(network.request(flow(f'https://{host}/node/v1/status')))
 
+    def test_只回放录制的合格真实健康响应(self):
+        network = VisualNetwork(replay_healthy_status=True)
+        url = f'https://{PROXY_HOST}/node/v1/status'
+        for status, body in ((200, {'server_load': 'normal', 'backend_delay': 1371}),
+                             (503, {'server_load': 'unavailable', 'backend_delay': 37}),
+                             (200, {'server_load': 'normal'})):
+            upstream = flow(url)
+            self.assertFalse(network.request(upstream))
+            upstream.response = http.Response.make(status, json.dumps(body).encode())
+            self.assertFalse(network.response(upstream))
+            self.assertIsNone(network.healthy_status)
+        recorded = {'server_load': 'normal', 'backend_delay': 37, 'new_health': True}
+        upstream = flow(url)
+        upstream.response = http.Response.make(200, json.dumps(recorded).encode(),
+                                               {'X-Upstream': 'real',
+                                                'Access-Control-Allow-Origin': 'https://capture.test'})
+        self.assertFalse(network.response(upstream))
+        replay = flow(url)
+        replay.request.headers['Origin'] = 'https://app.test'
+        self.assertTrue(network.request(replay))
+        self.assertEqual(replay.response.json(), recorded)
+        self.assertEqual(replay.response.headers['X-Upstream'], 'real')
+        self.assertEqual(replay.response.headers['Access-Control-Allow-Origin'], 'https://app.test')
+        self.assertEqual(replay.response.headers['Access-Control-Allow-Credentials'], 'true')
+        replay.response.content = b'changed'
+        again = flow(url)
+        self.assertTrue(network.request(again))
+        self.assertEqual(again.response.json(), recorded)
+        self.assertFalse(network.request(flow(url + '?failed')))
+        self.assertFalse(VisualNetwork().request(flow(url)))
+
     def test_version_keeps_new_fields_and_does_not_recreate_removed_fields(self):
         request = self.metadata({'ok': True, 'result': {'available_url_version': 'v1', 'new': 42}})
         self.assertTrue(patch_version(request, 'v11'))
