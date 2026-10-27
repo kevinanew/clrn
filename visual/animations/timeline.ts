@@ -5,6 +5,7 @@ import { PNG } from 'pngjs';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import { areScreenshotsEquivalent } from './screenshotComparison';
+import { settleLayout } from './renderReadiness';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
 export const FRAME_TIMES = [0, 80, 160, 320, 640, 1200] as const;
@@ -56,21 +57,6 @@ async function maskNumericGlyphs(frame: Buffer, masks: NumericTextMask[], clip?:
     }
   }
   return PNG.sync.write(bitmap);
-}
-
-/**
- * 等待浏览器真实布局通知，再运行同一虚拟时刻的测量回调；不推进动画进度。
- * @param page - 时钟已暂停的页面。
- */
-async function settleLayout(page: Page): Promise<void> {
-  for (let pass = 0; pass < 2; pass++) {
-    await page.evaluate(() => new Promise<void>(resolve => {
-      const observer = new ResizeObserver(() => { observer.disconnect(); resolve(); });
-      observer.observe(document.documentElement);
-    }));
-    // RN Web 的 onLayout 经 ResizeObserver -> setTimeout(0) -> React 更新后才生效。
-    await page.clock.runFor(0);
-  }
 }
 
 /**

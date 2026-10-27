@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { settleLayout } from './renderReadiness';
 
 /**
  * 等待当前德州可见正面完成图集加载和布局，避免把文字回退牌面当成动画关键帧。
@@ -7,7 +8,15 @@ import { expect, type Page } from '@playwright/test';
  */
 export async function waitForTexasCardSprites(page: Page, scope: string): Promise<void> {
   await expect.poll(async () => {
-    await page.clock.runFor(0);
+    // complete 与原始尺寸只表示资源已取得；图集切换还要等待真实解码和界面提交。
+    await page.evaluate(async selector => {
+      const images = document.querySelectorAll<HTMLImageElement>(
+        `${selector} [data-testid="sprite-image-view"] img`,
+      );
+      await Promise.all(Array.from(images).filter(image => image.complete && image.naturalWidth > 0)
+        .map(image => image.decode()));
+    }, scope);
+    await settleLayout(page);
     return page.evaluate(selector => {
       const cardSprites = document.querySelectorAll<HTMLElement>(
         `${selector} [data-testid="sprite-image-container"]`,
