@@ -2,6 +2,7 @@ import { expect, type Locator, type Page, type TestInfo } from '@playwright/test
 import { existsSync, readFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
+import { areScreenshotsEquivalent } from './screenshotComparison';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
 export const FRAME_TIMES = [0, 80, 160, 320, 640, 1200] as const;
@@ -311,11 +312,12 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         }
       } else {
         // 采集失败或画面持续变化仍立即中止，避免后续帧建立在无效状态上。
+        // 稳定性沿用 Playwright 的像素比较容差，不能要求 PNG 字节完全相同。
         frame = Buffer.alloc(0);
         await expect.poll(async () => {
           const previousFrame = await page.screenshot(screenshotOptions);
           frame = await page.screenshot(screenshotOptions);
-          return frame.equals(previousFrame);
+          return areScreenshotsEquivalent(frame, previousFrame);
         }, { message: `${snapshot} 同一虚拟时刻的画面应稳定` }).toBe(true);
         // soft 只延后像素差异的失败：继续采集后续帧及后续牌局阶段，整个测试仍失败。
         expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });

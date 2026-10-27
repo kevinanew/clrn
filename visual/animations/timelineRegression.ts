@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { captureTimeline } from './timeline';
+import { PNG } from 'pngjs';
 
 // 由 timeline.browser.ts 使用临时基准和报告运行，不进入真实账号动画套件。
 const comparison = process.env.ANIMATION_CAPTURE_COMPARISON === 'true';
@@ -45,3 +46,31 @@ test('页面采集失败仍中止后续阶段', async ({ page }, information) =>
   }
   await information.attach('页面关闭之后', { body: '不应继续', contentType: 'text/plain' });
 });
+
+for (const mode of ['tolerated', 'unstable'] as const) {
+  test(`相邻截图稳定性：${mode}`, async ({ page }, information) => {
+    await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+    await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
+    await page.setContent('<div style="width:30px;height:30px;background:red"></div>');
+    if (comparison) {
+      const takeScreenshot = page.screenshot.bind(page);
+      let alternate = false;
+      /**
+       * 给真实截图注入交替的微小绘制差异或明显变化，避免依赖宿主是否恰好出现噪点。
+       * @param options - 生产采样器传入的截图设置。
+       */
+      page.screenshot = async options => {
+        const bitmap = PNG.sync.read(await takeScreenshot(options));
+        alternate = !alternate;
+        const color = alternate ? 0 : 255;
+        const changedPixels = mode === 'tolerated' ? 1 : 200;
+        for (let pixel = 0; pixel < changedPixels; pixel++) {
+          bitmap.data.set([color, color, color, 255], pixel * 4);
+        }
+        return PNG.sync.write(bitmap);
+      };
+    }
+    await captureTimeline(page, information, mode, page.locator('div'), { times: [0, 80], requireChange: false });
+    await information.attach('稳定性检查之后', { body: '已完成', contentType: 'text/plain' });
+  });
+}
