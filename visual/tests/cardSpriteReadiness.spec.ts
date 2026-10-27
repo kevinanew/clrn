@@ -1,14 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { waitForTexasCardSprites } from '../animations/cardSpriteReadiness';
 
-test('德州牌面在图片加载后仍等待图集布局和文字回退消失', async ({ page }) => {
+test('德州翻转前的透明正面仍须完成图集布局并隐藏文字回退', async ({ page }) => {
   const image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
-  await page.setContent(`<div data-testid="community_card">
-    <div data-testid="sprite-image-container" style="width:40px;height:60px">
-      <div data-testid="sprite-image-fallback" style="display:flex">A♠</div>
-      <div data-testid="sprite-image-content" style="opacity:0">
-        <div data-testid="sprite-image-clipper" style="transform:scale(0,0)">
-          <div data-testid="sprite-image-view"><img src="${image}" alt="牌面"></div>
+  await page.setContent(`<div data-testid="community_card" style="width:40px;height:60px">
+    <div data-testid="card-flip-side-b" style="opacity:0">
+      <div data-testid="sprite-image-container" style="width:40px;height:60px">
+        <div data-testid="sprite-image-fallback" style="display:flex">A♠</div>
+        <div data-testid="sprite-image-content" style="opacity:0">
+          <div data-testid="sprite-image-clipper" style="transform:scale(0,0)">
+            <div data-testid="sprite-image-view"><img src="${image}" alt="牌面"></div>
+          </div>
         </div>
       </div>
     </div>

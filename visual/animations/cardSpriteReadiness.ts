@@ -13,8 +13,10 @@ export async function waitForTexasCardSprites(page: Page): Promise<void> {
           + '[data-testid="player_card"] [data-testid="sprite-image-container"]',
       );
       return Array.from(cardSprites).flatMap((container, index) => {
-        if (!container.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return [];
-        const rectangle = container.getBoundingClientRect();
+        // 翻转前正面透明，但必须先备好牌面；以牌槽判断是否属于当前画面。
+        const card = container.closest<HTMLElement>('[data-testid="community_card"], [data-testid="player_card"]');
+        if (!card?.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return [];
+        const rectangle = card.getBoundingClientRect();
         if (rectangle.width === 0 || rectangle.height === 0 || rectangle.right <= 0
           || rectangle.bottom <= 0 || rectangle.left >= window.innerWidth
           || rectangle.top >= window.innerHeight) return [];
