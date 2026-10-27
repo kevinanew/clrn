@@ -1,8 +1,12 @@
 /** 游戏测试代理及脱敏诊断历史访问入口。 */
 import { test as base, expect as playwrightExpect, request, type BrowserContextOptions } from '@playwright/test';
 import path from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { type Mitmproxy, type ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
+
+const TEXAS_NODE_STATUS_URL = 'https://64.kr-seoul.api.staging.laiwan.shafayouxi.com/node/v1/status';
+const NODE_PROBE_ATTEMPTS = 3;
 
 /** 封装德州专用代理的牌局回放、大厅及面板响应控制。 */
 export class TexasProxy {
@@ -64,14 +68,29 @@ export class TexasProxy {
 export async function withTexasProxy<T>(task: (proxy: TexasProxy) => Promise<T>): Promise<T> {
   return withMitmproxy(async proxy => {
     await proxy.stabilizeVisualNetwork();
-    // 首次 HTTPS 连接会生成临时证书，先预热固定节点，避免浏览器的 5 秒测速超时。
+    // 首次 HTTPS 连接会生成临时证书；节点偶发返回异常时重试，避免登录采集提前中止。
     const client = await request.newContext(texasProxyOptions(new TexasProxy(proxy)));
     try {
-      const response = await client.get('https://64.kr-seoul.api.staging.laiwan.shafayouxi.com/node/v1/status',
-        { timeout: 90_000 });
-      if (!response.ok() || (await response.json()).server_load !== 'normal') {
-        throw new Error('德州固定代理节点未就绪');
+      let failure = '';
+      let ready = false;
+      for (let attempt = 1; attempt <= NODE_PROBE_ATTEMPTS; attempt += 1) {
+        try {
+          const response = await client.get(TEXAS_NODE_STATUS_URL, { timeout: 30_000 });
+          const body: unknown = await response.json().catch(() => null);
+          const load = body && typeof body === 'object' && 'server_load' in body
+            ? body.server_load : undefined;
+          if (response.ok() && load === 'normal') {
+            ready = true;
+            break;
+          }
+          failure = `HTTP ${response.status()}，server_load=${typeof load === 'string' ? load : '缺失'}`;
+        } catch (error) {
+          failure = error instanceof Error ? error.message : String(error);
+        }
+        console.warn(`德州固定代理节点第 ${attempt}/${NODE_PROBE_ATTEMPTS} 次探测失败：${failure}`);
+        if (attempt < NODE_PROBE_ATTEMPTS) await delay(attempt * 2_000);
       }
+      if (!ready) throw new Error(`德州固定代理节点未就绪：${failure}`);
     } finally { await client.dispose(); }
     return task(new TexasProxy(proxy));
   }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });
