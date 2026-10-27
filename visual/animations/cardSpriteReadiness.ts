@@ -28,13 +28,14 @@ export async function waitForTexasCardSprites(page: Page, scope: string): Promis
         const clipperTransform = clipper ? getComputedStyle(clipper).transform : 'none';
         const transform = clipperTransform === 'none' ? null : new DOMMatrixReadOnly(clipperTransform);
         const frontVisible = container.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
-        // 盖牌阶段应用尚未触发正面的布局与显示回调，只检查真正露出的正面。
-        const ready = !frontVisible || (transform && Math.abs(transform.m11) > 0.001
-          && Math.abs(transform.m22) > 0.001 && image && image.complete && image.naturalWidth > 0
-          && fallback && getComputedStyle(fallback).display === 'none'
-          && content && Number(getComputedStyle(content).opacity) > 0.99);
-        if (ready) return [];
         const containerBox = container.getBoundingClientRect();
+        // 盖牌阶段仍须确认资源加载及牌槽尺寸；裁切布局只在正面露出后才可能完成。
+        const resourceReady = image?.complete && image.naturalWidth > 0
+          && containerBox.width > 0 && containerBox.height > 0;
+        const ready = resourceReady && (!frontVisible || (transform && Math.abs(transform.m11) > 0.001
+          && Math.abs(transform.m22) > 0.001 && fallback && getComputedStyle(fallback).display === 'none'
+          && content && Number(getComputedStyle(content).opacity) > 0.99));
+        if (ready) return [];
         return [`牌面 ${index} 图集未就绪：正面可见=${frontVisible}；回退显示=${fallback ? getComputedStyle(fallback).display : '缺失'}；`
           + `内容透明度=${content ? getComputedStyle(content).opacity : '缺失'}；`
           + `裁切变换=${clipperTransform}；图片加载=${image?.complete ?? '缺失'}；`
