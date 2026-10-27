@@ -34,7 +34,7 @@ class ZhajinhuaVisualProxy:
     def __init__(self):
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
-        self.network = VisualNetwork()
+        self.network = VisualNetwork(replay_healthy_status=True)
         self.proxied_requests = 0
         self.stabilized_requests = 0
         self.created_room_id = None
