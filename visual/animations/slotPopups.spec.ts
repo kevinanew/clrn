@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { openApplication, press, pressTarget } from './appSession';
-import { mockSlotMessages } from './slotFixtures';
+import { mockSlotMessages, SLOT_WALLET_BALANCES } from './slotFixtures';
 import { exercisePopup } from './popups';
 import { settleAnimations } from './timeline';
 
@@ -12,7 +12,8 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
   const panel = page.getByTestId('slot-machine-view');
   const wallet = panel.getByTestId('top-toolbar');
   const walletNumbers = wallet.getByText(/^\d[\d,]*$/);
-  const expectedWalletBalances = { coin: '3,111', diamond: '18' };
+  const expectedWalletBalances = { coin: SLOT_WALLET_BALANCES.coin.toLocaleString('en-US'),
+    diamond: SLOT_WALLET_BALANCES.diamond.toLocaleString('en-US') };
   const viewport = page.viewportSize()!;
   const clip = { x: 0, y: 0, ...viewport };
   await exercisePopup(page, info, { name: 'slot-panel', target: panel, clip,
@@ -21,7 +22,8 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
       await expect(wallet).toBeVisible();
       await expect(walletNumbers, '金币和钻石数字控件必须都存在').toHaveCount(2);
     },
-    entranceFinalFrameMask: [walletNumbers],
+    entranceFinalFrameNumericMask: [{ locator: walletNumbers,
+      maximumTexts: [expectedWalletBalances.coin, expectedWalletBalances.diamond] }],
     /** 完成入场截图后验证异步余额最终来自真实业务状态。 */
     afterEntrance: async () => {
       await expect.poll(async () => {

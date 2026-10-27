@@ -1,13 +1,14 @@
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
-import { appearance, captureTimeline, fixedArea, freeze, settleAnimations, type CaptureArea } from './timeline';
+import { appearance, captureTimeline, fixedArea, freeze, settleAnimations,
+  type CaptureArea, type NumericTextMask } from './timeline';
 
 export type PopupFlow = { name: string; target: Locator; open: () => Promise<unknown>;
   close: () => Promise<unknown>; clip?: CaptureArea; exitAnimated?: boolean; fastPreparation?: boolean;
   foregroundBelow?: { y: number; locator: Locator }; requirePresentation?: boolean;
   excludedBackground?: Locator[]; waitForUnmountBeforeReopen?: boolean;
   beforeEntrance?: () => Promise<void>; afterEntrance?: () => Promise<void>;
-  entranceFinalFrameMask?: Locator[] };
+  entranceFinalFrameNumericMask?: NumericTextMask[] };
 
 /**
  * 判断弹层是否已经进入视口且实际绘制，不能把尚未卸载的透明旧节点算作新弹层。
@@ -90,7 +91,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await flow.beforeEntrance?.();
   await captureTimeline(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
     requireMotion: true, foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground,
-    finalFrameMask: flow.entranceFinalFrameMask });
+    finalFrameNumericMask: flow.entranceFinalFrameNumericMask });
   await expect(flow.target).toBeVisible();
   await flow.afterEntrance?.();
   await flow.close();
