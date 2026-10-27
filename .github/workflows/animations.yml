@@ -103,6 +103,8 @@ jobs:
       VISUAL_SUITE: ${{ matrix.suite }}
       ANIMATION_PART: ${{ matrix.part }}
       CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
+      # 本合并请求切换应用版本后，先按正式流程生成德州牌局候选图供逐张审查。
+      CLRN_GAMEPLAY_CANDIDATES: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 60 && matrix.suite == 'texas' && matrix.part == 'gameplay' }}
       TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
     steps:
       - name: 检出代码
@@ -144,11 +146,11 @@ jobs:
           expected-application-commit: ${{ inputs.expected_application_commit || '' }}
           github-token: ${{ github.token }}
       - name: 生成本轮候选基准
-        if: inputs.update_snapshots == true
+        if: inputs.update_snapshots == true || env.CLRN_GAMEPLAY_CANDIDATES == 'true'
         working-directory: visual
         run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --update-snapshots
       - name: 打包本套件改动的候选图
-        if: always() && !cancelled() && inputs.update_snapshots == true
+        if: always() && !cancelled() && (inputs.update_snapshots == true || env.CLRN_GAMEPLAY_CANDIDATES == 'true')
         shell: bash
         run: |
           mkdir -p visual/test-results/animation-candidates
@@ -157,7 +159,7 @@ jobs:
           tar --null -T visual/test-results/animation-candidates/files.list \
             -czf visual/test-results/animation-candidates/${{ matrix.suite }}-${{ matrix.part }}.tar.gz
       - name: 提前保存候选图供检查
-        if: always() && !cancelled() && inputs.update_snapshots == true
+        if: always() && !cancelled() && (inputs.update_snapshots == true || env.CLRN_GAMEPLAY_CANDIDATES == 'true')
         uses: actions/upload-artifact@v4
         with:
           name: animation-${{ matrix.suite }}-${{ matrix.part }}-candidates-${{ github.run_id }}-${{ github.run_attempt }}
@@ -229,3 +231,8 @@ jobs:
           if [ -n "$REPORT_URL" ]; then
             echo "[下载完整 Playwright 报告]($REPORT_URL)" >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: 等待逐张审查候选基准
+        if: always() && !cancelled() && env.CLRN_GAMEPLAY_CANDIDATES == 'true'
+        run: |
+          echo '候选基准仅供逐张审查；现有基准尚未通过比较。' >> "$GITHUB_STEP_SUMMARY"
+          exit 1
