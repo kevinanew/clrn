@@ -31,8 +31,10 @@ test('hall slot banner automatically spins and repeats', async ({ context, page 
   await expect(banner).toBeVisible();
   const clip = await fixedArea(page, banner, 0);
   await freeze(page);
-  // 快进跨过完整周期，应用自己的定时回调在暂停点开启下一轮。
+  // fastForward 在终点触发一次定时回调；此刻转轮可能刚开始旋转。
+  // 走到下一次 4000ms 定时回调前 1ms，首帧稳定，后续帧仍覆盖真实旋转。
   await page.clock.fastForward(12_000);
+  await page.clock.runFor(3_999);
   await captureTimeline(page, info, 'hall-slot-banner', banner,
     { clip, times: [0, 160, 500, 1000, 1200, 4000, 4500, 5200] });
 });
