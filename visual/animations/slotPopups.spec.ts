@@ -16,11 +16,13 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
   const viewport = page.viewportSize()!;
   const clip = { x: 0, y: 0, ...viewport };
   await exercisePopup(page, info, { name: 'slot-panel', target: panel, clip,
+    /** 正式入场开始前确认两个真实数字控件仍在工具栏。 */
     beforeEntrance: async () => {
       await expect(wallet).toBeVisible();
       await expect(walletNumbers, '金币和钻石数字控件必须都存在').toHaveCount(2);
     },
     entranceFinalFrameMask: [walletNumbers],
+    /** 完成入场截图后验证异步余额最终来自真实业务状态。 */
     afterEntrance: async () => {
       await expect.poll(async () => {
         await page.clock.runFor(16);
