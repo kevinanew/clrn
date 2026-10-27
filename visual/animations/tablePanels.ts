@@ -32,11 +32,11 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
   if (game === 'zhajinhua') {
     const arrows = page.locator('[data-testid^="seat-guide-"] img').locator('..');
     await expect(arrows).toHaveCount(9);
-    // 等待全部箭头回到循环顶部；各座位的挂载时刻可能不同。
+    // 等待全部箭头回到循环顶部；允许小于一个像素的布局舍入差异。
     await expect.poll(async () => {
       const offsets = await arrows.evaluateAll(nodes => nodes.map(node =>
         new DOMMatrixReadOnly(getComputedStyle(node).transform).m42));
-      if (offsets.length === 9 && offsets.every(offset => Math.abs(offset) < 0.000001)) return true;
+      if (offsets.length === 9 && offsets.every(offset => Math.abs(offset) < 1)) return true;
       await page.clock.runFor(16);
       return false;
     }, { timeout: 30_000, intervals: [0], message: '全部空座引导应回到真实循环起点' }).toBe(true);

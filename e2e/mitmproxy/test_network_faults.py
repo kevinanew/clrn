@@ -144,6 +144,12 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.addon.club_search_requests, 1)
         self.assertEqual(self.addon.club_details_requests, 1)
 
+        other_details = flow("https://api.shafayouxi.org/v10/clubs", "PUT",
+                             b'{"club_ids":["another-club"]}')
+        await self.addon.request(other_details)
+        self.assertIsNone(other_details.response)
+        self.assertEqual(self.addon.club_details_requests, 1)
+
         unrelated = flow("https://api.shafayouxi.org/v10/club?user_id=42")
         await self.addon.request(unrelated)
         self.assertIsNone(unrelated.response)

@@ -28,9 +28,13 @@ export async function waitForTexasCardSprites(page: Page, scope: string): Promis
         const clipperTransform = clipper ? getComputedStyle(clipper).transform : 'none';
         const transform = clipperTransform === 'none' ? null : new DOMMatrixReadOnly(clipperTransform);
         const frontVisible = container.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+        const flip = container.closest<HTMLElement>('[data-testid="card-flip"]');
+        const faceSide = container.closest<HTMLElement>('[data-testid="card-flip-side-b"]');
+        const faceOpacity = faceSide ? Number(getComputedStyle(faceSide).opacity) : null;
         const containerBox = container.getBoundingClientRect();
-        // 翻牌侧立时 opacity 已为 1，但正面仍几乎不可见，虚拟时钟暂停后也不会继续展开。
-        const frontFacing = frontVisible && container.offsetWidth > 0
+        // side 在翻转开始时更新，正面仍要等到过半程才显示；以实际正面层透明度判断。
+        const frontFacing = frontVisible && (!flip || (faceSide !== null && faceOpacity !== null && faceOpacity > 0.99))
+          && container.offsetWidth > 0
           && containerBox.width >= container.offsetWidth * 0.5;
         // 盖牌阶段仍须确认资源加载及牌槽尺寸；裁切布局只在正面露出后才可能完成。
         const resourceReady = image?.complete && image.naturalWidth > 0
@@ -39,7 +43,7 @@ export async function waitForTexasCardSprites(page: Page, scope: string): Promis
           && Math.abs(transform.m22) > 0.001 && fallback && getComputedStyle(fallback).display === 'none'
           && content && Number(getComputedStyle(content).opacity) > 0.99));
         if (ready) return [];
-        return [`牌面 ${index} 图集未就绪：正面可见=${frontVisible}；正面朝向观众=${frontFacing}；回退显示=${fallback ? getComputedStyle(fallback).display : '缺失'}；`
+        return [`牌面 ${index} 图集未就绪：翻牌侧=${flip?.getAttribute('data-side') ?? '无'}；正面层透明度=${faceOpacity ?? '无'}；正面可见=${frontVisible}；正面朝向观众=${frontFacing}；回退显示=${fallback ? getComputedStyle(fallback).display : '缺失'}；`
           + `内容透明度=${content ? getComputedStyle(content).opacity : '缺失'}；`
           + `裁切变换=${clipperTransform}；图片加载=${image?.complete ?? '缺失'}；`
           + `图片原宽=${image?.naturalWidth ?? '缺失'}；牌面宽高=${containerBox.width}×${containerBox.height}；`

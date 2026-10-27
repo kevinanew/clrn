@@ -112,6 +112,8 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
       strength_cards: ['kh', 'ks', 'kd'], is_max_strength: false },
   ] }]));
   await waitForTexasCardSprites(page, publicCardScope);
+  // 摊牌同时替换本人手牌；两侧图集都就绪后再比较固定时刻的真实画面。
+  await waitForTexasCardSprites(page, '[data-testid="texas-holdem-player-hole-cards"]');
   await captureTimeline(page, info, 'texas-showdown', table, { clip });
   await proxy.replayTexas(roomId, events([{ event: 'settlement', players: [
     { player_id: self, net: 180, prize: 180, stack: 1180 },

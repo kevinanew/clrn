@@ -127,8 +127,7 @@ class NetworkFaults:
         except (ValueError, TypeError):
             body = None
         if flow.request.method != "PUT" or body != {"club_ids": [CLUB_SEARCH_ID]}:
-            flow.response = json_response(flow, {"ok": False}, 400)
-            return True
+            return False
         self.club_details_requests += 1
         flow.response = json_response(flow, {"ok": True, "result": [CLUB_SEARCH_RESULT]})
         return True

@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
+import { areScreenshotsEquivalent } from './screenshotComparison';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
 export const FRAME_TIMES = [0, 80, 160, 320, 640, 1200] as const;
@@ -173,7 +174,7 @@ export async function freeze(page: Page): Promise<void> {
 }
 
 /**
- * 比较固定时刻的真实画面，并在失败时也保存位置、透明度和变换采样。
+ * 汇总固定时刻的截图差异；像素不符继续采样，资源、状态与运动断言失败立即中止。
  * @param page - 虚拟时钟已暂停的页面。
  * @param info - 用例附件与基准命名上下文。
  * @param name - 不包含语言和视口的唯一动画名称。
@@ -224,7 +225,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         }, { message: `${name} 数字以外的终帧画面应稳定` }).toBe(true);
         await info.attach(`${snapshot}-unmasked`, { body: original, contentType: 'image/png' });
         frame = masked;
-        expect(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+        expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
       } else if (foregroundBelow) {
         // 弹层缩放期间保留其每帧实际覆盖的像素，排除下方未被遮住的牌桌操作区。
         // 暂停时钟后连续截图一致，才将相关区域交给 Playwright 原有像素比较器。
@@ -236,9 +237,10 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         }, { message: `${name} 首帧画面应稳定` }).toBe(true);
         const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
         const update = info.config.updateSnapshots;
-        if (update === 'all' || update === 'changed' || (update === 'missing' && !existsSync(snapshotPath))) {
+        if (update === 'all' || update === 'changed' || !existsSync(snapshotPath)) {
           // 显式生成候选基准时保存完整画面，不能依赖旧图或写入拼接后的比较图。
-          expect(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+          // 普通比较缺少基准时由软断言报告，不能先读文件中止后续采样。
+          expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
         } else {
           const actual = PNG.sync.read(frame);
           const expected = PNG.sync.read(readFileSync(snapshotPath));
@@ -266,7 +268,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
             }
           }
           const comparedPixels = actual.width * foregroundBelow.y + Math.max(0, bottom - top) * Math.max(0, right - x);
-          expect(PNG.sync.write(actual)).toMatchSnapshot(snapshot, {
+          expect.soft(PNG.sync.write(actual)).toMatchSnapshot(snapshot, {
             threshold: 0.1, maxDiffPixels: Math.floor(comparedPixels * 0.001),
           });
         }
@@ -280,8 +282,8 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         }, { message: `${name} 首帧画面应稳定` }).toBe(true);
         const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
         const update = info.config.updateSnapshots;
-        if (update === 'all' || update === 'changed' || (update === 'missing' && !existsSync(snapshotPath))) {
-          expect(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+        if (update === 'all' || update === 'changed' || !existsSync(snapshotPath)) {
+          expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
         } else {
           const actual = PNG.sync.read(frame);
           const expected = PNG.sync.read(readFileSync(snapshotPath));
@@ -308,15 +310,20 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
               actual.data.set(expected.data.subarray(start, end), start);
             }
           }
-          expect(PNG.sync.write(actual)).toMatchSnapshot(snapshot,
+          expect.soft(PNG.sync.write(actual)).toMatchSnapshot(snapshot,
             { threshold: 0.1, maxDiffPixelRatio: 0.001 });
         }
       } else {
-        // 时钟停在同一关键帧，等待浏览器完成布局/绘制；连续两张一致才进行基准比较。
-        await expect(page).toHaveScreenshot(snapshot, {
-          ...screenshotOptions, threshold: 0.1, maxDiffPixelRatio: 0.001,
-        });
-        frame = await page.screenshot(screenshotOptions);
+        // 采集失败或画面持续变化仍立即中止，避免后续帧建立在无效状态上。
+        // 稳定性沿用 Playwright 的像素比较容差，不能要求 PNG 字节完全相同。
+        frame = Buffer.alloc(0);
+        await expect.poll(async () => {
+          const previousFrame = await page.screenshot(screenshotOptions);
+          frame = await page.screenshot(screenshotOptions);
+          return areScreenshotsEquivalent(frame, previousFrame);
+        }, { message: `${snapshot} 同一虚拟时刻的画面应稳定` }).toBe(true);
+        // soft 只延后像素差异的失败：继续采集后续帧及后续牌局阶段，整个测试仍失败。
+        expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
       }
       frames.push(frame);
       previous = milliseconds;

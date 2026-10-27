@@ -47,6 +47,11 @@ npm --prefix visual run test:animations -- --update-snapshots
   每帧在暂停时钟的状态下等待新挂载的同源图片加载完成，避免把资源加载速度误当成动画变化。
   随后等待浏览器布局通知并执行同一时刻的零延迟回调，使 RN Web 图片尺寸和滑杆测量完成；
   这一步不推进动画时钟，也不改写组件布局。
+  像素差异使用软断言记录：同一用例继续采集后续关键帧和牌局阶段，最后仍以失败结束，
+  报告保留每张不一致截图及完整时间线。资源加载、截图稳定性、业务状态和主体运动断言
+  仍立即中止；不能把无效页面继续当成可审查的候选图。普通比较不创建或修改基准。
+  普通截图的稳定性检查与基准比较使用相同颜色阈值 0.1 和差异比例 0.1%，
+  不要求 PNG 压缩字节完全相同，避免把允许范围内的绘制微差当成持续动画。
   原有游客搜索四帧用例和透明度断言继续保留。
 - 表情、道具落点及火焰使用浏览器解码的 WebP，内部时间不受 JS 时钟控制。
   `imageFrames.ts` 比较实际页面加载素材的每一帧、尺寸、时间戳和帧时长；素材帧逐像素比较。
@@ -94,6 +99,7 @@ HTML 报告位于 `visual/playwright-report/animations/<suite>/`，失败图片�
 ```sh
 node --import tsx --test e2e/helpers/diagnostic-recorder.test.ts
 node --import tsx --test e2e/helpers/connection-diagnostics.browser.ts
+node --import tsx --test visual/animations/timeline.browser.ts
 # 使用系统 Chrome 时设置 DIAGNOSTIC_CHROME_PATH 为浏览器可执行文件路径。
 e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 ```
