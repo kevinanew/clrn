@@ -49,8 +49,16 @@ test('俱乐部搜索命中固定结果并显示对应卡片', async ({ page, si
         && url.pathname === '/v10/club/search'
         && url.searchParams.get('keyword') === keyword;
     });
-    const detailsResponse = page.waitForResponse(response =>
-      response.request().method() === 'PUT' && new URL(response.url()).pathname === '/v10/clubs');
+    const detailsResponse = page.waitForResponse(response => {
+      const request = response.request();
+      if (request.method() !== 'PUT' || new URL(response.url()).pathname !== '/v10/clubs') return false;
+      try {
+        const body: unknown = request.postDataJSON();
+        if (!body || typeof body !== 'object' || !('club_ids' in body)) return false;
+        const ids = body.club_ids;
+        return Array.isArray(ids) && ids.length === 1 && ids[0] === clubId;
+      } catch { return false; }
+    });
     const input = await unique(page, 'club-search-input');
     await input.fill(keyword);
     await input.press('Enter');
@@ -59,7 +67,7 @@ test('俱乐部搜索命中固定结果并显示对应卡片', async ({ page, si
     const details = await detailsResponse;
     expect(search.ok(), '搜索请求应成功').toBe(true);
     expect((await search.json()).result, '搜索结果应指向固定俱乐部').toEqual([clubId]);
-    expect(details.ok(), '俱乐部资料请求应成功').toBe(true);
+    expect(details.ok(), `目标俱乐部资料请求应成功，实际状态码 ${details.status()}`).toBe(true);
     expect(details.request().postDataJSON(), '资料请求应只查询搜索命中的俱乐部').toEqual({ club_ids: [clubId] });
 
     const card = page.getByTestId('club-search-item-touchable').filter({ visible: true });
