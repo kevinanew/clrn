@@ -1,3 +1,4 @@
+import { MAXIMUM_DIFFERENT_PIXEL_RATIO } from '../screenshotComparisonConfiguration';
 import { defineConfig } from '@playwright/test';
 import path from 'node:path';
 import visualConfig from '../playwright.config';
@@ -27,7 +28,7 @@ export default defineConfig({
       caret: 'hide',
       scale: 'css',
       threshold: 0.1,
-      maxDiffPixelRatio: 0.001,
+      maxDiffPixelRatio: MAXIMUM_DIFFERENT_PIXEL_RATIO,
     },
   },
   use: {

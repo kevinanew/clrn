@@ -1,8 +1,7 @@
+import { MAXIMUM_DIFFERENT_PIXEL_RATIO } from './screenshotComparisonConfiguration';
 import { defineConfig } from '@playwright/test';
 
 import { visualBaseUrl } from './target';
-// 与 laiwan_io_web 的视觉回归保持一致：允许整张截图最多 0.3% 的像素差异。
-const MAX_DIFF_PIXEL_RATIO = 0.003;
 
 export default defineConfig({
   testDir: './',
@@ -21,7 +20,7 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
   expect: {
     toHaveScreenshot: {
-      maxDiffPixelRatio: MAX_DIFF_PIXEL_RATIO,
+      maxDiffPixelRatio: MAXIMUM_DIFFERENT_PIXEL_RATIO,
       animations: 'disabled',
       caret: 'hide',
       scale: 'css',

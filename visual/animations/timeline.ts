@@ -1,3 +1,4 @@
+import { MAXIMUM_DIFFERENT_PIXEL_RATIO } from '../screenshotComparisonConfiguration';
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 import { existsSync, readFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
@@ -225,7 +226,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         }, { message: `${name} 数字以外的终帧画面应稳定` }).toBe(true);
         await info.attach(`${snapshot}-unmasked`, { body: original, contentType: 'image/png' });
         frame = masked;
-        expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+        expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: MAXIMUM_DIFFERENT_PIXEL_RATIO });
       } else if (foregroundBelow) {
         // 弹层缩放期间保留其每帧实际覆盖的像素，排除下方未被遮住的牌桌操作区。
         // 暂停时钟后连续截图一致，才将相关区域交给 Playwright 原有像素比较器。
@@ -240,7 +241,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         if (update === 'all' || update === 'changed' || !existsSync(snapshotPath)) {
           // 显式生成候选基准时保存完整画面，不能依赖旧图或写入拼接后的比较图。
           // 普通比较缺少基准时由软断言报告，不能先读文件中止后续采样。
-          expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+          expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: MAXIMUM_DIFFERENT_PIXEL_RATIO });
         } else {
           const actual = PNG.sync.read(frame);
           const expected = PNG.sync.read(readFileSync(snapshotPath));
@@ -269,7 +270,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
           }
           const comparedPixels = actual.width * foregroundBelow.y + Math.max(0, bottom - top) * Math.max(0, right - x);
           expect.soft(PNG.sync.write(actual)).toMatchSnapshot(snapshot, {
-            threshold: 0.1, maxDiffPixels: Math.floor(comparedPixels * 0.001),
+            threshold: 0.1, maxDiffPixels: Math.floor(comparedPixels * MAXIMUM_DIFFERENT_PIXEL_RATIO),
           });
         }
       } else if (options.excludedBackground?.length) {
@@ -283,7 +284,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
         const update = info.config.updateSnapshots;
         if (update === 'all' || update === 'changed' || !existsSync(snapshotPath)) {
-          expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+          expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: MAXIMUM_DIFFERENT_PIXEL_RATIO });
         } else {
           const actual = PNG.sync.read(frame);
           const expected = PNG.sync.read(readFileSync(snapshotPath));
@@ -311,7 +312,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
             }
           }
           expect.soft(PNG.sync.write(actual)).toMatchSnapshot(snapshot,
-            { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+            { threshold: 0.1, maxDiffPixelRatio: MAXIMUM_DIFFERENT_PIXEL_RATIO });
         }
       } else {
         // 采集失败或画面持续变化仍立即中止，避免后续帧建立在无效状态上。
@@ -323,7 +324,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
           return areScreenshotsEquivalent(frame, previousFrame);
         }, { message: `${snapshot} 同一虚拟时刻的画面应稳定` }).toBe(true);
         // soft 只延后像素差异的失败：继续采集后续帧及后续牌局阶段，整个测试仍失败。
-        expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: 0.001 });
+        expect.soft(frame).toMatchSnapshot(snapshot, { threshold: 0.1, maxDiffPixelRatio: MAXIMUM_DIFFERENT_PIXEL_RATIO });
       }
       frames.push(frame);
       previous = milliseconds;
