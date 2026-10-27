@@ -134,7 +134,7 @@ export async function freeze(page: Page): Promise<void> {
  */
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
   options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
-    mask?: Locator[]; requireMotion?: boolean;
+    mask?: Locator[]; finalFrameMask?: Locator[]; requireMotion?: boolean;
     foregroundBelow?: { y: number; locator: Locator }; excludedBackground?: Locator[] } = {}): Promise<void> {
   const times = options.times || FRAME_TIMES;
   const samples = [];
@@ -157,8 +157,17 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       const elements = await appearance(target);
       samples.push({ milliseconds: sampledTime, elements });
       const snapshot = `en-${info.project.name}-${name}-${sampledTime}ms.png`;
-      const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
+      const finalFrame = milliseconds === times[times.length - 1];
+      const mask = finalFrame && options.finalFrameMask
+        ? [...(options.mask || []), ...options.finalFrameMask] : options.mask;
+      const screenshotOptions = { clip: options.clip, mask, animations: 'allow' as const,
         caret: 'hide' as const, scale: 'css' as const };
+      if (finalFrame && options.finalFrameMask) {
+        // 只隔离独立异步文字；保留同一时刻未经遮罩的原始图供逐图审查。
+        await info.attach(`${snapshot}-unmasked`, {
+          body: await page.screenshot({ ...screenshotOptions, mask: undefined }), contentType: 'image/png',
+        });
+      }
       const foregroundBelow = options.foregroundBelow;
       let frame: Buffer;
       if (foregroundBelow) {

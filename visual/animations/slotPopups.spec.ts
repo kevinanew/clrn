@@ -11,26 +11,29 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
   fixture.bindUser(await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id));
   const panel = page.getByTestId('slot-machine-view');
   const wallet = panel.getByTestId('top-toolbar');
+  const walletNumbers = wallet.getByText(/^\d[\d,]*$/);
   const expectedWalletBalances = { coin: '3,111', diamond: '18' };
-  let walletPrepared = false;
   const viewport = page.viewportSize()!;
   const clip = { x: 0, y: 0, ...viewport };
   await exercisePopup(page, info, { name: 'slot-panel', target: panel, clip,
+    beforeEntrance: async () => {
+      await expect(wallet).toBeVisible();
+      await expect(walletNumbers, '金币和钻石数字控件必须都存在').toHaveCount(2);
+    },
+    entranceFinalFrameMask: [walletNumbers],
+    afterEntrance: async () => {
+      await expect.poll(async () => {
+        await page.clock.runFor(16);
+        return Promise.all([
+          wallet.getByText(expectedWalletBalances.coin, { exact: true }).isVisible(),
+          wallet.getByText(expectedWalletBalances.diamond, { exact: true }).isVisible(),
+        ]);
+      }, { timeout: 30_000, intervals: [50], message: '老虎机钱包应显示真实的金币和钻石余额' })
+        .toEqual([true, true]);
+    },
     open: /** 从背景横幅的同一循环起点打开真实老虎机。 */ async () => {
       await page.clock.fastForward(12_000);
       await press(page, 'slot-banner');
-      if (!walletPrepared) {
-        // 首次预热必须等异步能量查询把 MallStore 余额写入工具栏；正式入场仍逐帧采样。
-        await expect.poll(async () => {
-          await page.clock.runFor(16);
-          return Promise.all([
-            wallet.getByText(expectedWalletBalances.coin, { exact: true }).isVisible(),
-            wallet.getByText(expectedWalletBalances.diamond, { exact: true }).isVisible(),
-          ]);
-        }, { timeout: 30_000, intervals: [50], message: '老虎机钱包应显示真实的金币和钻石余额' })
-          .toEqual([true, true]);
-        walletPrepared = true;
-      }
     },
     close: /** 关闭老虎机面板。 */ () => pressTarget(panel.getByTestId('close-button')) });
   fixture.exhaustEnergy();
