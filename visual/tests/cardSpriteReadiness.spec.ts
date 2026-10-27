@@ -42,6 +42,12 @@ test('德州隐藏牌面等待图片与牌槽，正面可见后再等待图集�
 
   await page.locator('[data-testid="card-flip-side-b"]').evaluate(node => {
     (node as HTMLElement).style.opacity = '1';
+    (node as HTMLElement).style.transform = 'scaleX(0.05)';
+  });
+  // 正面虽已不透明，牌仍几乎侧立；此时可见宽度不足，文字回退尚未退场。
+  await waitForTexasCardSprites(page, '[data-testid="community_card"]');
+  await page.locator('[data-testid="card-flip-side-b"]').evaluate(node => {
+    (node as HTMLElement).style.transform = 'scaleX(1)';
   });
   let visibleFinished = false;
   const visibleWaiting = waitForTexasCardSprites(page, '[data-testid="community_card"]')

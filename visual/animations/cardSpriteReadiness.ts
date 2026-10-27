@@ -29,17 +29,21 @@ export async function waitForTexasCardSprites(page: Page, scope: string): Promis
         const transform = clipperTransform === 'none' ? null : new DOMMatrixReadOnly(clipperTransform);
         const frontVisible = container.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
         const containerBox = container.getBoundingClientRect();
+        // 翻牌侧立时 opacity 已为 1，但正面仍几乎不可见，虚拟时钟暂停后也不会继续展开。
+        const frontFacing = frontVisible && container.offsetWidth > 0
+          && containerBox.width >= container.offsetWidth * 0.5;
         // 盖牌阶段仍须确认资源加载及牌槽尺寸；裁切布局只在正面露出后才可能完成。
         const resourceReady = image?.complete && image.naturalWidth > 0
           && containerBox.width > 0 && containerBox.height > 0;
-        const ready = resourceReady && (!frontVisible || (transform && Math.abs(transform.m11) > 0.001
+        const ready = resourceReady && (!frontFacing || (transform && Math.abs(transform.m11) > 0.001
           && Math.abs(transform.m22) > 0.001 && fallback && getComputedStyle(fallback).display === 'none'
           && content && Number(getComputedStyle(content).opacity) > 0.99));
         if (ready) return [];
-        return [`牌面 ${index} 图集未就绪：正面可见=${frontVisible}；回退显示=${fallback ? getComputedStyle(fallback).display : '缺失'}；`
+        return [`牌面 ${index} 图集未就绪：正面可见=${frontVisible}；正面朝向观众=${frontFacing}；回退显示=${fallback ? getComputedStyle(fallback).display : '缺失'}；`
           + `内容透明度=${content ? getComputedStyle(content).opacity : '缺失'}；`
           + `裁切变换=${clipperTransform}；图片加载=${image?.complete ?? '缺失'}；`
-          + `图片原宽=${image?.naturalWidth ?? '缺失'}；牌面宽高=${containerBox.width}×${containerBox.height}`];
+          + `图片原宽=${image?.naturalWidth ?? '缺失'}；牌面宽高=${containerBox.width}×${containerBox.height}；`
+          + `牌面原宽=${container.offsetWidth}`];
       });
     }, scope);
   }, { message: '德州可见牌面应显示完整图集', timeout: 10_000 }).toEqual([]);
