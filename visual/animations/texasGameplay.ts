@@ -39,7 +39,8 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
         return firstFlip.getAttribute('data-side');
       }, { message: '首张公共牌应开始翻转' }).toBe('1');
     }
-    await captureTimeline(page, info, `texas-${street}`, page.getByTestId('community_card_name_text'), { clip });
+    await captureTimeline(page, info, `texas-${street}`, page.getByTestId('community_card_name_text'),
+      { clip, waitForCardSprites: '[data-testid="community_card"]' });
   }
   // 实时 switch_player 使用牌局 operating_seconds，而不是消息中的 remain_operating_seconds。
   await proxy.replayTexas(roomId, events(restoreTable(self, 'river').queue.map(item =>

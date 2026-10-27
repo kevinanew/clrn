@@ -2,6 +2,7 @@ import { expect, type Locator, type Page, type TestInfo } from '@playwright/test
 import { existsSync, readFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
+import { waitForTexasCardSprites } from './cardSpriteReadiness';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
 export const FRAME_TIMES = [0, 80, 160, 320, 640, 1200] as const;
@@ -135,7 +136,8 @@ export async function freeze(page: Page): Promise<void> {
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
   options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
     mask?: Locator[]; requireMotion?: boolean;
-    foregroundBelow?: { y: number; locator: Locator }; excludedBackground?: Locator[] } = {}): Promise<void> {
+    foregroundBelow?: { y: number; locator: Locator }; excludedBackground?: Locator[];
+    waitForCardSprites?: string } = {}): Promise<void> {
   const times = options.times || FRAME_TIMES;
   const samples = [];
   const frames: Buffer[] = [];
@@ -153,6 +155,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       // 新挂载的边框、牌面或道具可能仍在加载。时钟保持暂停，资源就绪后再比较同一关键帧。
       await ensureLocalImagesLoaded(page);
       await settleLayout(page);
+      if (options.waitForCardSprites) await waitForTexasCardSprites(page, options.waitForCardSprites);
       const sampledTime = milliseconds + (options.startOffset || 0);
       const elements = await appearance(target);
       samples.push({ milliseconds: sampledTime, elements });
