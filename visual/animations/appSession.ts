@@ -88,14 +88,13 @@ export async function recordApplicationBuild(page: Page, info: TestInfo): Promis
  * @param page - 当前页面。
  * @param info - 视口与运行信息。
  * @param pageLabel - 现有场景名称。
- * @param proxy - 是否使用牌桌独立代理。
  */
 export async function openApplication(context: BrowserContext, page: Page, info: TestInfo,
-  pageLabel = 'signed_in_hall', proxy = false) {
+  pageLabel = 'signed_in_hall') {
   const scenario = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SUITE: 'all' })
     .find(item => item.pageLabel === pageLabel && item.viewport.label === info.project.name);
   if (!scenario) throw new Error(`缺少动画基础场景 ${pageLabel}/${info.project.name}`);
-  await setupContextForScenario(context, scenario, page, { animations: 'allow', useMitmproxy: proxy });
+  await setupContextForScenario(context, scenario, page, { animations: 'allow' });
   await page.clock.install({ time: CLOCK_START });
   await page.goto('/');
   await recordApplicationBuild(page, info);

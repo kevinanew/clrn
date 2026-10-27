@@ -7,7 +7,7 @@ import { expect, test, texasProxyOptions } from './proxy';
 import { buildScenarios, type VisualScenario } from '../../scenarios';
 import { visualBaseUrl } from '../../target';
 import { buildStorageStateForScenario, setupContextForScenario } from '../../src/support/pageSetup';
-import { ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
+import { applyContentStabilizers, ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
 import { preparePage } from '../../src/support/preparePage';
 import { createTexasRoom, deleteTexasRoom, enterTexasRoom } from './room';
 import { OPTIONAL_PRE_GAME_STATES, PRE_GAME_STATES } from './scenarios';
@@ -20,6 +20,7 @@ import { captureControls } from './controlVariants';
 import { captureTableStates } from './tableVariants';
 import { capturePanelVariants } from './panelVariants';
 import { captureHallVariants } from './hallVariants';
+import { selfId } from './replay';
 import config from '../../playwright.config';
 
 // 德州语音弹窗只检查界面，使用浏览器的虚拟麦克风，不读取开发机设备。
@@ -107,6 +108,18 @@ async function waitForGameConnection(page: Page): Promise<void> {
 async function capture(page: Page, scenario: VisualScenario, state: string): Promise<void> {
   await alignGameToViewport(page);
   await ensureLocalImagesLoaded(page);
+  // 操作和快捷按钮切换后，图片虽已加载，页面仍需一帧完成尺寸与裁切。
+  if (scenario.pageLabel === 'signed_in_texas_controls') {
+    await page.clock.runFor(16);
+    await ensureLocalImagesLoaded(page);
+  }
+  const nickname = scenario.fixedTexts.find(rule => rule.selector === '[data-testid="texas-holdem-nickname-text"]')?.text;
+  const self = nickname ? await selfId(page) : undefined;
+  const visibleNickname = self && nickname
+    ? [{ selector: `[data-testid^="texas-holdem-player-container-${self}"] `
+      + '[data-testid="adaptable-text-web"]:has(+ [data-testid="texas-holdem-nickname-text"])', text: nickname }]
+    : [];
+  await applyContentStabilizers(page, { ...scenario, fixedTexts: [...scenario.fixedTexts, ...visibleNickname] });
   await expect(page).toHaveScreenshot(`${scenario.label}_${state}.png`, { timeout: 20_000 });
 }
 
@@ -207,12 +220,11 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
     page.on('response', response => {
       if (response.status() < 400) return;
       const url = new URL(response.url());
-      if (url.pathname === '/node/v1/status') return; // 未选节点的 503 是启动夹具。
       console.error(`TEXAS HTTP ERROR > ${response.status()} ${diagnosticNode(url.origin)}${url.pathname}`);
     });
     let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     try {
-      await setupContextForScenario(context, scenario, page, { useMitmproxy: true });
+      await setupContextForScenario(context, scenario, page);
       if (!['signed_in_texas_pre_game', 'signed_in_texas_optional_pre_game'].includes(scenario.pageLabel)) {
         await page.clock.install({ time: Date.now() });
       }

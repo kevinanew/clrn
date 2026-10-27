@@ -1,4 +1,4 @@
-"""拼三张独立代理：固定选址，只回放本例真实创建的私人房。"""
+"""拼三张独立代理：应用动态选线，只回放本例真实创建的私人房。"""
 
 import json
 import os
@@ -11,7 +11,7 @@ from zhajinhua_replay import UUID, PLAYER_IDS, ZhajinhuaReplay
 
 # mitmdump 将 addon 目录加入 sys.path；三个独立代理共用字段覆盖工具。
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
-from response_overrides import VisualNetwork, is_staging, prepare_profiles, patch_profiles  # noqa: E402
+from response_overrides import is_staging, prepare_profiles, patch_profiles  # noqa: E402
 
 from connection_diagnostics import ConnectionDiagnostics  # noqa: E402
 
@@ -34,7 +34,6 @@ class ZhajinhuaVisualProxy:
     def __init__(self):
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
-        self.network = VisualNetwork(replay_healthy_status=True)
         self.proxied_requests = 0
         self.stabilized_requests = 0
         self.created_room_id = None
@@ -77,7 +76,6 @@ class ZhajinhuaVisualProxy:
     def response(self, flow):
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
             return
-        self.stabilized_requests += self.network.response(flow)
         path = urlsplit(flow.request.path).path
         if self.replay.room_id and path == '/v10/profile/users':
             self.stabilized_requests += patch_profiles(flow, self.replay.self_id,
@@ -117,12 +115,15 @@ class ZhajinhuaVisualProxy:
         self.proxied_requests += 1
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
             return
-        if self.replay.room_id and prepare_profiles(flow, self.replay.self_id, PLAYER_IDS):
-            return
-        if self.network.request(flow):
+        path = urlsplit(flow.request.path).path
+        # 仅当前真实创建的房间使用固定空榜；其他房间和节点健康请求继续透传。
+        if (self.created_room_id and flow.request.method == 'GET'
+                and path == f'/v1/game_log/room/{self.created_room_id}/settlement'):
+            respond(flow, {'ok': True, 'result': {'settlements': []}})
             self.stabilized_requests += 1
             return
-        path = urlsplit(flow.request.path).path
+        if self.replay.room_id and prepare_profiles(flow, self.replay.self_id, PLAYER_IDS):
+            return
         if flow.request.method == 'GET' or (flow.request.method == 'PUT' and path == '/v10/profile/users'):
             try:
                 fixture = self.replay.http_fixture(path, flow.request.content)

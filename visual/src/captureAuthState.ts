@@ -92,9 +92,8 @@ async function createAuthContext(
   });
   await fixNavigatorLanguage(context);
   await disableAnimations(context);
-  // 登录态采集与场景必须使用同一套启动网络 mock；否则采集会在代理选址阶段
-  // 随机命中 server_load_offline 节点，尚未显示登录入口就失败。
-  await mockVisualNetworkDependencies(context, { useMitmproxy: Boolean(proxy) });
+  // 登录态采集与场景共用显示资料夹具；应用自行探测并选择真实节点。
+  await mockVisualNetworkDependencies(context);
   // 测试账号必须预先存在；缺失时明确失败，禁止 UI 静默注册替代账号。
   await context.route('**/public/v*/user/register/**', route => route.abort('blockedbyclient'));
   await context.addInitScript(

@@ -26,7 +26,7 @@ export async function runClubSearchResultScenario(scenario: VisualScenario, brow
     });
     try {
       const page = await context.newPage();
-      await setupContextForScenario(context, scenario, page, { useMitmproxy: true, clubDetailsFromProxy: true });
+      await setupContextForScenario(context, scenario, page, { clubDetailsFromProxy: true });
       await page.goto(scenario.path);
       await preparePage(page, scenario);
       await proxy.inject('club-search-result');

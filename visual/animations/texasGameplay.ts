@@ -6,6 +6,7 @@ import { visible, press } from './appSession';
 import { captureTimeline, freeze } from './timeline';
 import { exerciseTablePopup as exercisePopup } from './popups';
 import { closeTableMask } from './tablePanels';
+import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import type { TableSession } from './tableSession';
 
 /**
@@ -26,9 +27,20 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     ['river', ['ah', 'kd', '7c', '2s', 'qs']],
   ] as const) {
     await proxy.replayTexas(roomId, events([{ event: 'start_street', street, community_card: cards }]));
-    await captureTimeline(page, info, `texas-${street}`, page.getByTestId('community_card_name_text'), { clip });
-    // 恢复后转入实时发牌，辅助文本仍保留恢复值；断言真正渲染的牌面数量。
-    await expect(page.locator('[data-testid="community_card"] [data-testid="sprite-image-content"]')).toHaveCount(cards.length);
+    // 每张公共牌先异步读取牌面样式；全部牌面挂载后再由采样器启动首个翻转计时器。
+    await expect(page.locator('[data-testid="community_card"] [data-testid="sprite-image-content"]'))
+      .toHaveCount(cards.length);
+    await waitForTexasCardSprites(page, '[data-testid="community_card"]');
+    if (street === 'flop') {
+      // 等待首张牌的零延迟翻转真正开始，再以该时刻采样公共牌移动。
+      const firstFlip = page.locator('[data-testid="community_card"]:visible').first().getByTestId('card-flip');
+      await expect.poll(async () => {
+        await page.clock.runFor(0);
+        return firstFlip.getAttribute('data-side');
+      }, { message: '首张公共牌应开始翻转' }).toBe('1');
+    }
+    await captureTimeline(page, info, `texas-${street}`, page.getByTestId('community_card_name_text'),
+      { clip, waitForCardSprites: '[data-testid="community_card"]' });
   }
   // 实时 switch_player 使用牌局 operating_seconds，而不是消息中的 remain_operating_seconds。
   await proxy.replayTexas(roomId, events(restoreTable(self, 'river').queue.map(item =>
@@ -83,6 +95,14 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await proxy.replayTexas(roomId, events([{ event: 'all_in', player_id: opponent, amount: 960, stack: 0 },
     { event: 'all_in_show_hole_card', players: [{ player_id: opponent, hole_card: ['kh', 'ks'] }] }]));
   await expect(opponentPlayer.getByTestId('texas-holdem-player-action-all_in')).toBeAttached();
+  // 全押公开手牌由玩家组件绘制，等异步读取牌面样式后确认两张 K 牌已就绪。
+  const publicCards = opponentPlayer.getByTestId('texas-holdem-player-hole-cards');
+  const publicCardScope = `[data-testid^="texas-holdem-player-container-${opponent}"] `
+    + '[data-testid="texas-holdem-player-hole-cards"]';
+  await expect(publicCards.getByTestId('sprite-image-container')).toHaveCount(2);
+  await expect(publicCards.getByTestId('poker-text-letter')).toHaveText(['k', 'k']);
+  await expect(publicCards.getByTestId('poker-text-suit')).toHaveText(['♥', '♠']);
+  await waitForTexasCardSprites(page, publicCardScope);
   await captureTimeline(page, info, 'texas-all-in', visible(page, `texas-holdem-player-container-${opponent}`),
     { clip, mask: [page.locator('img[src*=".webp"]')], times: [0, 80, 160, 320, 640, 1200, 2400, 3200] });
   await proxy.replayTexas(roomId, events([{ event: 'showdown', players: [
@@ -91,6 +111,9 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     { player_id: opponent, hole_card: ['kh', 'ks'], hand_strength: 'three_of_a_kind',
       strength_cards: ['kh', 'ks', 'kd'], is_max_strength: false },
   ] }]));
+  await waitForTexasCardSprites(page, publicCardScope);
+  // 摊牌同时替换本人手牌；两侧图集都就绪后再比较固定时刻的真实画面。
+  await waitForTexasCardSprites(page, '[data-testid="texas-holdem-player-hole-cards"]');
   await captureTimeline(page, info, 'texas-showdown', table, { clip });
   await proxy.replayTexas(roomId, events([{ event: 'settlement', players: [
     { player_id: self, net: 180, prize: 180, stack: 1180 },

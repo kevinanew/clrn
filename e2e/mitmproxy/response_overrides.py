@@ -3,12 +3,6 @@
 import json
 import logging
 from urllib.parse import urlsplit
-from mitmproxy import http
-
-PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com'
-METADATA_PATH = '/public/v13/metadata/servers'
-METADATA_PATHS = ('/public/v12/metadata/servers', METADATA_PATH)
-
 
 def is_staging(host):
     return host == 'api.shafayouxi.org' or host.endswith('.api.staging.laiwan.shafayouxi.com')
@@ -89,70 +83,3 @@ def patch_profiles(flow, self_id, profiles):
             result[user] = {**(result.get(user) or {}), **profile}
         return True
     return patch_result(flow, change)
-
-
-class VisualNetwork:
-    """过滤其他节点；视觉用例可录制并回放选中节点的合格真实健康响应。"""
-
-    def __init__(self, replay_healthy_status=False):
-        self.replay_healthy_status = replay_healthy_status
-        self.healthy_status = None
-
-    def request(self, flow):
-        path = urlsplit(flow.request.path).path
-        if (self.replay_healthy_status and self.healthy_status is not None
-                and flow.request.host == PROXY_HOST and flow.request.path == '/node/v1/status'
-                and flow.request.method == 'GET'):
-            flow.response = self.healthy_status.copy()
-            origin = flow.request.headers.get('Origin')
-            if origin:
-                flow.response.headers['Access-Control-Allow-Origin'] = origin
-                flow.response.headers['Access-Control-Allow-Credentials'] = 'true'
-                flow.response.headers['Vary'] = 'Origin'
-            return True
-        if (not is_staging(flow.request.host) or flow.request.host == PROXY_HOST
-                or path != '/node/v1/status' or flow.request.method not in ('GET', 'OPTIONS')):
-            return False
-        preflight = flow.request.method == 'OPTIONS'
-        flow.response = http.Response.make(204 if preflight else 503,
-            b'' if preflight else b'{"server_load":"unavailable"}', {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': flow.request.headers.get('Origin', '*'),
-                'Access-Control-Allow-Credentials': 'true', 'Vary': 'Origin',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': flow.request.headers.get('Access-Control-Request-Headers', ''),
-            })
-        return True
-
-    def response(self, flow):
-        if (self.replay_healthy_status and self.healthy_status is None
-                and flow.request.host == PROXY_HOST and flow.request.method == 'GET'
-                and flow.request.path == '/node/v1/status'
-                and flow.response and flow.response.status_code == 200):
-            try:
-                data = flow.response.json()
-                delay = data.get('backend_delay') if isinstance(data, dict) else None
-                if (data.get('server_load') == 'normal' and isinstance(delay, (int, float))
-                        and not isinstance(delay, bool) and 0 <= delay < 1000):
-                    self.healthy_status = flow.response.copy()
-            except (ValueError, TypeError, AttributeError):
-                pass
-        if (not is_staging(flow.request.host) or flow.request.method not in ('GET', 'POST')
-                or urlsplit(flow.request.path).path not in METADATA_PATHS):
-            return False
-
-        def change(result):
-            servers = result.get('servers')
-            if isinstance(servers, dict) and PROXY_HOST in servers:
-                selected = {PROXY_HOST: servers[PROXY_HOST]}
-            elif (isinstance(servers, list) and all(isinstance(host, str) for host in servers)
-                    and PROXY_HOST in servers):
-                selected = [PROXY_HOST]
-            else:
-                raise ValueError('Selected node missing from metadata')
-            if servers == selected:
-                return False
-            flow.metadata['diagnostic_candidates_before'] = list(servers)
-            result['servers'] = selected
-            return True
-        return patch_result(flow, change)

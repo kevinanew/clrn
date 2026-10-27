@@ -64,7 +64,7 @@ Service Worker，检查生产模式、压缩后的 JavaScript 和 Service Worker
 代理控制接口使用每例随机 token，故障命中次数通过该接口断言。
 代理 CA 和私钥存放在系统临时目录，结束时删除；只有弱网与代理集成测试的浏览器上下文
 忽略证书错误，不修改系统证书信任。代理不保存 flow 或输出请求正文，避免记录登录凭据。
-本机可运行 `.venv/bin/python -m unittest discover -s mitmproxy -p 'test_*.py'`（含四个代理入口连接本机上游的响应覆盖集成检查）
+本机可运行 `.venv/bin/python -m unittest discover -s mitmproxy -p 'test_*.py'`（含五个代理入口连接本机上游的动态选线透传检查）
 验证故障范围、首次延迟、控制认证和清除故障。
 
 代理公共代码分为 `helpers/mitmproxy-process.ts`（启动与停止）、

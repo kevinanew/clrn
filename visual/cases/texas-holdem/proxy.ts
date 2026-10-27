@@ -3,7 +3,6 @@ import { test as base, expect as playwrightExpect, type BrowserContextOptions } 
 import path from 'node:path';
 import { type Mitmproxy, type ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
-import { recordHealthyNode } from '../_shared/healthyNode';
 
 /** 封装德州专用代理的牌局回放、大厅及面板响应控制。 */
 export class TexasProxy {
@@ -64,8 +63,7 @@ export class TexasProxy {
  */
 export async function withTexasProxy<T>(task: (proxy: TexasProxy) => Promise<T>): Promise<T> {
   return withMitmproxy(async proxy => {
-    await proxy.stabilizeVisualNetwork();
-    await recordHealthyNode(proxy, '德州');
+    await proxy.enableVisualFixtures();
     return task(new TexasProxy(proxy));
   }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });
 }

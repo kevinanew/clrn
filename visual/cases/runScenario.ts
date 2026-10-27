@@ -37,7 +37,6 @@ export async function runVisualScenario(
 
     try {
       await setupContextForScenario(context, scenario, page, {
-        useMitmproxy: Boolean(options.clubRoomProxyServer),
         clubRoomsFromProxy: Boolean(options.clubRoomProxyServer),
       });
       await page.goto(scenario.path);

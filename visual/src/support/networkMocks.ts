@@ -49,52 +49,6 @@ export async function mockRoomDisallowRuleReminder(context: BrowserContext): Pro
   );
 }
 
-const VISUAL_PROXY_HOST = '64.kr-seoul.api.staging.laiwan.shafayouxi.com';
-
-/**
- * 固定远端代理列表。真实 metadata 会返回多个节点，其中失效节点也可能被下面的
- * 健康检查 mock 误判为可用，随后业务 API 才报 ERR_CONNECTION_CLOSED。
- * 视觉测试仍访问 staging 数据，但始终经由同一个已验证节点，避免随机换 host。
- * @param context - 首次导航前配置的浏览器上下文。
- */
-async function mockProxyMetadata(context: BrowserContext): Promise<void> {
-  await context.route(/\/public\/v13\/metadata\/servers(?:\?|$)/, (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        ok: true,
-        result: {
-          servers: {
-            [VISUAL_PROXY_HOST]: '127.0.0.1',
-          },
-        },
-      }),
-    }),
-  );
-}
-
-/**
- * 固定代理节点健康检查。只有 VISUAL_PROXY_HOST 返回正常；其余本地候选节点明确
- * 返回不可用，保证启动测速与后台 metadata 刷新都不会随机选中已断连的节点。
- * @param context - 首次导航前配置的浏览器上下文。
- */
-async function mockProxyHealthChecks(context: BrowserContext): Promise<void> {
-  await context.route(/\/node\/v1\/status(?:\?|$)/, (route) => {
-    const hostname = new URL(route.request().url()).hostname;
-    const selected = hostname === VISUAL_PROXY_HOST;
-    return route.fulfill({
-      status: selected ? 200 : 503,
-      contentType: 'application/json',
-      body: JSON.stringify(
-        selected
-          ? { backend_delay: 0, server_load: 'normal' }
-          : { backend_delay: 0, server_load: 'unavailable' },
-      ),
-    });
-  });
-}
-
 /**
  * 固定大厅公共牌局与可用版本：
  * - 牌局接口失败会把 "--" 占位符写进基准图
@@ -266,14 +220,13 @@ async function mockSignedInDynamicState(
 /**
  * 为所有视觉测试浏览器上下文安装相同的网络稳定化 mock。
  *
- * 登录态采集会在场景开始前单独创建 context；它若跳过代理 metadata / 健康检查
- * mock，就会在应用启动阶段随机选中不可用的 staging 节点，根本无法进入登录页。
+ * 登录态采集和场景共用显示资料夹具；节点列表与健康响应由应用真实探测和选择。
  * @param context - 首次导航前配置的浏览器上下文。
  * @param options - 指定哪些网络响应交给真实接口或专用代理处理。
  */
 export async function mockVisualNetworkDependencies(
   context: BrowserContext,
-  options: { realPrivateRoom?: boolean; useMitmproxy?: boolean; recordFixtures?: boolean;
+  options: { realPrivateRoom?: boolean; recordFixtures?: boolean;
     clubRoomsFromProxy?: boolean; clubDetailsFromProxy?: boolean } = {},
 ): Promise<void> {
   // Freshchat 在线客服脚本是外部第三方资源（web 构建用占位 token），
@@ -286,10 +239,6 @@ export async function mockVisualNetworkDependencies(
     body: '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#f5f5f5"></body></html>',
   }));
 
-  if (!options.useMitmproxy) {
-    await mockProxyMetadata(context);
-    await mockProxyHealthChecks(context);
-  }
   await mockFixedCountryCode(context);
   await mockRoomDisallowRuleReminder(context);
   await mockHallMatchingGames(context);

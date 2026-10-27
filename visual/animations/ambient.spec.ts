@@ -24,14 +24,14 @@ test('launch branding fades in', async ({ context, page }, info) => {
   expect((await appearance(branding))[0].opacity).toBe(1);
 });
 
-test('hall slot banner automatically spins and repeats', async ({ context, page }, info) => {
+test('大厅老虎机横幅自动旋转并重复', async ({ context, page }, info) => {
   await context.addInitScript(() => { Math.random = /** 固定本场景的随机输入。 */ () => 0.37; });
   await openApplication(context, page, info, 'hall');
   const banner = page.getByTestId('slot-banner');
   await expect(banner).toBeVisible();
   const clip = await fixedArea(page, banner, 0);
   await freeze(page);
-  // 快进跨过完整周期，应用自己的定时回调在暂停点开启下一轮。
+  // 基准从快进终点触发的真实旋转开始采样，不能再等待下一轮，否则图标序列会错位。
   await page.clock.fastForward(12_000);
   await captureTimeline(page, info, 'hall-slot-banner', banner,
     { clip, times: [0, 160, 500, 1000, 1200, 4000, 4500, 5200] });

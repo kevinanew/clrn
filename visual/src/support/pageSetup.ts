@@ -178,14 +178,13 @@ export async function setupContextForScenario(
   context: BrowserContext,
   scenario: VisualScenario,
   page?: Page,
-  options: { useMitmproxy?: boolean; clubDetailsFromProxy?: boolean; clubRoomsFromProxy?: boolean;
+  options: { clubDetailsFromProxy?: boolean; clubRoomsFromProxy?: boolean;
     animations?: 'allow' | 'disabled'; navigatorLocale?: string } = {},
 ): Promise<void> {
   await fixNavigatorLanguage(context, options.navigatorLocale);
   if (options.animations !== 'allow') await disableAnimations(context);
   await mockVisualNetworkDependencies(context, {
     realPrivateRoom: scenario.group === 'texas-holdem' || scenario.group === 'zhajinhua',
-    useMitmproxy: options.useMitmproxy,
     clubRoomsFromProxy: options.clubRoomsFromProxy,
     recordFixtures: scenario.group === 'game-record',
     clubDetailsFromProxy: options.clubDetailsFromProxy,

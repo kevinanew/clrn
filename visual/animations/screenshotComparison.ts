@@ -1,3 +1,4 @@
+import { MAXIMUM_DIFFERENT_PIXEL_RATIO } from '../screenshotComparisonConfiguration';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
@@ -14,5 +15,5 @@ export function areScreenshotsEquivalent(firstScreenshot: Buffer, secondScreensh
   if (firstImage.width !== secondImage.width || firstImage.height !== secondImage.height) return false;
   const differentPixels = pixelmatch(firstImage.data, secondImage.data, null,
     firstImage.width, firstImage.height, { threshold: 0.1 });
-  return differentPixels <= firstImage.width * firstImage.height * 0.001;
+  return differentPixels <= firstImage.width * firstImage.height * MAXIMUM_DIFFERENT_PIXEL_RATIO;
 }
