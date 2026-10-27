@@ -30,7 +30,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     // 每张公共牌先异步读取牌面样式；全部牌面挂载后再由采样器启动首个翻转计时器。
     await expect(page.locator('[data-testid="community_card"] [data-testid="sprite-image-content"]'))
       .toHaveCount(cards.length);
-    await waitForTexasCardSprites(page);
+    await waitForTexasCardSprites(page, '[data-testid="community_card"]');
     if (street === 'flop') {
       // 等待首张牌的零延迟翻转真正开始，再以该时刻采样公共牌移动。
       const firstFlip = page.locator('[data-testid="community_card"]:visible').first().getByTestId('card-flip');
@@ -96,10 +96,12 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await expect(opponentPlayer.getByTestId('texas-holdem-player-action-all_in')).toBeAttached();
   // 全押公开手牌由玩家组件绘制，等异步读取牌面样式后确认两张 K 牌已就绪。
   const publicCards = opponentPlayer.getByTestId('texas-holdem-player-hole-cards');
+  const publicCardScope = `[data-testid^="texas-holdem-player-container-${opponent}"] `
+    + '[data-testid="texas-holdem-player-hole-cards"]';
   await expect(publicCards.getByTestId('sprite-image-container')).toHaveCount(2);
   await expect(publicCards.getByTestId('poker-text-letter')).toHaveText(['k', 'k']);
   await expect(publicCards.getByTestId('poker-text-suit')).toHaveText(['♥', '♠']);
-  await waitForTexasCardSprites(page);
+  await waitForTexasCardSprites(page, publicCardScope);
   await captureTimeline(page, info, 'texas-all-in', visible(page, `texas-holdem-player-container-${opponent}`),
     { clip, mask: [page.locator('img[src*=".webp"]')], times: [0, 80, 160, 320, 640, 1200, 2400, 3200] });
   await proxy.replayTexas(roomId, events([{ event: 'showdown', players: [
@@ -108,7 +110,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     { player_id: opponent, hole_card: ['kh', 'ks'], hand_strength: 'three_of_a_kind',
       strength_cards: ['kh', 'ks', 'kd'], is_max_strength: false },
   ] }]));
-  await waitForTexasCardSprites(page);
+  await waitForTexasCardSprites(page, publicCardScope);
   await captureTimeline(page, info, 'texas-showdown', table, { clip });
   await proxy.replayTexas(roomId, events([{ event: 'settlement', players: [
     { player_id: self, net: 180, prize: 180, stack: 1180 },
