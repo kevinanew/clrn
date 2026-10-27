@@ -24,5 +24,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
       - name: 安装依赖
         run: npm ci
-      - name: 运行代码检查
-        run: npm run check
+      - name: 运行提交检查
+        run: uvx --from pre-commit==4.6.0 pre-commit run --all-files
+      - name: 运行本机单元测试
+        run: npm test

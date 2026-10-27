@@ -116,6 +116,19 @@ node ../scripts/with-test-account.mjs -- pnpm run test:ci
 验证账号分配与失败释放：`node --test scripts/with-test-account.test.mjs`。
 
 仓库检查需要 Node.js 24 和 [uv](https://docs.astral.sh/uv/getting-started/installation/)；在仓库根目录先执行 `npm ci`，再执行 `npm run check`。
+首次克隆后还需安装 Python `pre-commit` 的 Git hook；Git 不会复制本地 hook：
+
+```sh
+uvx --from pre-commit==4.6.0 pre-commit install
+uvx --from pre-commit==4.6.0 pre-commit run --all-files
+```
+
+提交时检查全部源码、工作流、文件长度，以及根目录和 `visual/` 两份 TypeScript 配置。
+根目录采用 ESNext，视觉子项目采用 CommonJS，必须同时通过，不能只检查其中一份。
+hook 只检查，不自动修改文件；失败后修复、重新暂存并重试提交。每个新克隆都要安装 hook。
+CI 使用相同版本的 `pre-commit` 独立执行全部检查，再运行本机单元测试；
+真实账号、浏览器和线上截图测试仍由原有工作流执行，不放入提交 hook。
+
 `npm run lint` 检查根目录、`scripts/`、`e2e/`、`visual/` 中全部 JavaScript／TypeScript，函数、命名箭头函数、类及方法
 必须有含有效说明的 TSDoc；已有参数必须写 `@param 参数名 - 说明`。
 使用 `eslint-plugin-tsdoc` 校验格式，缺失注释、空注释、未知标签和不规范的

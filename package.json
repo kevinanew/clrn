@@ -14,7 +14,7 @@
     "lint:shell": "node scripts/lint-shell.mjs",
     "lint:workflows": "uvx --from actionlint-py==1.7.12.25 --with shellcheck-py==0.11.0.1 actionlint -pyflakes= -ignore 'unexpected key \"queue\" for \"concurrency\" section'",
     "lint:lines": "node lint-lines.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p visual/tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
