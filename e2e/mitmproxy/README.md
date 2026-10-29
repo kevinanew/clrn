@@ -34,7 +34,7 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 | 同上：`GET /v2/check_in/seven_day/{rule,current}` | 每日奖励已签到展示，不领取 | 仅 `daily-bonus`，规则数据文件和当天签到时间；保留日期文字稳定化 |
 | 同上：`/v10/club/application`、`/v10/buy_in/auditor/user/applications/pending` 空数组 | 全局压制通知状态 | 删除全局覆盖；仅分页用例需要时控制申请列表 |
 | `cases/hall/walletPresentation.ts`：`PUT /v10/wallet/user` | 每日奖励救济金按钮固定展示 | 迁入 `daily-bonus` response hook；先获取真实成功钱包，仅改本人 coin 展示为 1000，保留钻石、身份、未知字段及失败响应，不修改服务端资产 |
-| `animations/applicationFixtures.ts`：`PUT /v2/building/rooms` | 邀请面板需要等待中的房间 | `invitation` + `invitation.json`；从真实成功 house 响应确认归属，只处理该 house 的确切批次，不连接虚拟牌局或发送邀请 |
+| `animations/applicationFixtures.ts`：`PUT /v2/building/rooms` | 邀请面板需要等待中的房间 | `invitation` + `invitation.json`；从真实成功的 `PUT /v10/house/user/user` 响应确认归属，兼容 GET；只处理该 house 的确切批次，不连接虚拟牌局或发送邀请 |
 | `animations/matchingFixtures.ts`：`POST /v1/hall_matching/{join,quit,keep_waiting}` | 匹配旋转弹窗，不进入真实队列 | `matching`；HTTP 和 Centrifuge method 9 RPC 都隔离，订阅与心跳透传 |
 | `animations/slotFixtures.ts`：`/v2/slot_machine/user/user/{energy,spin}` | 三类奖励、能量不足动画 | `slot`；HTTP 与 WebSocket 同一 Python 实现；spin 未绑定或账号不符返回错误，绝不发送真实抽奖 |
 | 同上：完整伪造 `PUT /v10/wallet/user` | 固定老虎机工具栏余额 | 删除覆盖，使用真实钱包；动画断言从真实响应读取金币/钻石，不降低数字控件断言 |
@@ -119,3 +119,5 @@ JS/Python lint、ShellCheck、actionlint、400 行限制、两份 TypeScript 检
 尚未通过，必须由宿主／对应新构建 CI 验证；不能把用例收集或协议一致视为画面、原生设备
 或远端回归通过。普通 CI 不自动接受新基准。当前没有可审阅的新构建截图或录像，
 不作视觉批准，也不援引旧失败证明本轮成功或失败。
+
+后续合并与修复记录见 [合并请求第 73 号的迁移回归调查](issue-70-regression.md)。

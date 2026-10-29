@@ -8,6 +8,17 @@ from test_network_faults import flow
 
 
 class DiagnosticTests(unittest.TestCase):
+    def test_两个认证控制入口不进入业务请求响应或错误诊断(self):
+        diagnostics = ConnectionDiagnostics()
+        for host in ('test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'):
+            request = flow(f'http://{host}/fixtures/environment', 'POST', b'{}')
+            request.response = http.Response.make(200, b'{}')
+            diagnostics.request(request)
+            diagnostics.response(request)
+            diagnostics.error(request)
+        self.assertEqual(diagnostics.snapshot(), {'events': [], 'dropped': 0},
+                         '控制流量不能混入真实选线和健康探测的诊断')
+
     def test_sources_and_domain_redaction(self):
         diagnostics = ConnectionDiagnostics()
         for source in ('upstream', 'fixture'):

@@ -224,7 +224,7 @@ class ScenarioFixtures:
             if body.get('ok') is not True:
                 return
             value = body.get('result')
-            if flow.request.method == 'GET' and re.fullmatch(r'/v10/house/user/[^/]+', path) and isinstance(value, dict):
+            if flow.request.method in ('GET', 'PUT') and re.fullmatch(r'/v10/house/user/[^/]+', path) and isinstance(value, dict):
                 owner = path.rsplit('/', 1)[-1]
                 if not self.user_id or self.user_id == owner:
                     self.user_id = owner

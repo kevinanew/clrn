@@ -8,6 +8,7 @@ import { exerciseTablePopup as exercisePopup } from './popups';
 import { closeTableMask } from './tablePanels';
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import type { TableSession } from './tableSession';
+import { sampleCardSprites } from './cardSpriteDiagnostics';
 
 /**
  * 按真实消息协议采样德州牌张、玩家状态、结算和互动效果。
@@ -89,6 +90,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     open: openAccurateRaise,
     close: /** 通过实际按钮或遮罩关闭。 */ () => closeTableMask(page, 'accurate-bet-popup-container') });
   await freeze(page);
+  await sampleCardSprites(page, 'before-all-in-replay');
   await proxy.replayTexas(roomId, { scene: 'texas-gameplay-all_in-all_in_show_hole_card' });
   await expect(opponentPlayer.getByTestId('texas-holdem-player-action-all_in')).toBeAttached();
   // 全押公开手牌由玩家组件绘制，等异步读取牌面样式后确认两张 K 牌已就绪。
@@ -101,6 +103,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await waitForTexasCardSprites(page, publicCardScope);
   await captureTimeline(page, info, 'texas-all-in', visible(page, `texas-holdem-player-container-${opponent}`),
     { clip, mask: [page.locator('img[src*=".webp"]')], times: [0, 80, 160, 320, 640, 1200, 2400, 3200] });
+  await sampleCardSprites(page, 'before-showdown-replay');
   await proxy.replayTexas(roomId, { scene: 'texas-gameplay-showdown' });
   await waitForTexasCardSprites(page, publicCardScope);
   // 摊牌同时替换本人手牌；两侧图集都就绪后再比较固定时刻的真实画面。

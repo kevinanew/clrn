@@ -35,6 +35,24 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         await self.addon.request(request)
         return request
 
+    async def test_私人房资料的真实读取方法绑定归属且不修改上游响应(self):
+        for method in ('GET', 'PUT'):
+            with self.subTest(method=method):
+                self.setUp()
+                house = await self.request(f'/v10/house/user/{SELF}', method)
+                original = {'ok': True, 'result': {'house_id': ROOM, 'user_id': SELF}, 'new_field': 42}
+                for status, body in ((503, original), (200, {'ok': False}), (200, original)):
+                    house.response = http.Response.make(status, json.dumps(body).encode())
+                    before = house.response.content
+                    self.addon.response(house)
+                    self.assertEqual(house.response.content, before, '绑定归属时必须保留真实房屋资料')
+                    self.assertEqual(self.addon.user_id, SELF if status == 200 and body.get('ok') else '')
+                foreign = await self.request(f'/v10/house/user/{OTHER}', method)
+                foreign.response = http.Response.make(200, json.dumps(original).encode())
+                self.addon.response(foreign)
+                self.assertEqual((self.addon.user_id, self.addon.house_id), (SELF, ROOM),
+                                 '其他账号资料不能改变当前代理归属')
+
     async def test_default_and_unmatched_traffic_passes_including_initialization(self):
         paths = ['/public/v12/metadata/servers', '/public/v13/metadata/servers', '/node/v1/status',
                  '/public/v11/user/login', f'/v11/user/{SELF}/account', f'/v10/wallet/{SELF}',
@@ -174,11 +192,11 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         disabled = await self.request(path.replace('enable_auto_rebuy', 'disable_auto_rebuy'), 'PUT')
         self.assertEqual(disabled.response.json()['result'], {'auto_rebuy': False})
 
-    async def test_invitation_only_replaces_observed_house_batch_and_keeps_real_house_response(self):
+    async def test_邀请面板只替换本人房屋的确切批次且保留真实资料(self):
         await self.control({'name': 'invitation', 'userId': SELF})
         path = '/v2/building/rooms'
         self.assertIsNone((await self.request(path, 'PUT', {'building_ids': [ROOM]})).response)
-        house = await self.request(f'/v10/house/user/{SELF}')
+        house = await self.request(f'/v10/house/user/{SELF}', 'PUT')
         original = {'ok': True, 'result': {'house_id': ROOM, 'house_number': 123, 'user_id': SELF}}
         house.response = http.Response.make(200, json.dumps(original).encode())
         self.addon.response(house)

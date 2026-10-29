@@ -8,7 +8,7 @@ import time
 from urllib.parse import urlsplit
 from mitmproxy import http
 
-CONTROL_HOST = 'test-mitmproxy.invalid'
+CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 
 
 def safe_address(match):
@@ -62,14 +62,14 @@ class ConnectionDiagnostics:
         return {'events': list(self.events), 'dropped': self.dropped}
 
     def request(self, flow):
-        if flow.request.host == CONTROL_HOST:
+        if flow.request.host in CONTROL_HOSTS:
             return
         source = 'fixture' if flow.response is not None else 'upstream'
         flow.metadata['diagnostic_source'] = source
         self.record('proxy.request', flow, source=source)
 
     def response(self, flow):
-        if flow.request.host == CONTROL_HOST:
+        if flow.request.host in CONTROL_HOSTS:
             return
         self.record('proxy.response', flow, source=flow.metadata.get('diagnostic_source', 'unknown'),
                     status=flow.response.status_code,
@@ -82,7 +82,7 @@ class ConnectionDiagnostics:
             self.record('proxy.nodes-filtered', flow, before=before, after=after or [], reason='代理改写节点列表')
 
     def error(self, flow):
-        if flow.request.host != CONTROL_HOST:
+        if flow.request.host not in CONTROL_HOSTS:
             self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown')
 
     def websocket_start(self, flow):

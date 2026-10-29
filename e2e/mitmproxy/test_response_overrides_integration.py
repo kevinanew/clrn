@@ -186,8 +186,8 @@ class LiveOverrideTests(unittest.TestCase):
     def check_game_hold(self, port):
         control = 'http://fixtures-mitmproxy.invalid/fixtures/'
         api = 'http://api.shafayouxi.org'
-        self.assertEqual(self.fetch(port, control + 'select', 'POST', {'name': 'none', 'userId': OWNER})[0], 200)
-        self.fetch(port, api + f'/v10/house/user/{OWNER}')
+        self.assertEqual(self.fetch(port, control + 'select', 'POST', {'name': 'none'})[0], 200)
+        self.fetch(port, api + f'/v10/house/user/{OWNER}', 'PUT')
         self.fetch(port, 'http://test-mitmproxy.invalid/texas/view', 'POST', {'mode': 'hall'})
         creation = {'user_id': OWNER, 'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
                     'action_json': {'game_type': 'texas_react_native'}}
