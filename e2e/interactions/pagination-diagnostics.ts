@@ -17,6 +17,7 @@ export async function observePaginationGesture(page: Page) {
     const listId = 'game-buy-in-application-list';
     const records = [];
     const eventRecords = new WeakMap();
+    let touchTarget = null;
     let dropped = 0;
     let frame = 0;
     let stopped = false;
@@ -69,6 +70,7 @@ export async function observePaginationGesture(page: Page) {
       const viewport = window.visualViewport;
       append({ kind: 'layout', phase, at: performance.now(), readyState: document.readyState,
         visibilityState: document.visibilityState,
+        touchTarget: touchTarget ? { ...identity(touchTarget), connected: touchTarget.isConnected } : null,
         viewport: { width: innerWidth, height: innerHeight, deviceScaleFactor: devicePixelRatio,
           visualWidth: viewport?.width, visualHeight: viewport?.height, visualScale: viewport?.scale,
           offsetLeft: viewport?.offsetLeft, offsetTop: viewport?.offsetTop,
@@ -95,6 +97,7 @@ export async function observePaginationGesture(page: Page) {
       const target = event.target instanceof Element ? event.target : null;
       const touch = event instanceof TouchEvent ? event : null;
       const pointer = event instanceof MouseEvent ? event : null;
+      if (event.type === 'touchstart') touchTarget = target;
       const record = { kind: 'input', type: event.type, at: performance.now(), timestamp: event.timeStamp,
         trusted: event.isTrusted, cancelable: event.cancelable,
         defaultPreventedAtCapture: event.defaultPrevented, bubbledToDocument: false,

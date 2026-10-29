@@ -1,4 +1,4 @@
-import { MAXIMUM_DIFFERENT_PIXEL_RATIO } from '../screenshotComparisonConfiguration';
+import { imageComparisonOptions } from '../screenshotComparisonConfiguration';
 import { expect, type Page, type Response, type TestInfo } from '@playwright/test';
 
 /**
@@ -45,7 +45,7 @@ export async function captureImageFrames(page: Page, info: TestInfo, name: strin
   expect(new Set(frames.map(frame => frame.png)).size, '动画素材必须包含不同图像帧').toBeGreaterThan(1);
   for (const frame of frames) {
     expect(Buffer.from(frame.png, 'base64')).toMatchSnapshot(`asset-${name}-${frame.index}frame.png`,
-      { threshold: 0, maxDiffPixelRatio: MAXIMUM_DIFFERENT_PIXEL_RATIO });
+      imageComparisonOptions(0));
   }
   const timing = frames.map(({ png: _png, ...frame }) => frame);
   expect(JSON.stringify(timing, null, 2)).toMatchSnapshot(`asset-${name}-timing.json`);

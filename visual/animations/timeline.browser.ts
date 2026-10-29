@@ -64,9 +64,9 @@ test('完整记录普通、局部比较和数字遮罩的差异，保留失败�
     assert.equal(comparison.status, 1, comparison.error?.message || comparison.stdout + comparison.stderr);
     const report: { suites: ReportSuite[] } = JSON.parse(await readFile(reportPath, 'utf8'));
     const results = collectResults(report.suites);
-    assert.equal(results.length, 8);
+    assert.equal(results.length, 16);
     for (const { title, result } of results) {
-      if (title === '相邻截图稳定性：tolerated') {
+      if (title.startsWith('相邻截图稳定性：tolerated/')) {
         assert.equal(result.status, 'passed', '阈值内的相邻截图微差不得阻止后续采样');
         assert.ok(result.attachments.some(attachment => attachment.name === '稳定性检查之后'));
         continue;

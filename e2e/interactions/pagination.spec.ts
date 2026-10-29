@@ -23,12 +23,17 @@ test('横向手势切换申请标签，触底按游标追加且末页停止请�
     const unread = page.getByRole('tab', { name: '未处理', exact: true });
     const read = page.getByRole('tab', { name: '已处理', exact: true });
     await expect(unread).toHaveAttribute('aria-selected', 'true');
-    const screen = await page.getByTestId('game-buy-in-application-list-screen').boundingBox();
+    const applications = page.getByTestId('game-buy-in-application-list-screen');
+    // 标签先于首屏请求完成出现；等空态替换加载列表，避免手势中的触摸目标被卸载。
+    const empty = applications.getByTestId('empty-page-text');
+    await expect(empty).toHaveText('牌局消息已经全部处理');
+    await expect(empty).toBeVisible();
+    const screen = await applications.boundingBox();
     if (!screen) {
       throw new Error('申请页面没有布局区域');
     }
     const y = screen.y + screen.height / 2;
-    // 加长距离的假设已被远端失败否定；保留输入，先观察实际事件及组件位移。
+    // 保留原输入距离与节奏，继续观察完整事件及组件位移。
     await diagnostics.begin();
     await drag(
       page,

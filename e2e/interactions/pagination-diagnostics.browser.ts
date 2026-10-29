@@ -92,3 +92,49 @@ test('分页诊断记录真实触摸结束与取消，保持页面和业务监�
     }
   } finally { await browser.close(); }
 });
+
+test('触摸目标卸载后仍保留失联证据，完整输入命令不等于文档收到结束事件', async () => {
+  const browser = await chromium.launch();
+  try {
+    const context = await browser.newContext(devices['Pixel 7']);
+    const page = await context.newPage();
+    await page.setContent(`<meta name="viewport" content="width=device-width,initial-scale=1">
+      <div data-testid="game-buy-in-application-list-screen" style="width:300px;height:500px;overflow:hidden">
+        <div data-testid="game-buy-in-application-list" style="width:300px;height:500px">加载中的占位内容</div>
+      </div>`);
+    await page.evaluate(/** 模拟首屏读取完成后卸载加载列表，不改动手势样式。 */ () => {
+      let moves = 0;
+      document.addEventListener('touchmove', /**
+       * 在第三次真实移动后更换首屏内容。
+       * @param event - 浏览器分发的真实触摸事件。
+       */ event => {
+        moves += 1;
+        if (moves === 3 && event.target instanceof Element) {
+          const target = event.target;
+          queueMicrotask(/** 等本次事件分发结束后卸载原目标。 */ () => target.remove());
+        }
+      }, { capture: true, passive: true });
+    });
+    const diagnostics = await observePaginationGesture(page);
+    await diagnostics.begin();
+    // 使用生产输入工具，十二次移动及结束命令必须全部成功返回。
+    await drag(page, { x: 270, y: 200 }, { x: 30, y: 200 }, true);
+    let saved = '';
+    await diagnostics.save({ project: { use: devices['Pixel 7'] },
+      attach: /** 保存白名单快照以检查目标连接状态。
+       * @param _name - 附件名称。
+       * @param attachment - 附件正文。
+       */ async (_name: string, attachment: { body: string }) => { saved = attachment.body; },
+    } as unknown as TestInfo);
+    const result = JSON.parse(saved);
+    const inputs = result.records.filter((record: { kind: string }) => record.kind === 'input');
+    assert.equal(inputs.filter((event: { type: string }) => event.type === 'touchmove').length, 3,
+      '目标卸载后，后续移动不再经过文档监听');
+    assert.ok(!inputs.some((event: { type: string }) => event.type === 'touchend'),
+      '不能把输入命令成功返回当作文档收到触摸结束');
+    assert.equal(result.records.at(-1).touchTarget.connected, false, '目标卸载后仍应保存断开的节点身份');
+    assert.equal(result.records.at(-1).touchTarget.marker, 'game-buy-in-application-list');
+    assert.ok(!saved.includes('占位内容'), '节点卸载诊断也不得采集正文');
+    await context.close();
+  } finally { await browser.close(); }
+});

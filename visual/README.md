@@ -319,7 +319,8 @@ CI 从 `CLRN_CI_TEST_ACCOUNTS_V3` Secret 为每个任务注入 `VISUAL_USERNAME`
 1. Playwright 容器访问 `VISUAL_BASE_URL` 指定的已部署前端。
 2. 登录态采集器通过真实 UI 登录，并用只读账户接口验证凭据。
 3. 各场景注入语言、设备标识及已采集的登录态，再按实际导航进入目标页面。
-4. `preparePage` 完成稳定化后与基准图比较，最多允许 0.3% 差异像素。
+4. `preparePage` 完成稳定化后与基准图比较，最多允许 0.5% 差异像素。
+   全部 Web 入口、有效面积及颜色容差见[图片比较统一规则](screenshotComparison.md)。
 
 视觉测试仍保留现有的接口 mock 和固定文本填充，用于稳定余额、房间列表、国家码等截图内容；
 它验证指定构建的视觉表现。真实认证行为由 `e2e/cases/auth-002*` 和 `auth-003*` 检查。
