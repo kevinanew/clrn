@@ -23,10 +23,11 @@ test('横向手势切换申请标签，触底按游标追加且末页停止请�
     throw new Error('申请页面没有布局区域');
   }
   const y = screen.y + screen.height / 2;
+  // 分页组件接管手势后会重设起点；拖过八成页面宽度，避免仅靠末次速度跨过宽度约 57% 的门槛。
   await drag(
     page,
-    { x: screen.x + screen.width * 0.8, y },
-    { x: screen.x + screen.width * 0.2, y },
+    { x: screen.x + screen.width * 0.9, y },
+    { x: screen.x + screen.width * 0.1, y },
     isMobile,
   );
   await expect(read).toHaveAttribute('aria-selected', 'true');
