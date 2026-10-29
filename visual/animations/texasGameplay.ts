@@ -8,6 +8,7 @@ import { exerciseTablePopup as exercisePopup } from './popups';
 import { closeTableMask } from './tablePanels';
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import type { TableSession } from './tableSession';
+import { sampleCardSprites } from './cardSpriteDiagnostics';
 
 /**
  * 按真实消息协议采样德州牌张、玩家状态、结算和互动效果。
@@ -92,6 +93,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     open: openAccurateRaise,
     close: /** 通过实际按钮或遮罩关闭。 */ () => closeTableMask(page, 'accurate-bet-popup-container') });
   await freeze(page);
+  await sampleCardSprites(page, 'before-all-in-replay');
   await proxy.replayTexas(roomId, events([{ event: 'all_in', player_id: opponent, amount: 960, stack: 0 },
     { event: 'all_in_show_hole_card', players: [{ player_id: opponent, hole_card: ['kh', 'ks'] }] }]));
   await expect(opponentPlayer.getByTestId('texas-holdem-player-action-all_in')).toBeAttached();
@@ -105,6 +107,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await waitForTexasCardSprites(page, publicCardScope);
   await captureTimeline(page, info, 'texas-all-in', visible(page, `texas-holdem-player-container-${opponent}`),
     { clip, mask: [page.locator('img[src*=".webp"]')], times: [0, 80, 160, 320, 640, 1200, 2400, 3200] });
+  await sampleCardSprites(page, 'before-showdown-replay');
   await proxy.replayTexas(roomId, events([{ event: 'showdown', players: [
     { player_id: self, hole_card: ['as', 'ad'], best_cards: ['as', 'ad', 'ah', 'kd', 'qs'],
       hand_strength: 'three_of_a_kind', strength_cards: ['as', 'ad', 'ah'], is_max_strength: true },

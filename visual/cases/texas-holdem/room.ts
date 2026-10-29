@@ -25,9 +25,17 @@ export async function enterTexasRoom(page: Pick<Page, 'request'>, room: RoomSess
   }).catch(error => {
     throw new Error(`德州观察者连接请求失败：${requestErrorSummary(error)}`);
   });
-  const body = await response.json();
-  expect(response.ok() && body?.ok === true, '大厅显示夹具使用当前私人房的真实观察者连接').toBe(true);
-  await response.dispose();
+  try {
+    const body = await response.json().catch(() => {
+      // 只保留已知媒体类型，不把错误页正文、地址或任意响应头写入报告。
+      const mediaType = response.headers()['content-type']?.split(';')[0].trim().toLowerCase();
+      const type = mediaType === 'text/html' || mediaType === 'application/json' ? mediaType : '其他或未知';
+      throw new Error(`德州观察者连接返回非 JSON：HTTP ${response.status()}，响应类型=${type}`);
+    });
+    expect(response.ok() && body?.ok === true, '大厅显示夹具使用当前私人房的真实观察者连接').toBe(true);
+  } finally {
+    await response.dispose();
+  }
 }
 
 export const deleteTexasRoom = deletePrivateGameRoom;
