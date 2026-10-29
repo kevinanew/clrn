@@ -17,7 +17,7 @@ export class DiagnosticRecorder {
   record(event: string, fields: unknown = {}): void {
     const safe = diagnosticFields(fields);
     const observedAt = typeof safe.observedAt === 'number' ? safe.observedAt : Date.now();
-    this.events.push({ ...safe, event: diagnosticText(event), observedAt });
+    this.events.push({ ...safe, event: String(diagnosticFields({ event }).event), observedAt });
     if (this.events.length > 5000) { this.events.shift(); this.dropped++; }
   }
 

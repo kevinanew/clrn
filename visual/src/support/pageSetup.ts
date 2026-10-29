@@ -45,7 +45,7 @@ function buildAuthStateArgs(entries: Record<string, string>): AuthStateArgs {
 }
 
 /** 读取本次运行采集的登录态；不存在/损坏时返回 null，由场景明确失败。 */
-function readAuthStateEntries(): Record<string, string> | null {
+export function readAuthStateEntries(): Record<string, string> | null {
   try {
     const raw = JSON.parse(fs.readFileSync(AUTH_STATE_PATH, 'utf8'));
     const entries = raw?.entries;

@@ -2,6 +2,7 @@
 
 from collections import deque
 import hashlib
+import ipaddress
 import json
 import os
 import re
@@ -15,7 +16,7 @@ CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 def safe_address(match):
     try:
         address = urlsplit(match.group(0))
-        return f'{address.scheme}://{node_name(address.hostname or "")}{address.path}'
+        return node_name(address.hostname or '')
     except ValueError:
         return '[地址已隐藏]'
 
@@ -23,12 +24,23 @@ def safe_address(match):
 def safe_text(value):
     text = str(value or '')
     text = re.sub(r'\b(?:https?|wss?)://[^\s<>"\'`)]+',
-                  safe_address, text)
-    text = re.sub(r'\b(?:\d{1,3}\.){3}\d{1,3}\b|\[[0-9a-fA-F:]*:[0-9a-fA-F:]+\]',
+                  safe_address, text, flags=re.I)
+    text = re.sub(r'\b(?:\d{1,3}\.){3}\d{1,3}\b(?::\d+)?|\[[0-9a-fA-F:.]+\](?::\d+)?',
                   '[地址已隐藏]', text)
+    text = re.sub(r'(?:[a-f0-9]{0,4}:){2,}[a-f0-9:.]+', safe_ipv6, text, flags=re.I)
+    text = re.sub(r'\b(?:[a-z0-9-]+\.)+[a-z]{2,63}\b(?::\d+)?(?:/[^\s<>"\'`),;]*)?',
+                  lambda match: node_name(match.group(0)), text, flags=re.I)
     text = re.sub(r'\bBearer\s+[^\s,"\'}]+', 'Bearer [已隐藏]', text, flags=re.I)
     return re.sub(r'((?:access_token|refresh_token|authorization|password|cookie|token)["\']?\s*[:=]\s*["\']?)[^\s,"\';&}]+',
                   r'\1[已隐藏]', text, flags=re.I)[:2000]
+
+
+def safe_ipv6(match):
+    try:
+        ipaddress.IPv6Address(match.group(0))
+        return '[地址已隐藏]'
+    except ValueError:
+        return match.group(0)
 
 
 def node_name(value):
@@ -62,6 +74,7 @@ class ConnectionDiagnostics:
                  'path': urlsplit(flow.request.path).path, 'method': flow.request.method, **fields}
         self.events.append({key: [safe_text(item).replace(flow.request.host, node_name(flow.request.host))
                                   for item in value] if isinstance(value, list)
+                           else value if key in ('event', 'path')
                            else safe_text(value).replace(flow.request.host, node_name(flow.request.host))
                            if isinstance(value, str) else value for key, value in entry.items()})
 

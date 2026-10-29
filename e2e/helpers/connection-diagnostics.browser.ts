@@ -6,6 +6,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { chromium, type TestInfo } from '@playwright/test';
+import { diagnosticNode } from './diagnostic-privacy';
 import { installConnectionDiagnostics, recordDiagnostic } from '../../visual/src/support/connectionDiagnostics';
 
 test('真实浏览器保留失败前的操作、节点列表、未完成请求和应用缓存事件', async () => {
@@ -13,7 +14,7 @@ test('真实浏览器保留失败前的操作、节点列表、未完成请求�
     if (request.url === '/pending') return;
     if (request.url === '/public/v12/metadata/servers') {
       response.setHeader('Content-Type', 'application/json');
-      response.end(JSON.stringify({ result: { servers: ['64.kr-seoul.api.staging.laiwan.shafayouxi.com'] }, token: 'secret' }));
+      response.end(JSON.stringify({ result: { servers: ['api.fixture.invalid'] }, token: 'secret' }));
       return;
     }
     response.end('<html><body>offline diagnostics</body></html>');
@@ -41,7 +42,7 @@ test('真实浏览器保留失败前的操作、节点列表、未完成请求�
     await page.evaluate(async () => {
       await fetch('/public/v12/metadata/servers');
       window.dispatchEvent(new CustomEvent('laiwan:connection-diagnostic', { detail: {
-        event: 'probe.cache', node: '64.kr-seoul.api.staging.laiwan.shafayouxi.com', cacheAgeMs: 200,
+        event: 'probe.cache', node: 'api.fixture.invalid', cacheAgeMs: 200,
         token: 'secret', body: { token: 'secret' },
       } }));
       void fetch('/pending').catch(() => {});
@@ -49,12 +50,22 @@ test('真实浏览器保留失败前的操作、节点列表、未完成请求�
     await page.waitForTimeout(100);
     await diagnostics.save(new Error('应用显示重试弹窗'));
     const saved = await readFile(path.join(directory, 'connection-diagnostics.json'), 'utf8');
-    assert.ok(!saved.includes('shafayouxi.com'));
+    for (const value of ['api.fixture.invalid', '127.0.0.1', `:${address.port}`]) {
+      assert.ok(!saved.includes(value), '连接入口不能进入保存的诊断');
+    }
     assert.ok(!saved.includes('secret'));
     const result = JSON.parse(saved);
     assert.ok(result.events.some((event: { event: string }) => event.event === 'nodes.received'));
     assert.ok(result.events.some((event: { event: string }) => event.event === 'http.pending'));
     assert.ok(result.events.some((event: { event: string; source: string }) => event.event === 'probe.cache' && event.source === 'application'));
+    const node = diagnosticNode('api.fixture.invalid');
+    assert.ok(result.events.some((event: { event: string; candidates: string[] }) =>
+      event.event === 'nodes.received' && event.candidates.includes(node)));
+    assert.ok(result.events.some((event: { event: string; node: string }) =>
+      event.event === 'probe.cache' && event.node === node));
+    const summary = await readFile(path.join(directory, 'connection-summary.md'), 'utf8');
+    assert.ok(summary.includes(node));
+    assert.ok(!summary.includes('api.fixture.invalid'));
     assert.deepEqual(attached, ['connection-diagnostics', 'connection-summary']);
     await context.close();
   } finally {

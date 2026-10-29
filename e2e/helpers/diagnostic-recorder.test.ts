@@ -4,14 +4,32 @@ import test from 'node:test';
 import { diagnosticFields, diagnosticNode, diagnosticText } from './diagnostic-privacy';
 import { DiagnosticRecorder } from './diagnostic-recorder';
 
-test('地址和错误文本不暴露共享域名、用户信息和认证参数', () => {
-  const address = 'wss://user:password@64.kr-seoul.api.staging.laiwan.shafayouxi.com/socket?access_token=secret#credential';
-  assert.equal(diagnosticText(address), 'wss://64.kr-seoul.api.staging.laiwan/socket');
-  assert.equal(diagnosticNode(address), '64.kr-seoul.api.staging.laiwan');
-  const fields = diagnosticFields({ event: 'error', reason: `failed ${address} Bearer secret access_token=other`,
-    authorization: 'secret', body: { token: 'secret' }, candidates: ['64.kr-seoul.api.staging.laiwan.shafayouxi.com'] });
+test('连接地址与认证参数不进入诊断，节点标签与 Python 保持一致', () => {
+  const host = 'api.fixture.invalid';
+  const address = `wss://user:password@${host}:9443/private-entry?access_token=secret#credential`;
+  const node = diagnosticNode(host);
+  assert.equal(node, 'laiwan_prd-d5e6a40756c6', 'Python 代理对同一保留地址也生成此标签');
+  assert.match(node, /^laiwan_prd-[a-f0-9]{12}$/);
+  assert.equal(diagnosticText(address), node);
+  assert.equal(diagnosticNode(address), node);
+  assert.equal(diagnosticNode(node), node, '重复清理不能破坏代理节点关联');
+  assert.notEqual(diagnosticNode('other.invalid'), node);
+  const fields = diagnosticFields({ event: 'http.failed', node: host,
+    path: '/public/v1/hall_matching/available.json?token=secret',
+    reason: `failed ${address} Bearer secret access_token=other 192.0.2.10:8443 [2001:db8::10]:9443 2001:db8::20 api.fixture.invalid:9443`,
+    authorization: 'secret', body: { token: 'secret' }, candidates: [host, address, node],
+    before: [host], after: [address], selected: host, excluded: [host] });
+  assert.equal(fields.event, 'http.failed');
+  assert.equal(fields.path, '/public/v1/hall_matching/available.json');
+  assert.equal(fields.node, node);
+  assert.deepEqual(fields.candidates, [node, node, node]);
+  assert.deepEqual(fields.before, [node]);
+  assert.deepEqual(fields.after, [node]);
+  assert.equal(fields.selected, node);
+  assert.deepEqual(fields.excluded, [node]);
   const result = JSON.stringify(fields);
-  for (const value of ['secret', 'password', 'credential', 'other', 'shafayouxi.com']) assert.ok(!result.includes(value), result);
+  for (const value of [host, 'secret', 'password', 'credential', 'other', '192.0.2.10',
+    '2001:db8::10', '2001:db8::20', '8443', '9443', '/private-entry']) assert.ok(!result.includes(value), value);
   assert.ok(!('body' in fields));
 });
 
@@ -25,9 +43,9 @@ test('区分候选、真实健康响应、模拟响应、缓存和 WebSocket 尝
   recorder.record('probe.cache', { node: 'B', source: 'application', cacheAgeMs: 2000 });
   recorder.record('websocket.start', { node: 'A' });
   const summary = recorder.markdown('case');
-  assert.match(summary, /\| A \| 1 \| 1 \| 0 \| 0 \| 1 \|/);
-  assert.match(summary, /\| B \| 1 \| 0 \| 1 \| 1 \| 0 \|/);
-  assert.match(summary, /\| C \| 0 \| 0 \| 0 \| 0 \| 0 \|/);
+  assert.match(summary, new RegExp(`\\| ${diagnosticNode('A')} \\| 1 \\| 1 \\| 0 \\| 0 \\| 1 \\|`));
+  assert.match(summary, new RegExp(`\\| ${diagnosticNode('B')} \\| 1 \\| 0 \\| 1 \\| 1 \\| 0 \\|`));
+  assert.match(summary, new RegExp(`\\| ${diagnosticNode('C')} \\| 0 \\| 0 \\| 0 \\| 0 \\| 0 \\|`));
   assert.match(summary, /已采集应用选线与缓存决策/);
   assert.match(new DiagnosticRecorder().markdown('old build'), /无法确定/);
 });

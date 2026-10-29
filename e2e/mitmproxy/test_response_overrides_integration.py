@@ -126,6 +126,8 @@ class LiveOverrideTests(unittest.TestCase):
                 if 'texas-holdem' in addon or 'zhajinhua' in addon:
                     self.check_diagnostics(port)
                 self.check_scenes(port)
+                if addon == 'e2e/mitmproxy/network_faults.py':
+                    self.check_club_boundaries(port)
                 if 'texas-holdem' in addon:
                     self.check_game_hold(port)
             finally:
@@ -184,6 +186,38 @@ class LiveOverrideTests(unittest.TestCase):
             self.assertEqual(headers['x-upstream'], 'real')
             self.assertEqual(body, {'backend_delay': delay, 'server_load': load, 'new_health': True})
             self.check_preflight(port, address)
+
+    def check_club_boundaries(self, port):
+        api = 'http://node-0.service.invalid'
+        control = 'http://fixtures-mitmproxy.invalid/fixtures/select'
+        for name, count in (('club-empty', 0), ('club-skeleton', 2)):
+            self.assertEqual(self.fetch(port, control, 'POST', {'name': name, 'userId': OWNER})[0], 200)
+            _, headers, body = self.fetch(port, api + f'/v10/club?user_id={OWNER}')
+            self.assertNotIn('x-upstream', headers)
+            self.assertEqual(len(body['result']['clubs']), count)
+            for query in ('', '?user_id=', '?user_id=another-owner',
+                          f'?user_id={OWNER}&user_id=another-owner', '?failed'):
+                # 上游响应头和完整失败正文都必须保留，不能只以“无本地响应”代替透传证据。
+                status, headers, body = self.fetch(port, api + '/v10/club' + query)
+                self.assertEqual(status, 503 if query == '?failed' else 200)
+                self.assertEqual(headers['x-upstream'], 'real')
+                self.assertEqual(body, {'backend_delay': 100, 'server_load': 'normal', 'new_health': True})
+            self.check_preflight(port, api + f'/v10/club?user_id={OWNER}')
+        self.assertEqual(self.fetch(port, control, 'POST', {'name': 'none'})[0], 200)
+        self.assertEqual(self.fetch(port, api + f'/v10/club?user_id={OWNER}')[1]['x-upstream'], 'real')
+        fault_control = 'http://test-mitmproxy.invalid/scenario'
+        self.assertEqual(self.fetch(port, fault_control, 'POST', {'scenario': 'club-search-result'})[0], 200)
+        target = api + '/v10/club/search?keyword=VisualClubSearch'
+        self.assertNotIn('x-upstream', self.fetch(port, target)[1])
+        for method, path in (('GET', '/v10/club/search?keyword=other'),
+                             ('GET', '/v10/club/search?failed'), ('POST', '/v10/club/search?keyword=VisualClubSearch')):
+            status, headers, body = self.fetch(port, api + path, method)
+            self.assertEqual(status, 503 if path.endswith('?failed') else 200)
+            self.assertEqual(headers['x-upstream'], 'real')
+            self.assertEqual(body, {'backend_delay': 100, 'server_load': 'normal', 'new_health': True})
+        self.check_preflight(port, target)
+        self.check_preflight(port, api + '/v10/clubs')
+        self.assertEqual(self.fetch(port, fault_control, 'POST', {'scenario': 'visual-stable'})[0], 200)
 
     def check_game_hold(self, port):
         control = 'http://fixtures-mitmproxy.invalid/fixtures/'

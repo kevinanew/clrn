@@ -105,20 +105,11 @@ class NetworkFaults:
         if not search_path and not details_path:
             return False
         if flow.request.method == "OPTIONS":
-            flow.response = http.Response.make(204, b"", {
-                "Access-Control-Allow-Origin": flow.request.headers.get("Origin", "*"),
-                "Access-Control-Allow-Credentials": "true",
-                "Access-Control-Allow-Methods": "GET, PUT, OPTIONS",
-                "Access-Control-Allow-Headers": flow.request.headers.get(
-                    "Access-Control-Request-Headers", ""),
-                "Vary": "Origin",
-            })
-            return True
+            return False
         if search_path:
             keyword = parse_qs(url.query, keep_blank_values=True).get("keyword")
             if flow.request.method != "GET" or keyword != [CLUB_SEARCH_KEYWORD]:
-                flow.response = json_response(flow, {"ok": False}, 400)
-                return True
+                return False
             self.club_search_requests += 1
             flow.response = json_response(flow, {"ok": True, "result": [CLUB_SEARCH_ID]})
             return True

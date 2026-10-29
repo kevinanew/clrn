@@ -11,11 +11,19 @@ class DiagnosticTests(unittest.TestCase):
     def test_错误中的连接地址与主机不进入公开诊断(self):
         diagnostics = ConnectionDiagnostics()
         request = flow('https://api.invalid/node/v1/status')
-        diagnostics.record('proxy.error', request, reason='api.invalid 192.0.2.10 [2001:db8::10]')
+        diagnostics.record('proxy.error', request,
+                           reason='api.invalid other.invalid:9443/private-entry 192.0.2.10:8443 [2001:db8::10]:9443 2001:db8::20')
         serialized = json.dumps(diagnostics.snapshot())
-        for value in ('api.invalid', '192.0.2.10', '2001:db8::10'):
+        for value in ('api.invalid', 'other.invalid', '192.0.2.10', '2001:db8::10',
+                      '2001:db8::20', '9443', '8443', '/private-entry'):
             self.assertNotIn(value, serialized, '错误文本也不能复述真实连接资料')
         self.assertIn(node_name('api.invalid'), serialized, '同一节点仍须能够关联')
+        self.assertEqual(node_name('api.fixture.invalid'), 'laiwan_prd-d5e6a40756c6',
+                         '与 TypeScript 共用此保留地址的节点标签')
+        request = flow('https://api.invalid/public/v1/hall_matching/available.json?token=secret')
+        diagnostics.request(request)
+        self.assertEqual(diagnostics.events[-1]['path'], '/public/v1/hall_matching/available.json')
+        self.assertNotIn('secret', json.dumps(diagnostics.snapshot()))
 
     def test_两个认证控制入口不进入业务请求响应或错误诊断(self):
         diagnostics = ConnectionDiagnostics()
@@ -86,7 +94,7 @@ class DiagnosticTests(unittest.TestCase):
             diagnostics.request(request)
         self.assertEqual(diagnostics.dropped, 1)
         self.assertEqual(len(diagnostics.events), 5000)
-        self.assertEqual(safe_text('https://user:secret@node-14.service.invalid/path?token=secret'), 'https://' + node_name('node-14.service.invalid') + '/path')
+        self.assertEqual(safe_text('https://user:secret@node-14.service.invalid/path?token=secret'), node_name('node-14.service.invalid'))
         self.assertNotIn('secret', safe_text('failed https://node-12.service.invalid/?access_token=secret Bearer secret'))
 
 

@@ -140,9 +140,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         preflight.request.headers["Origin"] = origin
         preflight.request.headers["Access-Control-Request-Headers"] = "authorization,content-type"
         await self.addon.request(preflight)
-        self.assertEqual(preflight.response.status_code, 204)
-        self.assertEqual(preflight.response.headers["Access-Control-Allow-Headers"],
-                         "authorization,content-type")
+        self.assertIsNone(preflight.response, '预检必须由真实上游处理')
 
         details = flow("https://node-0.service.invalid/v10/clubs", "PUT",
                        b'{"club_ids":["12f2cb6e-9045-4910-b58a-7d3903f56a39"]}')
@@ -162,8 +160,25 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(unrelated.response)
         wrong_keyword = flow("https://node-0.service.invalid/v10/club/search?keyword=other")
         await self.addon.request(wrong_keyword)
-        self.assertEqual(wrong_keyword.response.status_code, 400)
+        self.assertIsNone(wrong_keyword.response)
         self.assertEqual(self.addon.club_search_requests, 1)
+
+    async def test_搜索未命中流量及预检均透传(self):
+        await self.configure('club-search-result')
+        for path in ('/v10/club/search?keyword=other', '/v10/club/search',
+                     '/v10/club/search?keyword=',
+                     '/v10/club/search?keyword=VisualClubSearch&keyword=other'):
+            for method in ('GET', 'POST', 'PUT', 'OPTIONS'):
+                with self.subTest(path=path, method=method):
+                    request = flow('https://node-0.service.invalid' + path, method)
+                    await self.addon.request(request)
+                    self.assertIsNone(request.response)
+                    self.assertIsNone(request.error)
+        for method in ('POST', 'PUT', 'DELETE', 'OPTIONS'):
+            request = flow('https://node-0.service.invalid/v10/club/search?keyword=VisualClubSearch', method)
+            await self.addon.request(request)
+            self.assertIsNone(request.response)
+        self.assertEqual(self.addon.club_search_requests, 0)
 
     async def test_正常视觉模式不拦截任何候选节点或元数据(self):
         await self.configure("visual-stable")
