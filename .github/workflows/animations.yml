@@ -139,7 +139,7 @@ jobs:
         run: npm run typecheck
       - name: 验证关键帧差异汇总与牌面就绪
         if: matrix.suite == 'texas' && matrix.part == 'gameplay'
-        run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/cardSpriteReadiness.browser.ts
+        run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/cardSpriteReadiness.browser.ts visual/animations/cardSpriteDiagnostics.browser.ts
       - name: 准备本轮 Release 构建包
         uses: ./.github/actions/prepare-release-web
         with:

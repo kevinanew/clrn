@@ -8,6 +8,7 @@ import { freeze, type CaptureArea } from './timeline';
 import { paceNetworkClock } from './networkClock';
 import { installConnectionDiagnostics, recordDiagnostic } from '../src/support/connectionDiagnostics';
 import { diagnosticNode, diagnosticText } from '../../e2e/helpers/diagnostic-privacy';
+import { installCardSpriteDiagnostics, observeCardSpriteClockControl, saveCardSpriteDiagnostics } from './cardSpriteDiagnostics';
 
 export type TableSession = { page: Page; roomId: string; self: string; clip: CaptureArea };
 
@@ -30,6 +31,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
   let room: RoomSession | undefined;
   const diagnostics = await installConnectionDiagnostics(context, page, info, proxy);
   try {
+    if (game === 'texas') await installCardSpriteDiagnostics(page);
     recordDiagnostic(page, '初始化大厅');
     console.log(`TABLE > ${game}/${info.project.name} 初始化大厅`);
     await openApplication(context, page, info, `signed_in_${game}_pre_game`);
@@ -76,6 +78,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     await task({ page, roomId: room.roomId, self,
       clip: { x: Math.floor((viewport.width - width) / 2), y: 0, width, height: viewport.height } });
     await diagnostics.save();
+    await saveCardSpriteDiagnostics(page, info);
   } catch (error) {
     await diagnostics.save(error).catch(failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
     const overlays = await page.evaluate(() => Array.from(document.querySelectorAll('[data-testid="screen-mask-touch-to-close"]')).map(mask => ({
@@ -84,6 +87,10 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     }))).catch(() => []);
     writeFileSync(info.outputPath('overlays.json'), JSON.stringify(overlays, null, 2));
     await page.screenshot({ path: info.outputPath('failure.png'), timeout: 5000 }).catch(() => undefined);
+    // 先保留冻结时钟下的失败，再做诊断性时钟对照；任何恢复都不能改变原始失败。
+    await saveCardSpriteDiagnostics(page, info, 'frozen').catch(failure => console.log(`牌面诊断保存失败：${diagnosticText(failure)}`));
+    await observeCardSpriteClockControl(page).catch(failure => console.log(`牌面时钟对照失败：${diagnosticText(failure)}`));
+    await saveCardSpriteDiagnostics(page, info).catch(failure => console.log(`牌面对照保存失败：${diagnosticText(failure)}`));
     if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
     throw error;
   } finally {

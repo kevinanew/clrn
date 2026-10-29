@@ -96,12 +96,35 @@ HTML 报告位于 `visual/playwright-report/animations/<suite>/`，失败图片�
 
 所有新增诊断文本去掉共享域名后缀 `shafayouxi.com`，保留如 `64.kr-seoul.api.staging.laiwan` 的节点名。地址查询参数、认证头和业务正文不进入诊断附件。采集时间使用测试进程的真实时间，不受动画虚拟时钟影响。
 
+## 牌面图集超时诊断（#68）
+
+德州在导航前安装只读 DOM 观察器，`card-sprite-diagnostics.json` 保留最近 1000 条变化，
+超出计入 `dropped`。记录匿名牌槽、图集容器和图片编号，挂载／移除、布局、资源路径、
+图片原始尺寸与 DOM 解码结果、翻转侧、回退层 display、内容 opacity 和裁切 transform。
+记录不包含玩家 ID、牌桌正文、图片数据 URI 或 URL 查询参数。宿主收到事件的真实时间
+与页面虚拟时间分别保存；应用版本、Release、CI 测试提交、运行编号、视口及重复序号随附件保存。
+
+就绪等待仍使用原有 10 秒硬断言和 `runFor(0)`，不改写组件或推进关键帧。
+全押、摊牌回放之前及每次解码、布局提交前后均有采样点。解码结果仅指 DOM 中的图片，
+不能据此推断 RN Web 内部独立 ImageLoader 的回调或 React 状态已经提交。
+
+图集断言失败时，先保存原始 `failure.png` 和 `card-sprite-diagnostics-frozen.json`，
+再在同一构建、同一 DOM 上恢复 JS 时钟正常速度，采集 0–1200ms 的诊断观察。
+最终附件包含该观察；即使回退层之后消失，原用例仍抛出原始错误，不继续采样、比较或修改基准。
+CSS 采样暂停保持原状，因此这是 JS 时钟恢复后的顺序观察，不能代替从新页面开始的独立对照，
+也不能单凭恢复断定原故障属于测试。若节点被替换，应通过匿名编号区别恢复与重挂载。
+
+历史证据及尚未知项见 [issue-68-investigation.md](issue-68-investigation.md)。
+离线浏览器回归增加 `cardSpriteDiagnostics.browser.ts`，覆盖定时回调恢复、持续回退、
+原始失败保留、DOM 移除和脱敏；这些夹具不代表真实应用或原生设备回归通过。
+
 离线验证（无需登录或访问 staging）：
 
 ```sh
 node --import tsx --test e2e/helpers/diagnostic-recorder.test.ts
 node --import tsx --test e2e/helpers/connection-diagnostics.browser.ts
 node --import tsx --test visual/animations/timeline.browser.ts
+node --import tsx --test visual/animations/cardSpriteDiagnostics.browser.ts
 # 使用系统 Chrome 时设置 DIAGNOSTIC_CHROME_PATH 为浏览器可执行文件路径。
 e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 ```
