@@ -1,3 +1,5 @@
+import { bindScenarioProxy } from '../../e2e/helpers/scenario-proxy';
+import type { Mitmproxy } from '../../e2e/helpers/mitmproxy-client';
 /** 创建真实牌桌并在清理前保留操作、网络和连接诊断。 */
 import { expect, type Browser, type Page, type TestInfo } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
@@ -22,11 +24,12 @@ export type TableSession = { page: Page; roomId: string; self: string; clip: Cap
  * @param hall - 是否使用大厅显示夹具和本房间观察者连接。
  */
 export async function withTable(browser: Browser, info: TestInfo, game: 'texas' | 'zhajinhua',
-  proxy: { server: string; diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> }, task: (session: TableSession) => Promise<void>, hall = false): Promise<void> {
+  proxy: { server: string; network: Mitmproxy; diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> }, task: (session: TableSession) => Promise<void>, hall = false): Promise<void> {
   const viewport = info.project.use.viewport!;
   const context = await browser.newContext({ viewport, locale: 'en-US', deviceScaleFactor: 1,
     proxy: { server: proxy.server, bypass: '<-loopback>' }, ignoreHTTPSErrors: true,
     reducedMotion: 'no-preference' });
+  bindScenarioProxy(context, proxy.network);
   const page = await context.newPage();
   let room: RoomSession | undefined;
   const diagnostics = await installConnectionDiagnostics(context, page, info, proxy);

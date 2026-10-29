@@ -1,0 +1,169 @@
+{
+  "state": "gaming",
+  "operating_seconds": 120,
+  "remain_seconds": 3600,
+  "settings": {
+    "boot": 1,
+    "raise_times": 10,
+    "must_blind_round": 0,
+    "challenge_limit_round": 1,
+    "max_round": 20,
+    "pot_limit": 2000
+  },
+  "variation": "classic",
+  "game_variation": {},
+  "pattern": "tradition",
+  "number": 1,
+  "ante": 1,
+  "max_round": 20,
+  "round_count": 3,
+  "pot": {
+    "pot_amount": 120,
+    "pot_limit": 2000
+  },
+  "seats": [
+    {
+      "number": 1,
+      "state": "occupied",
+      "position": "D",
+      "reserve": {},
+      "player": {
+        "player_id": "@self",
+        "seat_number": 1,
+        "stack": 1000,
+        "buy_in": 1000,
+        "is_leave": false,
+        "is_playing": true,
+        "is_seen_card": false,
+        "is_lose": false,
+        "position": "D",
+        "last_action": {
+          "name": "call",
+          "amount": 10
+        },
+        "public_hole_card": [],
+        "hole_card": []
+      }
+    },
+    {
+      "number": 2,
+      "state": "occupied",
+      "position": "",
+      "reserve": {},
+      "player": {
+        "player_id": "00000000-0000-4000-8000-000000000001",
+        "seat_number": 2,
+        "stack": 960,
+        "buy_in": 1000,
+        "is_leave": false,
+        "is_playing": true,
+        "is_seen_card": false,
+        "is_lose": false,
+        "position": "",
+        "last_action": {
+          "name": "call",
+          "amount": 10
+        },
+        "public_hole_card": [],
+        "hole_card": []
+      }
+    },
+    {
+      "number": 3,
+      "state": "occupied",
+      "position": "",
+      "reserve": {},
+      "player": {
+        "player_id": "00000000-0000-4000-8000-000000000002",
+        "seat_number": 3,
+        "stack": 920,
+        "buy_in": 1000,
+        "is_leave": false,
+        "is_playing": true,
+        "is_seen_card": false,
+        "is_lose": false,
+        "position": "",
+        "last_action": {
+          "name": "call",
+          "amount": 10
+        },
+        "public_hole_card": [],
+        "hole_card": []
+      }
+    },
+    {
+      "number": 4,
+      "state": "occupied",
+      "position": "",
+      "reserve": {},
+      "player": {
+        "player_id": "00000000-0000-4000-8000-000000000003",
+        "seat_number": 4,
+        "stack": 880,
+        "buy_in": 1000,
+        "is_leave": false,
+        "is_playing": true,
+        "is_seen_card": false,
+        "is_lose": false,
+        "position": "",
+        "last_action": {
+          "name": "call",
+          "amount": 10
+        },
+        "public_hole_card": [],
+        "hole_card": []
+      }
+    },
+    {
+      "number": 5,
+      "state": "occupied",
+      "position": "",
+      "reserve": {},
+      "player": {
+        "player_id": "00000000-0000-4000-8000-000000000004",
+        "seat_number": 5,
+        "stack": 840,
+        "buy_in": 1000,
+        "is_leave": false,
+        "is_playing": true,
+        "is_seen_card": false,
+        "is_lose": false,
+        "position": "",
+        "last_action": {
+          "name": "call",
+          "amount": 10
+        },
+        "public_hole_card": [],
+        "hole_card": []
+      }
+    },
+    {
+      "number": 6,
+      "state": "empty",
+      "position": "",
+      "reserve": {},
+      "player": null
+    },
+    {
+      "number": 7,
+      "state": "empty",
+      "position": "",
+      "reserve": {},
+      "player": null
+    },
+    {
+      "number": 8,
+      "state": "empty",
+      "position": "",
+      "reserve": {},
+      "player": null
+    },
+    {
+      "number": 9,
+      "state": "empty",
+      "position": "",
+      "reserve": {},
+      "player": null
+    }
+  ]
+}

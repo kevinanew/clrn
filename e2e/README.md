@@ -72,6 +72,11 @@ Service Worker，检查生产模式、压缩后的 JavaScript 和 Service Worker
 （临时证书与清理）。`helpers/mitmproxy.ts` 只负责 Playwright fixture。
 德州视觉测试复用这些纯 Node 模块，不依赖 E2E 的 Playwright 版本或 node_modules。
 
+应用、交互及动画的具名场景由同一进程加载 `mitmproxy/scenario_fixtures.py`，
+HTTP 与 WebSocket 响应都在 Python 中生成；TypeScript 不提供后备响应服务器。
+默认透传真实登录、metadata 和健康检查。接口盘点、保留原因、初始化边界及验证状态见
+[网络夹具清单](mitmproxy/README.md)。本地交互套件同样需要上述 mitmproxy 安装步骤。
+
 ## 测试资产边界
 
 创建案例在每例开始前调用 staging `POST /public/v1/wallet/<user_id>/set_balance/testing`，

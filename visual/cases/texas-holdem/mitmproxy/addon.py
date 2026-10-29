@@ -16,6 +16,7 @@ from ui_states import UIStates
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
 from response_overrides import is_staging, prepare_profiles, patch_profiles, patch_version  # noqa: E402
 
+from replay_scenes import publish_scene  # noqa: E402
 from connection_diagnostics import ConnectionDiagnostics  # noqa: E402
 
 diagnostics = ConnectionDiagnostics()
@@ -61,7 +62,9 @@ class TexasVisualProxy:
                 elif self.scenario == 'visual-stable' and path == '/texas/view':
                     self.view.configure(body.get('mode'))
                 elif self.scenario == 'visual-stable' and path == '/texas/replay':
-                    self.texas.publish(body.get('roomId'), body.get('data'))
+                    if set(body) != {'roomId', 'scene'}:
+                        raise ValueError('Only named scenes are accepted')
+                    publish_scene(self.texas, body.get('roomId'), body.get('scene'), 'texas')
                 elif self.scenario == 'visual-stable' and path == '/texas/records':
                     self.records.configure(body.get('empty'))
                     if self.view.mode != 'record-v2':
@@ -114,6 +117,8 @@ class TexasVisualProxy:
                 self.texas.self_id = self.view.self_id
 
     def request(self, flow):
+        if flow.response:
+            return
         if flow.request.host == CONTROL_HOST:
             if flow.request.method == 'GET' and urlsplit(flow.request.path).path == '/diagnostics':
                 diagnostics.control(flow)

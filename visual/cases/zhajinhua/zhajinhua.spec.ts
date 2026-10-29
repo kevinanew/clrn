@@ -1,3 +1,4 @@
+import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
 /** 真实牌桌视觉回归，失败前保存节点探测和连接诊断。 */
 import { installConnectionDiagnostics, recordDiagnostic } from '../../src/support/connectionDiagnostics';
 import { diagnosticNode, diagnosticText } from '../../../e2e/helpers/diagnostic-privacy';
@@ -19,6 +20,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'zhajinhua
       locale: 'en-US', deviceScaleFactor: 1,
       storageState: buildStorageStateForScenario(scenario, visualBaseUrl),
     });
+    bindScenarioProxy(context, mitmproxy.network);
     const page = await context.newPage();
     const diagnostics = await installConnectionDiagnostics(context, page, test.info(), mitmproxy);
     page.on('pageerror', error => console.error(`ZHAJINHUA PAGE ERROR > ${diagnosticText(error.message)}`));

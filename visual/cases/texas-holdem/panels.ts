@@ -2,7 +2,6 @@ import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import type { TexasProxy } from './proxy';
-import { events, REPLAY_PLAYER_IDS } from './replayData';
 import { advance, click, closeMask, freezeClock, restore, selfId, visible } from './replay';
 import { PANEL_STATES } from './scenarios';
 
@@ -95,9 +94,7 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await snapshot('record_actions');
   await click(page, 'review-board-close-button');
 
-  await proxy.replayTexas(roomId, { stream: 'room_message', payload: { action: 'text', content: {
-    from_user_id: REPLAY_PLAYER_IDS[0], from_user_nickname: 'Player1', text: 'Good hand!',
-  } } });
+  await proxy.replayTexas(roomId, { scene: 'texas-social-room_message-text' });
   await expect(visible(page, 'barrage_text')).toHaveText('Player1: Good hand!');
   await click(page, 'texas-holdem-chat-button');
   await click(page, '-in-game-chat-message-tab');
@@ -128,18 +125,13 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await click(page, 'BlockPlayerConfirmPopup:cancelButton');
   await click(page, 'in-game-chat-mask');
 
-  await proxy.replayTexas(roomId, { stream: 'buy_in', payload: { action: 'apply_buy_in', content: {
-    application_id: 'visual-application', user_id: REPLAY_PLAYER_IDS[1],
-    user_nickname: 'Player2', nickname: 'Player2', amount: 500,
-  } } });
+  await proxy.replayTexas(roomId, { scene: 'texas-social-buy_in-apply_buy_in' });
   await expect(visible(page, 'buy-in-review-close-button')).toBeVisible();
   await snapshot('buy_in_review');
   await click(page, 'buy-in-review-close-button');
 
   await restore(page, proxy, roomId, self, 'flop', true);
-  await proxy.replayTexas(roomId, events([{ event: 'settlement', players: [
-    { player_id: self, net: 180, prize: 180, stack: 1180 },
-  ] }]));
+  await proxy.replayTexas(roomId, { scene: 'panel-variants-settlement' });
   await advance(page);
   await expect(visible(page, 'texas-holdem-show-hand-card-button')).toBeVisible();
   await expect(visible(page, 'texas-holdem-show-remain-community-card-button')).toBeVisible();
@@ -154,8 +146,7 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await snapshot('remaining_cards');
   await click(page, 'view-community-close-button');
   await click(page, 'texas-holdem-show-hand-card-button');
-  await proxy.replayTexas(roomId, events([{ event: 'publish_hole_card', player_id: self,
-    public_hole_card: ['as', 'ad'] }]));
+  await proxy.replayTexas(roomId, { scene: 'panels-publish_hole_card' });
   const published = visible(page, `texas-holdem-player-container-${self}`)
     .locator('[data-testid="texas-holdem-player-hole-cards"]');
   await expect(published).toBeVisible();
@@ -164,8 +155,7 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await expect(published.locator('[data-testid="poker-text-suit"]')).toHaveText(['♠', '♦']);
   await snapshot('show_cards');
   // 通过真实新一局协议清空公开手牌和结算动效，避免叠在下一局的私有手牌上。
-  await proxy.replayTexas(roomId, events([{ event: 'new_game', game_id: 'visual-fixed-game',
-    settings: { small_blind: 1, big_blind: 2, ante: 0 } }]));
+  await proxy.replayTexas(roomId, { scene: 'hall-new_game' });
   await advance(page);
   await restore(page, proxy, roomId, self, 'flop');
   await menu('exit');

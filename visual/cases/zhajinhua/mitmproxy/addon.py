@@ -13,6 +13,7 @@ from zhajinhua_replay import UUID, PLAYER_IDS, ZhajinhuaReplay
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
 from response_overrides import is_staging, prepare_profiles, patch_profiles  # noqa: E402
 
+from replay_scenes import publish_scene  # noqa: E402
 from connection_diagnostics import ConnectionDiagnostics  # noqa: E402
 
 diagnostics = ConnectionDiagnostics()
@@ -52,9 +53,11 @@ class ZhajinhuaVisualProxy:
                     self.replay.release()
                     self.created_room_id = None
                 elif self.scenario == 'visual-stable' and path == '/zhajinhua/replay':
+                    if set(body) != {'roomId', 'scene'}:
+                        raise ValueError('Only named scenes are accepted')
                     if not self.created_room_id or body.get('roomId') != self.created_room_id:
                         raise ValueError('Replay requires this test room')
-                    self.replay.publish(body['roomId'], body.get('data'))
+                    publish_scene(self.replay, body.get('roomId'), body.get('scene'), 'zhajinhua')
                 elif self.scenario == 'visual-stable' and path == '/zhajinhua/operation-reward':
                     self.replay.set_operation_reward(body.get('roomId'), body.get('enabled'))
                 elif path == '/zhajinhua/release':
@@ -106,6 +109,8 @@ class ZhajinhuaVisualProxy:
         self.replay.websocket_end(flow)
 
     def request(self, flow):
+        if flow.response:
+            return
         if flow.request.host == CONTROL_HOST:
             if flow.request.method == 'GET' and urlsplit(flow.request.path).path == '/diagnostics':
                 diagnostics.control(flow)

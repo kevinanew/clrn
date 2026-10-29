@@ -37,10 +37,10 @@ export class Mitmproxy {
       const req = request({
         hostname: '127.0.0.1',
         port: this.port,
-        path: `http://${CONTROL_HOST}/${endpoint}`,
+        path: `http://${endpoint.startsWith('fixtures/') ? 'fixtures-mitmproxy.invalid' : CONTROL_HOST}/${endpoint}`,
         method: body === undefined ? 'GET' : 'POST',
         headers: {
-          Host: CONTROL_HOST,
+          Host: endpoint.startsWith('fixtures/') ? 'fixtures-mitmproxy.invalid' : CONTROL_HOST,
           'X-E2E-Control-Token': this.token,
           'Content-Type': 'application/json',
         },

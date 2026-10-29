@@ -2,16 +2,27 @@
 
 import json
 import unittest
+from unittest.mock import patch
 from mitmproxy import http
-from response_overrides import prepare_profiles, patch_profiles, patch_version
+from response_overrides import is_staging, prepare_profiles, patch_profiles, patch_version
 from test_network_faults import flow
 
 
 class ResponseOverrideTests(unittest.TestCase):
-    def metadata(self, body, status=200, method='GET', host='api.shafayouxi.org', path='/public/v11/game_log/available.json'):
+    def test_主机必须与明确输入逐字匹配且损坏配置默认透传(self):
+        for configured in ('', 'null', '{}', '"api.invalid"', '[1]', '['):
+            with self.subTest(configured=configured), patch.dict('os.environ', {'MITMPROXY_API_HOSTS': configured}):
+                self.assertFalse(is_staging('api.invalid'), '缺少有效来源不能启用响应夹具')
+        with patch.dict('os.environ', {'MITMPROXY_API_HOSTS': '["api.invalid","node-a.invalid"]'}):
+            self.assertTrue(is_staging('api.invalid'))
+            self.assertTrue(is_staging('node-a.invalid'))
+            for host in ('other.invalid', 'api.invalid.evil.invalid', 'child.api.invalid', 'API.invalid'):
+                self.assertFalse(is_staging(host), '前缀、子域和相似主机不得扩大允许范围')
+
+    def metadata(self, body, status=200, method='GET', host='node-0.service.invalid', path='/public/v11/game_log/available.json'):
         request = flow(f'https://{host}{path}', method)
         request.response = http.Response.make(status, json.dumps(body).encode(), {
-            'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'https://app.test',
+            'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'https://node-3.service.invalid',
             'X-Upstream': 'kept', 'ETag': 'old',
         })
         return request
@@ -28,7 +39,7 @@ class ResponseOverrideTests(unittest.TestCase):
         self.assertNotIn('ETag', request.response.headers)
         self.assertEqual(int(request.response.headers['Content-Length']), len(request.response.raw_content))
 
-    def test_version_keeps_new_fields_and_does_not_recreate_removed_fields(self):
+    def test_版本覆盖保留新字段且不补造已删除字段(self):
         request = self.metadata({'ok': True, 'result': {'available_url_version': 'v1', 'new': 42}})
         self.assertTrue(patch_version(request, 'v11'))
         self.assertEqual(request.response.json()['result'], {'available_url_version': 'v11', 'new': 42})
@@ -38,9 +49,9 @@ class ResponseOverrideTests(unittest.TestCase):
             self.assertFalse(patch_version(request, 'v11'))
             self.assertEqual(request.response.content, original)
 
-    def test_mixed_profiles_keep_current_account_real_and_only_add_requested_virtual_players(self):
+    def test_混合资料保留真实账号且只补充明确请求的虚拟玩家(self):
         profiles = {'virtual': {'nickname': 'Opponent'}, 'unrequested': {'nickname': 'Other'}}
-        request = flow('https://api.shafayouxi.org/v10/profile/users', 'PUT',
+        request = flow('https://node-0.service.invalid/v10/profile/users', 'PUT',
                        b'{"users":["self","virtual"]}')
         real = {'nickname': 'Real name', 'user_level': {'new': 12}, 'new_field': 42}
         request.response = http.Response.make(200, json.dumps({'ok': True, 'result': {'self': real,

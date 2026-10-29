@@ -10,7 +10,7 @@ CI 下载触发提交中指定的 H5 Release，校验后启动任务独占的静
 德州与拼三张视觉用例及其登录态采集使用独立的 `mitmdump`，浏览器流量经过本机代理。
 正常视觉场景完整透传 v12/v13 节点列表、所有候选节点的健康响应和 CORS 预检，由应用动态选线。
 不指定首尔或其他固定节点，不将正常节点改成 503，也不把真实故障改成健康。登录态采集遵循相同规则。
-App 登录态采集直连；我的战绩用例通过独立 mitmproxy 提供数据。德州代理脚本位于 `cases/texas-holdem/mitmproxy/`，
+App 视觉及所有登录态采集也经过独立代理；我的战绩用例通过专用 mitmproxy 提供数据。德州代理脚本位于 `cases/texas-holdem/mitmproxy/`，
 复用 `../e2e/helpers/mitmproxy-*.ts` 的进程与控制客户端，以及
 `../e2e/mitmproxy/response_overrides.py` 的响应字段覆盖工具；E2E 故障场景仍独立。
 拼三张使用独立的 `cases/zhajinhua/mitmproxy/` 和 fixture，不加载德州代理脚本。
@@ -28,7 +28,7 @@ Docker 镜像安装 Python 3.12 与 mitmproxy 12.2.3；CI 的全部视觉任务�
 - 战绩版本选择只修改真实成功响应的 `available_url_version`，其余字段和响应头保留。API 错误、非 JSON、字段缺失或类型变化均保留原响应，不用固定成功结果兜底；结构变化会记录 `Visual override skipped` 提示。
 - 固定牌局、虚拟战绩、申请分支和故障注入继续使用场景夹具；它们只匹配本轮房间、账号或虚拟 ID。写操作隔离继续保留，避免回放操作落到服务端。
 - 后续新增夹具优先覆盖真实响应中的最少字段；只有不存在于服务端的虚拟实体或必须隔离的操作才在 request 阶段完整返回。
-- 原有 App 浏览器路由 mock 仍保留，详见下文。真实账号显示内容可能影响旧截图，基准差异需结合真实数据核对，不宜自动批量接受。
+- App HTTP 与老虎机/匹配 WebSocket 夹具集中在 `../e2e/mitmproxy/`，浏览器不注册响应路由。默认透传；仅在选中的场景启用最少数据，详见[逐项清单](../e2e/mitmproxy/README.md)。真实账号显示内容可能影响旧截图，基准差异需结合真实数据核对，不宜自动批量接受。
 
 离线验证（无 staging 依赖）：
 
@@ -158,7 +158,7 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 - 拼三张滑杆加注等无法通过 UI 到达的界面及本轮未覆盖范围见[拼三张覆盖清单](cases/zhajinhua/COVERAGE.md)
 - 德州 RTC、猜牌记录等当前无法通过 UI 到达的源码界面，原因见[德州覆盖清单](cases/texas-holdem/COVERAGE.md)
 - MatchTexasHoldem 独立匹配页：需浮动匹配态才能进入；大厅内嵌匹配区已覆盖
-- 意见反馈第三方列表内容：UserReport 远端会变，已在 `pageSetup` mock 成空白页，只回归导航壳与标题栏
+- 意见反馈第三方列表内容：UserReport 远端会变，已由 Python 视觉环境夹具返回空白页，只回归导航壳与标题栏
 
 ### 登录态如何实现（分片采集 + 逐场景注入）
 
@@ -170,25 +170,20 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
   启动即已登录，**不再逐场景走 UI 登录**（每场景省 30-60s，并消除登录偶发失败）
 - 注入失效（token 过期、staging 清零）时场景会明确失败，不在并行 worker 内
   回退 UI 登录，避免同一账号重复签发 token 后让其它场景的 token 失效
-- 登录界面自带注册逻辑：用户名不存在时先调 staging API
-  `/public/v11/user/register/username_password` 自动注册再登录，
-  因此**每次运行都是同一个测试用户**（`VISUAL_TEST_USERNAME` /
-  `VISUAL_TEST_PASSWORD`，可用 `VISUAL_USERNAME` / `VISUAL_PASSWORD` 覆盖；
-  游客登录 `register/device` 在 Web 端不渲染，不可用）
-- staging 数据清零后首次运行会自动重新注册；若用户昵称/ID 变化导致 diff，
-  重新 `pnpm run reference` 即可
+- 登录走真实 UI 和接口，账号必须已存在。Python 视觉环境边界拒绝自动注册，
+  不伪造“用户名已存在”或登录成功；缺失账号明确失败。
+  凭据沿用 `VISUAL_TEST_USERNAME` / `VISUAL_TEST_PASSWORD`，可用
+  `VISUAL_USERNAME` / `VISUAL_PASSWORD` 覆盖。截图差异必须调查，不自动更新基准。
 - 所有场景（含未登录）统一写入固定 `VISUAL_DEVICE_ID` 到
   `localStorage['deviceId']`：随机 deviceId 会让启动期设备注册回调在点击后
   触发导航重置，杀掉刚打开的登录 modal
-- staging 在 Web 端稳定失败的俱乐部接口（`/v10/club?user_id=`、`/v10/clubs`）
-  已 mock 成空列表，避免「网络有点问题」alert 在随机时刻弹出污染截图
+- 仅俱乐部空态场景固定 `/v10/club?user_id=` 为空；其他场景不掩盖真实失败。
+  `/v10/clubs` 只有虚拟 ID 批次由对应 addon 处理。
 - 代理元数据和健康检查保留真实响应；应用、牌桌和登录态采集均由应用动态选线。
   节点故障只在专门的异常用例中注入；正常视觉场景不固定节点或伪造可用状态。
-- 大厅可用版本接口（`/public/v1/hall_matching/available.json`）已固定为 `v3`；
-  该接口失败会在 10 秒后弹「取消 / 重试」alert，即使已切换 tab 仍会污染截图
-- 按 IP 取国家码接口（`/public/v10/profile/country`）已 mock 为固定 `86`（中国），
-  并写入 `localStorage['app.user.country.code.key']`；否则 Docker/CI 出口 IP
-  不同会导致手机号登录等页默认区号漂移（如本地日本 `+81`、CI 中国 `+86`）
+- 大厅可用版本、公共牌局、私人房归属和维护提醒使用真实接口；故障场景才注入错误。
+- 视觉环境仅将国家码接口固定为 `86`，由应用自行缓存；不再直接写区号 localStorage。
+  语言、设备身份、引导完成标记及本轮真实登录缓存仍属浏览器环境准备，分类见网络夹具清单。
 
 ## 从本机运行线上测试
 
@@ -324,7 +319,8 @@ CI 从 `CLRN_CI_TEST_ACCOUNTS_V3` Secret 为每个任务注入 `VISUAL_USERNAME`
 1. Playwright 容器访问 `VISUAL_BASE_URL` 指定的已部署前端。
 2. 登录态采集器通过真实 UI 登录，并用只读账户接口验证凭据。
 3. 各场景注入语言、设备标识及已采集的登录态，再按实际导航进入目标页面。
-4. `preparePage` 完成稳定化后与基准图比较，最多允许 0.3% 差异像素。
+4. `preparePage` 完成稳定化后与基准图比较，最多允许 0.5% 差异像素。
+   全部 Web 入口、有效面积及颜色容差见[图片比较统一规则](screenshotComparison.md)。
 
 视觉测试仍保留现有的接口 mock 和固定文本填充，用于稳定余额、房间列表、国家码等截图内容；
 它验证指定构建的视觉表现。真实认证行为由 `e2e/cases/auth-002*` 和 `auth-003*` 检查。

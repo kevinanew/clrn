@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../src/support/networkFixture';
 import { buildScenarios } from '../scenarios';
 import { setupContextForScenario } from '../src/support/pageSetup';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';

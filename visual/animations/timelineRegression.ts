@@ -48,29 +48,39 @@ test('页面采集失败仍中止后续阶段', async ({ page }, information) =>
 });
 
 for (const mode of ['tolerated', 'unstable'] as const) {
-  test(`相邻截图稳定性：${mode}`, async ({ page }, information) => {
-    await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-    await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
-    await page.setContent('<div style="width:30px;height:30px;background:red"></div>');
-    if (comparison) {
-      const takeScreenshot = page.screenshot.bind(page);
-      let alternate = false;
-      /**
-       * 给真实截图注入交替的微小绘制差异或明显变化，避免依赖宿主是否恰好出现噪点。
-       * @param options - 生产采样器传入的截图设置。
-       */
-      page.screenshot = async options => {
-        const bitmap = PNG.sync.read(await takeScreenshot(options));
-        alternate = !alternate;
-        const color = alternate ? 0 : 255;
-        const changedPixels = mode === 'tolerated' ? 1 : 200;
-        for (let pixel = 0; pixel < changedPixels; pixel++) {
-          bitmap.data.set([color, color, color, 255], pixel * 4);
-        }
-        return PNG.sync.write(bitmap);
-      };
-    }
-    await captureTimeline(page, information, mode, page.locator('div'), { times: [0, 80], requireChange: false });
-    await information.attach('稳定性检查之后', { body: '已完成', contentType: 'text/plain' });
-  });
+  for (const kind of ['ordinary', 'foreground', 'background', 'numeric', 'mask'] as const) {
+    test(`相邻截图稳定性：${mode}/${kind}`, async ({ page }, information) => {
+      await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+      await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
+      await page.setContent(`<div id="subject" style="width:30px;height:30px;background:red"></div>
+        <div id="background" style="position:absolute;top:100px;width:200px;height:20px"></div>
+        <div id="number" style="position:absolute;top:60px;width:150px;height:24px;text-align:center;font:16px sans-serif">60</div>`);
+      if (comparison) {
+        const takeScreenshot = page.screenshot.bind(page);
+        let alternate = false;
+        /**
+         * 给真实截图注入交替的微小绘制差异或明显变化，避免依赖宿主是否恰好出现噪点。
+         * @param options - 生产采样器传入的截图设置。
+         */
+        page.screenshot = async options => {
+          const bitmap = PNG.sync.read(await takeScreenshot(options));
+          alternate = !alternate;
+          const color = alternate ? 0 : 255;
+          const changedPixels = mode === 'tolerated' ? 1 : 200;
+          for (let pixel = 0; pixel < changedPixels; pixel++) {
+            bitmap.data.set([color, color, color, 255], pixel * 4);
+          }
+          return PNG.sync.write(bitmap);
+        };
+      }
+      await captureTimeline(page, information, `${mode}-${kind}`, page.locator('#subject'), {
+        times: [0, 80], requireChange: false,
+        ...(kind === 'foreground' ? { foregroundBelow: { y: 80, locator: page.locator('#subject') } } : {}),
+        ...(kind === 'background' ? { excludedBackground: [page.locator('#background')] } : {}),
+        ...(kind === 'numeric' ? { finalFrameNumericMask: [{ locator: page.locator('#number'), maximumTexts: ['60'] }] } : {}),
+        ...(kind === 'mask' ? { mask: [page.locator('#background')] } : {}),
+      });
+      await information.attach('稳定性检查之后', { body: '已完成', contentType: 'text/plain' });
+    });
+  }
 }

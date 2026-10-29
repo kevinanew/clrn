@@ -1,11 +1,18 @@
 """视觉代理只覆盖必要字段；真实错误、响应头和新增字段继续交给客户端。"""
 
 import json
+import os
 import logging
 from urllib.parse import urlsplit
 
 def is_staging(host):
-    return host == 'api.shafayouxi.org' or host.endswith('.api.staging.laiwan.shafayouxi.com')
+    """只接受本轮明确配置的确切主机；缺少或损坏配置时默认透传。"""
+    try:
+        hosts = json.loads(os.environ.get('MITMPROXY_API_HOSTS', '[]'))
+        return (isinstance(hosts, list) and all(isinstance(item, str) for item in hosts)
+                and host in hosts)
+    except (ValueError, TypeError):
+        return False
 
 
 def patch_result(flow, change):

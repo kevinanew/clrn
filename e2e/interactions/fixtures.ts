@@ -1,4 +1,5 @@
-import { type BrowserContext, test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect } from '../helpers/network-fixture';
+import { type BrowserContext, type Page } from '@playwright/test';
 import { environment } from '../helpers/environment';
 import { gotoDeployedSite, initializePage } from '../helpers/page';
 import { confirmStagingNotice } from '../helpers/staging-notice';
@@ -9,8 +10,8 @@ const baseURL = process.env.E2E_INTERACTION_BASE_URL || environment.stagingUrl;
 type StorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
 
 /**
- * 固定引导标记及非目标接口，保留真实组件、布局、导航和账号鉴权。
- * @param context - 需要配置初始化脚本与网络边界的浏览器上下文。
+ * 配置语言、设备和引导前置条件，保留真实组件、导航和账号鉴权。
+ * @param context - 首次导航前配置的浏览器上下文。
  */
 async function prepare(context: BrowserContext): Promise<void> {
   await initializePage(context);
@@ -20,23 +21,6 @@ async function prepare(context: BrowserContext): Promise<void> {
         localStorage.setItem(`${name}.screen.tutorial.complete.key`, 'true');
       }
     },
-  );
-  await context.route(
-    '**/public/v1/hall_matching/available.json',
-    /**
-     * 返回可用大厅版本。
-     * @param route - 当前拦截到的请求，用于提供场景响应。
-     */ (route) =>
-      route.fulfill({ json: { ok: true, result: { available_url_version: ['v3'] } } }),
-  );
-  // 维护提醒接口在 staging 偶发返回 401，与滚动场景无关，且会清除有效登录态。
-  await context.route(
-    '**/v2/room/disallow-rule/reminder',
-    /**
-     * 关闭与交互无关的维护提醒。
-     * @param route - 当前拦截到的请求，用于提供场景响应。
-     */ (route) =>
-      route.fulfill({ json: { ok: true, result: { enable: false, message: '' } } }),
   );
 }
 

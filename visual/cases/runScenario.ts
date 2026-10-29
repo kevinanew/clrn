@@ -1,3 +1,6 @@
+import { withMitmproxy } from '../../e2e/helpers/mitmproxy-session';
+import type { Mitmproxy } from '../../e2e/helpers/mitmproxy-client';
+import { bindScenarioProxy } from '../../e2e/helpers/scenario-proxy';
 /** 执行独立视觉场景，并在截图前核对场景内容仍然完整可见。 */
 import { expect, type Browser } from '@playwright/test';
 import type { VisualScenario } from '../scenarioTypes';
@@ -16,68 +19,66 @@ const backAccessibilityLabels = {
  * 为单个视觉场景创建隔离上下文，准备页面并执行截图后清理资源。
  * @param scenario - 本次执行的视觉配置或代理故障场景。
  * @param browser - 用于创建隔离上下文的浏览器实例。
- * @param options - 仅有数据的俱乐部牌局场景使用的独立代理地址。
+ * @param options - 可复用的本轮专用代理；缺省为场景启动独立代理。
  */
 export async function runVisualScenario(
   scenario: VisualScenario,
   browser: Browser,
-  options: { clubRoomProxyServer?: string } = {},
+  options: { network?: Mitmproxy } = {},
 ): Promise<void> {
-    const context = await browser.newContext({
-      viewport: { width: scenario.viewport.width, height: scenario.viewport.height },
-      locale: 'en-US',
-      deviceScaleFactor: 1,
-      storageState: buildStorageStateForScenario(scenario, baseUrl),
-      ...(options.clubRoomProxyServer ? {
-        proxy: { server: options.clubRoomProxyServer, bypass: '<-loopback>' },
-        ignoreHTTPSErrors: true,
-      } : {}),
-    });
-    const page = await context.newPage();
+  if (!options.network) return withMitmproxy(network => runVisualScenario(scenario, browser, { network }));
+  const context = await browser.newContext({
+    viewport: { width: scenario.viewport.width, height: scenario.viewport.height },
+    locale: 'en-US',
+    deviceScaleFactor: 1,
+    storageState: buildStorageStateForScenario(scenario, baseUrl),
+    proxy: { server: options.network.server, bypass: '<-loopback>' },
+    ignoreHTTPSErrors: true,
+  });
+  bindScenarioProxy(context, options.network);
+  const page = await context.newPage();
 
-    try {
-      await setupContextForScenario(context, scenario, page, {
-        clubRoomsFromProxy: Boolean(options.clubRoomProxyServer),
-      });
-      await page.goto(scenario.path);
-      await preparePage(page, scenario);
-      if (scenario.spriteImageCount) {
-        const sprites = page.locator('[data-testid="sprite-image-container"]');
-        const spriteContents = page.locator('[data-testid="sprite-image-content"]');
-        await expect(sprites).toHaveCount(scenario.spriteImageCount);
-        await expect(spriteContents).toHaveCount(scenario.spriteImageCount);
-        for (let index = 0; index < scenario.spriteImageCount; index += 1) {
-          await expect(spriteContents.nth(index)).toHaveCSS('opacity', '1');
-        }
+  try {
+    await setupContextForScenario(context, scenario, page);
+    await page.goto(scenario.path);
+    await preparePage(page, scenario);
+    if (scenario.spriteImageCount) {
+      const sprites = page.locator('[data-testid="sprite-image-container"]');
+      const spriteContents = page.locator('[data-testid="sprite-image-content"]');
+      await expect(sprites).toHaveCount(scenario.spriteImageCount);
+      await expect(spriteContents).toHaveCount(scenario.spriteImageCount);
+      for (let index = 0; index < scenario.spriteImageCount; index += 1) {
+        await expect(spriteContents.nth(index)).toHaveCSS('opacity', '1');
       }
-      // preparePage 内的稳定化步骤可能耗时较长。截图前再次断言就绪元素仍可见，
-      // 避免「更多」菜单等短暂出现后又消失时，被空白页面静默写入视觉基准图。
-      await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
-      if (scenario.pageLabel === 'guest_club') {
-        await assertGuestClubReady(page);
-      }
-      if (scenario.pageLabel === 'signed_in_club_rooms_populated') {
-        // 大厅也会挂载同一批牌局；断言只检查当前俱乐部页，避免把两处卡片合并计数。
-        const clubRoomScreen = page.locator('[data-testid="club-rooms-screen"]:visible').last();
-        await expect(clubRoomScreen.locator('[data-testid^="club-room-item-visual-club-room-"]')).toHaveCount(2);
-        await expect(clubRoomScreen.locator('[data-testid="club-room-name"]')).toHaveText(['德州体验局', '周末牌局']);
-        await expect(clubRoomScreen.locator('[data-testid="club-room-club-name"]')).toHaveText(['演示俱乐部', '演示俱乐部']);
-        await expect(clubRoomScreen.locator('[data-testid="club-room-player-count"]')).toHaveText(['2/9', '4/9']);
-        await expect(clubRoomScreen.locator('[data-testid="club-rooms-empty-view"]')).toHaveCount(0);
-      }
-      if (scenario.pageLabel === 'signed_in_daily_bonus') {
-        await expect(page.getByTestId('CheckInDateListItem.checkInDetailDate')).toHaveText('01/01');
-      }
-      if (scenario.pageLabel === 'signed_in_application_management') {
-        const visibleBackButton = page
-          .locator('[data-testid="navigation-bar-back-image"]:visible')
-          .locator('xpath=ancestor::button[1]');
-        await expect(visibleBackButton).toHaveCount(1);
-        const accessibilityLabel = await visibleBackButton.getAttribute('aria-label');
-        expect(accessibilityLabel).toBe(backAccessibilityLabels[scenario.locale]);
-      }
-      await expect(page).toHaveScreenshot(`${scenario.label}.png`);
-    } finally {
-      await context.close();
     }
+    // preparePage 内的稳定化步骤可能耗时较长。截图前再次断言就绪元素仍可见，
+    // 避免「更多」菜单等短暂出现后又消失时，被空白页面静默写入视觉基准图。
+    await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
+    if (scenario.pageLabel === 'guest_club') {
+      await assertGuestClubReady(page);
+    }
+    if (scenario.pageLabel === 'signed_in_club_rooms_populated') {
+      // 大厅也会挂载同一批牌局；断言只检查当前俱乐部页，避免把两处卡片合并计数。
+      const clubRoomScreen = page.locator('[data-testid="club-rooms-screen"]:visible').last();
+      await expect(clubRoomScreen.locator('[data-testid^="club-room-item-visual-club-room-"]')).toHaveCount(2);
+      await expect(clubRoomScreen.locator('[data-testid="club-room-name"]')).toHaveText(['德州体验局', '周末牌局']);
+      await expect(clubRoomScreen.locator('[data-testid="club-room-club-name"]')).toHaveText(['演示俱乐部', '演示俱乐部']);
+      await expect(clubRoomScreen.locator('[data-testid="club-room-player-count"]')).toHaveText(['2/9', '4/9']);
+      await expect(clubRoomScreen.locator('[data-testid="club-rooms-empty-view"]')).toHaveCount(0);
+    }
+    if (scenario.pageLabel === 'signed_in_daily_bonus') {
+      await expect(page.getByTestId('CheckInDateListItem.checkInDetailDate')).toHaveText('01/01');
+    }
+    if (scenario.pageLabel === 'signed_in_application_management') {
+      const visibleBackButton = page
+        .locator('[data-testid="navigation-bar-back-image"]:visible')
+        .locator('xpath=ancestor::button[1]');
+      await expect(visibleBackButton).toHaveCount(1);
+      const accessibilityLabel = await visibleBackButton.getAttribute('aria-label');
+      expect(accessibilityLabel).toBe(backAccessibilityLabels[scenario.locale]);
+    }
+    await expect(page).toHaveScreenshot(`${scenario.label}.png`);
+  } finally {
+    await context.close();
+  }
 }

@@ -20,10 +20,12 @@ function createScreenshot(blockWidth = 0, blockHeight = 0): Buffer {
   return PNG.sync.write(bitmap);
 }
 
-test('恰好达到 0.3% 差异上限的相邻截图仍稳定，超过上限则不稳定', () => {
+test('恰好达到 0.5% 差异上限的相邻截图仍稳定，超过上限则不稳定', () => {
   const background = createScreenshot();
-  assert.equal(areScreenshotsEquivalent(background, createScreenshot(15, 2)), true);
-  assert.equal(areScreenshotsEquivalent(background, createScreenshot(31, 1)), false);
+  assert.equal(areScreenshotsEquivalent(background, createScreenshot(25, 2)), true, '一万像素中五十个差异应通过');
+  assert.equal(areScreenshotsEquivalent(background, createScreenshot(51, 1)), false, '一万像素中五十一个差异应失败');
+  assert.equal(areScreenshotsEquivalent(background, createScreenshot(25, 2), 5000), false,
+    '排除一半区域后，不得继续使用全图面积放宽稳定性');
 });
 
 test('相同画面的不同 PNG 编码仍稳定，尺寸不同始终不稳定', () => {

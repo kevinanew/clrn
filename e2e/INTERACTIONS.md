@@ -31,6 +31,11 @@ E2E_INTERACTION_BASE_URL=http://127.0.0.1:9087 npm run test:interactions -- --pr
 
 账号池启动脚本设置 `E2E_TEST_USERNAME` / `E2E_TEST_PASSWORD`，真实登录会话仅保存在内存中。每轮内部桌面与触屏串行运行；本机不同轮次通过账号池使用独立账号。长列表及故障只在 HTTP 边界提供固定响应，其余仍访问 staging；不提交建房或审批操作。仅对 staging 或连接 staging 的本地构建运行此套件。
 
+场景响应由每例独立的 Python mitmproxy 提供，运行前按 [安装说明](README.md#运行)
+安装 `mitmproxy/requirements.txt`。用例仅调用 `selectScenario` 选择分页或故障，
+恢复阶段解除故障后必须读到真实成功响应并检查重发次数；不会伪造恢复成功。
+Freshchat 沿用真实第三方网络，不启用视觉环境的屏蔽规则。
+
 交互套件需显式运行。失败截图与页面错误上下文位于 `test-results/interactions/`。
 
 ### Freshchat 在线客服

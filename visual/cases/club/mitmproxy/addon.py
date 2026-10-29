@@ -126,6 +126,8 @@ class ClubRoomVisualProxy:
 
     def request(self, flow):
         """控制请求单独处理；业务请求必须经过场景和 staging 地址核对。"""
+        if flow.response:
+            return
         if flow.request.host == CONTROL_HOST:
             self.control(flow)
             return

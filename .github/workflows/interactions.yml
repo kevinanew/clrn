@@ -10,6 +10,7 @@ on:
       - '.github/actions/prepare-release-web/**'
       - 'e2e/interactions/**'
       - 'e2e/helpers/**'
+      - 'e2e/mitmproxy/**'
       - 'e2e/cases/_shared/**'
       - 'e2e/interactions.config.ts'
       - 'e2e/freshchat.config.ts'
@@ -26,6 +27,7 @@ on:
       - '.github/actions/prepare-release-web/**'
       - 'e2e/interactions/**'
       - 'e2e/helpers/**'
+      - 'e2e/mitmproxy/**'
       - 'e2e/cases/_shared/**'
       - 'e2e/interactions.config.ts'
       - 'e2e/freshchat.config.ts'
@@ -98,6 +100,16 @@ jobs:
         run: node scripts/configure-ci-account.mjs
       - name: 安装测试依赖
         run: npm ci
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装网络场景代理
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r mitmproxy/requirements.txt
+      - name: 检查网络场景夹具
+        run: .venv/bin/python -m unittest discover -s mitmproxy -v
       - name: 准备本轮 Release 构建包
         uses: ./.github/actions/prepare-release-web
         with:

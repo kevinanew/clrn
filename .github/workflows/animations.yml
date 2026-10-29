@@ -11,6 +11,7 @@ on:
       - 'visual/**'
       - 'e2e/mitmproxy/**'
       - 'e2e/helpers/*diagnostic*'
+      - 'e2e/helpers/*proxy*.ts'
       - 'scripts/connection-diagnostic-summary.mjs'
       - 'scripts/*accounts*'
       - 'scripts/configure-ci-account.mjs'
@@ -28,6 +29,7 @@ on:
       - 'visual/**'
       - 'e2e/mitmproxy/**'
       - 'e2e/helpers/*diagnostic*'
+      - 'e2e/helpers/*proxy*.ts'
       - 'scripts/connection-diagnostic-summary.mjs'
       - 'scripts/*accounts*'
       - 'scripts/configure-ci-account.mjs'
@@ -130,16 +132,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: 安装牌局隔离代理
-        if: matrix.suite != 'app'
+      - name: 安装网络场景代理
         run: |
           python -m venv e2e/.venv
           e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
+      - name: 检查应用场景与消息夹具
+        if: matrix.suite == 'app' && matrix.part == 'application'
+        run: e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
       - name: 检查 TypeScript
         run: npm run typecheck
       - name: 验证关键帧差异汇总、牌面就绪、素材定位与续时准备
         if: matrix.suite == 'texas' && matrix.part == 'gameplay'
-        run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/cardSpriteReadiness.browser.ts visual/animations/cardSpriteDiagnostics.browser.ts visual/animations/playerAnimationAsset.browser.ts visual/animations/renewReadiness.browser.ts
+        run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/cardSpriteReadiness.browser.ts visual/animations/cardSpriteDiagnostics.browser.ts visual/animations/playerAnimationAsset.browser.ts visual/animations/renewReadiness.browser.ts visual/animations/leaderboardReadiness.browser.ts
       - name: 准备本轮 Release 构建包
         uses: ./.github/actions/prepare-release-web
         with:

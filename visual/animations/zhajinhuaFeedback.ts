@@ -1,6 +1,6 @@
 import { expect, type TestInfo } from '@playwright/test';
 import type { ZhajinhuaProxy } from '../cases/zhajinhua/proxy';
-import { events, restoreTable, validBets } from '../cases/zhajinhua/replayData';
+import { restoreTable } from '../cases/zhajinhua/replayData';
 import { press } from './appSession';
 import { captureTimeline } from './timeline';
 import type { TableSession } from './tableSession';
@@ -14,18 +14,15 @@ import type { TableSession } from './tableSession';
 export async function zhajinhuaFeedback(session: TableSession, proxy: ZhajinhuaProxy, info: TestInfo): Promise<void> {
   const { page, roomId, self, clip } = session;
   // 完整开始新一局，清除上局摊牌和皇冠；恢复状态消息不会清除这些覆盖头像的结算节点。
-  await proxy.replay(roomId, events([{ event: 'new_game', game_id: 'visual-feedback-zhajinhua-game',
-    settings: { boot: 1, raise_times: 10, max_round: 20, pot_limit: 2000 } }]));
+  await proxy.replay(roomId, { scene: 'zhajinhua-feedback-new_game' });
   await expect(page.getByTestId('player_victory_container')).toHaveCount(0);
   await expect(page.getByTestId('player_cards_container')).toHaveCount(0);
-  await proxy.replay(roomId, events(restoreTable(self).queue.map(item =>
-    item.event === 'room_status' || item.event === 'game_status'
-      ? { ...item, status: { ...(item.status as Record<string, unknown>), operating_seconds: 12 } } : item)));
+  await proxy.replay(roomId, { scene: 'countdown' });
   const countdown = page.getByTestId(`zhajinhua-player-container-${self}-operating`).getByTestId('zhajinhua-active-countdown');
   await expect(countdown).toHaveText('120');
   await expect(page.getByTestId('countdown-text')).toHaveAttribute('data-seconds', '3600');
   await page.clock.runFor(3200);
-  await proxy.replay(roomId, events([{ event: 'switch_player', player_id: self, valid_bets: validBets(false) }]));
+  await proxy.replay(roomId, { scene: 'zhajinhua-feedback-switch_player' });
   await expect(countdown).toContainText('12');
   await expect(countdown).toBeInViewport();
   await captureTimeline(page, info, 'zhajinhua-countdown', countdown,

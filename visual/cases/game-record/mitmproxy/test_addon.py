@@ -8,12 +8,13 @@ from mitmproxy import connection, http
 
 with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
     from addon import GameRecordProxy
+    from test_network_faults import source_environment
 from data import CLUB, PLAYER, PREFIX, all_records
 
 SELF = 'visual-user'
 
 
-def flow(path, method='GET', body=None, token=None, host='api.shafayouxi.org'):
+def flow(path, method='GET', body=None, token=None, host='node-0.service.invalid'):
     result = http.HTTPFlow(
         connection.Client(peername=('127.0.0.1', 12345), sockname=('127.0.0.1', 8080)),
         connection.Server(address=(host, 443)), live=True)
@@ -24,8 +25,10 @@ def flow(path, method='GET', body=None, token=None, host='api.shafayouxi.org'):
     return result
 
 
+
 class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.proxy = GameRecordProxy()
         self.proxy.scenario = 'visual-stable'
@@ -40,7 +43,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
     def result(self, flow):
         return json.loads(flow.response.content)['result']
 
-    def test_room_names_respect_ui_creation_limit(self):
+    def test_房间名称遵守界面创建限制(self):
         # 建房按 UTF-16 字符单元计数：ASCII 为 1，其他为 2，上限 20。
         for record in all_records():
             units = record['name'].encode('utf-16-le')
@@ -50,7 +53,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(next(record['name'] for record in all_records()
                                   if record['play_session_id'] == PREFIX + 'large')), 20)
 
-    async def test_list_includes_unstarted_record_without_settlements(self):
+    async def test_列表包含未开局且无结算的记录(self):
         room_id = PREFIX + 'empty'
         legacy = self.result(await self.request(f'/v10/texas_holdem/user/{SELF}/game_records'))
         self.assertIn(room_id, [item['room_id'] for item in legacy['items']])
@@ -65,10 +68,10 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
                                                {'room_ids': [room_id]}))
         self.assertEqual(count['results'][0]['game_amount'], 0)
 
-    async def test_other_users_hosts_and_methods_pass_through(self):
+    async def test_其他账号主机与方法必须透传(self):
         path = f'/v10/texas_holdem/user/{SELF}/game_records'
         self.assertIsNotNone((await self.request(path)).response)
-        for host in ('production.example.com', 'api.staging.laiwan.shafayouxi.com.evil.test'):
+        for host in ('node-9.service.invalid', 'node-17.service.invalid'):
             self.assertIsNone((await self.request(path, host=host)).response)
         self.assertIsNone((await self.request(path.replace(SELF, 'another-user'))).response)
         for method in ('POST', 'PUT', 'DELETE'):
@@ -76,14 +79,14 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.proxy.scenario = None
         self.assertIsNone((await self.request(path)).response)
 
-    async def test_mixed_unknown_rooms_and_profiles_pass_through(self):
+    async def test_混合未知房间与资料请求必须透传(self):
         self.assertIsNone((await self.request('/v1/room', 'PUT',
                                               {'rooms': [PREFIX + 'private', 'real-room']})).response)
         self.assertIsNone((await self.request('/v10/profile/users', 'PUT',
                                               {'users': [SELF, 'real-user']})).response)
         self.assertIsNotNone((await self.request('/v10/clubs', 'PUT', {'club_ids': [CLUB]})).response)
 
-    async def test_authenticated_control_validates_before_changing_state(self):
+    async def test_认证控制先验证再改变状态(self):
         control = {'userId': SELF, 'version': 'v2', 'mode': 'empty'}
         denied = await self.request('/records/configure', 'POST', control, host='test-mitmproxy.invalid')
         self.assertEqual(denied.response.status_code, 403)
@@ -94,7 +97,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(result.response.status_code, 400)
             self.assertEqual(self.proxy.mode, 'list')
 
-    async def test_pagination_has_no_missing_or_duplicate_records(self):
+    async def test_分页记录不能遗漏或重复(self):
         self.proxy.mode = 'paged'
         path = f'/v10/texas_holdem/user/{SELF}/game_records'
         first = self.result(await self.request(path))
@@ -116,7 +119,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(second['items']), 2)
         self.assertEqual(remaining, [room_id for room_id in ids if room_id != PREFIX + 'club'])
 
-    async def test_loading_gate_releases_without_sleep(self):
+    async def test_加载闸门释放无需固定等待(self):
         self.proxy.hold.clear()
         task = asyncio.create_task(self.request(f'/v10/texas_holdem/user/{SELF}/game_records'))
         await asyncio.sleep(0)
@@ -124,7 +127,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         await self.request('/records/release', 'POST', {}, token='test-token', host='test-mitmproxy.invalid')
         self.assertEqual((await task).response.status_code, 200)
 
-    async def test_delete_error_keeps_record_and_success_removes_it(self):
+    async def test_删除失败保留记录且成功后移除(self):
         path = f'/v1/game_log/user/{SELF}/room/{PREFIX}club'
         self.proxy.mode = 'delete-error'
         rejected = await self.request(path, 'DELETE')
@@ -137,7 +140,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn(PREFIX + 'club', [item['room_id'] for item in page['items']])
         self.assertIsNone((await self.request(path.replace(SELF, 'another-user'), 'DELETE')).response)
 
-    async def test_v2_list_and_detail_faults_are_separate(self):
+    async def test_新版列表与详情故障保持独立(self):
         self.proxy.mode = 'list-error'
         path = f'/v11/game_log/{SELF}/play_session_record/'
         self.assertEqual((await self.request(path + 'recent', 'PUT', {'user_id': SELF})).response.status_code, 503)
@@ -148,7 +151,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(json.loads(rejected.response.content)['error_message'], 'Visual record service unavailable')
         self.assertIsNone((await self.request(path + 'real-session')).response)
 
-    async def test_current_profile_and_version_keep_real_fields_and_errors(self):
+    async def test_当前资料与版本保留真实字段及错误(self):
         request = await self.request('/v10/profile/users', 'PUT', {'users': [SELF, PLAYER]})
         self.assertIsNone(request.response)
         self.assertEqual(request.request.json()['users'], [SELF])

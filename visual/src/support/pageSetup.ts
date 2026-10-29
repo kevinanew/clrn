@@ -1,6 +1,6 @@
 /**
  * 场景级 context 设置：
- * 语言/deviceId/新手引导标记、登录态注入、易碎接口 mock。
+ * 语言/deviceId/新手引导标记、登录态注入、具名代理场景。
  * 必须在 page.goto 之前调用。
  */
 
@@ -8,18 +8,7 @@ import type { BrowserContext, BrowserContextOptions, Page } from '@playwright/te
 import fs from 'fs';
 import path from 'path';
 import { LANGUAGE_STORAGE_KEY, type VisualScenario } from '../../scenarioTypes';
-import { mockDailyBonusWallet } from '../../cases/hall/walletPresentation';
-import {
-  FIXED_COUNTRY_PHONE_CODE,
-  USER_COUNTRY_CODE_STORAGE_KEY,
-  mockVisualNetworkDependencies,
-} from './networkMocks';
-export {
-  FIXED_COUNTRY_PHONE_CODE,
-  mockFixedCountryCode,
-  mockRoomDisallowRuleReminder,
-  mockVisualNetworkDependencies,
-} from './networkMocks';
+import { scenarioProxy, selectScenario } from '../../../e2e/helpers/scenario-proxy';
 
 // 独立动画运行可使用临时认证文件，避免与其他套件相互覆盖。
 export const AUTH_STATE_PATH = process.env.VISUAL_AUTH_STATE_PATH
@@ -29,22 +18,19 @@ export const AUTH_STATE_PATH = process.env.VISUAL_AUTH_STATE_PATH
 type AuthStateArgs = {
   entries: Record<string, string>;
   langKey: string;
-  countryKey: string;
-  countryCode: string;
 };
 
 /**
- * 在应用初始化前写入共享认证缓存，保留场景语言并固定国家码。
- * @param args - 包含 entries 缓存、语言键 langKey、国家码键 countryKey 和固定区号 countryCode 的注入配置。
+ * 在应用初始化前写入共享认证缓存，保留场景语言。
+ * @param args - 已采集的真实认证缓存及需要保留的场景语言键。
  */
 function injectAuthState(args: AuthStateArgs): void {
-  const { entries, langKey, countryKey, countryCode } = args;
+  const { entries, langKey } = args;
   Object.entries(entries).forEach(([key, value]) => {
     if (key !== langKey) {
       window.localStorage.setItem(key, value);
     }
   });
-  window.localStorage.setItem(countryKey, countryCode);
 }
 
 /**
@@ -55,8 +41,6 @@ function buildAuthStateArgs(entries: Record<string, string>): AuthStateArgs {
   return {
     entries,
     langKey: LANGUAGE_STORAGE_KEY,
-    countryKey: USER_COUNTRY_CODE_STORAGE_KEY,
-    countryCode: FIXED_COUNTRY_PHONE_CODE,
   };
 }
 
@@ -122,7 +106,7 @@ export async function disableAnimations(context: BrowserContext): Promise<void> 
   })();`);
 }
 
-/** 采集态里与登录无关、可安全复用的缓存键（主题等；国家码已由 mockFixedCountryCode 固定） */
+/** 采集态里与登录无关、可安全复用的缓存键（主题等） */
 const SAFE_CACHE_KEYS = ['app.theme.id.key'];
 
 /**
@@ -153,7 +137,6 @@ export function buildStorageStateForScenario(
     'hall.screen.tutorial.complete.key': 'true',
     'personal.house.screen.tutorial.complete.key': 'true',
     'create.room.screen.tutorial.complete.key': 'true',
-    [USER_COUNTRY_CODE_STORAGE_KEY]: FIXED_COUNTRY_PHONE_CODE,
   });
 
   return {
@@ -178,18 +161,22 @@ export async function setupContextForScenario(
   context: BrowserContext,
   scenario: VisualScenario,
   page?: Page,
-  options: { clubDetailsFromProxy?: boolean; clubRoomsFromProxy?: boolean;
-    animations?: 'allow' | 'disabled'; navigatorLocale?: string } = {},
+  options: { animations?: 'allow' | 'disabled'; navigatorLocale?: string } = {},
 ): Promise<void> {
   await fixNavigatorLanguage(context, options.navigatorLocale);
   if (options.animations !== 'allow') await disableAnimations(context);
-  await mockVisualNetworkDependencies(context, {
-    realPrivateRoom: scenario.group === 'texas-holdem' || scenario.group === 'zhajinhua',
-    clubRoomsFromProxy: options.clubRoomsFromProxy,
-    recordFixtures: scenario.group === 'game-record',
-    clubDetailsFromProxy: options.clubDetailsFromProxy,
-  });
-  if (scenario.pageLabel === 'signed_in_daily_bonus') await mockDailyBonusWallet(context);
+  await scenarioProxy(context).command('fixtures/environment', { visual: true });
+  const scenes: Record<string, string> = {
+    signed_in_daily_bonus: 'daily-bonus', signed_in_club: 'club-empty',
+    signed_in_club_rooms: 'club-empty', signed_in_club_more: 'club-empty',
+    signed_in_club_search: 'club-empty', signed_in_mall: 'mall',
+    signed_in_wallet_coin: 'wallet-empty', signed_in_wallet_diamond: 'wallet-empty',
+  };
+  const authEntries = readAuthStateEntries();
+  if (scenes[scenario.pageLabel]) {
+    const userId: string | undefined = JSON.parse(authEntries?.['save.user.origin.data.from.server.key'] || '{}').user_id;
+    await selectScenario(context, scenes[scenario.pageLabel], userId ? { userId } : {});
+  }
 
   await context.addInitScript(
     ({ locale, langKey, deviceId }: { locale: string; langKey: string; deviceId: string }) => {
@@ -205,12 +192,6 @@ export async function setupContextForScenario(
     { locale: scenario.locale, langKey: LANGUAGE_STORAGE_KEY, deviceId: scenario.deviceId },
   );
 
-  const authEntries = readAuthStateEntries();
-  // 采集态里可能带有按 IP 得到的区号；统一改写，避免覆盖上面的固定值
-  if (authEntries) {
-    authEntries[USER_COUNTRY_CODE_STORAGE_KEY] = FIXED_COUNTRY_PHONE_CODE;
-  }
-
   if (scenario.signIn) {
     // 注入当前分片开始前采集的登录态（localStorage），免去逐场景 UI 登录；
     // 语言键已在采集时剔除，不会覆盖上面的语言设置
@@ -225,7 +206,7 @@ export async function setupContextForScenario(
     }
 
   } else if (authEntries) {
-    // 未登录场景也复用与登录无关的安全缓存键（主题等；国家码已由 mockFixedCountryCode 固定）
+    // 未登录场景也复用与登录无关的安全缓存键（主题等）
     const safeEntries = Object.fromEntries(
       SAFE_CACHE_KEYS.filter((key) => authEntries[key] !== undefined).map((key) => [
         key,

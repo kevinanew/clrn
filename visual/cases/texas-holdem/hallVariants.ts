@@ -2,7 +2,6 @@ import type { Page } from '@playwright/test';
 import { expect, type TexasProxy } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import { HALL_VARIANT_STATES } from './scenarios';
-import { events, REPLAY_PLAYER_IDS } from './replayData';
 import { advance, click, freezeClock, selfId, visible } from './replay';
 import { enableSetting, sequence, table, type Capture } from './variantSupport';
 
@@ -36,28 +35,25 @@ export async function captureHallVariants(page: Page, scenario: VisualScenario, 
   await advance(page);
   await snapshot('pair_play_selected');
   await click(page, 'report-pair-play-close-button');
-  await proxy.replayTexas(room, events([{ event: 'settlement', players: [
-    { player_id: REPLAY_PLAYER_IDS[0], net: 180, prize: 180, stack: 1140 },
-  ] }]));
+  await proxy.replayTexas(room, { scene: 'hall-settlement' });
   await advance(page);
   await visible(page, 'bet-next-hand-button').first().click();
   await advance(page);
   await expect(visible(page, 'bet-next-hand-has-bet-icon')).toBeVisible();
   await expect(visible(page, 'bet-next-hand-placeholder')).toBeVisible();
   await snapshot('prediction_bet');
-  await proxy.replayTexas(room, events([{ event: 'settlement_hand_prediction', result: { net: -10, currency_name: 'coin' } }]));
+  await proxy.replayTexas(room, { scene: 'hall-variants-settlement_hand_prediction' });
   await advance(page);
   await expect(visible(page, 'bet-next-hand-result-amount')).toHaveText('-10');
   await snapshot('prediction_loss');
   // 让上一条结果的三秒隐藏计时器结束，避免它提前收起新的结果。
   await page.clock.runFor(3500);
   await expect(visible(page, 'bet-next-hand-result-amount')).toBeHidden();
-  await proxy.replayTexas(room, events([{ event: 'settlement_hand_prediction', result: { net: 20, currency_name: 'diamond' } }]));
+  await proxy.replayTexas(room, { scene: 'hall-variants-settlement_hand_prediction-2' });
   await advance(page);
   await expect(visible(page, 'bet-next-hand-result-amount')).toHaveText('+20');
   await snapshot('prediction_diamond');
-  await proxy.replayTexas(room, events([{ event: 'new_game', game_id: 'visual-fixed-game',
-    settings: { small_blind: 1, big_blind: 2, ante: 0 } }]));
+  await proxy.replayTexas(room, { scene: 'hall-new_game' });
   await advance(page);
   await table(page, proxy, room, self);
   await enableSetting(page, 'operation-time');

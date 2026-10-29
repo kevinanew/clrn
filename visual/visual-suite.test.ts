@@ -5,6 +5,8 @@ import { canTopUpVisualAccount, getVisualTestAccount } from './test-account';
 import { getVisualSuite } from './visual-suite';
 import type { BrowserContext } from '@playwright/test';
 import { setupContextForScenario } from './src/support/pageSetup';
+import { bindScenarioProxy } from '../e2e/helpers/scenario-proxy';
+import type { Mitmproxy } from '../e2e/helpers/mitmproxy-client';
 
 describe('visual suite selection and account isolation', () => {
   for (const scope of ['core', 'full']) {
@@ -37,7 +39,7 @@ describe('visual suite selection and account isolation', () => {
     });
   }
 
-  test('视觉场景保留真实选线，牌桌同时保留真实房间接口', async () => {
+  test('视觉准备只选择 Python 场景，不注册浏览器响应路由', async () => {
     for (const suite of ['app', 'texas', 'zhajinhua'] as const) {
       const routes: RegExp[] = [];
       const context = {
@@ -49,19 +51,20 @@ describe('visual suite selection and account isolation', () => {
          */
         route: async (matcher: unknown) => { if (matcher instanceof RegExp) routes.push(matcher); },
       } as unknown as BrowserContext;
+      const commands: { endpoint: string; payload: unknown }[] = [];
+      bindScenarioProxy(context, {
+        /**
+         * 记录场景选择，确认浏览器端没有响应载荷。
+         * @param endpoint - 本机代理控制路径。
+         * @param payload - 环境或具名场景命令。
+         */
+        command: async (endpoint: string, payload: unknown) => { commands.push({ endpoint, payload }); },
+      } as unknown as Mitmproxy);
       const scenario = buildScenarios({ VISUAL_SUITE: suite, VISUAL_LOCALES: 'zh-Hans' })
         .find(item => item.signIn)!;
       await setupContextForScenario(context, scenario, undefined);
-      for (const host of ['64.kr-seoul', '67.hk-sn', '69.us-la']) {
-        for (const path of ['/node/v1/status', '/public/v12/metadata/servers', '/public/v13/metadata/servers']) {
-          assert.equal(routes.some(matcher => matcher.test(`https://${host}.api.staging.laiwan.shafayouxi.com${path}`)),
-            false, `${suite} 必须保留真实选线：${host}${path}`);
-        }
-      }
-      for (const path of ['/v10/house/user/user-id', '/v2/building/rooms']) {
-        assert.equal(routes.some(matcher => matcher.test(`https://api.shafayouxi.org${path}`)),
-          suite === 'app', `${suite}: ${path}`);
-      }
+      assert.deepEqual(routes, []);
+      assert.deepEqual(commands, [{ endpoint: 'fixtures/environment', payload: { visual: true } }]);
     }
   });
 

@@ -8,7 +8,7 @@ import { runClubSearchResultScenario } from './searchResult';
 for (const scenario of buildScenarios().filter(item => item.group === 'club')) {
   if (scenario.pageLabel === 'signed_in_club_rooms_populated') {
     test(scenario.label, async ({ browser, clubRoomProxy }) => {
-      await runVisualScenario(scenario, browser, { clubRoomProxyServer: clubRoomProxy.server });
+      await runVisualScenario(scenario, browser, { network: clubRoomProxy.network });
       const requests = (await clubRoomProxy.status()).clubRoomRequests;
       expect(requests['/v10/club'], '俱乐部列表必须经过本场景代理').toBeGreaterThan(0);
       expect(requests['/v10/clubs'], '俱乐部资料必须经过本场景代理').toBeGreaterThan(0);

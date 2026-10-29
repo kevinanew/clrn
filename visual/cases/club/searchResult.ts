@@ -1,3 +1,4 @@
+import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
 /** 在视觉测试的固定 Linux 浏览器中采集俱乐部搜索命中结果。 */
 import { expect, type Browser } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
@@ -24,9 +25,10 @@ export async function runClubSearchResultScenario(scenario: VisualScenario, brow
       deviceScaleFactor: 1,
       storageState: buildStorageStateForScenario(scenario, visualBaseUrl),
     });
+    bindScenarioProxy(context, proxy);
     try {
       const page = await context.newPage();
-      await setupContextForScenario(context, scenario, page, { clubDetailsFromProxy: true });
+      await setupContextForScenario(context, scenario, page);
       await page.goto(scenario.path);
       await preparePage(page, scenario);
       await proxy.inject('club-search-result');

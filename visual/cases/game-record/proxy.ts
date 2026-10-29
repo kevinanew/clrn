@@ -15,6 +15,8 @@ export class RecordProxy {
    * @param proxy - 本轮独占的代理控制对象。
    */
   constructor(private readonly proxy: Mitmproxy) {}
+  /** 读取共用场景控制客户端。 */
+  get network(): Mitmproxy { return this.proxy; }
   /** 读取当前专用代理的本机访问地址。 */
   get server(): string { return this.proxy.server; }
   /**

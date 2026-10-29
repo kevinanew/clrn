@@ -1,0 +1,275 @@
+{
+  "zhajinhua-feedback-new_game": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "new_game",
+        "game_id": "visual-feedback-zhajinhua-game",
+        "settings": {
+          "boot": 1,
+          "raise_times": 10,
+          "max_round": 20,
+          "pot_limit": 2000
+        }
+      }
+    ]
+  },
+  "zhajinhua-feedback-switch_player": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "switch_player",
+        "player_id": "@self",
+        "valid_bets": {
+          "fold": {},
+          "call": {
+            "amount": 10
+          },
+          "challenge": {
+            "amount": 20
+          },
+          "raise": {
+            "minimum": 20,
+            "maximum": 100,
+            "step": 10
+          },
+          "all_in": {
+            "amount": 1000
+          }
+        }
+      }
+    ]
+  },
+  "zhajinhua-gameplay-new_game": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "new_game",
+        "game_id": "visual-fixed-zhajinhua-game",
+        "settings": {
+          "boot": 1,
+          "raise_times": 10,
+          "max_round": 20,
+          "pot_limit": 2000
+        }
+      }
+    ]
+  },
+  "zhajinhua-gameplay-begin_play": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "begin_play",
+        "table": {
+          "players": [
+            {
+              "player_id": "@self",
+              "seat_number": 1,
+              "stack": 1000,
+              "position": "D"
+            },
+            {
+              "player_id": "00000000-0000-4000-8000-000000000001",
+              "seat_number": 2,
+              "stack": 960,
+              "position": ""
+            },
+            {
+              "player_id": "00000000-0000-4000-8000-000000000002",
+              "seat_number": 3,
+              "stack": 920,
+              "position": ""
+            },
+            {
+              "player_id": "00000000-0000-4000-8000-000000000003",
+              "seat_number": 4,
+              "stack": 880,
+              "position": ""
+            },
+            {
+              "player_id": "00000000-0000-4000-8000-000000000004",
+              "seat_number": 5,
+              "stack": 840,
+              "position": ""
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "zhajinhua-gameplay-see_hole_card-obtain_hole_card-player_bets": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "see_hole_card",
+        "player_id": "@self"
+      },
+      {
+        "event": "obtain_hole_card",
+        "hole_card": [
+          "as",
+          "ad",
+          "ac"
+        ],
+        "hand_strength": "three_of_a_kind"
+      },
+      {
+        "event": "player_bets",
+        "valid_bets": {
+          "fold": {},
+          "call": {
+            "amount": 20
+          },
+          "challenge": {
+            "amount": 40
+          },
+          "raise": {
+            "minimum": 40,
+            "maximum": 200,
+            "step": 20
+          },
+          "all_in": {
+            "amount": 1000
+          }
+        }
+      }
+    ]
+  },
+  "zhajinhua-gameplay-raise-pot_update": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "raise",
+        "player_id": "@self",
+        "amount": 40,
+        "stack": 960
+      },
+      {
+        "event": "pot_update",
+        "pot_amount": 160
+      }
+    ]
+  },
+  "zhajinhua-gameplay-challenge": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "challenge",
+        "from_player": {
+          "player_id": "@self",
+          "stack": 920,
+          "challenge_result": "winner"
+        },
+        "to_player": {
+          "player_id": "00000000-0000-4000-8000-000000000001",
+          "stack": 960,
+          "challenge_result": "loser"
+        }
+      }
+    ]
+  },
+  "zhajinhua-gameplay-showdown": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "showdown",
+        "players": [
+          {
+            "player_id": "@self",
+            "hole_card": [
+              "as",
+              "ad",
+              "ac"
+            ],
+            "hand_strength": "three_of_a_kind",
+            "is_winner": true
+          },
+          {
+            "player_id": "00000000-0000-4000-8000-000000000002",
+            "hole_card": [
+              "kh",
+              "ks",
+              "qd"
+            ],
+            "hand_strength": "pair",
+            "is_winner": false
+          }
+        ]
+      }
+    ]
+  },
+  "zhajinhua-gameplay-settlement": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "settlement",
+        "players": [
+          {
+            "player_id": "@self",
+            "net": 120,
+            "prize": 120,
+            "stack": 1120
+          },
+          {
+            "player_id": "00000000-0000-4000-8000-000000000002",
+            "net": -40,
+            "prize": 0,
+            "stack": 880
+          }
+        ]
+      }
+    ]
+  },
+  "gameplay-showdown": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "showdown",
+        "players": [
+          {
+            "player_id": "@self",
+            "hole_card": [
+              "as",
+              "ad",
+              "ac"
+            ],
+            "hand_strength": "three_of_a_kind",
+            "is_winner": true
+          },
+          {
+            "player_id": "00000000-0000-4000-8000-000000000001",
+            "hole_card": [
+              "kh",
+              "ks",
+              "qd"
+            ],
+            "hand_strength": "pair",
+            "is_winner": false
+          }
+        ]
+      }
+    ]
+  },
+  "gameplay-settlement": {
+    "stream": "zhajinhua",
+    "queue": [
+      {
+        "event": "settlement",
+        "players": [
+          {
+            "player_id": "@self",
+            "net": 120,
+            "prize": 120,
+            "stack": 1120
+          },
+          {
+            "player_id": "00000000-0000-4000-8000-000000000001",
+            "net": -40,
+            "prize": 0,
+            "stack": 920
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import type { TexasProxy } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
-import { events, REPLAY_PLAYER_IDS, type Street } from './replayData';
+import { REPLAY_PLAYER_IDS, type Street } from './replayData';
 import { GAME_STATES } from './scenarios';
 import { closeMask, freezeClock, restore as restoreReplay } from './replay';
 import { checkFlopCardFaces, checkMobilePlayerAction } from './renderingChecks';
@@ -67,31 +67,19 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
 
   await restore('river', true);
   // 恢复对手计时不会切换操作面板，需真实 switch_player 消息才能显示预选操作。
-  await proxy.replayTexas(roomId, events([{ event: 'switch_player', player_id: REPLAY_PLAYER_IDS[0],
-    valid_bets: { call: { amount: 20 } } }]));
+  await proxy.replayTexas(roomId, { scene: 'texas-gameplay-switch_player' });
   await page.clock.runFor(1200);
   await expect(visible(page, 'texas-holdem-operation-button-raise')).toBeHidden();
   await expect(page.getByText(/看或弃|看或棄|Check\/Fold/i).last()).toBeVisible();
   await snapshot('opponent_turn');
-  await proxy.replayTexas(roomId, events([
-    { event: 'all_in', player_id: REPLAY_PLAYER_IDS[0], amount: 960, stack: 0 },
-    { event: 'all_in_show_hole_card', players: [{ player_id: REPLAY_PLAYER_IDS[0], hole_card: ['kh', 'ks'] }] },
-  ]));
+  await proxy.replayTexas(roomId, { scene: 'texas-gameplay-all_in-all_in_show_hole_card' });
   await expect(visible(page, 'texas-holdem-player-action-all_in')).toBeVisible();
   await page.clock.runFor(1500);
   await snapshot('all_in');
-  await proxy.replayTexas(roomId, events([{ event: 'showdown', players: [
-    { player_id: self, hole_card: ['as', 'ad'], best_cards: ['as', 'ad', 'ah', 'kd', 'qs'],
-      hand_strength: 'three_of_a_kind', strength_cards: ['as', 'ad', 'ah'], is_max_strength: true },
-    { player_id: REPLAY_PLAYER_IDS[0], hole_card: ['kh', 'ks'], best_cards: ['kh', 'ks', 'kd', 'ah', 'qs'],
-      hand_strength: 'three_of_a_kind', strength_cards: ['kh', 'ks', 'kd'], is_max_strength: false },
-  ] }]));
+  await proxy.replayTexas(roomId, { scene: 'gameplay-showdown' });
   await page.clock.runFor(1500);
   await snapshot('showdown');
-  await proxy.replayTexas(roomId, events([{ event: 'settlement', players: [
-    { player_id: self, net: 180, prize: 180, stack: 1180 },
-    { player_id: REPLAY_PLAYER_IDS[0], net: -960, prize: 0, stack: 0 },
-  ] }]));
+  await proxy.replayTexas(roomId, { scene: 'texas-gameplay-settlement' });
   await expect(visible(page, `texas-holdem-player-container-${self}`)).toContainText('1180');
   await page.clock.runFor(1500);
   await snapshot('settlement');

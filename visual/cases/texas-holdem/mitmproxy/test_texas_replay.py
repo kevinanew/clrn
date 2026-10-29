@@ -14,7 +14,7 @@ with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
 def flow(url, method='GET', body=b'', token=None):
     result = http.HTTPFlow(
         connection.Client(peername=('127.0.0.1', 12345), sockname=('127.0.0.1', 8080)),
-        connection.Server(address=('api.shafayouxi.org', 443)), live=True)
+        connection.Server(address=('node-0.service.invalid', 443)), live=True)
     result.request = http.Request.make(method, url, body)
     if token:
         result.request.headers['X-E2E-Control-Token'] = token
@@ -27,7 +27,7 @@ CHANNEL = f'texas_holdem>{ROOM}#{SELF}'
 
 
 def socket_flow():
-    result = flow('https://64.kr-seoul.api.staging.laiwan.shafayouxi.com/v2/centrifugo/connection/websocket')
+    result = flow('https://node-4.service.invalid/v2/centrifugo/connection/websocket')
     result.websocket = websocket.WebSocketData()
     return result
 
@@ -48,7 +48,7 @@ class TexasReplayTests(unittest.TestCase):
         message(self.socket, [{'id': 1, 'result': {}}], False)
         self.replay.websocket_message(self.socket)
 
-    def test_publish_waits_for_successful_subscription_ack(self):
+    def test_发布必须等待订阅成功确认(self):
         pending_socket = socket_flow()
         message(pending_socket, [{'id': 60, 'method': 1, 'params': {'channel': f'texas_holdem>{OTHER}#{SELF}'}}])
         self.replay.websocket_message(pending_socket)
@@ -66,7 +66,7 @@ class TexasReplayTests(unittest.TestCase):
             self.replay.publish(OTHER, {})
             self.assertEqual(master.commands.call.call_args.args[1], pending_socket)
 
-    def test_server_unsubscribe_removes_confirmed_channel_and_preserves_frame(self):
+    def test_服务端取消订阅移除已确认频道且保留原帧(self):
         unsubscribe = {'result': {'type': 3, 'channel': CHANNEL, 'data': {'code': 2500}}}
         msg = message(self.socket, [unsubscribe], False)
         self.replay.websocket_message(self.socket)
@@ -75,7 +75,7 @@ class TexasReplayTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.replay.publish(ROOM, {})
 
-    def test_client_unsubscribe_cancels_pending_ack_and_socket_end_clears_pending(self):
+    def test_客户端取消订阅和连接关闭清除待确认状态(self):
         message(self.socket, [{'id': 62, 'method': 1, 'params': {'channel': CHANNEL}},
                               {'id': 63, 'method': 2, 'params': {'channel': CHANNEL}}])
         self.replay.websocket_message(self.socket)
@@ -88,7 +88,7 @@ class TexasReplayTests(unittest.TestCase):
         self.replay.websocket_end(self.socket)
         self.assertNotIn(self.socket.id, self.replay.pending_subscriptions)
 
-    def test_publish_goes_to_browser_and_requires_matching_live_room(self):
+    def test_发布面向浏览器且必须匹配活动房间(self):
         payload = {'stream': 'texas_holdem', 'queue': [{'event': 'room_status'}]}
         with patch('texas_replay.ctx.master', create=True) as master:
             self.replay.publish(ROOM, payload)
@@ -104,7 +104,7 @@ class TexasReplayTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.replay.publish(ROOM, payload)
 
-    def test_mixed_batch_keeps_ping_and_unrelated_rpc_and_blocks_only_replay_room(self):
+    def test_混合批次保留心跳与无关调用且仅隔离回放房间(self):
         self.replay.room_id = ROOM
         ping = {'id': 2, 'method': 7}
         unrelated = {'id': 3, 'method': 9, 'params': {'data': {
@@ -124,7 +124,7 @@ class TexasReplayTests(unittest.TestCase):
             self.assertFalse(untouched.dropped)
             self.assertEqual(master.commands.call.call_count, 1)
 
-    def test_server_push_filter_preserves_rpc_and_injected_messages(self):
+    def test_推送过滤保留远程调用与已注入消息(self):
         self.replay.room_id = ROOM
         publication = {'result': {'channel': CHANNEL}}
         reply = {'id': 10, 'result': {'data': {}}}
@@ -135,7 +135,7 @@ class TexasReplayTests(unittest.TestCase):
         self.replay.websocket_message(self.socket)
         self.assertFalse(injected.dropped)
 
-    def test_profiles_are_scoped_and_release_clears_fixtures(self):
+    def test_资料按归属匹配且释放后清除夹具(self):
         self.replay.room_id = ROOM
         self.replay.self_id = SELF
         self.assertIsNone(self.replay.http_fixture(f'/v10/profile/{OTHER}'))
@@ -145,7 +145,7 @@ class TexasReplayTests(unittest.TestCase):
         self.assertIsNone(self.replay.http_fixture(f'/v10/profile/{PLAYER_IDS[0]}'))
         self.assertIsNone(self.replay.self_id)
 
-    def test_push_filter_preserves_other_streams_unsubscribe_and_malformed_results(self):
+    def test_推送过滤保留其他数据流取消订阅与损坏结果(self):
         self.replay.room_id = ROOM
         unrelated = {'result': {'channel': f'chat>{ROOM}#{SELF}', 'type': 0}}
         unsubscribe = {'result': {'channel': CHANNEL, 'type': 3}}
@@ -155,7 +155,7 @@ class TexasReplayTests(unittest.TestCase):
         self.assertEqual([json.loads(line) for line in msg.text.splitlines()],
                          [unrelated, unsubscribe, malformed])
 
-    def test_unsubscribe_and_closed_sockets_cannot_receive_replay(self):
+    def test_取消订阅与已关闭连接不能收到回放(self):
         message(self.socket, [{'id': 2, 'method': 2, 'params': {'channel': CHANNEL}}])
         self.replay.websocket_message(self.socket)
         with self.assertRaises(ValueError):
@@ -163,7 +163,7 @@ class TexasReplayTests(unittest.TestCase):
         self.replay.websocket_end(self.socket)
         self.assertNotIn(self.socket.id, self.replay.subscriptions)
 
-    def test_created_room_isolated_before_subscription_and_release_restores_traffic(self):
+    def test_创建房间在订阅前隔离且释放后恢复流量(self):
         self.replay.arm_created_room(ROOM, SELF)
         unregistered = socket_flow()
         seat = {'id': 40, 'method': 9, 'params': {'data': {
@@ -181,7 +181,7 @@ class TexasReplayTests(unittest.TestCase):
             self.assertFalse(restored.dropped)
             self.assertEqual(master.commands.call.call_count, 1)
 
-    def test_payment_rpc_matches_action_room_path_and_methods_and_returns_game_shape(self):
+    def test_支付调用匹配动作房间路径与方法并保留玩法契约(self):
         self.replay.room_id = ROOM
         action = {'method': 'PUT', 'room_id': ROOM, 'game_id': 'visual-fixed-game',
                   'path': '/v10/texas_holdem/room/$room_id$/game/$game_id$/check_community_card'}
@@ -199,7 +199,7 @@ class TexasReplayTests(unittest.TestCase):
         call = {'params': {'data': {'path': f'/v10/texas_holdem/room/{ROOM}/game/test/call'}}}
         self.assertEqual(self.replay.rpc_result(call)['result']['level_up']['new_level'], 6)
 
-    def test_active_created_room_cannot_be_replaced_with_another_subscribed_room(self):
+    def test_活动创建房间不能被其他已订阅房间替换(self):
         self.replay.arm_created_room(ROOM, SELF)
         message(self.socket, [{'id': 50, 'method': 1, 'params': {
             'channel': f'texas_holdem>{OTHER}#{SELF}'}}])
@@ -208,7 +208,7 @@ class TexasReplayTests(unittest.TestCase):
             self.replay.publish(OTHER, {})
         self.assertEqual(self.replay.room_id, ROOM)
 
-    def test_rtc_responses_keep_chatroom_model_fields_and_do_not_target_other_rooms(self):
+    def test_实时通信响应保留聊天室字段且不匹配其他房间(self):
         self.replay.arm_created_room(ROOM, SELF)
         for action in ('join', 'quit'):
             frame = {'method': 9, 'params': {'data': {'path': f'/v1/chat_room/{ROOM}/{action}'}}}
@@ -219,7 +219,7 @@ class TexasReplayTests(unittest.TestCase):
         frame['params']['data']['path'] = f'/v1/chat_room/{OTHER}/join'
         self.assertFalse(self.replay.is_replay_rpc(frame))
 
-    def test_scenario_changes_release_replay_and_control_requires_token(self):
+    def test_切换场景释放回放且控制必须认证(self):
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             addon = NetworkFaults()
         addon.scenario = 'visual-stable'

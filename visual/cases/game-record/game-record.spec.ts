@@ -1,3 +1,4 @@
+import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
 import fs from 'node:fs';
 import { test, expect, type RecordProxy } from './proxy';
 import { buildScenarios } from '../../scenarios';
@@ -172,6 +173,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
       proxy: { server: recordProxy.server, bypass: '<-loopback>' }, ignoreHTTPSErrors: true,
       storageState: buildStorageStateForScenario(scenario, visualBaseUrl),
     });
+    bindScenarioProxy(context, recordProxy.network);
     const page = await context.newPage();
     page.setDefaultTimeout(60_000);
     const errors: string[] = [];
@@ -179,14 +181,13 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
     const { snapshot, complete } = captureStates(page, scenario);
     try {
       await setupContextForScenario(context, scenario, page);
-      await context.addInitScript(newVersion => {
-        localStorage.setItem('use.new.game.record.key', String(newVersion));
-      }, version === 'v2');
       await page.goto(scenario.path, { waitUntil: 'domcontentloaded', timeout: 120_000 });
       // 新版列表依赖俱乐部页加载的缓存；通过真实导航建立该前置状态。
       await preparePage(page, { ...scenario, tabTestId: 'club-tab', visualReadySelector: '[data-testid="club-tab-screen"]' });
       await expect.poll(async () => (await recordProxy.status()).recordRequests['/v10/club'] ?? 0).toBeGreaterThan(0);
       await preparePage(page, scenario);
+      await expect.poll(() => page.evaluate(() => localStorage.getItem('use.new.game.record.key')))
+        .toBe(String(version === 'v2'));
       await holdListDeadline(page, true);
       await click(page, 'game-record');
       await expect(visible(page, version === 'legacy' ? 'progress-hud-activity-indicator' : 'loading-indicator')).toBeVisible();

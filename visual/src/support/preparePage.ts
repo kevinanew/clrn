@@ -7,6 +7,7 @@ import type { Locator, Page } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
 import { stabilizeVideos, stabilizeBackdropFilter, alignPersonalHouseTitlesToDevicePixels, applyContentStabilizers, assertMatchingArtworkVisible, ensureLocalImagesLoaded, lockPageWidth, scrollVisualReadyElementIntoView } from './pageStabilizers';
 import { accountPresentationRules } from '../../cases/account/presentation';
+import { privateRoomPresentationRules } from '../../cases/private-room/presentation';
 export { applyContentStabilizers, ensureLocalImagesLoaded, lockPageWidth } from './pageStabilizers';
 import {
   dismissSignedInPopups,
@@ -370,7 +371,8 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
   await stabilizeBackdropFilter(page);
   await alignPersonalHouseTitlesToDevicePixels(page);
   await applyContentStabilizers(page, { ...scenario,
-    fixedTexts: [...scenario.fixedTexts, ...await accountPresentationRules(page, scenario)] });
+    fixedTexts: [...scenario.fixedTexts, ...await accountPresentationRules(page, scenario),
+      ...await privateRoomPresentationRules(page, scenario)] });
   // 页面就绪及图片等待期间仍可能有异步请求失败 Alert 晚到；截图前最后清理一次。
   // 未登录的协议/隐私页同样会收到代理探测失败 Alert，因此所有场景都要执行。
   await dismissSignedInPopups(page);

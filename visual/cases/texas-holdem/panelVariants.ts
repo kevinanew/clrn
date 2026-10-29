@@ -2,7 +2,6 @@ import type { Page } from '@playwright/test';
 import { expect, type TexasProxy } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import { PANEL_VARIANT_STATES } from './scenarios';
-import { events, REPLAY_PLAYER_IDS } from './replayData';
 import { advance, click, closeMask, freezeClock, restore, selfId, visible } from './replay';
 import { enableSetting, sequence, table, type Capture } from './variantSupport';
 
@@ -31,10 +30,7 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
     await closeMask(page, 'buy-in-application-list');
   }
   await enableSetting(page, 'player-voice');
-  await proxy.replayTexas(room, { stream: 'room_message', payload: { action: 'audio', content: {
-    from_user_id: REPLAY_PLAYER_IDS[0], from_user_nickname: 'Player1', duration: 3,
-    codec: 'mp3', content: '',
-  } } });
+  await proxy.replayTexas(room, { scene: 'panel-variants-room_message-audio' });
   await advance(page);
   await click(page, 'texas-holdem-chat-button');
   await click(page, '-in-game-chat-record-tab');
@@ -57,15 +53,14 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
   await advance(page);
   await restore(page, proxy, room, self, 'flop', true);
   await proxy.configureUI({ rpcError: 'balance' });
-  await proxy.replayTexas(room, events([{ event: 'settlement', players: [{ player_id: self, net: 180, prize: 180, stack: 1180 }] }]));
+  await proxy.replayTexas(room, { scene: 'panel-variants-settlement' });
   await advance(page);
   await click(page, 'texas-holdem-show-remain-community-card-button');
   await expect(visible(page, 'common-alert-button-go_to_mall')).toBeVisible();
   await snapshot('alert_insufficient_balance');
   await click(page, 'common-alert-button-cancel');
   await proxy.configureUI({ rpcError: 'auth' });
-  await proxy.replayTexas(room, events([{ event: 'new_game', game_id: 'visual-fixed-game',
-    settings: { small_blind: 1, big_blind: 2, ante: 0 } }]));
+  await proxy.replayTexas(room, { scene: 'hall-new_game' });
   await advance(page);
   await table(page, proxy, room, self);
   await expect(visible(page, 'texas-holdem-show-hand-card-button')).toBeHidden();

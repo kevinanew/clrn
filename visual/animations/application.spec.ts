@@ -1,9 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../src/support/networkFixture';
 import { navigate, openApplication, visible, press, pressTarget } from './appSession';
 import { exercisePopup } from './popups';
 import { captureTimeline, freeze } from './timeline';
-import { mockMatching } from './matchingFixtures';
-import { mockInvitableRoom } from './applicationFixtures';
+import { selectScenario } from '../../e2e/helpers/scenario-proxy';
 
 test('guest search confirmation enter and exit', async ({ context, page }, info) => {
   await openApplication(context, page, info, 'hall');
@@ -28,7 +27,7 @@ test('club more menu enter and exit', async ({ context, page }, info) => {
 
 test('private room invitation bottom sheet enter and exit', async ({ context, page }, info) => {
   await openApplication(context, page, info);
-  await mockInvitableRoom(context);
+  await selectScenario(context, 'invitation');
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'copy-house-number-button')).toBeVisible();
   await exercisePopup(page, info, { name: 'invite-friends', target: page.getByTestId('invite-friend-popup-cancel-button'),
@@ -50,6 +49,7 @@ test('create room game picker enter and exit', async ({ context, page }, info) =
 });
 
 test('club rooms empty state fades in', async ({ context, page }, info) => {
+  await selectScenario(context, 'club-empty');
   await openApplication(context, page, info);
   await navigate(page, 'club-tab');
   const target = page.getByTestId('club-rooms-empty-title');
@@ -61,7 +61,7 @@ test('club rooms empty state fades in', async ({ context, page }, info) => {
 });
 
 test('hall matching spinner modal enter and exit', async ({ context, page }, info) => {
-  await mockMatching(context, page);
+  await selectScenario(context, 'matching');
   await openApplication(context, page, info);
   await expect(page.getByTestId('match-game-bet-info').first()).toHaveText('1/2', { timeout: 60_000 });
   const target = page.getByTestId('game-matching-loading-view').locator('img.rotating-image');

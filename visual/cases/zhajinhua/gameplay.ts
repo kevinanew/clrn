@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
 import { expect, type ZhajinhuaProxy } from './proxy';
 import { advance, capture, click as clickUi, closeMask, visible } from './capture';
-import { events, PLAYER_IDS, restoreTable, validBets } from './replayData';
+import { PLAYER_IDS, restoreTable } from './replayData';
 import { GAME_STATES } from './scenarios';
 
 /**
@@ -42,7 +42,7 @@ export async function captureGameplay(page: Page, scenario: VisualScenario,
   await page.clock.runFor(3000);
   await expect(page.locator('[data-testid^="zhajinhua-player-container-"]:visible')).toHaveCount(5);
   // 等待桌的玩家在 table_status 后才挂载，需要再次接收运行状态。
-  await proxy.replay(roomId, events([restoreTable(self).queue[0]]));
+  await proxy.replay(roomId, { scene: 'room-running' });
   await advance(page);
   await expect(page.locator('[data-testid="player_tips_text"]:visible')).toHaveCount(0);
   await expect(visible(page, 'zhajinhua-operation-button-call')).toBeVisible();
@@ -50,11 +50,7 @@ export async function captureGameplay(page: Page, scenario: VisualScenario,
   await snapshot('blind_cards');
 
   await click(page, 'zhajinhua-see-hand-card-button');
-  await proxy.replay(roomId, events([
-    { event: 'see_hole_card', player_id: self },
-    { event: 'obtain_hole_card', hole_card: ['as', 'ad', 'ac'], hand_strength: 'three_of_a_kind' },
-    { event: 'player_bets', valid_bets: validBets(true) },
-  ]));
+  await proxy.replay(roomId, { scene: 'zhajinhua-gameplay-see_hole_card-obtain_hole_card-player_bets' });
   await page.clock.runFor(1500);
   await expect(visible(page, 'player-card-strength-text')).not.toBeEmpty();
   await expect(page.locator('[data-testid="player_card_name_text"]:visible')
@@ -62,10 +58,7 @@ export async function captureGameplay(page: Page, scenario: VisualScenario,
   await expect(visible(page, 'zhajinhua-see-hand-card-button')).toBeHidden();
   await snapshot('seen_cards');
   await click(page, 'zhajinhua-shortcut-raise-first');
-  await proxy.replay(roomId, events([
-    { event: 'raise', player_id: self, amount: 40, stack: 960 },
-    { event: 'pot_update', pot_amount: 160 },
-  ]));
+  await proxy.replay(roomId, { scene: 'zhajinhua-gameplay-raise-pot_update' });
   await advance(page);
   await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('960');
   await snapshot('quick_raise');
@@ -87,17 +80,11 @@ export async function captureGameplay(page: Page, scenario: VisualScenario,
   await expect(visible(page, `zhajinhua-player-container-${PLAYER_IDS[0]}-operating`)).toBeVisible();
   await expect(visible(page, 'zhajinhua-operation-button-call')).toBeHidden();
   await snapshot('opponent_turn');
-  await proxy.replay(roomId, events([{ event: 'showdown', players: [
-    { player_id: self, hole_card: ['as', 'ad', 'ac'], hand_strength: 'three_of_a_kind', is_winner: true },
-    { player_id: PLAYER_IDS[0], hole_card: ['kh', 'ks', 'qd'], hand_strength: 'pair', is_winner: false },
-  ] }]));
+  await proxy.replay(roomId, { scene: 'gameplay-showdown' });
   await page.clock.runFor(1500);
   await expect(page.locator('[data-testid="player_cards_container"]:visible')).toHaveCount(2);
   await snapshot('showdown');
-  await proxy.replay(roomId, events([{ event: 'settlement', players: [
-    { player_id: self, net: 120, prize: 120, stack: 1120 },
-    { player_id: PLAYER_IDS[0], net: -40, prize: 0, stack: 920 },
-  ] }]));
+  await proxy.replay(roomId, { scene: 'gameplay-settlement' });
   await page.clock.runFor(2000);
   await expect(visible(page, `zhajinhua-player-container-${self}`)).toContainText('1120');
   await snapshot('settlement');
