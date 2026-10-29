@@ -2,6 +2,9 @@
 import type { Page, TestInfo } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import { diagnosticText } from '../../e2e/helpers/diagnostic-privacy';
+import { cardSpriteResource } from './cardSpritePrivacy';
+import { hasNormalCardSpriteClock } from './cardSpriteClock';
+import { installCardSpriteLifecycle } from './cardSpriteLifecycle';
 
 type Entry = { realTime: number; event: string; virtualTime: number; cards: unknown[] };
 type Recording = { entries: Entry[]; dropped: number; failed: boolean };
@@ -11,13 +14,19 @@ const limit = 1000;
 /**
  * 在导航前安装有界采集，使用宿主时间标注浏览器事件到达时间。
  * @param page - 尚未导航、属于本例的页面。
+ * @param lifecycle - 仅在独立取证中观察 React 提交；不把不支持的构建视为已观察。
  */
-export async function installCardSpriteDiagnostics(page: Page): Promise<void> {
+export async function installCardSpriteDiagnostics(page: Page, lifecycle = false): Promise<void> {
   const recording: Recording = { entries: [], dropped: 0, failed: false };
   recordings.set(page, recording);
   await page.exposeBinding('__clrnCardSpriteEvent', (_source, entry: Omit<Entry, 'realTime'>) => {
     if (recording.entries.length === limit) { recording.entries.shift(); recording.dropped++; }
-    recording.entries.push({ ...entry, realTime: Date.now() });
+    // 在宿主持久化边界替换路径；浏览器不能把嵌在相对路径里的地址带进附件。
+    const cards = entry.cards.map(value => {
+      const card = value as { image?: { path?: unknown } };
+      return { ...card, ...(card.image ? { image: { ...card.image, path: cardSpriteResource(card.image.path) } } : {}) };
+    });
+    recording.entries.push({ ...entry, cards, realTime: Date.now() });
   });
   // 字符串避免 tsx 的运行时助手进入浏览器。仅输出自建编号、资源路径和显示属性。
   await page.addInitScript(`(() => {
@@ -30,6 +39,7 @@ export async function installCardSpriteDiagnostics(page: Page): Promise<void> {
     };
     const selector = '[data-testid="sprite-image-container"], [data-testid="sprite-image-fallback-container"]';
     let previous = new Map();
+    let previousNodes = new Map();
     const decoded = new WeakMap();
     const snapshot = node => {
       const image = node.querySelector('[data-testid="sprite-image-view"] img');
@@ -49,6 +59,7 @@ export async function installCardSpriteDiagnostics(page: Page): Promise<void> {
         } catch { path = '[invalid]'; }
       }
       return { id: id(node), slot: id(slot), slotType: slot?.getAttribute('data-testid') ?? null,
+        lifecycle: window.__clrnCardSpriteLifecycle?.(node) ?? { status: 'not-enabled' },
         imageId: id(image), connected: node.isConnected, kind: node.getAttribute('data-testid'),
         visible: node.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }),
         box: { x: box.x, y: box.y, width: box.width, height: box.height }, width: node.offsetWidth,
@@ -61,15 +72,18 @@ export async function installCardSpriteDiagnostics(page: Page): Promise<void> {
           decode: decoding?.source === (image.currentSrc || image.src) ? decoding.outcome : 'unobserved' } : null };
     };
     const emit = (event, force = false) => {
-      const current = new Map(Array.from(document.querySelectorAll(selector), node => [id(node), snapshot(node)]));
+      const nodes = Array.from(document.querySelectorAll(selector));
+      const current = new Map(nodes.map(node => [id(node), snapshot(node)]));
       const cards = [];
       for (const [key, card] of current) {
         if (force || JSON.stringify(card) !== JSON.stringify(previous.get(key))) cards.push(card);
       }
       for (const [key, card] of previous) {
-        if (!current.has(key)) cards.push({ id: key, connected: false, imageId: card.imageId, slot: card.slot });
+        if (!current.has(key)) cards.push({ id: key, connected: false, imageId: card.imageId, slot: card.slot,
+          lifecycle: window.__clrnCardSpriteLifecycle?.(previousNodes.get(key)) ?? card.lifecycle });
       }
       previous = current;
+      previousNodes = new Map(nodes.map(node => [id(node), node]));
       if (force || cards.length) return window.__clrnCardSpriteEvent({ event, virtualTime: Date.now(), cards }).catch(() => {});
     };
     window.__clrnSampleCardSprites = event => emit(event, true);
@@ -95,6 +109,7 @@ export async function installCardSpriteDiagnostics(page: Page): Promise<void> {
       if (e.target instanceof HTMLImageElement && e.target.closest(selector)) emit('image-' + event, true);
     }, true);
   })();`);
+  if (lifecycle) await installCardSpriteLifecycle(page);
 }
 
 /**
@@ -124,7 +139,7 @@ export function markCardSpriteFailure(page: Page): void {
  * @param page - 已经失败且即将清理的页面。
  */
 export async function observeCardSpriteClockControl(page: Page): Promise<void> {
-  if (!recordings.get(page)?.failed) return;
+  if (!recordings.get(page)?.failed || hasNormalCardSpriteClock(page)) return;
   await sampleCardSprites(page, 'control-before-resume');
   await page.clock.resume();
   // 这些是诊断采样时刻，不是加长就绪等待；原始断言结果保持失败。
@@ -139,20 +154,29 @@ export async function observeCardSpriteClockControl(page: Page): Promise<void> {
  * 保存运行身份和完整有界时间线，明确 DOM 解码不等于应用内部加载回调完成。
  * @param page - 尚未关闭的牌桌。
  * @param info - 当前用例及附件目录。
- * @param phase - frozen 单独保存原始失败，final 包含之后的对照观察。
+ * @param phase - frozen 单独保存原始失败（原生时间页明确标记），final 包含之后的对照观察。
  */
 export async function saveCardSpriteDiagnostics(page: Page, info: TestInfo, phase: 'frozen' | 'final' = 'final'): Promise<void> {
   const recording = recordings.get(page);
   if (!recording) return;
   await sampleCardSprites(page, 'save');
   const applicationBuild = await page.locator('meta[name="build-version"]').getAttribute('content').catch(() => null);
+  const lifecycle = await page.evaluate(() => {
+    const state = window as typeof window & { __clrnCardSpriteLifecycle?: (node: Element) => unknown };
+    return state.__clrnCardSpriteLifecycle?.(document.documentElement) ?? { status: 'not-enabled' };
+  });
   const report = { applicationBuild: diagnosticText(applicationBuild), release: process.env.CLRN_RELEASE_TAG ?? null,
+    clock: hasNormalCardSpriteClock(page) ? 'normal' : 'frozen',
+    lifecycle,
     testCommit: process.env.GITHUB_SHA ?? null, run: process.env.GITHUB_RUN_ID ?? null,
     project: info.project.name, viewport: page.viewportSize(), repeat: info.repeatEachIndex, retry: info.retry,
     failed: recording.failed, dropped: recording.dropped, entries: recording.entries,
     limitations: 'realTime 是宿主收到事件的时间；decode 仅观察 DOM 图片，不代表应用内部 ImageLoader；'
-      + 'control 为原始失败后的同页 JS 时钟恢复观察，CSS 采样暂停保持原状；不是独立随机对照，不能单独证明因果。' };
-  const name = phase === 'frozen' ? 'card-sprite-diagnostics-frozen' : 'card-sprite-diagnostics';
+      + 'React 取证仅观察受支持组件的提交状态，未拦截或调用内部 ImageLoader/onLoad；'
+      + 'control-running 为原始失败后的同页 JS 时钟恢复观察，CSS 采样暂停保持原状；不能单独证明因果。' };
+  const name = phase === 'frozen'
+    ? (hasNormalCardSpriteClock(page) ? 'card-sprite-diagnostics-normal-failure' : 'card-sprite-diagnostics-frozen')
+    : 'card-sprite-diagnostics';
   const path = info.outputPath(name + '.json');
   await writeFile(path, JSON.stringify(report, null, 2));
   await info.attach(name, { path, contentType: 'application/json' });

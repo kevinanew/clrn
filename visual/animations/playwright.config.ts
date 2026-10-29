@@ -7,7 +7,7 @@ export default defineConfig({
   ...visualConfig,
   testDir: '.',
   testMatch: '**/*.spec.ts',
-  testIgnore: [],
+  testIgnore: ['**/cardSpriteControl.spec.ts'],
   outputDir: '../test-results/animations',
   snapshotPathTemplate: '{testDir}/snapshots/{arg}{ext}',
   fullyParallel: false,
