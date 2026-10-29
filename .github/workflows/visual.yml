@@ -4,7 +4,7 @@ name: H5 画面回归测试
 # 使用 100 个 Web 专用账号的新凭据，保留账号并发锁并兼容旧分支继续运行。
 on:
   pull_request:
-    paths: ['scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/mitmproxy*.ts', 'e2e/helpers/*diagnostic*', 'scripts/connection-diagnostic-summary.mjs', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml']
+    paths: ['scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/*proxy*.ts', 'e2e/helpers/*diagnostic*', 'scripts/connection-diagnostic-summary.mjs', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml']
   push:
     branches: [master]
     # 单独的部署记录由 staging-deployment.yml 调用本工作流，避免重复运行全量画面。
@@ -117,6 +117,9 @@ jobs:
         run: |
           python -m venv e2e/.venv
           e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
+      - name: 检查共用网络场景与真实选线透传
+        if: matrix.suite == 'app' && matrix.locale == 'zh-Hans'
+        run: e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
       - name: 检查牌局代理隔离与回放
         if: matrix.suite != 'app' && matrix.locale == 'zh-Hans'
         run: e2e/.venv/bin/python -m unittest discover -s visual/cases/${{ matrix.suite == 'texas' && 'texas-holdem' || 'zhajinhua' }}/mitmproxy -v

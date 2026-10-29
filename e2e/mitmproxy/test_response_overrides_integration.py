@@ -1,6 +1,7 @@
 """五个真实 mitmdump 入口连接本机上游，验证正常视觉模式保留动态选线。"""
 
 import gzip
+from concurrent.futures import ThreadPoolExecutor
 import http.client
 import json
 import os
@@ -20,6 +21,8 @@ METADATA_PATHS = ('/public/v12/metadata/servers', '/public/v13/metadata/servers'
 SERVER_HOSTS = ('64.kr-seoul.api.staging.laiwan.shafayouxi.com',
                 '67.hk-sn.api.staging.laiwan.shafayouxi.com',
                 '69.us-la.api.staging.laiwan.shafayouxi.com')
+OWNER = '33333333-3333-4333-8333-333333333333'
+ROOM = '11111111-1111-4111-8111-111111111111'
 
 
 class Upstream(BaseHTTPRequestHandler):
@@ -32,6 +35,10 @@ class Upstream(BaseHTTPRequestHandler):
             servers = (list(candidates) if address.path == METADATA_PATHS[0]
                        else {host: f'address-{index}' for index, host in enumerate(candidates)})
             body = {'ok': True, 'new_envelope': 42, 'result': {'servers': servers, 'new_field': True}}
+        elif address.path == f'/v10/house/user/{OWNER}':
+            body = {'ok': True, 'result': {'house_id': 'offline-house', 'user_id': OWNER}}
+        elif address.path == '/v3/pay_action/do':
+            body = {'ok': True, 'result': {'room_id': ROOM}}
         else:
             # 首尔指标越界不影响香港的真实健康响应；洛杉矶的真实失败也不能被改成成功。
             offline = hostname == SERVER_HOSTS[2]
@@ -52,6 +59,9 @@ class Upstream(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
     def do_POST(self):
+        self.do_GET()
+
+    def do_PUT(self):
         self.do_GET()
 
     def do_OPTIONS(self):
@@ -91,7 +101,8 @@ class LiveOverrideTests(unittest.TestCase):
             process = subprocess.Popen([str(executable), '--listen-host', '127.0.0.1',
                 '--listen-port', str(port), '--mode', f'upstream:http://127.0.0.1:{upstream_port}',
                 '--set', f'confdir={directory}', '--set', 'connection_strategy=lazy',
-                '--set', 'flow_detail=0', '-s', str(ROOT / addon)],
+                '--set', 'flow_detail=0',
+                '-s', str(ROOT / 'e2e/mitmproxy/scenario_fixtures.py'), '-s', str(ROOT / addon)],
                 env={**os.environ, 'MITMPROXY_CONTROL_TOKEN': 'offline-token'}, stdout=logs, stderr=logs)
             try:
                 deadline = time.monotonic() + 15
@@ -106,10 +117,15 @@ class LiveOverrideTests(unittest.TestCase):
                             self.fail('mitmdump 启动失败：' + logs.read().decode()[-2000:])
                         time.sleep(0.1)
                 self.fetch(port, 'http://test-mitmproxy.invalid/scenario', 'POST', {'scenario': 'visual-stable'})
+                self.assertEqual(self.fetch(port, 'http://fixtures-mitmproxy.invalid/fixtures/environment',
+                                           'POST', {'visual': True})[0], 200)
                 self.check_metadata(port)
                 self.check_health(port)
                 if 'texas-holdem' in addon or 'zhajinhua' in addon:
                     self.check_diagnostics(port)
+                self.check_scenes(port)
+                if 'texas-holdem' in addon:
+                    self.check_game_hold(port)
             finally:
                 process.terminate()
                 try:
@@ -139,6 +155,24 @@ class LiveOverrideTests(unittest.TestCase):
                             'servers': servers, 'new_field': True}})
             self.check_preflight(port, metadata)
 
+    def check_scenes(self, port):
+        control = 'http://fixtures-mitmproxy.invalid/fixtures/select'
+        goods = 'http://api.shafayouxi.org/v1/alipay_order/goods'
+        self.assertEqual(self.fetch(port, control, 'POST', {'name': 'mall'})[0], 200)
+        status, headers, body = self.fetch(port, goods)
+        self.assertEqual(status, 200)
+        self.assertNotIn('x-upstream', headers)
+        self.assertEqual(len(body['result']), 7)
+        # 恢复默认后必须再次到达同一真实上游，不能有 Node 后备响应服务器。
+        self.assertEqual(self.fetch(port, control, 'POST', {'name': 'none'})[0], 200)
+        self.assertEqual(self.fetch(port, goods)[1]['x-upstream'], 'real')
+        self.assertEqual(self.fetch(port, control, 'POST', {'name': 'slot'})[0], 200)
+        status, headers, body = self.fetch(port, 'http://api.shafayouxi.org/v2/slot_machine/user/unbound/spin', 'POST')
+        self.assertEqual(status, 200)
+        self.assertNotIn('x-upstream', headers)
+        self.assertEqual(body, {'ok': False, 'error': 'fixture_owner_mismatch'})
+        self.assertEqual(self.fetch(port, control, 'POST', {'name': 'none'})[0], 200)
+
     def check_health(self, port):
         for host, status, load, delay in zip(SERVER_HOSTS, (200, 200, 503),
                                             ('normal', 'normal', 'offline'), (1065, 100, 9999)):
@@ -148,6 +182,36 @@ class LiveOverrideTests(unittest.TestCase):
             self.assertEqual(headers['x-upstream'], 'real')
             self.assertEqual(body, {'backend_delay': delay, 'server_load': load, 'new_health': True})
             self.check_preflight(port, address)
+
+    def check_game_hold(self, port):
+        control = 'http://fixtures-mitmproxy.invalid/fixtures/'
+        api = 'http://api.shafayouxi.org'
+        self.assertEqual(self.fetch(port, control + 'select', 'POST', {'name': 'none', 'userId': OWNER})[0], 200)
+        self.fetch(port, api + f'/v10/house/user/{OWNER}')
+        self.fetch(port, 'http://test-mitmproxy.invalid/texas/view', 'POST', {'mode': 'hall'})
+        creation = {'user_id': OWNER, 'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
+                    'action_json': {'game_type': 'texas_react_native'}}
+        self.assertEqual(self.fetch(port, api + '/v3/pay_action/do', 'POST', creation)[2]['result']['room_id'], ROOM)
+        scene = {'name': 'auto-rebuy', 'roomId': ROOM}
+        self.assertEqual(self.fetch(port, control + 'select', 'POST', {**scene, 'phase': 'hold'})[0], 200)
+        path = api + f'/v10/texas_holdem/room/{ROOM}/user_settings/enable_auto_rebuy'
+        with ThreadPoolExecutor(max_workers=1) as workers:
+            pending = workers.submit(self.fetch, port, path, 'PUT')
+            try:
+                deadline = time.monotonic() + 2
+                while self.fetch(port, control + 'status')[2]['held'] == 0:
+                    self.assertFalse(pending.done(), '专用 addon 不得提前返回自动补码响应')
+                    self.assertLess(time.monotonic(), deadline, '共用暂缓夹具未收到请求')
+                    time.sleep(0.02)
+                self.assertFalse(pending.done())
+            finally:
+                self.assertEqual(self.fetch(port, control + 'select', 'POST', {**scene, 'phase': 'release'})[0], 200)
+            status, headers, body = pending.result(timeout=3)
+        self.assertEqual(status, 200)
+        self.assertNotIn('x-upstream', headers)
+        self.assertEqual(body, {'ok': True, 'result': {'auto_rebuy': True}})
+        # 释放 gate 后下一次写操作同样不能透传。
+        self.assertNotIn('x-upstream', self.fetch(port, path, 'PUT')[1])
 
     def check_preflight(self, port, address):
         status, headers, _ = self.fetch(port, address, 'OPTIONS')

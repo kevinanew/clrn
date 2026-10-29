@@ -133,6 +133,8 @@ class NetworkFaults:
         return True
 
     async def request(self, flow: http.HTTPFlow):
+        if flow.response:
+            return
         if flow.request.host == CONTROL_HOST:
             self.control(flow)
             return

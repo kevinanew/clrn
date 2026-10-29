@@ -4,7 +4,8 @@ import json
 import unittest
 from unittest.mock import patch
 from mitmproxy import http
-from test_zhajinhua_replay import flow, ROOM, OTHER, SELF
+from test_zhajinhua_replay import flow, socket_flow, message, CHANNEL, ROOM, OTHER, SELF
+from replay_scenes import replay_scene
 from zhajinhua_replay import PLAYER_IDS
 from addon import ZhajinhuaVisualProxy
 
@@ -41,15 +42,26 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.assertIsNone(self.addon.replay.room_id)
 
     def test_replay_requires_created_room_and_authorized_control(self):
-        payload = {'roomId': ROOM, 'data': {'stream': 'zhajinhua', 'queue': []}}
+        payload = {'roomId': ROOM, 'scene': {'scene': 'restore'}}
         self.assertEqual(self.control('/zhajinhua/replay', payload).response.status_code, 400)
         self.creation()
         self.assertEqual(self.control('/zhajinhua/replay', payload, None).response.status_code, 403)
+        self.assertEqual(self.control('/zhajinhua/replay', payload).response.status_code, 400)
+        socket = socket_flow()
+        message(socket, [{'id': 1, 'method': 1, 'params': {'channel': CHANNEL}}])
+        self.addon.websocket_message(socket)
+        message(socket, [{'id': 1, 'result': {}}], False)
+        self.addon.websocket_message(socket)
         with patch.object(self.addon.replay, 'publish') as publish:
             self.assertEqual(self.control('/zhajinhua/replay', dict(payload, roomId=OTHER)).response.status_code, 400)
             publish.assert_not_called()
             self.assertEqual(self.control('/zhajinhua/replay', payload).response.status_code, 200)
-            publish.assert_called_once_with(ROOM, payload['data'])
+            published_room, published = publish.call_args.args
+            self.assertEqual(published_room, ROOM)
+            self.assertEqual(published['queue'], replay_scene('zhajinhua', payload['scene'], SELF)['queue'])
+            for invalid in ({'roomId': ROOM, 'data': {'stream': 'zhajinhua', 'queue': []}},
+                            dict(payload, data={}), dict(payload, scene={'scene': 'unknown'})):
+                self.assertEqual(self.control('/zhajinhua/replay', invalid).response.status_code, 400)
         self.assertEqual(self.control('/texas/replay', payload).response.status_code, 400)
         self.control('/zhajinhua/release', {})
         self.assertIsNone(self.addon.created_room_id)

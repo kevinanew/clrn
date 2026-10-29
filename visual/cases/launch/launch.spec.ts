@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { selectScenario, scenarioStatus } from '../../../e2e/helpers/scenario-proxy';
+import { expect, test } from '../../src/support/networkFixture';
 import { PNG } from 'pngjs';
 import { buildScenarios } from '../../scenarios';
 import { setupContextForScenario } from '../../src/support/pageSetup';
@@ -13,14 +14,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'launch'))
       navigatorLocale: { 'zh-Hans': 'zh-CN', 'zh-Hant': 'zh-TW', en: 'en-US' }[scenario.locale] });
     // 延迟真实启动依赖的网络响应，让确认提示后的加载页有稳定采样窗口。
     // 不删除弹窗、覆盖业务组件或修改页面样式；保留真实点击和初始化等待。
-    let releaseRequests!: () => void;
-    const pending = new Promise<void>(resolve => { releaseRequests = resolve; });
-    let heldRequests = 0;
-    await context.route(/\/node\/v1\/status(?:\?|$)/, async route => {
-      heldRequests += 1;
-      await pending;
-      await route.fallback();
-    });
+    await selectScenario(context, 'launch', { phase: 'hold' });
     try {
       await page.clock.install({ time: CLOCK_START });
       await page.clock.pauseAt(new Date(CLOCK_START.getTime() + 60_000));
@@ -38,7 +32,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'launch'))
       await expect(brand).toHaveText({ 'zh-Hans': '来玩', 'zh-Hant': '來玩', en: 'GoPlay360' }[scenario.locale]);
       await expect(dialog.getByTestId('staging-dialog-title')).toBeVisible();
       if (scenario.pageLabel === 'launch_branding') {
-        await expect.poll(() => heldRequests, { message: '启动网络必须仍在等待响应' }).toBeGreaterThan(0);
+        await expect.poll(async () => (await scenarioStatus(context)).held, { message: '启动网络必须仍在等待响应' }).toBeGreaterThan(0);
         const input = dialog.locator('input').first();
         await input.fill((await input.getAttribute('placeholder'))!);
         await pressTarget(dialog.getByTestId('confirm-button'));
@@ -62,12 +56,11 @@ for (const scenario of buildScenarios().filter(item => item.group === 'launch'))
         await input.fill((await input.getAttribute('placeholder'))!);
         await pressTarget(dialog.getByTestId('confirm-button'));
       }
-      releaseRequests();
+      await selectScenario(context, 'launch', { phase: 'release' });
       await page.clock.resume();
       await expect(page.getByTestId('hall-screen')).toBeVisible({ timeout: 60_000 });
     } finally {
-      releaseRequests();
-      await context.unrouteAll({ behavior: 'wait' });
+      await selectScenario(context, 'launch', { phase: 'release' });
     }
   });
 }

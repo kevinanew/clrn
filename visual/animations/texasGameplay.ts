@@ -1,6 +1,6 @@
 import { expect, type TestInfo } from '@playwright/test';
 import type { TexasProxy } from '../cases/texas-holdem/proxy';
-import { events, REPLAY_PLAYER_IDS, restoreTable } from '../cases/texas-holdem/replayData';
+import { REPLAY_PLAYER_IDS, restoreTable } from '../cases/texas-holdem/replayData';
 import { restore } from '../cases/texas-holdem/replay';
 import { visible, press } from './appSession';
 import { captureTimeline, freeze } from './timeline';
@@ -26,7 +26,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     ['flop', ['ah', 'kd', '7c']], ['turn', ['ah', 'kd', '7c', '2s']],
     ['river', ['ah', 'kd', '7c', '2s', 'qs']],
   ] as const) {
-    await proxy.replayTexas(roomId, events([{ event: 'start_street', street, community_card: cards }]));
+    await proxy.replayTexas(roomId, { scene: 'texas-gameplay-start_street', parameters: { street: street } });
     // 每张公共牌先异步读取牌面样式；全部牌面挂载后再由采样器启动首个翻转计时器。
     await expect(page.locator('[data-testid="community_card"] [data-testid="sprite-image-content"]'))
       .toHaveCount(cards.length);
@@ -43,9 +43,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
       { clip, waitForCardSprites: '[data-testid="community_card"]' });
   }
   // 实时 switch_player 使用牌局 operating_seconds，而不是消息中的 remain_operating_seconds。
-  await proxy.replayTexas(roomId, events(restoreTable(self, 'river').queue.map(item =>
-    item.event === 'room_status' || item.event === 'game_status'
-      ? { ...item, status: { ...(item.status as Record<string, unknown>), operating_seconds: 12 } } : item)));
+  await proxy.replayTexas(roomId, { scene: 'countdown' });
   await expect.poll(async () => {
     await page.clock.runFor(16);
     return page.getByTestId(`texas-holdem-player-container-${self}-operating`)
@@ -53,8 +51,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   }).toEqual(['120']);
   await expect(page.getByTestId('countdown-text')).toHaveAttribute('data-seconds', '3600');
   await page.clock.runFor(3200);
-  await proxy.replayTexas(roomId, events([{ event: 'switch_player', player_id: opponent,
-    valid_bets: { call: { amount: 20 } } }]));
+  await proxy.replayTexas(roomId, { scene: 'texas-gameplay-switch_player' });
   const countdown = page.getByTestId(`texas-holdem-player-container-${opponent}-operating`);
   await expect(countdown.getByTestId('texas-holdem-active-countdown')).toHaveText('12');
   await captureTimeline(page, info, 'texas-countdown-operation-switch', countdown,
@@ -62,13 +59,13 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await expect(countdown.getByTestId('texas-holdem-active-countdown')).toHaveText('2');
   for (const action of ['call', 'raise', 'check', 'fold'] as const) {
     // 每个独立动作从真实的“轮到该玩家”消息开始，避免复用上个动作的已完成动画节点。
-    await proxy.replayTexas(roomId, events([{ event: 'switch_player', player_id: opponent, remain_operating_seconds: 12 }]));
+    await proxy.replayTexas(roomId, { scene: 'texas-gameplay-switch_player-2' });
     await expect.poll(async () => {
       await page.clock.runFor(16);
       const previousAction = opponentPlayer.locator('[data-testid^="texas-holdem-player-action-"]');
       return await countdown.count() === 1 && await previousAction.count() === 0;
     }, { message: '等待异步倒计时初始化真正清除上一个动作' }).toBe(true);
-    await proxy.replayTexas(roomId, events([{ event: action, player_id: opponent, amount: 40, stack: 920 }]));
+    await proxy.replayTexas(roomId, { scene: 'texas-gameplay-@action', parameters: { action: action } });
     const actionLabel = opponentPlayer.getByTestId(`texas-holdem-player-action-${action}`);
     await expect(actionLabel).toBeAttached();
     await captureTimeline(page, info, `texas-${action}`, actionLabel, { clip, requireMotion: true });
@@ -92,8 +89,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     open: openAccurateRaise,
     close: /** 通过实际按钮或遮罩关闭。 */ () => closeTableMask(page, 'accurate-bet-popup-container') });
   await freeze(page);
-  await proxy.replayTexas(roomId, events([{ event: 'all_in', player_id: opponent, amount: 960, stack: 0 },
-    { event: 'all_in_show_hole_card', players: [{ player_id: opponent, hole_card: ['kh', 'ks'] }] }]));
+  await proxy.replayTexas(roomId, { scene: 'texas-gameplay-all_in-all_in_show_hole_card' });
   await expect(opponentPlayer.getByTestId('texas-holdem-player-action-all_in')).toBeAttached();
   // 全押公开手牌由玩家组件绘制，等异步读取牌面样式后确认两张 K 牌已就绪。
   const publicCards = opponentPlayer.getByTestId('texas-holdem-player-hole-cards');
@@ -105,20 +101,12 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await waitForTexasCardSprites(page, publicCardScope);
   await captureTimeline(page, info, 'texas-all-in', visible(page, `texas-holdem-player-container-${opponent}`),
     { clip, mask: [page.locator('img[src*=".webp"]')], times: [0, 80, 160, 320, 640, 1200, 2400, 3200] });
-  await proxy.replayTexas(roomId, events([{ event: 'showdown', players: [
-    { player_id: self, hole_card: ['as', 'ad'], best_cards: ['as', 'ad', 'ah', 'kd', 'qs'],
-      hand_strength: 'three_of_a_kind', strength_cards: ['as', 'ad', 'ah'], is_max_strength: true },
-    { player_id: opponent, hole_card: ['kh', 'ks'], hand_strength: 'three_of_a_kind',
-      strength_cards: ['kh', 'ks', 'kd'], is_max_strength: false },
-  ] }]));
+  await proxy.replayTexas(roomId, { scene: 'texas-gameplay-showdown' });
   await waitForTexasCardSprites(page, publicCardScope);
   // 摊牌同时替换本人手牌；两侧图集都就绪后再比较固定时刻的真实画面。
   await waitForTexasCardSprites(page, '[data-testid="texas-holdem-player-hole-cards"]');
   await captureTimeline(page, info, 'texas-showdown', table, { clip });
-  await proxy.replayTexas(roomId, events([{ event: 'settlement', players: [
-    { player_id: self, net: 180, prize: 180, stack: 1180 },
-    { player_id: opponent, net: -960, prize: 0, stack: 0 },
-  ] }]));
+  await proxy.replayTexas(roomId, { scene: 'texas-gameplay-settlement' });
   await captureTimeline(page, info, 'texas-settlement', table, { clip, times: [0, 160, 320, 800, 1600, 2800] });
   await expect(page.locator(`[data-testid^="texas-holdem-player-container-${self}"]:visible`)).toContainText('1180');
 

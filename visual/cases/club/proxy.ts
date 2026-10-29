@@ -1,11 +1,12 @@
 /** 为有数据的俱乐部牌局截图启动独立代理，并在用例结束后释放代理进程。 */
 import { test as base } from '@playwright/test';
 import path from 'node:path';
-import type { ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
+import type { Mitmproxy, ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
 
 export type ClubRoomProxy = {
   server: string;
+  network: Mitmproxy;
   status(): Promise<ProxyStatus & { clubRoomRequests: Record<string, number> }>;
 };
 
@@ -20,6 +21,7 @@ export const test = base.extend<{ clubRoomProxy: ClubRoomProxy }>({
       await proxy.enableVisualFixtures();
       await use({
         server: proxy.server,
+        network: proxy,
         /** 读取当前场景的业务接口命中次数。 */
         status: () => proxy.command('status'),
       });

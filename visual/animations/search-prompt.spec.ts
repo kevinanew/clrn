@@ -1,4 +1,5 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { type Locator } from '@playwright/test';
+import { expect, test } from '../src/support/networkFixture';
 import { buildScenarios } from '../scenarios';
 import { ensureAppReadyPastStaging } from '../src/support/authFlow';
 import { setupContextForScenario } from '../src/support/pageSetup';

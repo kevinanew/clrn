@@ -1,7 +1,6 @@
 import { expect, type TestInfo } from '@playwright/test';
 import type { TexasProxy } from '../cases/texas-holdem/proxy';
 import { restore } from '../cases/texas-holdem/replay';
-import { REPLAY_PLAYER_IDS } from '../cases/texas-holdem/replayData';
 import { enableSetting } from '../cases/texas-holdem/variantSupport';
 import { press, pressTarget, visible } from './appSession';
 import { exerciseTablePopup as exercisePopup } from './popups';
@@ -19,9 +18,7 @@ export async function texasSocial(session: TableSession, proxy: TexasProxy, info
   const { page, roomId, self, clip } = session;
   await restore(page, proxy, roomId, self, 'flop', true);
   await page.evaluate(() => { Math.random = /** 固定弹幕纵坐标的随机输入。 */ () => 0.37; });
-  await proxy.replayTexas(roomId, { stream: 'room_message', payload: { action: 'text', content: {
-    from_user_id: REPLAY_PLAYER_IDS[0], from_user_nickname: 'Player1', text: 'Good hand!',
-  } } });
+  await proxy.replayTexas(roomId, { scene: 'texas-social-room_message-text' });
   await expect(page.getByTestId('barrage_text')).toHaveText('Player1: Good hand!');
   await captureTimeline(page, info, 'texas-barrage', page.getByTestId('barrage_container'),
     { clip, times: [0, 500, 1500, 2500, 4000, 5200] });
@@ -61,10 +58,7 @@ export async function texasSocial(session: TableSession, proxy: TexasProxy, info
     close: /** 关闭语音面板。 */ () => press(page, 'in-game-audio-popup-close') });
   await exercisePopup(page, info, { name: 'texas-buy-in-review', target: page.getByTestId('buy-in-review-close-button'), clip,
     open: /** 回放本房间的固定带入申请。 */ () => proxy.replayTexas(roomId,
-      { stream: 'buy_in', payload: { action: 'apply_buy_in', content: {
-        application_id: 'visual-application', user_id: REPLAY_PLAYER_IDS[1],
-        user_nickname: 'Player2', nickname: 'Player2', amount: 500,
-      } } }),
+      { scene: 'texas-social-buy_in-apply_buy_in' }),
     close: /** 关闭审核面板，不批准申请。 */ () => press(page, 'buy-in-review-close-button') });
   await freeze(page);
   await restore(page, proxy, roomId, self, 'river');

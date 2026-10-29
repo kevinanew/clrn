@@ -182,6 +182,8 @@ class GameRecordProxy:
             self.stabilized += patch_version(flow, 'v11' if self.version == 'v2' else 'v1')
 
     async def request(self, flow):
+        if flow.response:
+            return
         if flow.request.host == CONTROL_HOST:
             self.control(flow)
             return

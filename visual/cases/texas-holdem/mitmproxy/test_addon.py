@@ -1,5 +1,6 @@
 """验证德州代理的控制鉴权和 HTTP 回放范围，不访问真实服务。"""
 
+import asyncio
 import json
 import unittest
 from unittest.mock import patch
@@ -8,6 +9,8 @@ from mitmproxy import http
 from test_texas_replay import flow, socket_flow, message, CHANNEL, ROOM, OTHER, SELF
 from texas_replay import PLAYER_IDS
 from addon import TexasVisualProxy
+with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
+    from scenario_fixtures import ScenarioFixtures
 
 
 class TexasAddonTests(unittest.TestCase):
@@ -120,6 +123,39 @@ class TexasAddonTests(unittest.TestCase):
         self.addon.request(release)
         self.assertFalse(self.addon.records.enabled)
         self.assertIsNone(self.request(path).response)
+
+
+class CombinedSceneTests(unittest.IsolatedAsyncioTestCase):
+    async def test_common_hold_precedes_game_fixture_and_release_still_isolates_write(self):
+        with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
+            common, game = ScenarioFixtures(), TexasVisualProxy()
+        game.scenario = 'visual-stable'
+        game.texas.arm_created_room(ROOM, SELF)
+        common.user_id = SELF
+        creation = flow('https://api.shafayouxi.org/v3/pay_action/do', 'POST', json.dumps({
+            'user_id': SELF, 'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
+            'action_json': {'game_type': 'texas_react_native'}}).encode())
+        creation.response = http.Response.make(200, json.dumps({'ok': True, 'result': {'room_id': ROOM}}).encode())
+        common.response(creation)
+        async def select(phase):
+            command = flow('http://fixtures-mitmproxy.invalid/fixtures/select', 'POST', json.dumps({
+                'name': 'auto-rebuy', 'roomId': ROOM, 'phase': phase}).encode(), 'test-token')
+            await common.request(command)
+            game.request(command)
+            self.assertEqual(command.response.status_code, 200)
+        async def request():
+            target = flow(f'https://api.shafayouxi.org/v10/texas_holdem/room/{ROOM}/user_settings/enable_auto_rebuy', 'PUT')
+            await common.request(target)
+            game.request(target)
+            return target
+        await select('hold')
+        task = asyncio.create_task(request())
+        await asyncio.sleep(0)
+        self.assertFalse(task.done())
+        self.assertEqual(common.held, 1)
+        await select('release')
+        self.assertEqual((await asyncio.wait_for(task, 1)).response.json(), {'ok': True, 'result': {'auto_rebuy': True}})
+        self.assertIsNotNone((await request()).response)
 
 
 if __name__ == '__main__':

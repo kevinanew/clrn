@@ -2,7 +2,6 @@ import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import type { TexasProxy } from './proxy';
-import { events, REPLAY_PLAYER_IDS } from './replayData';
 import { advance, click, freezeClock, restore, selfId, visible } from './replay';
 import { HALL_STATES } from './scenarios';
 import { applyContentStabilizers } from '../../src/support/pageStabilizers';
@@ -68,27 +67,22 @@ export async function captureHall(page: Page, scenario: VisualScenario, proxy: T
     fixedTexts: [...scenario.fixedTexts,
       { selector: '[data-testid="personal-leader-board-nickname"]', text: 'TestPlayer' }],
   });
-  await proxy.replayTexas(roomId, events([{ event: 'player_statistics', player_id: self,
-    history_buy_in_amount: 1000, played_game_count: 10, settlement_net_amount: 180 }]));
+  await proxy.replayTexas(roomId, { scene: 'hall-player_statistics' });
   await advance(page);
   await expect(visible(page, 'personal-leader-board-record-container')).toBeVisible();
   await expect(visible(page, 'personal-leader-board-round')).toHaveText(/(?:^|\s)10$/);
   await snapshot('personal_leaderboard');
   await click(page, 'personal-leader-board-close-button');
-  await proxy.replayTexas(roomId, events([{ event: 'settlement', players: [
-    { player_id: REPLAY_PLAYER_IDS[0], net: 180, prize: 180, stack: 1140 },
-  ] }]));
+  await proxy.replayTexas(roomId, { scene: 'hall-settlement' });
   await advance(page);
   await expect(visible(page, 'bet-next-hand-button')).toBeVisible();
   await expect(page.getByText('Pair', { exact: true }).last()).toBeVisible();
   await snapshot('prediction');
-  await proxy.replayTexas(roomId, events([{ event: 'settlement_hand_prediction',
-    result: { net: 10, currency_name: 'coin' } }]));
+  await proxy.replayTexas(roomId, { scene: 'hall-settlement_hand_prediction' });
   await expect(visible(page, 'bet-next-hand-result-background')).toBeVisible();
   await snapshot('prediction_result');
   // 用新一局事件清空上局猜牌和查看公共牌状态，再恢复下一局牌桌。
-  await proxy.replayTexas(roomId, events([{ event: 'new_game', game_id: 'visual-fixed-game',
-    settings: { small_blind: 1, big_blind: 2, ante: 0 } }]));
+  await proxy.replayTexas(roomId, { scene: 'hall-new_game' });
   await advance(page);
   await expect(visible(page, 'bet-next-hand-button')).toBeHidden();
   await restore(page, proxy, roomId, self, 'river');

@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "result": [
+    {
+      "id": "com.ac.laiwandev.1.diamonds",
+      "subject": "1 diamond",
+      "amount": 1,
+      "total_amount": "0.01",
+      "bonus_amount": 1
+    },
+    {
+      "id": "com.ac.laiwandev.60.diamonds",
+      "subject": "60 diamonds",
+      "amount": 60,
+      "total_amount": "6",
+      "bonus_amount": 0
+    },
+    {
+      "id": "com.ac.laiwandev.120.diamonds",
+      "subject": "120 diamonds",
+      "amount": 120,
+      "total_amount": "12",
+      "bonus_amount": 5
+    },
+    {
+      "id": "com.ac.laiwandev.300.diamonds",
+      "subject": "300 diamonds",
+      "amount": 300,
+      "total_amount": "30",
+      "bonus_amount": 25
+    },
+    {
+      "id": "com.ac.laiwandev.1280.diamonds",
+      "subject": "1280 diamonds",
+      "amount": 1280,
+      "total_amount": "128",
+      "bonus_amount": 130
+    },
+    {
+      "id": "com.ac.laiwandev.3280.diamonds",
+      "subject": "3280 diamonds",
+      "amount": 3280,
+      "total_amount": "328",
+      "bonus_amount": 420
+    },
+    {
+      "id": "com.ac.laiwandev.6480.diamonds",
+      "subject": "6480 diamonds",
+      "amount": 6480,
+      "total_amount": "648",
+      "bonus_amount": 1050
+    }
+  ]
+}

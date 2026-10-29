@@ -1,19 +1,27 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../src/support/networkFixture';
 import { openApplication, press, pressTarget } from './appSession';
-import { mockSlotMessages, SLOT_WALLET_BALANCES } from './slotFixtures';
+import { selectScenario, scenarioStatus } from '../../e2e/helpers/scenario-proxy';
 import { exercisePopup } from './popups';
 import { settleAnimations } from './timeline';
 
 test('slot panel and no-energy dialog enter and exit', async ({ context, page }, info) => {
   await context.addInitScript(() => { Math.random = /** 固定背景横幅的随机图标。 */ () => 0.37; });
-  const fixture = await mockSlotMessages(page);
+  await selectScenario(context, 'slot');
+  const realWallet = page.waitForResponse(response => response.request().method() === 'PUT'
+    && /\/v10\/wallet\/[^/?]+(?:\?|$)/.test(response.url()) && response.ok());
   await openApplication(context, page, info);
-  fixture.bindUser(await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id));
+  await selectScenario(context, 'slot', { userId: await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
   const panel = page.getByTestId('slot-machine-view');
   const wallet = panel.getByTestId('top-toolbar');
   const walletNumbers = wallet.getByText(/^\d[\d,]*$/);
-  const expectedWalletBalances = { coin: SLOT_WALLET_BALANCES.coin.toLocaleString('en-US'),
-    diamond: SLOT_WALLET_BALANCES.diamond.toLocaleString('en-US') };
+  const walletBody = await (await realWallet).json();
+  expect(walletBody.ok, '必须使用真实钱包成功响应').toBe(true);
+  const expectedWalletBalances = ['coin', 'diamond'].map(code => {
+    const currency = walletBody.result.currencies.find((value: { code: string }) => value.code === code);
+    expect(currency, `真实钱包必须包含 ${code}`).toBeTruthy();
+    expect(Number.isFinite(Number(currency.balance))).toBe(true);
+    return Number(currency.balance).toLocaleString('en-US');
+  });
   const viewport = page.viewportSize()!;
   const clip = { x: 0, y: 0, ...viewport };
   await exercisePopup(page, info, { name: 'slot-panel', target: panel, clip,
@@ -23,14 +31,14 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
       await expect(walletNumbers, '金币和钻石数字控件必须都存在').toHaveCount(2);
     },
     entranceFinalFrameNumericMask: [{ locator: walletNumbers,
-      maximumTexts: [expectedWalletBalances.coin, expectedWalletBalances.diamond] }],
+      maximumTexts: expectedWalletBalances }],
     /** 完成入场截图后验证异步余额最终来自真实业务状态。 */
     afterEntrance: async () => {
       await expect.poll(async () => {
         await page.clock.runFor(16);
         return Promise.all([
-          wallet.getByText(expectedWalletBalances.coin, { exact: true }).isVisible(),
-          wallet.getByText(expectedWalletBalances.diamond, { exact: true }).isVisible(),
+          wallet.getByText(expectedWalletBalances[0], { exact: true }).isVisible(),
+          wallet.getByText(expectedWalletBalances[1], { exact: true }).isVisible(),
         ]);
       }, { timeout: 30_000, intervals: [50], message: '老虎机钱包应显示真实的金币和钻石余额' })
         .toEqual([true, true]);
@@ -40,7 +48,7 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
       await press(page, 'slot-banner');
     },
     close: /** 关闭老虎机面板。 */ () => pressTarget(panel.getByTestId('close-button')) });
-  fixture.exhaustEnergy();
+  await selectScenario(context, 'slot', { phase: 'exhausted' });
   const dialog = page.getByTestId('slot-no-energy-popup-container');
   await exercisePopup(page, info, { name: 'slot-no-energy', target: dialog, clip,
     requirePresentation: true, excludedBackground: [page.getByTestId('slot-banner')],
@@ -48,9 +56,9 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
       await page.clock.fastForward(12_000);
       await press(page, 'slot-banner');
       await settleAnimations(page, 1600);
-      const previous = fixture.spins;
+      const previous = (await scenarioStatus(context)).spins;
       await press(page, 'spin-button');
-      await expect.poll(async () => { await page.clock.runFor(0); return fixture.spins; }).toBe(previous + 1);
+      await expect.poll(async () => { await page.clock.runFor(0); return (await scenarioStatus(context)).spins; }).toBe(previous + 1);
       // exercisePopup 按真实挂载逐帧推进，不能在入场采样前固定跳过 500ms。
     }, close: /** 点击提示的确认按钮。 */ () => pressTarget(dialog.getByTestId('confirm-button')) });
 });

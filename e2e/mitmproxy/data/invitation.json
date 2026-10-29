@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "result": [
+    {
+      "room_id": "00000000-0000-4000-8000-000000000099",
+      "room_name": "TestRoom",
+      "created_at": "2026-01-01T00:00:00Z",
+      "creator_id": "visual-user-id",
+      "building_id": "visual-house-id",
+      "building_type": "house",
+      "game_type": "texas_holdem",
+      "room_status": "opening",
+      "timer_status": "wait_for_timing",
+      "remaining_seconds": 3600,
+      "booking_seconds": 3600,
+      "seat_occupied": 0,
+      "options": {
+        "game_version": {
+          "type": "texas_holdem",
+          "variant": "normal",
+          "buildNumber": 1,
+          "engineType": "react_native"
+        }
+      },
+      "game_config": {
+        "currency": "coin",
+        "small_blind": 1,
+        "big_blind": 2,
+        "ante": 0,
+        "minimum_buy_in": 100,
+        "seat_quantity": 9,
+        "variation": "texas_holdem"
+      }
+    }
+  ]
+}

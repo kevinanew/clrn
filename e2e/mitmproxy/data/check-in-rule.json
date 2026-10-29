@@ -1,0 +1,47 @@
+{
+  "ok": true,
+  "result": [
+    {
+      "times": 1,
+      "reward": {
+        "coin": 100
+      }
+    },
+    {
+      "times": 2,
+      "reward": {
+        "coin": 200
+      }
+    },
+    {
+      "times": 3,
+      "reward": {
+        "coin": 300
+      }
+    },
+    {
+      "times": 4,
+      "reward": {
+        "coin": 400
+      }
+    },
+    {
+      "times": 5,
+      "reward": {
+        "coin": 500
+      }
+    },
+    {
+      "times": 6,
+      "reward": {
+        "coin": 600
+      }
+    },
+    {
+      "times": 7,
+      "reward": {
+        "coin": 700
+      }
+    }
+  ]
+}

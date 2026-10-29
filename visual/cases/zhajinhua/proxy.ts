@@ -11,6 +11,8 @@ export class ZhajinhuaProxy {
    * @param proxy - 本轮独占的代理控制对象。
    */
   constructor(private readonly proxy: Mitmproxy) {}
+  /** 读取共用场景控制客户端。 */
+  get network(): Mitmproxy { return this.proxy; }
   /** 读取当前专用代理的本机访问地址。 */
   get server(): string { return this.proxy.server; }
   /** 读取本任务代理的脱敏网络历史。 */
@@ -22,10 +24,10 @@ export class ZhajinhuaProxy {
   /**
    * 向当前拼三张房间推送固定回放消息。
    * @param roomId - 接收回放消息的房间 ID。
-   * @param data - 子进程输出的数据块。
+   * @param scene - Python 中登记的具名回放场景。
    */
-  replay(roomId: string, data: unknown): Promise<ProxyStatus> {
-    return this.proxy.command('zhajinhua/replay', { roomId, data });
+  replay(roomId: string, scene: { scene: string; parameters?: Record<string, string> }): Promise<ProxyStatus> {
+    return this.proxy.command('zhajinhua/replay', { roomId, scene });
   }
   /**
    * 仅为当前已绑定房间的操作响应启用经验与升级夹具。

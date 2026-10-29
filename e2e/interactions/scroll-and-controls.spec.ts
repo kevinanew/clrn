@@ -1,3 +1,4 @@
+import { selectScenario, scenarioStatus } from '../helpers/scenario-proxy';
 import { expect, openApp, test } from './fixtures';
 import { drag, scroll } from './gestures';
 
@@ -93,32 +94,14 @@ test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /**
  * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
  */ async ({
   page,
+  context,
 }) => {
   await openApp(page);
-  let failing = true;
-  let requests = 0;
-  await page.route(
-    /**
-     * 仅拦截当前用户的俱乐部列表请求。
-     * @param url - 请求地址，用于限定当前用户的俱乐部列表接口。
-     */ (url) =>
-      url.pathname === '/v10/club' && url.searchParams.has('user_id'),
-    /**
-     * 注入故障，恢复后返回成功空列表。
-     * @param route - 当前拦截到的请求，用于提供场景响应。
-     */ async (route) => {
-      requests += 1;
-      if (failing) {
-        await route.abort('failed');
-      } else {
-        await route.fulfill({ json: { ok: true, result: { clubs: [] } } });
-      }
-    },
-  );
+  await selectScenario(context, 'club-error');
   await page.getByTestId('club-tab').click();
   await expect(page.getByTestId('club-list-load-error')).toBeVisible({ timeout: 45_000 });
-  const failedRequests = requests;
-  failing = false;
+  const failedRequests = (await scenarioStatus(context)).requests;
+  await selectScenario(context, 'club-error', { phase: 'release' });
   const recovered = page.waitForResponse(
     /**
      * 等待重试接口成功响应。
@@ -130,7 +113,7 @@ test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /**
   );
   await page.getByTestId('club-list-retry-button').click();
   await recovered;
-  await expect.poll(/** 读取俱乐部请求次数。 */ () => requests).toBeGreaterThan(failedRequests);
+  await expect.poll(/** 读取俱乐部请求次数。 */ async () => (await scenarioStatus(context)).requests).toBeGreaterThan(failedRequests);
   await expect(page.getByTestId('club-list-load-error')).toBeHidden();
   await expect(page.getByTestId('club-list-screen-flatlist')).toBeVisible();
   await page.getByTestId('show-more-button').click();
@@ -150,27 +133,13 @@ test('大厅接口失败后点击重试恢复页面操作', /**
  * @param fixtures - Playwright 注入的页面、浏览器或账号会话等依赖。
  */ async ({
   page,
+  context,
 }) => {
-  let failing = true;
-  let requests = 0;
-  await page.route(
-    '**/public/v1/hall_matching/available.json',
-    /**
-     * 按当前故障阶段返回失败或成功。
-     * @param route - 当前拦截到的请求，用于提供场景响应。
-     */ async (route) => {
-      requests += 1;
-      if (failing) {
-        await route.abort('failed');
-      } else {
-        await route.fulfill({ json: { ok: true, result: { available_url_version: ['v3'] } } });
-      }
-    },
-  );
+  await selectScenario(context, 'hall-error');
   await openApp(page);
   await expect(page.getByTestId('hall-api-error-alert')).toBeVisible({ timeout: 45_000 });
-  const failedRequests = requests;
-  failing = false;
+  const failedRequests = (await scenarioStatus(context)).requests;
+  await selectScenario(context, 'hall-error', { phase: 'release' });
   const recovered = page.waitForResponse(
     /**
      * 等待大厅重试接口成功响应。
@@ -181,7 +150,7 @@ test('大厅接口失败后点击重试恢复页面操作', /**
   );
   await page.getByTestId('hall-api-retry-button').click();
   await recovered;
-  await expect.poll(/** 读取恢复后的请求次数。 */ () => requests).toBeGreaterThan(failedRequests);
+  await expect.poll(/** 读取恢复后的请求次数。 */ async () => (await scenarioStatus(context)).requests).toBeGreaterThan(failedRequests);
   await expect(page.getByTestId('hall-api-error-alert')).toBeHidden();
   await page.getByTestId('settings-tab').click();
   await expect(page.getByTestId('settings-screen')).toBeVisible();

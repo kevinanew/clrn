@@ -1,0 +1,409 @@
+{
+  "texas-assets-room_message-@action": {
+    "stream": "room_message",
+    "payload": {
+      "action": "@action",
+      "content": {
+        "from_user_id": "@self",
+        "to_user_id": "00000000-0000-4000-8000-000000000001",
+        "file": "@file"
+      }
+    }
+  },
+  "texas-assets-all_in": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "all_in",
+        "player_id": "00000000-0000-4000-8000-000000000001",
+        "amount": 960,
+        "stack": 0
+      }
+    ]
+  },
+  "texas-feedback-check_community_card": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "check_community_card",
+        "player_id": "00000000-0000-4000-8000-000000000001"
+      }
+    ]
+  },
+  "texas-gameplay-start_street": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "start_street",
+        "street": "@street",
+        "community_card": "@cards"
+      }
+    ]
+  },
+  "texas-gameplay-switch_player": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "switch_player",
+        "player_id": "00000000-0000-4000-8000-000000000001",
+        "valid_bets": {
+          "call": {
+            "amount": 20
+          }
+        }
+      }
+    ]
+  },
+  "texas-gameplay-switch_player-2": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "switch_player",
+        "player_id": "00000000-0000-4000-8000-000000000001",
+        "remain_operating_seconds": 12
+      }
+    ]
+  },
+  "texas-gameplay-@action": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "@action",
+        "player_id": "00000000-0000-4000-8000-000000000001",
+        "amount": 40,
+        "stack": 920
+      }
+    ]
+  },
+  "texas-gameplay-all_in-all_in_show_hole_card": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "all_in",
+        "player_id": "00000000-0000-4000-8000-000000000001",
+        "amount": 960,
+        "stack": 0
+      },
+      {
+        "event": "all_in_show_hole_card",
+        "players": [
+          {
+            "player_id": "00000000-0000-4000-8000-000000000001",
+            "hole_card": [
+              "kh",
+              "ks"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "texas-gameplay-showdown": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "showdown",
+        "players": [
+          {
+            "player_id": "@self",
+            "hole_card": [
+              "as",
+              "ad"
+            ],
+            "best_cards": [
+              "as",
+              "ad",
+              "ah",
+              "kd",
+              "qs"
+            ],
+            "hand_strength": "three_of_a_kind",
+            "strength_cards": [
+              "as",
+              "ad",
+              "ah"
+            ],
+            "is_max_strength": true
+          },
+          {
+            "player_id": "00000000-0000-4000-8000-000000000001",
+            "hole_card": [
+              "kh",
+              "ks"
+            ],
+            "hand_strength": "three_of_a_kind",
+            "strength_cards": [
+              "kh",
+              "ks",
+              "kd"
+            ],
+            "is_max_strength": false
+          }
+        ]
+      }
+    ]
+  },
+  "texas-gameplay-settlement": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "settlement",
+        "players": [
+          {
+            "player_id": "@self",
+            "net": 180,
+            "prize": 180,
+            "stack": 1180
+          },
+          {
+            "player_id": "00000000-0000-4000-8000-000000000001",
+            "net": -960,
+            "prize": 0,
+            "stack": 0
+          }
+        ]
+      }
+    ]
+  },
+  "texas-social-room_message-text": {
+    "stream": "room_message",
+    "payload": {
+      "action": "text",
+      "content": {
+        "from_user_id": "00000000-0000-4000-8000-000000000001",
+        "from_user_nickname": "Player1",
+        "text": "Good hand!"
+      }
+    }
+  },
+  "texas-social-buy_in-apply_buy_in": {
+    "stream": "buy_in",
+    "payload": {
+      "action": "apply_buy_in",
+      "content": {
+        "application_id": "visual-application",
+        "user_id": "00000000-0000-4000-8000-000000000002",
+        "user_nickname": "Player2",
+        "nickname": "Player2",
+        "amount": 500
+      }
+    }
+  },
+  "gameplay-showdown": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "showdown",
+        "players": [
+          {
+            "player_id": "@self",
+            "hole_card": [
+              "as",
+              "ad"
+            ],
+            "best_cards": [
+              "as",
+              "ad",
+              "ah",
+              "kd",
+              "qs"
+            ],
+            "hand_strength": "three_of_a_kind",
+            "strength_cards": [
+              "as",
+              "ad",
+              "ah"
+            ],
+            "is_max_strength": true
+          },
+          {
+            "player_id": "00000000-0000-4000-8000-000000000001",
+            "hole_card": [
+              "kh",
+              "ks"
+            ],
+            "best_cards": [
+              "kh",
+              "ks",
+              "kd",
+              "ah",
+              "qs"
+            ],
+            "hand_strength": "three_of_a_kind",
+            "strength_cards": [
+              "kh",
+              "ks",
+              "kd"
+            ],
+            "is_max_strength": false
+          }
+        ]
+      }
+    ]
+  },
+  "hall-player_statistics": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "player_statistics",
+        "player_id": "@self",
+        "history_buy_in_amount": 1000,
+        "played_game_count": 10,
+        "settlement_net_amount": 180
+      }
+    ]
+  },
+  "hall-settlement": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "settlement",
+        "players": [
+          {
+            "player_id": "00000000-0000-4000-8000-000000000001",
+            "net": 180,
+            "prize": 180,
+            "stack": 1140
+          }
+        ]
+      }
+    ]
+  },
+  "hall-settlement_hand_prediction": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "settlement_hand_prediction",
+        "result": {
+          "net": 10,
+          "currency_name": "coin"
+        }
+      }
+    ]
+  },
+  "hall-new_game": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "new_game",
+        "game_id": "visual-fixed-game",
+        "settings": {
+          "small_blind": 1,
+          "big_blind": 2,
+          "ante": 0
+        }
+      }
+    ]
+  },
+  "hall-variants-settlement_hand_prediction": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "settlement_hand_prediction",
+        "result": {
+          "net": -10,
+          "currency_name": "coin"
+        }
+      }
+    ]
+  },
+  "hall-variants-settlement_hand_prediction-2": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "settlement_hand_prediction",
+        "result": {
+          "net": 20,
+          "currency_name": "diamond"
+        }
+      }
+    ]
+  },
+  "panel-variants-room_message-audio": {
+    "stream": "room_message",
+    "payload": {
+      "action": "audio",
+      "content": {
+        "from_user_id": "00000000-0000-4000-8000-000000000001",
+        "from_user_nickname": "Player1",
+        "duration": 3,
+        "codec": "mp3",
+        "content": ""
+      }
+    }
+  },
+  "panel-variants-settlement": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "settlement",
+        "players": [
+          {
+            "player_id": "@self",
+            "net": 180,
+            "prize": 180,
+            "stack": 1180
+          }
+        ]
+      }
+    ]
+  },
+  "panels-publish_hole_card": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "publish_hole_card",
+        "player_id": "@self",
+        "public_hole_card": [
+          "as",
+          "ad"
+        ]
+      }
+    ]
+  },
+  "table-variants-stand_up-stand_up-stand_up-stand_up": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "stand_up",
+        "player_id": "00000000-0000-4000-8000-000000000005"
+      },
+      {
+        "event": "stand_up",
+        "player_id": "00000000-0000-4000-8000-000000000006"
+      },
+      {
+        "event": "stand_up",
+        "player_id": "00000000-0000-4000-8000-000000000007"
+      },
+      {
+        "event": "stand_up",
+        "player_id": "00000000-0000-4000-8000-000000000008"
+      }
+    ]
+  },
+  "table-variants-reserve_seat": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "reserve_seat",
+        "seat_number": 6,
+        "player_id": "00000000-0000-4000-8000-000000000005",
+        "remain_reserve_seconds": 120
+      }
+    ]
+  },
+  "table-variants-cancel_reserve_seat-quit": {
+    "stream": "texas_holdem",
+    "queue": [
+      {
+        "event": "cancel_reserve_seat",
+        "seat_number": 6
+      },
+      {
+        "event": "quit",
+        "player_id": "00000000-0000-4000-8000-000000000003"
+      }
+    ]
+  }
+}

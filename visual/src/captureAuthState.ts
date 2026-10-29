@@ -14,15 +14,11 @@ import { ensureAppReadyPastStaging, ensureSignedIn, waitForSignInState } from '.
 import {
   AUTH_STATE_PATH,
   disableAnimations,
-  FIXED_COUNTRY_PHONE_CODE,
   fixNavigatorLanguage,
-  mockVisualNetworkDependencies,
 } from './support/pageSetup';
 import { runWithContext } from './support/runWithContext';
-import { texasProxyOptions, withTexasProxy, type TexasProxy } from '../cases/texas-holdem/proxy';
-
-import { withZhajinhuaProxy, type ZhajinhuaProxy } from '../cases/zhajinhua/proxy';
-import { getVisualSuite } from '../visual-suite';
+import { withMitmproxy } from '../../e2e/helpers/mitmproxy-session';
+import type { Mitmproxy } from '../../e2e/helpers/mitmproxy-client';
 
 import { visualBaseUrl as baseUrl } from '../target';
 const username = VISUAL_TEST_USERNAME;
@@ -63,16 +59,17 @@ const TUTORIAL_COMPLETE_KEYS = [
 /**
  * 创建采集或验证登录态的隔离上下文，预置统一语言和网络稳定配置。
  * @param browser - 用于创建隔离上下文的浏览器实例。
- * @param storageEntries - 可选的已采集 localStorage 缓存。
  * @param proxy - 本轮独占的代理控制对象。
+ * @param storageEntries - 可选的已采集 localStorage 缓存。
  */
 async function createAuthContext(
   browser: import('@playwright/test').Browser,
+  proxy: Mitmproxy,
   storageEntries?: Record<string, string>,
-  proxy?: TexasProxy | ZhajinhuaProxy,
 ) {
   const context = await browser.newContext({
-    ...(proxy ? texasProxyOptions(proxy) : {}),
+    proxy: { server: proxy.server, bypass: '<-loopback>' },
+    ignoreHTTPSErrors: true,
     viewport: { width: 1440, height: 900 },
     locale: 'en-US',
     storageState: storageEntries
@@ -92,10 +89,7 @@ async function createAuthContext(
   });
   await fixNavigatorLanguage(context);
   await disableAnimations(context);
-  // 登录态采集与场景共用显示资料夹具；应用自行探测并选择真实节点。
-  await mockVisualNetworkDependencies(context);
-  // 测试账号必须预先存在；缺失时明确失败，禁止 UI 静默注册替代账号。
-  await context.route('**/public/v*/user/register/**', route => route.abort('blockedbyclient'));
+  // 测试账号缺失时由 Python 环境边界禁止注册，登录与节点探测仍使用真实接口。
   await context.addInitScript(
     ({
       device,
@@ -118,7 +112,7 @@ async function createAuthContext(
 }
 
 /**
- * 读取登录后的 localStorage，移除场景语言并固定国家码。
+ * 读取真实登录缓存，移除场景语言，不改写应用状态。
  * @param page - 执行操作的 Playwright 页面。
  */
 async function collectLocalStorageEntries(page: import('@playwright/test').Page) {
@@ -134,7 +128,6 @@ async function collectLocalStorageEntries(page: import('@playwright/test').Page)
   });
   // 语言由各场景自行设置，不能带进注入态
   delete entries[LANGUAGE_STORAGE_KEY];
-  entries['app.user.country.code.key'] = FIXED_COUNTRY_PHONE_CODE;
   return entries;
 }
 
@@ -162,9 +155,9 @@ function persistAuthState(entries: Record<string, string>) {
 async function validateCapturedAuthState(
   browser: import('@playwright/test').Browser,
   entries: Record<string, string>,
-  proxy?: TexasProxy | ZhajinhuaProxy,
+  proxy: Mitmproxy,
 ): Promise<Record<string, string>> {
-  const context = await createAuthContext(browser, entries, proxy);
+  const context = await createAuthContext(browser, proxy, entries);
 
   return runWithContext(context, async () => {
     const page = await context.newPage();
@@ -191,13 +184,13 @@ async function validateCapturedAuthState(
  * 采集并验证一次共享登录态，失败时在新上下文重试，结束后关闭浏览器。
  * @param proxy - 本轮独占的代理控制对象。
  */
-async function captureAuthState(proxy?: TexasProxy | ZhajinhuaProxy): Promise<void> {
+async function captureAuthState(proxy: Mitmproxy): Promise<void> {
   const browser = await chromium.launch({ args: BROWSER_LAUNCH_ARGS });
 
   try {
     let lastError: Error | undefined;
     for (let attempt = 1; attempt <= MAX_CAPTURE_ATTEMPTS; attempt += 1) {
-      const context = await createAuthContext(browser, undefined, proxy);
+      const context = await createAuthContext(browser, proxy);
       try {
         console.log(`AUTH STATE > 采集尝试 ${attempt}/${MAX_CAPTURE_ATTEMPTS}`);
         const page = await context.newPage();
@@ -248,14 +241,12 @@ async function captureAuthState(proxy?: TexasProxy | ZhajinhuaProxy): Promise<vo
   }
 }
 
-/** 根据当前套件选择专用代理或直连方式，执行登录态采集。 */
+/** 使用仅固定地域环境和第三方内容的代理，执行真实登录态采集。 */
 async function main(): Promise<void> {
-  if (process.env.VISUAL_AUTH_USES_MITMPROXY === 'true') {
-    if (getVisualSuite() === 'zhajinhua') await withZhajinhuaProxy(captureAuthState);
-    else await withTexasProxy(captureAuthState);
-  } else {
-    await captureAuthState();
-  }
+  await withMitmproxy(async proxy => {
+    await proxy.command('fixtures/environment', { visual: true });
+    await captureAuthState(proxy);
+  });
 }
 
 main().catch((error: Error) => {

@@ -1,6 +1,6 @@
+import { selectScenario, scenarioStatus } from '../../e2e/helpers/scenario-proxy';
 import { expect, type TestInfo } from '@playwright/test';
 import type { TexasProxy } from '../cases/texas-holdem/proxy';
-import { events, REPLAY_PLAYER_IDS } from '../cases/texas-holdem/replayData';
 import { press } from './appSession';
 import { captureTimeline, freeze, settleAnimations } from './timeline';
 import type { TableSession } from './tableSession';
@@ -14,16 +14,13 @@ import type { TableSession } from './tableSession';
 export async function texasFeedback(session: TableSession, proxy: TexasProxy, info: TestInfo): Promise<void> {
   const { page, roomId, clip } = session;
   await freeze(page);
-  await proxy.replayTexas(roomId, events([{ event: 'check_community_card', player_id: REPLAY_PLAYER_IDS[0] }]));
+  await proxy.replayTexas(roomId, { scene: 'texas-feedback-check_community_card' });
   const prompt = page.getByTestId('prompt-item');
   await expect(prompt).toBeAttached();
   await captureTimeline(page, info, 'texas-system-prompt', prompt,
     { clip, times: [0, 80, 160, 320, 1200, 2600], requireMotion: true });
   await expect(prompt).toBeHidden();
 
-  let release!: () => void;
-  const gate = new Promise<void>(resolve => { release = resolve; });
-  let requested = false;
   // XHR 的原生 timeout 不受 Playwright JS 时钟控制。仅延长本轮暂缓响应的真实请求，
   // 避免慢机器截图超过 10 秒后被 Axios 的墙钟超时替换为错误弹窗。
   await page.evaluate(id => {
@@ -47,28 +44,23 @@ export async function texasFeedback(session: TableSession, proxy: TexasProxy, in
       },
     });
   }, roomId);
-  await page.route(`**/v10/texas_holdem/room/${roomId}/user_settings/*auto_rebuy`, async route => {
-    if (route.request().method() !== 'PUT') return route.fallback();
-    requested = true;
-    await gate;
-    await route.fulfill({ json: { ok: true, result: { auto_rebuy: true } } });
-  });
+  await selectScenario(page.context(), 'auto-rebuy', { roomId, phase: 'hold' });
   try {
     await press(page, 'auto-rebuy-button');
     await settleAnimations(page, 1200);
     await freeze(page);
     await press(page, 'auto-rebuy-switch');
-    await expect.poll(async () => { await page.clock.runFor(16); return requested; }).toBe(true);
+    await expect.poll(async () => { await page.clock.runFor(16); return (await scenarioStatus(page.context())).requests > 0; }).toBe(true);
     const loading = page.locator('img[src*="icon_loading_circle"]');
     await expect(loading).toBeVisible();
     await captureTimeline(page, info, 'texas-loading-spinner', loading,
       { clip, times: [0, 160, 400, 800, 1200, 1600], requireMotion: true });
-    release();
+    await selectScenario(page.context(), 'auto-rebuy', { roomId, phase: 'release' });
     await expect(loading).toBeHidden();
     await press(page, 'auto-rebuy-close-button');
     await settleAnimations(page, 1200);
   } finally {
-    release();
+    await selectScenario(page.context(), 'auto-rebuy', { roomId, phase: 'release' });
     await page.evaluate(() => {
       const state = window as typeof window & { animationXhrOpen?: typeof XMLHttpRequest.prototype.open };
       if (state.animationXhrOpen) XMLHttpRequest.prototype.open = state.animationXhrOpen;

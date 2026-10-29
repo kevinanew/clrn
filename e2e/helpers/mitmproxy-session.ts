@@ -36,7 +36,10 @@ export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>,
     const proxy = new Mitmproxy(port, token);
     const proxyProcess = startMitmdump(port, directory, token, options.addonPath, options.environment);
     try {
-      await proxyProcess.waitUntilReady(() => proxy.status());
+      await proxyProcess.waitUntilReady(async () => {
+        await proxy.status();
+        await proxy.command('fixtures/status');
+      });
       await options.prepare?.(directory, proxy);
       return await task(proxy);
     } finally {
