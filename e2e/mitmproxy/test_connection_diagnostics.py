@@ -1,6 +1,7 @@
 """验证代理记录不泄露认证数据，且能区分本地模拟与真实上游响应。"""
 import json
 import unittest
+from unittest.mock import patch
 from mitmproxy import http
 from mitmproxy.websocket import WebSocketData, WebSocketMessage
 from connection_diagnostics import ConnectionDiagnostics, safe_text, node_name
@@ -24,6 +25,48 @@ class DiagnosticTests(unittest.TestCase):
         diagnostics.request(request)
         self.assertEqual(diagnostics.events[-1]['path'], '/public/v1/hall_matching/available.json')
         self.assertNotIn('secret', json.dumps(diagnostics.snapshot()))
+
+    def test_严格来源匹配包含协议和端口且响应编号只能来自本轮服务(self):
+        server_id = '12345678-1234-4234-8234-123456789012'
+        with patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': 'http://127.0.0.1:18080/',
+                                      'CLRN_RELEASE_SERVER_ID': server_id}):
+            diagnostics = ConnectionDiagnostics()
+            for address, match in [('http://127.0.0.1:18080/asset.webp', 'matched'),
+                                   ('http://127.0.0.1:18081/asset.webp', 'different'),
+                                   ('https://127.0.0.1:18080/asset.webp', 'different'),
+                                   ('http://other.invalid:18080/asset.webp', 'different')]:
+                request = flow(address)
+                diagnostics.request(request)
+                self.assertEqual(diagnostics.events[-1]['originMatch'], match)
+                self.assertFalse(diagnostics.events[-1]['fixtureHit'])
+                request.response = http.Response.make(500, b'synthetic-password',
+                                                     {'X-Clrn-Release-Request': server_id + '-2'})
+                diagnostics.response(request)
+                event = diagnostics.events[-1]
+                self.assertEqual(event['status'], 500)
+                self.assertEqual(event['releaseRequestId'], server_id + '-2' if match == 'matched' else 'unverified')
+                self.assertEqual(event['connectionId'], str(request.client_conn.id))
+                self.assertEqual(event['upstreamConnectionId'], str(request.server_conn.id))
+                request.response = None
+                diagnostics.error(request)
+                self.assertEqual(diagnostics.events[-1]['status'], 'unavailable')
+                self.assertEqual(diagnostics.events[-1]['response'], 'not-received')
+            output = json.dumps(diagnostics.snapshot())
+            for value in ('127.0.0.1', '18080', '18081', 'other.invalid', 'synthetic-password'):
+                self.assertNotIn(value, output)
+
+    def test_错误与服务端关闭文本不记录未知凭据或任意业务正文(self):
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://error.invalid/node/v1/status')
+        secret = 'Cookie: sid=synthetic-cookie X-Testing-Api-Token: synthetic-token https://error.invalid/private'
+        diagnostics.record('proxy.error', request, reason=secret)
+        request.websocket = WebSocketData()
+        request.websocket.close_reason = secret
+        diagnostics.websocket_end(request)
+        output = json.dumps(diagnostics.snapshot())
+        for value in ('error.invalid', 'synthetic-', '/private'):
+            self.assertNotIn(value, output)
+        self.assertEqual(diagnostics.events[0]['reason'], 'detail-withheld')
 
     def test_两个认证控制入口不进入业务请求响应或错误诊断(self):
         diagnostics = ConnectionDiagnostics()

@@ -1,4 +1,6 @@
 import { type Page, type Request } from '@playwright/test';
+import { readRequestJson } from '../src/support/requestJson';
+import { requestErrorSummary } from '../src/support/requestError';
 import { press } from './appSession';
 
 /**
@@ -18,16 +20,10 @@ export async function openRenewPopup(page: Page): Promise<void> {
       { method: 'POST', path: /^\/v3\/pay_action\/batch\/price$/, operation: 'renewal-price' },
       { method: 'PUT', path: /^\/v10\/wallet\/[^/]+$/, operation: 'renewal-wallet' },
     ].map(async ({ method, path, operation }) => {
-      const context = `续时数据准备失败：method=${method} operation=${operation}`;
       const response = await page.waitForResponse(response => requests.has(response.request()) && response.request().method() === method
         && path.test(new URL(response.url()).pathname), { timeout: 15_000 })
-        .catch(() => { throw new Error(`${context} status=未收到响应`); });
-      const status = response.status();
-      if (!response.ok()) throw new Error(`${context} status=${status}；HTTP 响应失败`);
-      const body = await response.json().catch(() => {
-        throw new Error(`${context} status=${status}；响应不是有效 JSON`);
-      });
-      if (body?.ok !== true) throw new Error(`${context} status=${status}；业务结果未成功`);
+        .catch(error => { throw new Error(requestErrorSummary(error, operation)); });
+      await readRequestJson(response, operation);
     });
     // 先安装响应等待，再点击入口；不得用上一次打开留下的控件数值判断本次请求成功。
     await Promise.all([...reads, press(page, 'drawer-menu-item-renew')]);

@@ -88,7 +88,7 @@ test('登录身份或会话异常时禁止写钱包', async context => {
     { ...session, api_token: { token_type: 'Bearer', access_token: 'secret\n' } },
   ]) {
     const calls = network(context, [invalidSession]);
-    await assert.rejects(prepareTestAccountCoins(account, token), /身份或会话不符/);
+    await assert.rejects(prepareTestAccountCoins(account, token), /operation=prepare-account-login .*status=200 .*reason=invalid-response/);
     assert.equal(calls.length, 1);
     context.mock.restoreAll();
   }
@@ -98,14 +98,14 @@ test('写入结果错误或回读余额不符时明确失败', async context => 
   for (const result of [{ ...prepared, wallet_id: 'other' }, { ...prepared, currency_name: 'diamond' },
     { ...prepared, balance: '0' }]) {
     const calls = network(context, [session, result]);
-    await assert.rejects(prepareTestAccountCoins(account, token), /钱包、币种或余额不符/);
+    await assert.rejects(prepareTestAccountCoins(account, token), /operation=prepare-account-set-coins .*status=200 .*reason=invalid-response/);
     assert.equal(calls.length, 2);
     context.mock.restoreAll();
   }
   for (const result of [{}, { currencies: [] }, { currencies: [null, { code: 'diamond', balance: '10000' }] },
     { currencies: [{ code: 'coin', balance: '0' }] }, { currencies: [wallet.currencies[0], wallet.currencies[0]] }]) {
     network(context, [session, prepared, result]);
-    await assert.rejects(prepareTestAccountCoins(account, token), /实际余额不是 10000/);
+    await assert.rejects(prepareTestAccountCoins(account, token), /operation=prepare-account-verify-coins .*status=200 .*reason=invalid-response/);
     context.mock.restoreAll();
   }
 });

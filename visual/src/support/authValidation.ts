@@ -1,5 +1,5 @@
 import { type APIResponse, type Page } from '@playwright/test';
-import { requestErrorSummary } from './requestError';
+import { requestFailure, requestErrorSummary } from './requestError';
 
 export const USER_ATTRIBUTE_STORAGE_KEY = 'save.user.origin.data.from.server.key';
 const ACCOUNT_VALIDATION_TIMEOUT_MS = 10000;
@@ -168,8 +168,8 @@ export async function waitForSignInState(
     return 'signedOut';
   }
   if (result.kind === 'error') {
-    const message = requestErrorSummary(result.error);
-    throw new Error(`SIGN-IN > 账户接口校验失败（网络错误或超时）：${message}`);
+    const message = requestErrorSummary(result.error, 'validate-account');
+    throw new Error(message);
   }
   if (result.kind === 'stopped') {
     throw new Error('SIGN-IN > 账户接口校验被意外中止');
@@ -180,7 +180,7 @@ export async function waitForSignInState(
     return 'signedOut';
   }
   if (status < 200 || status >= 300) {
-    throw new Error(`SIGN-IN > 账户接口校验无法确认 token 有效（HTTP ${status}）`);
+    throw requestFailure('validate-account', 'http-error', status);
   }
 
   if (

@@ -60,6 +60,33 @@ def candidates(flow):
         return None
 
 
+def release_origin_match(flow):
+    """只在本地精确比较本轮协议、主机和端口，公开日志不输出其值。"""
+    configured = os.environ.get('CLRN_RELEASE_WEB_URL')
+    if not configured:
+        return 'unconfigured'
+    try:
+        expected = urlsplit(configured)
+        if (expected.scheme != 'http' or expected.hostname != '127.0.0.1'
+                or expected.username or expected.password or not expected.port):
+            return 'invalid-configuration'
+        actual = flow.request
+        return 'matched' if (actual.scheme, actual.host, actual.port) == (
+            expected.scheme, expected.hostname, expected.port) else 'different'
+    except ValueError:
+        return 'invalid-configuration'
+
+
+def error_reason(value):
+    """仅保留审阅的错误类别，任意服务端文本与深层异常不得进入持久化记录。"""
+    text = str(value or '').lower()
+    if 'timeout' in text or 'timed out' in text:
+        return 'timeout'
+    if 'connection' in text or 'disconnect' in text:
+        return 'connection-failed'
+    return 'detail-withheld'
+
+
 class ConnectionDiagnostics:
     def __init__(self):
         self.events = deque(maxlen=5000)
@@ -71,7 +98,13 @@ class ConnectionDiagnostics:
             self.dropped += 1
         entry = {'event': event, 'observedAt': int(time.time() * 1000),
                  'requestId': flow.id, 'node': node_name(flow.request.host),
-                 'path': urlsplit(flow.request.path).path, 'method': flow.request.method, **fields}
+                 'path': urlsplit(flow.request.path).path, 'method': flow.request.method,
+                 'originMatch': release_origin_match(flow),
+                 'operation': 'release-static-read' if release_origin_match(flow) == 'matched' else 'proxied-request',
+                 'connectionId': str(flow.client_conn.id),
+                 'upstreamConnectionId': str(flow.server_conn.id), **fields}
+        if 'reason' in entry:
+            entry['reason'] = error_reason(entry['reason'])
         self.events.append({key: [safe_text(item).replace(flow.request.host, node_name(flow.request.host))
                                   for item in value] if isinstance(value, list)
                            else value if key in ('event', 'path')
@@ -86,12 +119,18 @@ class ConnectionDiagnostics:
             return
         source = 'fixture' if flow.response is not None else 'upstream'
         flow.metadata['diagnostic_source'] = source
-        self.record('proxy.request', flow, source=source)
+        self.record('proxy.request', flow, source=source, fixtureHit=source == 'fixture',
+                    operation='release-static-read' if release_origin_match(flow) == 'matched' else 'proxied-request')
 
     def response(self, flow):
         if flow.request.host in CONTROL_HOSTS:
             return
-        self.record('proxy.response', flow, source=flow.metadata.get('diagnostic_source', 'unknown'),
+        identifier = flow.response.headers.get('X-Clrn-Release-Request', '')
+        server_id = os.environ.get('CLRN_RELEASE_SERVER_ID', '')
+        release_id = identifier if (release_origin_match(flow) == 'matched'
+                                   and re.fullmatch(r'[a-f0-9-]{36}', server_id)
+                                   and re.fullmatch(re.escape(server_id) + r'-[1-9][0-9]*', identifier)) else 'unverified'
+        self.record('proxy.response', flow, releaseRequestId=release_id, source=flow.metadata.get('diagnostic_source', 'unknown'),
                     status=flow.response.status_code,
                     elapsedMs=round((time.time() - flow.request.timestamp_start) * 1000))
         before = flow.metadata.get('diagnostic_candidates_before')
@@ -104,7 +143,9 @@ class ConnectionDiagnostics:
 
     def error(self, flow):
         if flow.request.host not in CONTROL_HOSTS:
-            self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown')
+            self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
+                        source='laiwan_prd', status=flow.response.status_code if flow.response else 'unavailable',
+                        response='received' if flow.response else 'not-received')
 
     def websocket_start(self, flow):
         self.record('proxy.websocket-open', flow, connectionId=flow.id)
@@ -142,7 +183,7 @@ class ConnectionDiagnostics:
                                 source='fixture' if message.injected else 'client' if message.from_client else 'upstream',
                                 messageType={1: 'subscribe', 2: 'unsubscribe', 9: 'rpc'}.get(method, 'error'),
                                 commandId=frame.get('id') if isinstance(frame.get('id'), int) else None,
-                                code=error.get('code') if isinstance(error, dict) else None)
+                                code=error.get('code') if isinstance(error, dict) and isinstance(error.get('code'), int) else None)
         except (ValueError, TypeError):
             pass
 

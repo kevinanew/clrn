@@ -1,4 +1,6 @@
 /** 为已校验的 Release 静态目录提供独立 HTTP 服务；不构建应用，不代理业务接口。 */
+import { randomUUID } from 'node:crypto';
+import { observeReleaseResponse } from './release-diagnostics.mjs';
 import { createServer } from 'node:http';
 import { createReadStream } from 'node:fs';
 import { readFile, realpath, stat } from 'node:fs/promises';
@@ -29,14 +31,24 @@ export async function verifyBuildVersion(directory, expectedCommit) {
 /**
  * 在回环地址和随机端口启动服务；返回服务句柄供调用方在测试结束后关闭。
  * @param directory - 本任务独占的静态根目录。
+ * @param options - 本轮日志出口与隔离自测的文件流边界。
  */
-export async function startReleaseWebServer(directory) {
+export async function startReleaseWebServer(directory, { record = () => {}, openStream = createReadStream } = {}) {
   const root = await realpath(directory);
+  const serverId = randomUUID();
+  const connections = new WeakMap();
+  let sequence = 0;
+  let connectionSequence = 0;
   const server = createServer(/**
    * 只提供根目录中的真实文件，缺失资源返回 404，避免把 HTML 误当脚本。
    * @param request - 浏览器请求。
    * @param response - HTTP 响应。
    */ async (request, response) => {
+    if (!connections.has(request.socket)) connections.set(request.socket, `connection-${++connectionSequence}`);
+    const requestId = `${serverId}-${++sequence}`;
+    response.setHeader('X-Clrn-Release-Request', requestId);
+    const diagnostic = observeReleaseResponse(request, response,
+      { requestId, connectionId: connections.get(request.socket), serverId }, record);
     try {
       if (!['GET', 'HEAD'].includes(request.method)) {
         response.writeHead(405, { Allow: 'GET, HEAD' }).end();
@@ -69,8 +81,13 @@ export async function startReleaseWebServer(directory) {
           ? 'max-age=31536000' : 'no-store, max-age=0',
       });
       if (request.method === 'HEAD') response.end();
-      else createReadStream(filename).on('error', /** 读取失败时中断响应。 */ () => response.destroy()).pipe(response);
+      else {
+        const stream = openStream(filename);
+        diagnostic.stream(stream);
+        stream.on('error', /** 读取失败时继续中断响应，不伪造成功。 */ () => response.destroy()).pipe(response);
+      }
     } catch {
+      diagnostic.emit('release.file-unavailable');
       response.writeHead(404).end();
     }
   });
@@ -82,5 +99,5 @@ export async function startReleaseWebServer(directory) {
     server.once('error', reject);
     server.listen(0, '127.0.0.1', resolve);
   });
-  return { server, baseUrl: `http://127.0.0.1:${server.address().port}/` };
+  return { server, serverId, baseUrl: `http://127.0.0.1:${server.address().port}/` };
 }

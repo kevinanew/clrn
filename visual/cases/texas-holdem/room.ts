@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
-import { expect } from './proxy';
 import { createPrivateGameRoom, deletePrivateGameRoom, type RoomSession } from '../_shared/room';
-import { requestErrorSummary } from '../../src/support/requestError';
+import { readRequestJson } from '../../src/support/requestJson';
+import { requestErrorSummary, requestFailure } from '../../src/support/requestError';
 
 /**
  * 创建德州私人房并把房间信息交给调用方登记清理。
@@ -23,18 +23,12 @@ export async function enterTexasRoom(page: Pick<Page, 'request'>, room: RoomSess
     headers: { Authorization: room.authorization }, data: { client_support: ['time_based_rules'] },
     timeout: 15_000,
   }).catch(error => {
-    throw new Error(`德州观察者连接请求失败：${requestErrorSummary(error)}`);
+    throw new Error(requestErrorSummary(error, 'texas-enter'));
   });
   try {
-    const body = await response.json().catch(() => {
-      // 只保留已知媒体类型，不把错误页正文、地址或任意响应头写入报告。
-      const mediaType = response.headers()['content-type']?.split(';')[0].trim().toLowerCase();
-      const type = mediaType === 'text/html' || mediaType === 'application/json' ? mediaType : '其他或未知';
-      throw new Error(`德州观察者连接返回非 JSON：HTTP ${response.status()}，响应类型=${type}`);
-    });
-    expect(response.ok() && body?.ok === true, '大厅显示夹具使用当前私人房的真实观察者连接').toBe(true);
+    await readRequestJson(response, 'texas-enter');
   } finally {
-    await response.dispose();
+    await response.dispose().catch(() => { throw requestFailure('texas-enter', 'body-read-failed', response.status()); });
   }
 }
 

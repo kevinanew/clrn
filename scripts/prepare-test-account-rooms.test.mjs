@@ -59,7 +59,7 @@ test('会话或房屋归属不符时立即停止', async context => {
     await assert.rejects(prepareTestAccountRooms(invalid), /有效账号会话/);
   }
   assert.equal(requests.length, 0);
-  await assert.rejects(prepareTestAccountRooms(session), /归属不符/);
+  await assert.rejects(prepareTestAccountRooms(session), /operation=prepare-room-house .*status=200 .*reason=invalid-response/);
   assert.equal(requests.length, 1);
 });
 
@@ -71,13 +71,13 @@ test('陌生房间、其他归属、有人入座、已开局或不完整数据�
     { timing_at: 123 }, { seat_occupied: 1 }, { seat_occupied: undefined },
   ]) {
     const requests = network(context, [house, [{ ...room, ...changes }]]);
-    await assert.rejects(prepareTestAccountRooms(session), /未删除/);
+    await assert.rejects(prepareTestAccountRooms(session), /operation=prepare-room-list .*status=200 .*reason=invalid-response/);
     assert.equal(requests.length, 2);
     context.mock.restoreAll();
   }
   for (const rooms of [null, {}, [room, room], [null]]) {
     const requests = network(context, [house, rooms]);
-    await assert.rejects(prepareTestAccountRooms(session), /无效|未删除/);
+    await assert.rejects(prepareTestAccountRooms(session), /operation=prepare-room-list .*status=200 .*reason=invalid-response/);
     assert.equal(requests.length, 2);
     context.mock.restoreAll();
   }
@@ -87,12 +87,12 @@ test('删除前状态变化必须停止，清理后仍有房间也必须失败',
   for (const current of [{ ...room, seat_occupied: 1 }, { ...room, room_id: house.house_id },
     { ...room, is_official: undefined }, { ...room, is_official: true }, null]) {
     const requests = network(context, [house, [room], current]);
-    await assert.rejects(prepareTestAccountRooms(session), /状态或归属已变化/);
+    await assert.rejects(prepareTestAccountRooms(session), /operation=prepare-room-inspect .*status=200 .*reason=invalid-response/);
     assert.equal(requests.length, 3);
     context.mock.restoreAll();
   }
   network(context, [house, [room], room, undefined, [room]]);
-  await assert.rejects(prepareTestAccountRooms(session), /清理后.*仍非空/);
+  await assert.rejects(prepareTestAccountRooms(session), /operation=prepare-room-verify .*status=200 .*reason=invalid-response/);
 });
 
 test('任一网络或业务失败都会停止且错误中不泄露会话', async context => {
@@ -102,7 +102,9 @@ test('任一网络或业务失败都会停止且错误中不泄露会话', async
       new Response(session.authorization), Response.json({ ok: false })]) {
       const requests = network(context, [...replies.slice(0, stage), failure]);
       await assert.rejects(prepareTestAccountRooms(session), error => {
-        assert.match(error.message, /失败/);
+        assert.match(error.message, /失败：method=(PUT|GET|DELETE) operation=prepare-room-[a-z]+ source=laiwan_prd status=/);
+        assert.match(error.message, failure instanceof Error ? /status=unavailable response=not-received/
+          : new RegExp(`status=${failure.status} response=received`));
         assert.ok(!error.message.includes(session.authorization));
         return true;
       });
