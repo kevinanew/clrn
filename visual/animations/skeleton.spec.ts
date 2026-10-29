@@ -2,9 +2,12 @@ import { selectScenario, scenarioStatus } from '../../e2e/helpers/scenario-proxy
 import { expect, test } from '../src/support/networkFixture';
 import { openApplication, press } from './appSession';
 import { captureTimeline, fixedArea, freeze } from './timeline';
+import { readAuthStateEntries } from '../src/support/pageSetup';
 
 test('club list placeholders pulse while details are pending', async ({ context, page }, info) => {
-  await selectScenario(context, 'club-skeleton');
+  const userId: unknown = JSON.parse(readAuthStateEntries()?.['save.user.origin.data.from.server.key'] || '{}').user_id;
+  expect(typeof userId === 'string' && userId.length > 0, '骨架夹具必须绑定本轮真实登录账号').toBe(true);
+  await selectScenario(context, 'club-skeleton', { userId: userId as string });
   try {
     await openApplication(context, page, info);
     await expect.poll(async () => (await scenarioStatus(context)).requests, { timeout: 60_000, message: '等待大厅首次加载俱乐部详情，再暂缓下一次响应' }).toBeGreaterThan(0);

@@ -148,6 +148,9 @@ class ScenarioFixtures:
             return
         path = urlsplit(flow.request.path).path
         method = flow.request.method
+        own_club_list = (self.user_id and method == 'GET' and path == '/v10/club'
+                         and parse_qs(urlsplit(flow.request.path).query, keep_blank_values=True)
+                         .get('user_id') == [self.user_id])
         if self.visual and (flow.request.host == 'freshchat.com' or flow.request.host.endswith('.freshchat.com')):
             if flow.killable:
                 flow.kill()
@@ -175,7 +178,7 @@ class ScenarioFixtures:
         if self.name == 'matching' and path in MATCHING_PATHS and method == 'POST':
             self.requests += 1
             result(flow, {})
-        elif self.name == 'club-empty' and method == 'GET' and path == '/v10/club' and 'user_id' in parse_qs(urlsplit(flow.request.path).query):
+        elif self.name == 'club-empty' and own_club_list:
             result(flow, {'clubs': []})
         elif self.name == 'mall' and method == 'GET' and re.fullmatch(r'/v\d+/alipay_order/goods', path):
             respond(flow, data('goods'))
@@ -195,7 +198,7 @@ class ScenarioFixtures:
                 rooms['result'][0].update(building_id=self.house_id, creator_id=self.user_id)
                 respond(flow, rooms)
         elif self.name == 'club-skeleton':
-            if method == 'GET' and path == '/v10/club' and 'user_id' in parse_qs(urlsplit(flow.request.path).query):
+            if own_club_list:
                 result(flow, {'clubs': [{'id': club['id']} for club in clubs()]})
             elif method == 'PUT' and path == '/v10/clubs':
                 try:

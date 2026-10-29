@@ -26,7 +26,7 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 | 同上：`/v2/room/disallow-rule/reminder` | 隐藏真实维护错误 | 删除覆盖，真实透传；不再把 401 改成成功 |
 | 同上：`/public/v1/hall_matching/available.json` | 固定可用大厅版本 | 删除正常流程覆盖，真实透传；仅故障用例断连 |
 | 同上：`/public/v1/hall_matching/{texas_holdem,zhajinhua}/halls` | 固定大厅列表 | 删除覆盖及两份无调用的 `visual/fixtures/hall-matching-*.json`，使用真实列表 |
-| 同上：`GET /v10/club?user_id=…` | 俱乐部空态 | 仅 `club-empty` 场景保留；其他视觉场景透传或交给专用虚拟俱乐部 addon |
+| 同上：`GET /v10/club?user_id=…` | 俱乐部空态 | 仅 `club-empty` 场景匹配已绑定账号的单一 `user_id`；其他视觉场景透传或交给专用虚拟俱乐部 addon |
 | 同上：`PUT /v10/clubs` 返回空数组 | 隐藏俱乐部详情 | 删除全局覆盖；只有确切虚拟 ID 批次才在对应 addon 返回详情 |
 | 同上：`GET /v10/house/user/user`、访问历史、`/v2/building/rooms` 空数组 | 固定私人房归属与房间列表 | 删除全局覆盖；真实房号、归属、历史及列表透传 |
 | 同上：`GET /v*/alipay_order/goods` | 商城商品卡片 | 仅 `mall`，`goods.json`；不产生订单，不点击真实购买 |
@@ -38,7 +38,7 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 | `animations/matchingFixtures.ts`：`POST /v1/hall_matching/{join,quit,keep_waiting}` | 匹配旋转弹窗，不进入真实队列 | `matching`；HTTP 和 Centrifuge method 9 RPC 都隔离，订阅与心跳透传 |
 | `animations/slotFixtures.ts`：`/v2/slot_machine/user/user/{energy,spin}` | 三类奖励、能量不足动画 | `slot`；HTTP 与 WebSocket 同一 Python 实现；spin 未绑定或账号不符返回错误，绝不发送真实抽奖 |
 | 同上：完整伪造 `PUT /v10/wallet/user` | 固定老虎机工具栏余额 | 删除覆盖，使用真实钱包；动画断言从真实响应读取金币/钻石，不降低数字控件断言 |
-| `animations/skeleton.spec.ts`：俱乐部列表和详情 | 两条骨架脉冲动画 | `club-skeleton`；仅固定列表与确切虚拟详情批次，`hold/release` 控制等待 |
+| `animations/skeleton.spec.ts`：俱乐部列表和详情 | 两条骨架脉冲动画 | `club-skeleton`；列表仅匹配已绑定账号的单一 `user_id`，详情仅匹配确切虚拟批次，`hold/release` 控制等待 |
 | `cases/launch/launch.spec.ts`：`GET /node/v1/status` 暂缓 | 截启动加载页 | 仅 `launch` 暂缓，释放后继续真实健康探测；正常场景不延迟、不伪造健康 |
 | `animations/texasFeedback.ts`：`PUT /v10/texas_holdem/room/room/user_settings/{enable,disable}_auto_rebuy` | 加载旋转图标 | `auto-rebuy`；必须先观测本账号成功建房响应；释放等待后仍隔离写入，其他房间透传 |
 | `interactions/fixtures.ts`：大厅版本、维护提醒 | 全局稳定化 | 删除覆盖，保留真实 worker 登录和正常初始化 |
@@ -51,7 +51,7 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 | 位置／接口 | 场景、保留原因与隔离 |
 | --- | --- |
 | `network_faults.py`：大厅版本、登录密码、俱乐部列表断连及登录用户名存在检查 | 弱网错误恢复；仅登录失败场景固定“已存在”以避免注册，其他登录保持真实 |
-| 同上：`GET /v10/club/search?keyword=…`、`PUT /v10/clubs` | 精确关键词与虚拟俱乐部 ID 的只读命中卡片；功能和视觉共用 |
+| 同上：`GET /v10/club/search?keyword=…`、`PUT /v10/clubs` | 精确 GET 关键词与 PUT 虚拟俱乐部 ID 批次的只读命中卡片；功能和视觉共用，其他关键词、方法及预检透传 |
 | `visual/cases/club/mitmproxy/addon.py`：`GET /v10/club`、`PUT /v10/clubs`、`PUT /v2/building/rooms` | 有数据俱乐部列表；资料与房间批次仅限虚拟俱乐部，保留专用场景计数 |
 | `visual/cases/game-record/mitmproxy/{addon,data}.py`：`/v10/texas_holdem/user/user/game_records`、`/v11/game_log/user/play_session_record/recent` | 战绩新旧版、空／列表／分页／列表错误；仅本轮 user 与虚拟记录 |
 | 同上：`PUT /v1/room`、`/v{1,11}/game_log/room/settlement`、`/v1/game_log/user/user/rooms/settlement` | 固定虚拟房名与汇总 |
@@ -71,7 +71,7 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 | --- | --- |
 | 本轮真实 UI 登录后采集的认证缓存 | 保留；仅隔离上下文恢复真实会话，仍校验真实账户和应用已登录状态，不伪造用户或 token |
 | 语言、设备 ID、浏览器语言规范化、游客主题缓存 | 保留环境配置；设备身份与账号分配一致，不进入代理响应逻辑 |
-| 三类新手引导完成标记 | 保留聚焦页面／动画的环境前置条件；不覆盖引导本身，也不冒充业务响应 |
+| 三类新手引导完成标记 | 当前仍作为页面／动画前置条件；能否由真实界面完成后移除注入尚未核实，不视为引导流程已验收 |
 | 国家码 localStorage 强写 | 删除；只固定地域接口，由应用更新缓存 |
 | `use.new.game.record.key` 强写 | 删除；Python 只覆盖真实成功版本接口，UI 用例等待应用写入所选版本并断言 |
 | 静态禁动画、动画时钟、随机输入、单个暂缓 XHR 超时配置 | 保留既有采样工具；不模拟网络响应，动画套件继续断言真实运动和完整关键帧 |
@@ -134,3 +134,34 @@ JS/Python lint、ShellCheck、actionlint、400 行限制、两份 TypeScript 检
 不作视觉批准，也不援引旧失败证明本轮成功或失败。
 
 后续合并与修复记录见 [合并请求第 73 号的迁移回归调查](issue-70-regression.md)。
+
+## 固定基线后的修复核查（#70）
+
+本轮从固定基线 `5ee5469d4bde6202e9671e75701820253d0e13d7` 开始，工作树干净、无合并现场。
+本仓库未发现 `AGENTS.md`、`AGENTS.txt`、`DEVELOPMENT.md` 或 `.codegraph/`，
+按本仓库 README 和现有工作流执行；没有套用工具仓库的规则。
+已解析恢复记录的原工作目录并只读确认其仍存在、HEAD 为 `12e280c4bfe3ee21eb74d8e90e53ee7e0f711d70`，未修改该现场。
+
+对上次 `needs-repair` 的三个源码探针作了复核：
+
+- 搜索夹具曾把未匹配关键词或方法改为 400，并伪造预检；现在仅命中确切 GET 搜索和 PUT 虚拟资料批次，其他请求及预检由上游处理。
+- 空列表和骨架列表曾只检查 `user_id` 存在；现在必须已有账号绑定且查询值恰为唯一的所属账号。未绑定、其他账号、空值、重复参数、错误方法或来源均不生成列表响应。骨架动画在导航前绑定本轮真实登录态的账号，保留暂缓、释放、占位数量和动画断言。
+- TypeScript 曾保留连接地址；现在与 Python 共用 `laiwan_prd` 主机散列标签，候选、选中、排除及代理历史重复清理后仍能关联。错误中的完整入口、裸主机、IP 和端口被隐藏，认证和请求正文继续排除；Python 的错误 URL 也不再保留入口路径。仅测试保留地址，不读取私有资料。
+
+新增探针对基线 Python 模块在内存中加载运行，两个测试产生 19 个预期失败、无导入错误；
+修复后均通过。TypeScript 脱敏与节点汇总回归也经历了先失败、修复后通过。
+五入口真实代理集成增加上游响应头、完整正文和 HTTP 503 的透传负例；
+列表与搜索未命中不能仅以单元测试中“没有本地响应”替代上游证据。
+
+本轮实际本地验证及剩余边界见下方记录。固定检查及新提交远端结果仍须宿主核验，
+不会将历史 PR 通过、用例收集、离线协议一致或本地回归当作当前完整验收。
+引导初始化的真实界面替代、迁移前后完整画面对照和固定构建远端回归仍待独立验收；
+上次记录中的建房价格读取取消深层原因仍未知，本轮未重新审阅远端附件，也没有据此修改 CI、业务断言或图片基准。
+
+本轮最终检查记录：
+
+- mitmproxy 12.2.3 依赖来自本机既有缓存：共用 43 项、德州 34 项、拼三张 19 项、战绩 10 项、俱乐部 3 项通过，共 109 项。共用套件另有一项五入口端口集成在监听时被沙箱拒绝，未通过、未跳过。
+- TypeScript 脱敏／节点摘要四项、禁止 TS 响应路由检查一项通过。浏览器诊断回归在监听本机端口时返回 `EPERM`，未取得浏览器运行结果。
+- ESLint、Ruff 0.15.12、ShellCheck 0.11.0、actionlint 1.7.12、400 行限制及根目录／视觉两份 TypeScript 检查通过；Python 与工作流工具使用已安装的对应版本直接执行。
+- `npm run check` 原命令在 uv 缓存权限处失败；单独完整 `npm test` 为 140 项通过、5 项失败（四项本地端口权限错误，另一个 Release 工具测试进程触发 Node 运行时断言崩溃）。没有修改这些测试或将其标为通过。
+- 本轮未执行 `npm ci` 或完整 pre-commit，不宣称宿主三项固定检查通过。新提交的端口集成、浏览器、全矩阵和真实客服验证由宿主继续执行；本轮无图片变更或视觉批准。

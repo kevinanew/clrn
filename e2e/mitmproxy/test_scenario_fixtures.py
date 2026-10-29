@@ -151,6 +151,31 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone((await self.request(path, 'POST')).response)
         self.assertIsNone((await self.request(f'/v10/wallet/{SELF}', 'PUT')).response)
 
+    async def test_俱乐部列表夹具必须绑定唯一所属账号(self):
+        for scene in ('club-empty', 'club-skeleton'):
+            with self.subTest(scene=scene):
+                await self.control({'name': scene})
+                self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}')).response,
+                                  '未绑定时不能伪造任何账号的列表')
+                await self.control({'name': scene, 'userId': SELF})
+                own = await self.request(f'/v10/club?user_id={SELF}')
+                self.assertEqual(len(own.response.json()['result']['clubs']),
+                                 0 if scene == 'club-empty' else 2)
+                for query in ('', '?user_id=', f'?user_id={OTHER}',
+                              f'?user_id={SELF}&user_id={OTHER}', f'?user_id={SELF}&user_id={SELF}'):
+                    request = await self.request('/v10/club' + query)
+                    self.assertIsNone(request.response, query)
+                    self.assertIsNone(request.error, query)
+                for method in ('POST', 'PUT', 'OPTIONS'):
+                    self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}', method)).response)
+                self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}',
+                                                     origin='https://other.invalid')).response)
+                await self.control({'name': 'none'})
+                self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}')).response)
+                # 每个子场景使用新的代理，不能复用前一场景已绑定的身份。
+                with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
+                    self.addon = ScenarioFixtures()
+
     async def test_故障释放后重新读取真实上游(self):
         for scene, path in (('club-error', f'/v10/club?user_id={SELF}'),
                             ('hall-error', '/public/v1/hall_matching/available.json')):
@@ -162,6 +187,24 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
             self.assertIsNone(recovered.response)
             self.assertIsNone(recovered.error)
             self.assertEqual(self.addon.requests, 2)
+
+    async def test_骨架详情保持虚拟批次的暂缓与释放(self):
+        await self.control({'name': 'club-skeleton', 'userId': SELF, 'phase': 'hold'})
+        listing = (await self.request(f'/v10/club?user_id={SELF}')).response.json()
+        identifiers = [club['id'] for club in listing['result']['clubs']]
+        pending = asyncio.create_task(self.request('/v10/clubs', 'PUT', {'club_ids': identifiers}))
+        await asyncio.sleep(0)
+        try:
+            self.assertFalse(pending.done())
+            self.assertEqual(self.addon.held, 1)
+            for method, body in (('PUT', {'club_ids': [OTHER]}),
+                                 ('PUT', {'club_ids': identifiers + [OTHER]}), ('OPTIONS', None)):
+                self.assertIsNone((await self.request('/v10/clubs', method, body)).response)
+        finally:
+            await self.control({'name': 'club-skeleton', 'phase': 'release'})
+            details = await asyncio.wait_for(pending, 1)
+        self.assertEqual([club['id'] for club in details.response.json()['result']], identifiers)
+        self.assertEqual(self.addon.requests, 1)
 
     async def test_启动等待释放后不替换健康响应(self):
         await self.control({'name': 'launch', 'phase': 'hold'})
