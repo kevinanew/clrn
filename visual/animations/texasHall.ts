@@ -5,6 +5,7 @@ import { press } from './appSession';
 import { exerciseTablePopup as exercisePopup } from './popups';
 import type { TableSession } from './tableSession';
 import { texasFeedback } from './texasFeedback';
+import { openPersonalLeaderboard } from './leaderboardReadiness';
 
 /**
  * 在本轮私人房连接上使用现有大厅响应夹具，验证大厅专有弹层。
@@ -22,7 +23,8 @@ export async function texasHall(session: TableSession, proxy: TexasProxy, info: 
   ]) {
     await expect(page.getByTestId(panel.open)).toBeVisible();
     await exercisePopup(page, info, { name: `texas-${panel.name}`, target: page.getByTestId(panel.marker), clip,
-      open: /** 打开大厅专有面板。 */ () => press(page, panel.open),
+      open: /** 个人排行榜等待本次真实读取完成，其他面板沿用原入口。 */ () => panel.name === 'personal-leaderboard'
+        ? openPersonalLeaderboard(page, roomId, self) : press(page, panel.open),
       close: /** 关闭面板，不提交修改。 */ () => press(page, panel.close) });
   }
   await texasFeedback(session, proxy, info);

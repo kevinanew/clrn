@@ -1,8 +1,10 @@
 import { expect, type Response, type TestInfo } from '@playwright/test';
 import type { TexasProxy } from '../cases/texas-holdem/proxy';
 import { restore } from '../cases/texas-holdem/replay';
+import { REPLAY_PLAYER_IDS } from '../cases/texas-holdem/replayData';
 import { captureImageFrames } from './imageFrames';
 import { captureTimeline } from './timeline';
+import { waitForPlayerAnimationAsset } from './playerAnimationAsset';
 import type { TableSession } from './tableSession';
 
 /**
@@ -18,7 +20,6 @@ export async function texasAssets(session: TableSession, proxy: TexasProxy, info
     if (new URL(response.url()).pathname.endsWith('.webp')) loadedAssets.set(response.url(), response);
   });
   await restore(page, proxy, roomId, self, 'flop', true);
-  const images = page.locator('img[src*=".webp"]');
   const captured = new Set<string>();
   for (const [action, names] of [
     ['sticker', ['angry', 'cry', 'drink', 'puchi', 'titter', 'smirk', 'handclap']],
@@ -34,9 +35,8 @@ export async function texasAssets(session: TableSession, proxy: TexasProxy, info
           { clip, requireMotion: true, times: [0, 160, 400, 640, 960] });
         await page.clock.runFor(80);
       }
-      const effect = images.filter({ visible: true }).last();
-      await expect(effect).toBeVisible();
-      await expect.poll(() => effect.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+      const effect = await waitForPlayerAnimationAsset(page,
+        action === 'sticker' ? self : REPLAY_PLAYER_IDS[0], action === 'sticker' ? 'stickers' : 'props', name);
       const url = await effect.getAttribute('src');
       if (!url) throw new Error('真实效果没有动画素材');
       expect(captured.has(url), `${action}/${name} 必须加载自己的素材，不能复用上一个效果`).toBe(false);
@@ -50,8 +50,7 @@ export async function texasAssets(session: TableSession, proxy: TexasProxy, info
     }
   }
   await proxy.replayTexas(roomId, { scene: 'texas-assets-all_in' });
-  const fire = images.filter({ visible: true }).last();
-  await expect(fire).toBeVisible();
+  const fire = await waitForPlayerAnimationAsset(page, REPLAY_PLAYER_IDS[0], 'fire', 'fire');
   const url = await fire.getAttribute('src');
   if (!url) throw new Error('全压火焰缺少真实素材');
   expect(captured.has(url), '全压必须加载火焰，不能捕获遗留道具').toBe(false);

@@ -18,6 +18,23 @@ on:
       - 'scripts/*ci*'
       - 'scripts/prepare-test-account*'
       - '.github/workflows/interactions.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'scripts/*release*'
+      - 'scripts/extract-web-package.py'
+      - '.github/actions/prepare-release-web/**'
+      - 'e2e/interactions/**'
+      - 'e2e/helpers/**'
+      - 'e2e/mitmproxy/**'
+      - 'e2e/cases/_shared/**'
+      - 'e2e/interactions.config.ts'
+      - 'e2e/freshchat.config.ts'
+      - 'e2e/package*.json'
+      - 'scripts/*ci*'
+      - 'scripts/prepare-test-account*'
+      - '.github/workflows/interactions.yml'
   workflow_call:
     inputs:
       release_record:

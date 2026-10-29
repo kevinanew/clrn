@@ -82,6 +82,11 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 删除失效的 `VISUAL_AUTH_USES_MITMPROXY` 选项；所有视觉登录采集现在默认经过代理。
 没有生产夹具回调 TypeScript 的 HTTP/WebSocket 桥，也没有新增 Node 后备响应服务。
 离线工具自测的 `.invalid` 页面／本机上游服务器继续保留，它们不服务生产测试流量。
+`visual/animations/renewReadiness.browser.ts` 和 `leaderboardReadiness.browser.ts`
+仅在各自 `.invalid` 页面测试读取辅助函数的故障边界：页面由测试自行构造，响应与断连由该测试持有的
+浏览器实例控制，生产场景没有导入或回调这些文件。动画工作流使用 Node 单独运行这些工具自测；
+实际场景只导入 `renewReadiness.ts`、`leaderboardReadiness.ts`，两者只观察真实请求并点击真实入口，
+不生成响应。保留响应顺序、旧请求晚到、单项完成、HTTP／业务失败、无效 JSON 及连接中断负例。
 `e2e/cases/_shared/auth.ts` 的注册中止路由是直连功能登录的防写保护，不生成成功响应；
 视觉注册防写已归 Python 环境边界。不能为消除这个保护而允许自动注册。
 

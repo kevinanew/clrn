@@ -2,6 +2,7 @@ import { expect, type Page, type TestInfo } from '@playwright/test';
 import { visible, press, pressTarget } from './appSession';
 import { exerciseTablePopup as exercisePopup } from './popups';
 import { captureTimeline, settleAnimations, type CaptureArea } from './timeline';
+import { openRenewPopup } from './renewReadiness';
 
 /**
  * 通过所属弹层的真实遮罩关闭，避免误点其他历史面板。
@@ -52,7 +53,8 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
         open: /** 打开菜单后点击对应入口。 */ async () => {
           await press(page, 'menu-button');
           await settleAnimations(page, 1200, true);
-          await press(page, `drawer-menu-item-${panel.item}`);
+          if (panel.name === 'renew') await openRenewPopup(page);
+          else await press(page, `drawer-menu-item-${panel.item}`);
         }, close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, panel.close) });
     });
   }
