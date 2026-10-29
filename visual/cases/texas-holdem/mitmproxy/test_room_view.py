@@ -8,10 +8,10 @@ from game_log import fixture as log_fixture, GAME_ID
 
 
 class RoomViewTests(unittest.TestCase):
-    def test_only_successful_creation_arms_exact_room_read(self):
+    def test_仅成功创建才能绑定确切房间读取(self):
         view = RoomView()
         view.configure('hall')
-        created = flow('https://api.shafayouxi.org/v3/pay_action/do', 'POST', json.dumps({
+        created = flow('https://node-0.service.invalid/v3/pay_action/do', 'POST', json.dumps({
             'user_id': SELF,
             'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
             'action_json': {'game_type': 'texas_holdem'},
@@ -21,7 +21,7 @@ class RoomViewTests(unittest.TestCase):
         self.assertEqual(view.room_id, ROOM)
         for room in (OTHER, ROOM):
             for method in ('GET', 'PUT', 'DELETE'):
-                request = flow(f'https://api.shafayouxi.org/v1/room/{room}', method)
+                request = flow(f'https://node-0.service.invalid/v1/room/{room}', method)
                 original = {'ok': True, 'result': {'building_type': 'house', 'creator_id': SELF,
                                                 'game_config': {'currency': 'chip'}}}
                 request.response = http.Response.make(200, json.dumps(original).encode())
@@ -33,13 +33,13 @@ class RoomViewTests(unittest.TestCase):
         self.assertIsNone(view.room_id)
         self.assertIsNone(view.fixture(f'/v10/texas_holdem/room/{ROOM}/user_settings', 'PUT', SELF))
 
-    def test_other_payments_failed_creations_and_second_rooms_cannot_arm_view(self):
+    def test_其他支付失败创建与第二房间不能绑定界面(self):
         view = RoomView()
         view.configure('hall')
         body = {'user_id': SELF, 'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
                 'action_json': {'game_type': 'texas_react_native'}}
         def created(request_body, room_id=ROOM, ok=True):
-            request = flow('https://api.shafayouxi.org/v3/pay_action/do', 'POST', json.dumps(request_body).encode())
+            request = flow('https://node-0.service.invalid/v3/pay_action/do', 'POST', json.dumps(request_body).encode())
             request.response = http.Response.make(200, json.dumps({'ok': ok, 'result': {'room_id': room_id}}).encode())
             view.response(request, '/v3/pay_action/do')
         for request_body in ({}, dict(body, user_id='invalid'),
@@ -55,18 +55,18 @@ class RoomViewTests(unittest.TestCase):
         created(body, OTHER)
         self.assertEqual(view.room_id, ROOM)
 
-    def test_room_details_never_replace_known_self_with_unvalidated_creator(self):
+    def test_房间详情不能以未验证创建者覆盖本人身份(self):
         view = RoomView()
         view.configure('hall')
         view.room_id, view.self_id = ROOM, SELF
-        request = flow(f'https://api.shafayouxi.org/v1/room/{ROOM}')
+        request = flow(f'https://node-0.service.invalid/v1/room/{ROOM}')
         request.response = http.Response.make(200, json.dumps({'ok': True, 'result': {
             'creator_id': [], 'game_config': {}, 'options': {},
         }}).encode())
         view.response(request, f'/v1/room/{ROOM}')
         self.assertEqual(view.self_id, SELF)
 
-    def test_guest_identity_only_changes_successful_read_of_created_room(self):
+    def test_访客身份仅修改已创建房间的成功读取(self):
         view = RoomView()
         view.configure('guest')
         view.room_id, view.self_id = ROOM, SELF
@@ -74,7 +74,7 @@ class RoomViewTests(unittest.TestCase):
             for method in ('GET', 'PUT', 'DELETE'):
                 for ok in (True, False):
                     path = f'/v1/room/{room}'
-                    request = flow(f'https://api.shafayouxi.org{path}', method)
+                    request = flow(f'https://node-0.service.invalid{path}', method)
                     original = {'ok': ok, 'result': {'creator_id': SELF, 'admin_ids': [SELF]}}
                     request.response = http.Response.make(200, json.dumps(original).encode())
                     view.response(request, path)
@@ -84,7 +84,7 @@ class RoomViewTests(unittest.TestCase):
                     self.assertEqual(result['admin_ids'], [] if changed else [SELF])
         self.assertEqual(view.self_id, SELF)
 
-    def test_logs_do_not_replace_other_room_or_user_records(self):
+    def test_记录不能替换其他房间或用户数据(self):
         path = '/v1/game_log/room/game_amount'
         self.assertIsNotNone(log_fixture(path, 'PUT', json.dumps({'room_ids': [ROOM]}).encode(), ROOM, SELF))
         self.assertIsNone(log_fixture(path, 'PUT', json.dumps({'room_ids': [OTHER, ROOM]}).encode(), ROOM, SELF))

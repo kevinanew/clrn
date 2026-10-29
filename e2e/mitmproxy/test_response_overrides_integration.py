@@ -13,14 +13,15 @@ import tempfile
 import threading
 import time
 import unittest
+from connection_diagnostics import node_name
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
 METADATA_PATHS = ('/public/v12/metadata/servers', '/public/v13/metadata/servers')
-SERVER_HOSTS = ('64.kr-seoul.api.staging.laiwan.shafayouxi.com',
-                '67.hk-sn.api.staging.laiwan.shafayouxi.com',
-                '69.us-la.api.staging.laiwan.shafayouxi.com')
+SERVER_HOSTS = ('node-4.service.invalid',
+                'node-7.service.invalid',
+                'node-15.service.invalid')
 OWNER = '33333333-3333-4333-8333-333333333333'
 ROOM = '11111111-1111-4111-8111-111111111111'
 
@@ -50,7 +51,7 @@ class Upstream(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/html' if address.query == 'html' else 'application/json')
         self.send_header('X-Upstream', 'real')
         self.send_header('ETag', 'upstream-version')
-        self.send_header('Access-Control-Allow-Origin', 'https://app.test')
+        self.send_header('Access-Control-Allow-Origin', 'https://node-3.service.invalid')
         if address.query == 'compressed':
             content = gzip.compress(content)
             self.send_header('Content-Encoding', 'gzip')
@@ -103,7 +104,8 @@ class LiveOverrideTests(unittest.TestCase):
                 '--set', f'confdir={directory}', '--set', 'connection_strategy=lazy',
                 '--set', 'flow_detail=0',
                 '-s', str(ROOT / 'e2e/mitmproxy/scenario_fixtures.py'), '-s', str(ROOT / addon)],
-                env={**os.environ, 'MITMPROXY_CONTROL_TOKEN': 'offline-token'}, stdout=logs, stderr=logs)
+                env={**os.environ, 'MITMPROXY_CONTROL_TOKEN': 'offline-token',
+                     'MITMPROXY_API_HOSTS': '["node-0.service.invalid", "node-4.service.invalid", "node-7.service.invalid", "node-8.service.invalid", "node-15.service.invalid", "candidate-0.node-18.service.invalid", "candidate-1.node-18.service.invalid", "candidate-2.node-18.service.invalid"]'}, stdout=logs, stderr=logs)
             try:
                 deadline = time.monotonic() + 15
                 while True:
@@ -136,7 +138,7 @@ class LiveOverrideTests(unittest.TestCase):
 
     def check_metadata(self, port):
         for path in METADATA_PATHS:
-            metadata = 'http://api.shafayouxi.org' + path
+            metadata = 'http://node-0.service.invalid' + path
             for method in ('GET', 'POST'):
                 for query in ('', 'changed', 'compressed', 'failed', 'html'):
                     with self.subTest(path=path, method=method, query=query):
@@ -144,7 +146,7 @@ class LiveOverrideTests(unittest.TestCase):
                         self.assertEqual(status, 503 if query == 'failed' else 200)
                         self.assertEqual(headers['etag'], 'upstream-version')
                         self.assertEqual(headers['x-upstream'], 'real')
-                        self.assertEqual(headers['access-control-allow-origin'], 'https://app.test')
+                        self.assertEqual(headers['access-control-allow-origin'], 'https://node-3.service.invalid')
                         if query == 'html':
                             self.assertEqual(body, '<html>upstream failure</html>')
                             continue
@@ -157,7 +159,7 @@ class LiveOverrideTests(unittest.TestCase):
 
     def check_scenes(self, port):
         control = 'http://fixtures-mitmproxy.invalid/fixtures/select'
-        goods = 'http://api.shafayouxi.org/v1/alipay_order/goods'
+        goods = 'http://node-0.service.invalid/v1/alipay_order/goods'
         self.assertEqual(self.fetch(port, control, 'POST', {'name': 'mall'})[0], 200)
         status, headers, body = self.fetch(port, goods)
         self.assertEqual(status, 200)
@@ -167,7 +169,7 @@ class LiveOverrideTests(unittest.TestCase):
         self.assertEqual(self.fetch(port, control, 'POST', {'name': 'none'})[0], 200)
         self.assertEqual(self.fetch(port, goods)[1]['x-upstream'], 'real')
         self.assertEqual(self.fetch(port, control, 'POST', {'name': 'slot'})[0], 200)
-        status, headers, body = self.fetch(port, 'http://api.shafayouxi.org/v2/slot_machine/user/unbound/spin', 'POST')
+        status, headers, body = self.fetch(port, 'http://node-0.service.invalid/v2/slot_machine/user/unbound/spin', 'POST')
         self.assertEqual(status, 200)
         self.assertNotIn('x-upstream', headers)
         self.assertEqual(body, {'ok': False, 'error': 'fixture_owner_mismatch'})
@@ -185,7 +187,7 @@ class LiveOverrideTests(unittest.TestCase):
 
     def check_game_hold(self, port):
         control = 'http://fixtures-mitmproxy.invalid/fixtures/'
-        api = 'http://api.shafayouxi.org'
+        api = 'http://node-0.service.invalid'
         self.assertEqual(self.fetch(port, control + 'select', 'POST', {'name': 'none'})[0], 200)
         self.fetch(port, api + f'/v10/house/user/{OWNER}', 'PUT')
         self.fetch(port, 'http://test-mitmproxy.invalid/texas/view', 'POST', {'mode': 'hall'})
@@ -229,9 +231,9 @@ class LiveOverrideTests(unittest.TestCase):
         self.assertTrue(responses)
         self.assertTrue(all(item['source'] == 'upstream' for item in responses))
         for host in SERVER_HOSTS:
-            self.assertTrue(any(item['node'] == host.replace('.shafayouxi.com', '')
+            self.assertTrue(any(item['node'] == node_name(host)
                                 and item['path'] == '/node/v1/status' for item in responses))
-        self.assertNotIn('shafayouxi.com', json.dumps(diagnostic))
+        self.assertNotIn('node-10.service.invalid', json.dumps(diagnostic))
         self.assertNotIn('offline-token', json.dumps(diagnostic))
 
     def fetch(self, port, url, method='GET', body=None, token='offline-token'):

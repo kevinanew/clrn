@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Mitmproxy } from './mitmproxy-client';
 import { startMitmdump } from './mitmproxy-process';
+import { mitmproxySources } from './mitmproxy-sources';
 
 /** 申请本机临时监听端口并关闭探测服务，返回可用于代理的端口号。 */
 async function unusedPort(): Promise<number> {
@@ -34,7 +35,8 @@ export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>,
   try {
     const port = await unusedPort();
     const proxy = new Mitmproxy(port, token);
-    const proxyProcess = startMitmdump(port, directory, token, options.addonPath, options.environment);
+    const environment = await mitmproxySources(options.environment || process.env);
+    const proxyProcess = startMitmdump(port, directory, token, options.addonPath, environment);
     try {
       await proxyProcess.waitUntilReady(async () => {
         await proxy.status();

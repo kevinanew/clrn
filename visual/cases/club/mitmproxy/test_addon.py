@@ -8,9 +8,10 @@ from mitmproxy import connection, http
 
 with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
     from addon import CLUB_IDENTIFIER, ClubRoomVisualProxy
+    from test_network_faults import source_environment
 
 
-def make_flow(path, method='GET', body=None, host='api.shafayouxi.org', token=None):
+def make_flow(path, method='GET', body=None, host='node-0.service.invalid', token=None):
     """建立仅供代理单元测试使用的请求，不访问真实后端。"""
     flow = http.HTTPFlow(
         connection.Client(peername=('127.0.0.1', 12345), sockname=('127.0.0.1', 8080)),
@@ -22,15 +23,17 @@ def make_flow(path, method='GET', body=None, host='api.shafayouxi.org', token=No
     return flow
 
 
+
 class ClubRoomVisualProxyTests(unittest.TestCase):
     """逐个验证截图场景必需的三个接口和隔离条件。"""
 
     def setUp(self):
+        self.enterContext(source_environment())
         """每个用例使用独立代理状态。"""
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.proxy = ClubRoomVisualProxy()
 
-    def test_populated_room_responses(self):
+    def test_有数据的房间响应保持契约(self):
         """启用固定场景后，俱乐部资料和两条房间使用一致的标识。"""
         control = make_flow('/scenario', 'POST', {'scenario': 'visual-stable'},
                             'test-mitmproxy.invalid', 'test-token')
@@ -58,7 +61,7 @@ class ClubRoomVisualProxyTests(unittest.TestCase):
         self.assertEqual(self.proxy.status()['interceptedRequests'], 3,
                          '三种业务接口都必须由代理提供响应')
 
-    def test_unrelated_requests_pass_through(self):
+    def test_无关请求必须透传(self):
         """未启用场景、其他俱乐部和非 staging 地址不接受固定数据。"""
         before = make_flow('/v10/club?user_id=visual-user')
         self.proxy.request(before)
@@ -69,11 +72,11 @@ class ClubRoomVisualProxyTests(unittest.TestCase):
         self.proxy.request(other_club)
         self.assertIsNone(other_club.response, '其他俱乐部房间应继续访问真实接口')
 
-        other_host = make_flow('/v10/club?user_id=visual-user', host='example.com')
+        other_host = make_flow('/v10/club?user_id=visual-user', host='node-16.service.invalid')
         self.proxy.request(other_host)
         self.assertIsNone(other_host.response, '非 staging 地址不得收到固定俱乐部')
 
-    def test_control_requires_token(self):
+    def test_控制命令必须认证(self):
         """没有本轮令牌的控制请求不能启用固定场景。"""
         request = make_flow('/scenario', 'POST', {'scenario': 'visual-stable'},
                             'test-mitmproxy.invalid')

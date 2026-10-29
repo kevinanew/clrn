@@ -3,11 +3,20 @@ import json
 import unittest
 from mitmproxy import http
 from mitmproxy.websocket import WebSocketData, WebSocketMessage
-from connection_diagnostics import ConnectionDiagnostics, safe_text
+from connection_diagnostics import ConnectionDiagnostics, safe_text, node_name
 from test_network_faults import flow
 
 
 class DiagnosticTests(unittest.TestCase):
+    def test_错误中的连接地址与主机不进入公开诊断(self):
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://api.invalid/node/v1/status')
+        diagnostics.record('proxy.error', request, reason='api.invalid 192.0.2.10 [2001:db8::10]')
+        serialized = json.dumps(diagnostics.snapshot())
+        for value in ('api.invalid', '192.0.2.10', '2001:db8::10'):
+            self.assertNotIn(value, serialized, '错误文本也不能复述真实连接资料')
+        self.assertIn(node_name('api.invalid'), serialized, '同一节点仍须能够关联')
+
     def test_两个认证控制入口不进入业务请求响应或错误诊断(self):
         diagnostics = ConnectionDiagnostics()
         for host in ('test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'):
@@ -19,10 +28,10 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(diagnostics.snapshot(), {'events': [], 'dropped': 0},
                          '控制流量不能混入真实选线和健康探测的诊断')
 
-    def test_sources_and_domain_redaction(self):
+    def test_来源分类与主机脱敏(self):
         diagnostics = ConnectionDiagnostics()
         for source in ('upstream', 'fixture'):
-            request = flow('https://64.kr-seoul.api.staging.laiwan.shafayouxi.com/node/v1/status?token=secret')
+            request = flow('https://node-4.service.invalid/node/v1/status?token=secret')
             response = http.Response.make(503 if source == 'fixture' else 200, b'{}')
             request.response = response if source == 'fixture' else None
             diagnostics.request(request)
@@ -31,27 +40,27 @@ class DiagnosticTests(unittest.TestCase):
         events = diagnostics.snapshot()['events']
         self.assertEqual([event['source'] for event in events], ['upstream', 'upstream', 'fixture', 'fixture'])
         result = json.dumps(events)
-        self.assertNotIn('shafayouxi.com', result)
+        self.assertNotIn('node-10.service.invalid', result)
         self.assertNotIn('secret', result)
-        self.assertIn('64.kr-seoul.api.staging.laiwan', result)
+        self.assertIn(node_name('node-4.service.invalid'), result)
 
-    def test_metadata_does_not_capture_addresses_or_other_response_fields(self):
+    def test_节点资料不保存地址或其他响应字段(self):
         diagnostics = ConnectionDiagnostics()
-        request = flow('https://api.shafayouxi.org/public/v13/metadata/servers')
+        request = flow('https://node-0.service.invalid/public/v13/metadata/servers')
         diagnostics.request(request)
-        request.metadata['diagnostic_candidates_before'] = ['a.shafayouxi.com', 'b.shafayouxi.com']
+        request.metadata['diagnostic_candidates_before'] = ['node-12.service.invalid', 'node-13.service.invalid']
         request.response = http.Response.make(200, json.dumps({'token': 'secret', 'result': {
-            'servers': {'a.shafayouxi.com': 'private-address'}, 'token': 'secret'}}).encode())
+            'servers': {'node-12.service.invalid': 'private-address'}, 'token': 'secret'}}).encode())
         diagnostics.response(request)
         event = diagnostics.events[-1]
-        self.assertEqual(event['before'], ['a', 'b'])
-        self.assertEqual(event['after'], ['a'])
+        self.assertEqual(event['before'], [node_name(value) for value in request.metadata['diagnostic_candidates_before']])
+        self.assertEqual(event['after'], [node_name(next(iter(request.response.json()['result']['servers'])))])
         self.assertNotIn('secret', json.dumps(diagnostics.snapshot()))
         self.assertNotIn('private-address', json.dumps(diagnostics.snapshot()))
 
-    def test_websocket_subscription_acknowledgement_and_close(self):
+    def test_订阅确认与关闭仍可关联(self):
         diagnostics = ConnectionDiagnostics()
-        request = flow('https://a.shafayouxi.com/socket?access_token=secret')
+        request = flow('https://node-12.service.invalid/socket?access_token=secret')
         request.websocket = WebSocketData()
         for from_client, frame in [(True, {'id': 1, 'method': 0, 'params': {'token': 'secret'}}),
                                    (True, {'id': 2, 'method': 1, 'params': {'channel': 'room'}}),
@@ -70,15 +79,15 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(diagnostics.events[-1]['code'], 1001)
         self.assertNotIn(request.id, diagnostics.pending_commands)
 
-    def test_limit_and_error_redaction(self):
+    def test_容量边界与错误脱敏(self):
         diagnostics = ConnectionDiagnostics()
-        request = flow('https://a.shafayouxi.com/node/v1/status')
+        request = flow('https://node-12.service.invalid/node/v1/status')
         for _ in range(5001):
             diagnostics.request(request)
         self.assertEqual(diagnostics.dropped, 1)
         self.assertEqual(len(diagnostics.events), 5000)
-        self.assertEqual(safe_text('https://user:secret@node.shafayouxi.com/path?token=secret'), 'https://node/path')
-        self.assertNotIn('secret', safe_text('failed https://a.shafayouxi.com/?access_token=secret Bearer secret'))
+        self.assertEqual(safe_text('https://user:secret@node-14.service.invalid/path?token=secret'), 'https://' + node_name('node-14.service.invalid') + '/path')
+        self.assertNotIn('secret', safe_text('failed https://node-12.service.invalid/?access_token=secret Bearer secret'))
 
 
 if __name__ == '__main__':

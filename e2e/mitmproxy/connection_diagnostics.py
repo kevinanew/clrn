@@ -1,6 +1,7 @@
 """在真实代理边界记录脱敏 HTTP、节点过滤和连接事件；从不保存请求正文或认证头。"""
 
 from collections import deque
+import hashlib
 import json
 import os
 import re
@@ -14,7 +15,7 @@ CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 def safe_address(match):
     try:
         address = urlsplit(match.group(0))
-        return f'{address.scheme}://{address.hostname}{address.path}'
+        return f'{address.scheme}://{node_name(address.hostname or "")}{address.path}'
     except ValueError:
         return '[地址已隐藏]'
 
@@ -23,14 +24,18 @@ def safe_text(value):
     text = str(value or '')
     text = re.sub(r'\b(?:https?|wss?)://[^\s<>"\'`)]+',
                   safe_address, text)
-    text = re.sub(r'\.?shafayouxi\.com\b', '', text, flags=re.I)
+    text = re.sub(r'\b(?:\d{1,3}\.){3}\d{1,3}\b|\[[0-9a-fA-F:]*:[0-9a-fA-F:]+\]',
+                  '[地址已隐藏]', text)
     text = re.sub(r'\bBearer\s+[^\s,"\'}]+', 'Bearer [已隐藏]', text, flags=re.I)
     return re.sub(r'((?:access_token|refresh_token|authorization|password|cookie|token)["\']?\s*[:=]\s*["\']?)[^\s,"\';&}]+',
                   r'\1[已隐藏]', text, flags=re.I)[:2000]
 
 
 def node_name(value):
-    return safe_text(urlsplit(value if '://' in value else 'https://' + value).hostname or 'unknown')
+    if re.fullmatch(r'laiwan_prd-[a-f0-9]{12}', value):
+        return value
+    host = urlsplit(value if '://' in value else 'https://' + value).hostname or 'unknown'
+    return 'laiwan_prd-' + hashlib.sha256(host.encode()).hexdigest()[:12]
 
 
 def candidates(flow):
@@ -55,8 +60,10 @@ class ConnectionDiagnostics:
         entry = {'event': event, 'observedAt': int(time.time() * 1000),
                  'requestId': flow.id, 'node': node_name(flow.request.host),
                  'path': urlsplit(flow.request.path).path, 'method': flow.request.method, **fields}
-        self.events.append({key: [safe_text(item) for item in value] if isinstance(value, list)
-                           else safe_text(value) if isinstance(value, str) else value for key, value in entry.items()})
+        self.events.append({key: [safe_text(item).replace(flow.request.host, node_name(flow.request.host))
+                                  for item in value] if isinstance(value, list)
+                           else safe_text(value).replace(flow.request.host, node_name(flow.request.host))
+                           if isinstance(value, str) else value for key, value in entry.items()})
 
     def snapshot(self):
         return {'events': list(self.events), 'dropped': self.dropped}
@@ -79,7 +86,8 @@ class ConnectionDiagnostics:
         if after is not None:
             self.record('proxy.nodes', flow, candidates=after)
         if before is not None:
-            self.record('proxy.nodes-filtered', flow, before=before, after=after or [], reason='代理改写节点列表')
+            self.record('proxy.nodes-filtered', flow, before=[node_name(item) for item in before],
+                        after=after or [], reason='代理改写节点列表')
 
     def error(self, flow):
         if flow.request.host not in CONTROL_HOSTS:

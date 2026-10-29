@@ -36,3 +36,5 @@ export async function createTestingAccount(
   }
   return { userId: body.result.user_id, username: body.result.username };
 }
+
+export { stagingUserOrigin };

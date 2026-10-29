@@ -39,7 +39,7 @@ export function selectScenario(context: object, name: string,
  * @param context - 当前隔离上下文。
  */
 export function scenarioStatus(context: object): Promise<{
-  requests: number; held: number; spins: number; observed: string[]; cursors: (string | null)[];
+  requests: number; held: number; spins: number; energyReads: number; observed: string[]; cursors: (string | null)[];
 }> {
   return scenarioProxy(context).command('fixtures/status');
 }

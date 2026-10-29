@@ -66,6 +66,7 @@ class ScenarioFixtures:
         self.room_id = ''
         self.house_id = ''
         self.requests = self.held = self.spins = 0
+        self.energy_reads = 0
         self.observed = []
         self.cursors = []
         self.gate = asyncio.Event()
@@ -73,7 +74,7 @@ class ScenarioFixtures:
 
     def status(self):
         return {'requests': self.requests, 'held': self.held, 'spins': self.spins,
-                'observed': self.observed, 'cursors': self.cursors}
+                'energyReads': self.energy_reads, 'observed': self.observed, 'cursors': self.cursors}
 
     def control(self, flow):
         if flow.request.headers.get('X-E2E-Control-Token') != self.token:
@@ -101,6 +102,7 @@ class ScenarioFixtures:
                 self.gate.set()
                 if self.name != name:
                     self.requests = self.held = self.spins = 0
+                    self.energy_reads = 0
                     self.observed, self.cursors = [], []
                 self.name, self.phase = name, phase
                 if 'userId' in body:
@@ -125,6 +127,19 @@ class ScenarioFixtures:
         gate = self.gate
         await gate.wait()
 
+    def is_feedback(self, flow):
+        """反馈页面来源由运行输入提供，协议、主机和端口必须全部匹配。"""
+        configured = os.environ.get('MITMPROXY_FEEDBACK_ORIGIN', '')
+        try:
+            target = urlsplit(configured)
+            return (target.scheme == 'https' and target.hostname is not None
+                    and not target.username and not target.password and target.path in ('', '/')
+                    and not target.query and not target.fragment
+                    and flow.request.scheme == target.scheme and flow.request.host == target.hostname
+                    and flow.request.port == (target.port or 443))
+        except ValueError:
+            return False
+
     async def request(self, flow):
         if flow.request.host == CONTROL_HOST:
             self.control(flow)
@@ -137,7 +152,7 @@ class ScenarioFixtures:
             if flow.killable:
                 flow.kill()
             return
-        if self.visual and flow.request.host == 'feedback.userreport.com' and method == 'GET':
+        if self.visual and self.is_feedback(flow) and method == 'GET':
             flow.response = http.Response.make(200,
                 b'<!DOCTYPE html><html><head><meta charset="utf-8"></head>'
                 b'<body style="margin:0;background:#f5f5f5"></body></html>',
@@ -299,6 +314,8 @@ class ScenarioFixtures:
         spin = path.endswith('/spin')
         if spin:
             self.spins += 1
+        else:
+            self.energy_reads += 1
         return self.slot_result(spin)
 
     def slot_result(self, spin):

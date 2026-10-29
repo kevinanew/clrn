@@ -3,15 +3,21 @@ import { openApplication, navigate, press } from './appSession';
 import { captureTimeline, fixedArea, freeze } from './timeline';
 import { selectScenario, scenarioStatus } from '../../e2e/helpers/scenario-proxy';
 
-test('slot reels and all three reward animations', async ({ context, page }, info) => {
+test('老虎机滚轮和三种奖励动画', async ({ context, page }, info) => {
   test.setTimeout(600_000);
   await selectScenario(context, 'slot');
   try {
     await openApplication(context, page, info);
     await selectScenario(context, 'slot', { userId: await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
+    const previousEnergyReads = (await scenarioStatus(context)).energyReads;
     await navigate(page, 'slot-banner');
     const panel = page.getByTestId('slot-machine-view');
     await expect(panel.getByTestId('energy-bar-text')).toHaveText('50 / 50');
+    // 默认文字不能证明连接就绪；冻结前必须观察本次面板读取，而非大厅的历史读取。
+    await expect.poll(async () => {
+      await page.clock.runFor(16);
+      return (await scenarioStatus(context)).energyReads;
+    }, { message: '本次打开老虎机必须完成所属账号的能量读取' }).toBeGreaterThan(previousEnergyReads);
     const clip = await fixedArea(page, panel, 0);
     await freeze(page);
     for (const [index, currency] of ['coin', 'currency_diamond', 'energy'].entries()) {

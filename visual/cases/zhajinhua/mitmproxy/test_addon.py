@@ -9,14 +9,17 @@ from replay_scenes import replay_scene
 from zhajinhua_replay import PLAYER_IDS
 from addon import ZhajinhuaVisualProxy
 
+from test_network_faults import source_environment
+
 
 class ZhajinhuaAddonTests(unittest.TestCase):
     def setUp(self):
+        self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.addon = ZhajinhuaVisualProxy()
         self.addon.scenario = 'visual-stable'
 
-    def creation(self, game_type='zhajinhua', ok=True, room=ROOM, host='api.shafayouxi.org', method='POST'):
+    def creation(self, game_type='zhajinhua', ok=True, room=ROOM, host='node-0.service.invalid', method='POST'):
         request = flow(f'https://{host}/v3/pay_action/do', method, json.dumps({
             'user_id': SELF, 'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
             'action_json': {'game_type': game_type},
@@ -29,9 +32,9 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.addon.request(request)
         return request
 
-    def test_only_successful_zhajinhua_creation_owns_replay(self):
+    def test_仅成功创建拼三张房间才能绑定回放(self):
         for kwargs in ({'game_type': 'texas_react_native'}, {'ok': False}, {'room': '123456'},
-                       {'host': 'production.example.com'}, {'method': 'PUT'}):
+                       {'host': 'node-9.service.invalid'}, {'method': 'PUT'}):
             self.creation(**kwargs)
             self.assertIsNone(self.addon.created_room_id)
         self.creation()
@@ -41,7 +44,7 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         # 开局前观察流量仍真实；首次回放之前不隔离状态查询。
         self.assertIsNone(self.addon.replay.room_id)
 
-    def test_replay_requires_created_room_and_authorized_control(self):
+    def test_回放必须绑定已创建房间且控制已认证(self):
         payload = {'roomId': ROOM, 'scene': {'scene': 'restore'}}
         self.assertEqual(self.control('/zhajinhua/replay', payload).response.status_code, 400)
         self.creation()
@@ -67,52 +70,52 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.assertIsNone(self.addon.created_room_id)
         self.assertIsNone(self.addon.replay.room_id)
 
-    def test_only_created_room_get_receives_empty_leaderboard(self):
+    def test_空排行榜仅用于已创建房间的读取(self):
         path = f'/v1/game_log/room/{ROOM}/settlement'
-        request = flow(f'https://api.shafayouxi.org{path}')
+        request = flow(f'https://node-0.service.invalid{path}')
         self.addon.request(request)
         self.assertIsNone(request.response)
         self.creation()
-        for url, method in ((f'https://api.shafayouxi.org{path}', 'POST'),
-                            (f'https://api.shafayouxi.org/v1/game_log/room/{OTHER}/settlement', 'GET'),
-                            (f'https://production.example.com{path}', 'GET'),
-                            ('https://api.shafayouxi.org/node/v1/status', 'GET')):
+        for url, method in ((f'https://node-0.service.invalid{path}', 'POST'),
+                            (f'https://node-0.service.invalid/v1/game_log/room/{OTHER}/settlement', 'GET'),
+                            (f'https://node-9.service.invalid{path}', 'GET'),
+                            ('https://node-0.service.invalid/node/v1/status', 'GET')):
             request = flow(url, method)
             self.addon.request(request)
             self.assertIsNone(request.response)
-        request = flow(f'https://api.shafayouxi.org{path}')
+        request = flow(f'https://node-0.service.invalid{path}')
         self.addon.request(request)
         self.assertEqual(request.response.json(), {'ok': True, 'result': {'settlements': []}})
         self.control('/zhajinhua/release', {})
-        request = flow(f'https://api.shafayouxi.org{path}')
+        request = flow(f'https://node-0.service.invalid{path}')
         self.addon.request(request)
         self.assertIsNone(request.response)
 
-    def test_http_fixtures_preserve_mutations_other_users_and_hosts(self):
+    def test_接口夹具保留写入其他用户与主机(self):
         self.addon.replay.room_id, self.addon.replay.self_id = ROOM, SELF
         path = f'/v10/profile/{PLAYER_IDS[0]}'
         for method in ('POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'):
-            request = flow(f'https://api.shafayouxi.org{path}', method)
+            request = flow(f'https://node-0.service.invalid{path}', method)
             self.addon.request(request)
             self.assertIsNone(request.response)
-        for url in (f'https://production.example.com{path}',
-                    f'https://api.shafayouxi.org/v10/profile/{OTHER}',
-                    f'https://api.staging.laiwan.shafayouxi.com.evil.test{path}'):
+        for url in (f'https://node-9.service.invalid{path}',
+                    f'https://node-0.service.invalid/v10/profile/{OTHER}',
+                    f'https://node-17.service.invalid{path}'):
             request = flow(url)
             self.addon.request(request)
             self.assertIsNone(request.response)
-        request = flow(f'https://api.shafayouxi.org{path}')
+        request = flow(f'https://node-0.service.invalid{path}')
         self.addon.request(request)
         self.assertEqual(json.loads(request.response.content)['result']['nickname'], 'Player1')
 
-    def test_current_user_is_real_and_mixed_profiles_only_add_virtual_opponents(self):
+    def test_本人资料保持真实且混合批次仅补充虚拟对手(self):
         self.addon.replay.room_id, self.addon.replay.self_id = ROOM, SELF
         for path in (f'/v10/profile/{SELF}', f'/v10/wallet/{SELF}/currency/coin'):
-            request = flow('https://api.shafayouxi.org' + path)
+            request = flow('https://node-0.service.invalid' + path)
             self.addon.request(request)
             self.assertIsNone(request.response)
         player = PLAYER_IDS[0]
-        request = flow('https://api.shafayouxi.org/v10/profile/users', 'PUT',
+        request = flow('https://node-0.service.invalid/v10/profile/users', 'PUT',
                        json.dumps({'users': [SELF, player]}).encode())
         self.addon.request(request)
         self.assertIsNone(request.response)

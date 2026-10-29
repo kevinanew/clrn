@@ -12,12 +12,12 @@ class RecordsV2Tests(unittest.TestCase):
         self.records = RecordsV2()
 
     def enter(self, room=ROOM, method='PUT', ok=True, session=OTHER, status=200):
-        request = flow(f'https://api.shafayouxi.org/v10/texas_holdem/room/{room}/enter', method)
+        request = flow(f'https://node-0.service.invalid/v10/texas_holdem/room/{room}/enter', method)
         request.response = http.Response.make(status, json.dumps({
             'ok': ok, 'result': {'play_session_id': session}}).encode())
         self.records.response(request, request.request.path, ROOM)
 
-    def test_version_is_opt_in_and_read_only(self):
+    def test_版本覆盖必须显式启用且只读(self):
         path = '/public/v11/game_log/available.json'
         self.assertIsNone(self.records.fixture(path, 'GET', SELF))
         self.records.configure(True)
@@ -28,7 +28,7 @@ class RecordsV2Tests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.records.configure(invalid)
 
-    def test_only_successful_enter_of_created_room_records_session(self):
+    def test_仅成功进入已创建房间才记录会话(self):
         self.enter()
         self.assertIsNone(self.records.session_id)
         self.records.configure(True)
@@ -41,7 +41,7 @@ class RecordsV2Tests(unittest.TestCase):
         self.enter(session='session-1')
         self.assertEqual(self.records.session_id, 'session-1')
 
-    def test_records_require_exact_user_session_and_round(self):
+    def test_战绩严格匹配用户会话与局次(self):
         self.records.configure(True)
         record = f'/v11/game_log/{SELF}/play_session_record/{OTHER}'
         detail = f'/v11/game_log/{SELF}/round/{ROUND}'

@@ -13,7 +13,7 @@ with patch.dict(os.environ, {"MITMPROXY_CONTROL_TOKEN": "test-token"}):
 def flow(url, method="GET", body=b"", token=None):
     result = http.HTTPFlow(
         connection.Client(peername=("127.0.0.1", 12345), sockname=("127.0.0.1", 8080)),
-        connection.Server(address=("api.shafayouxi.org", 443)),
+        connection.Server(address=("node-0.service.invalid", 443)),
         live=True,
     )
     result.request = http.Request.make(method, url, body)
@@ -22,8 +22,15 @@ def flow(url, method="GET", body=b"", token=None):
     return result
 
 
+def source_environment():
+    """为离线用例提供确切虚构来源，退出用例时恢复原始环境。"""
+    return patch.dict('os.environ', {'MITMPROXY_API_HOSTS': '["node-0.service.invalid", "node-4.service.invalid", "node-7.service.invalid", "node-8.service.invalid", "node-15.service.invalid", "candidate-0.node-18.service.invalid", "candidate-1.node-18.service.invalid", "candidate-2.node-18.service.invalid"]',
+            'MITMPROXY_FEEDBACK_ORIGIN': 'https://feedback.invalid'})
+
+
 class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        self.enterContext(source_environment())
         with patch.dict(os.environ, {"MITMPROXY_CONTROL_TOKEN": "test-token"}):
             self.addon = NetworkFaults()
 
@@ -35,7 +42,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         await self.addon.request(request)
         return request
 
-    async def test_control_requires_token_and_valid_scenario(self):
+    async def test_控制命令必须认证并匹配有效场景(self):
         self.assertEqual((await self.configure("hall-timeout", "wrong")).response.status_code, 403)
         self.assertIsNone(self.addon.scenario)
         self.assertEqual((await self.configure("unknown")).response.status_code, 400)
@@ -44,9 +51,9 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         await self.addon.request(malformed)
         self.assertEqual(malformed.response.status_code, 400)
 
-    async def test_hall_delays_only_first_request_and_clear_restores_forwarding(self):
+    async def test_大厅只延迟首次请求且关闭场景后恢复透传(self):
         await self.configure("hall-timeout")
-        url = "https://64.kr-seoul.api.staging.laiwan.shafayouxi.com/public/v1/hall_matching/available.json"
+        url = "https://node-4.service.invalid/public/v1/hall_matching/available.json"
         with patch("network_faults.asyncio.sleep", new_callable=AsyncMock) as delay:
             for _ in range(2):
                 request = flow(url)
@@ -60,7 +67,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(recovered.error)
         self.assertEqual(self.addon.intercepted_requests, 2)
 
-    async def test_delay_does_not_block_control_or_unrelated_requests(self):
+    async def test_延迟不阻塞控制或无关请求(self):
         await self.configure("hall-timeout")
         entered = asyncio.Event()
         release = asyncio.Event()
@@ -71,50 +78,50 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
 
         with patch("network_faults.asyncio.sleep", delay):
             pending = asyncio.create_task(self.addon.request(flow(
-                "https://api.shafayouxi.org/public/v1/hall_matching/available.json"
+                "https://node-0.service.invalid/public/v1/hall_matching/available.json"
             )))
             try:
                 await asyncio.wait_for(entered.wait(), 1)
                 await asyncio.wait_for(self.configure(None), 1)
-                unrelated = flow("https://api.shafayouxi.org/health")
+                unrelated = flow("https://node-0.service.invalid/health")
                 await asyncio.wait_for(self.addon.request(unrelated), 1)
                 self.assertIsNone(unrelated.error)
             finally:
                 release.set()
                 await pending
 
-    async def test_login_and_club_are_scoped_to_staging_and_matching_paths(self):
+    async def test_登录和俱乐部故障严格限定来源与路径(self):
         for scenario, api_path in (
             ("login-failure", "/public/v10/user/login/username/password"),
             ("club-failure", "/v10/club?user_id=42"),
         ):
             await self.configure(scenario)
             for url, method in (
-                (f"https://api.example.com{api_path}", "POST"),
-                (f"https://api.shafayouxi.org{api_path}", "OPTIONS"),
-                ("https://api.shafayouxi.org/v10/club?other=42", "GET"),
-                ("https://api.shafayouxi.org/health", "GET"),
+                (f"https://node-6.service.invalid{api_path}", "POST"),
+                (f"https://node-0.service.invalid{api_path}", "OPTIONS"),
+                ("https://node-0.service.invalid/v10/club?other=42", "GET"),
+                ("https://node-0.service.invalid/health", "GET"),
             ):
                 request = flow(url, method)
                 await self.addon.request(request)
                 self.assertIsNone(request.error)
-            request = flow(f"https://api.shafayouxi.org{api_path}", "POST")
+            request = flow(f"https://node-0.service.invalid{api_path}", "POST")
             await self.addon.request(request)
             self.assertIsNotNone(request.error)
             self.assertEqual(self.addon.intercepted_requests, 1)
 
-    async def test_login_keeps_existing_user_branch_without_counting_it_as_a_fault(self):
-        url = "https://api.shafayouxi.org/public/v10/user/username/is_existed"
+    async def test_登录保留既有用户分支且不计为故障(self):
+        url = "https://node-0.service.invalid/public/v10/user/username/is_existed"
         unrelated = flow(url)
         await self.addon.request(unrelated)
         self.assertIsNone(unrelated.response)
         await self.configure("login-failure")
         request = flow(url, "POST", b'{"username":"weaknetwork"}')
-        request.request.headers["Origin"] = "https://h5.page.shafayouxi.org"
+        request.request.headers["Origin"] = "https://node-5.service.invalid"
         await self.addon.request(request)
         self.assertTrue(json.loads(request.response.content)["result"]["is_existed"])
         self.assertEqual(request.response.headers["Access-Control-Allow-Origin"],
-                         "https://h5.page.shafayouxi.org")
+                         "https://node-5.service.invalid")
         self.assertEqual(self.addon.intercepted_requests, 0)
         preflight = flow(url, "OPTIONS")
         await self.addon.request(preflight)
@@ -122,14 +129,14 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_俱乐部搜索只返回指定的固定俱乐部(self):
         await self.configure("club-search-result")
-        origin = "https://h5.page.shafayouxi.org"
-        search = flow("https://api.shafayouxi.org/v10/club/search?keyword=VisualClubSearch")
+        origin = "https://node-5.service.invalid"
+        search = flow("https://node-0.service.invalid/v10/club/search?keyword=VisualClubSearch")
         search.request.headers["Origin"] = origin
         await self.addon.request(search)
         self.assertEqual(search.response.json()["result"], ["12f2cb6e-9045-4910-b58a-7d3903f56a39"])
         self.assertEqual(search.response.headers["Access-Control-Allow-Origin"], origin)
 
-        preflight = flow("https://api.shafayouxi.org/v10/clubs", "OPTIONS")
+        preflight = flow("https://node-0.service.invalid/v10/clubs", "OPTIONS")
         preflight.request.headers["Origin"] = origin
         preflight.request.headers["Access-Control-Request-Headers"] = "authorization,content-type"
         await self.addon.request(preflight)
@@ -137,36 +144,36 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(preflight.response.headers["Access-Control-Allow-Headers"],
                          "authorization,content-type")
 
-        details = flow("https://api.shafayouxi.org/v10/clubs", "PUT",
+        details = flow("https://node-0.service.invalid/v10/clubs", "PUT",
                        b'{"club_ids":["12f2cb6e-9045-4910-b58a-7d3903f56a39"]}')
         await self.addon.request(details)
         self.assertEqual(details.response.json()["result"][0]["name"], "搜索测试俱乐部")
         self.assertEqual(self.addon.club_search_requests, 1)
         self.assertEqual(self.addon.club_details_requests, 1)
 
-        other_details = flow("https://api.shafayouxi.org/v10/clubs", "PUT",
+        other_details = flow("https://node-0.service.invalid/v10/clubs", "PUT",
                              b'{"club_ids":["another-club"]}')
         await self.addon.request(other_details)
         self.assertIsNone(other_details.response)
         self.assertEqual(self.addon.club_details_requests, 1)
 
-        unrelated = flow("https://api.shafayouxi.org/v10/club?user_id=42")
+        unrelated = flow("https://node-0.service.invalid/v10/club?user_id=42")
         await self.addon.request(unrelated)
         self.assertIsNone(unrelated.response)
-        wrong_keyword = flow("https://api.shafayouxi.org/v10/club/search?keyword=other")
+        wrong_keyword = flow("https://node-0.service.invalid/v10/club/search?keyword=other")
         await self.addon.request(wrong_keyword)
         self.assertEqual(wrong_keyword.response.status_code, 400)
         self.assertEqual(self.addon.club_search_requests, 1)
 
     async def test_正常视觉模式不拦截任何候选节点或元数据(self):
         await self.configure("visual-stable")
-        urls = ["https://api.shafayouxi.org/public/v13/metadata/servers",
-                "https://api.shafayouxi.org/public/v12/metadata/servers"]
+        urls = ["https://node-0.service.invalid/public/v13/metadata/servers",
+                "https://node-0.service.invalid/public/v12/metadata/servers"]
         urls.extend(f"https://{host}/node/v1/status" for host in (
-            "64.kr-seoul.api.staging.laiwan.shafayouxi.com",
-            "67.hk-sn.api.staging.laiwan.shafayouxi.com",
-            "offline.api.staging.laiwan.shafayouxi.com",
-            "production.example.com"))
+            "node-4.service.invalid",
+            "node-7.service.invalid",
+            "node-8.service.invalid",
+            "node-9.service.invalid"))
         for url in urls:
             for method in ('GET', 'POST', 'OPTIONS'):
                 with self.subTest(url=url, method=method):

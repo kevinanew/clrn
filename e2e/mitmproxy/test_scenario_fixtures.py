@@ -4,6 +4,7 @@ import asyncio
 import copy
 import json
 import unittest
+from test_network_faults import source_environment
 from unittest.mock import patch
 
 from mitmproxy import http, websocket
@@ -13,7 +14,7 @@ from test_network_faults import flow
 with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
     from scenario_fixtures import ScenarioFixtures
 
-HOST = 'https://api.shafayouxi.org'
+HOST = 'https://node-0.service.invalid'
 SELF = '33333333-3333-4333-8333-333333333333'
 OTHER = '22222222-2222-4222-8222-222222222222'
 ROOM = '11111111-1111-4111-8111-111111111111'
@@ -21,6 +22,7 @@ ROOM = '11111111-1111-4111-8111-111111111111'
 
 class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.addon = ScenarioFixtures()
 
@@ -34,6 +36,34 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         request = flow(origin + path, method, b'' if body is None else json.dumps(body).encode())
         await self.addon.request(request)
         return request
+
+    async def test_反馈来源必须显式配置且严格匹配协议主机端口(self):
+        await self.control({'visual': True}, path='environment')
+        self.assertIsNotNone((await self.request('/', origin='https://feedback.invalid')).response)
+        for origin in ('http://feedback.invalid', 'https://feedback.invalid:444',
+                       'https://child.feedback.invalid', 'https://other.invalid'):
+            request = await self.request('/', origin=origin)
+            self.assertIsNone(request.response, '其他来源必须保留真实上游')
+        with patch.dict('os.environ', {'MITMPROXY_FEEDBACK_ORIGIN': ''}):
+            self.assertIsNone((await self.request('/', origin='https://feedback.invalid')).response)
+        self.assertIsNone((await self.request('/', 'OPTIONS', origin='https://feedback.invalid')).response)
+
+    async def test_能量就绪计数只接受所属账号且切换场景重置(self):
+        path = f'/v2/slot_machine/user/{SELF}/energy'
+        await self.control({'name': 'slot'})
+        await self.request(path)
+        self.assertEqual(self.addon.energy_reads, 0, '尚未绑定账号不能充当就绪证据')
+        await self.control({'name': 'slot', 'userId': SELF})
+        await self.request(path.replace(SELF, OTHER))
+        await self.request(path, origin='https://other.invalid')
+        self.assertEqual(self.addon.energy_reads, 0, '错误账号和主机不能充当就绪证据')
+        await self.request(path)
+        self.assertEqual(self.addon.energy_reads, 1)
+        await self.control({'name': 'slot', 'phase': 'coin'})
+        self.assertEqual(self.addon.energy_reads, 1, '同一场景切换阶段必须保留计数')
+        await self.control({'name': 'none'})
+        self.assertEqual(self.addon.energy_reads, 0)
+        self.assertIsNone((await self.request(path)).response, '场景关闭后必须透传真实读取')
 
     async def test_私人房资料的真实读取方法绑定归属且不修改上游响应(self):
         for method in ('GET', 'PUT'):
@@ -53,7 +83,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual((self.addon.user_id, self.addon.house_id), (SELF, ROOM),
                                  '其他账号资料不能改变当前代理归属')
 
-    async def test_default_and_unmatched_traffic_passes_including_initialization(self):
+    async def test_默认和未匹配流量含初始化均透传(self):
         paths = ['/public/v12/metadata/servers', '/public/v13/metadata/servers', '/node/v1/status',
                  '/public/v11/user/login', f'/v11/user/{SELF}/account', f'/v10/wallet/{SELF}',
                  '/v2/room/disallow-rule/reminder', '/public/v1/hall_matching/available.json']
@@ -64,11 +94,11 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
                 self.assertIsNone(request.response, (scene, path))
                 self.assertIsNone(request.error, (scene, path))
             for origin, method in (('https://production.example', 'GET'),
-                                   ('https://api.shafayouxi.org.evil.test', 'GET'), (HOST, 'OPTIONS')):
+                                   ('https://node-1.service.invalid', 'GET'), (HOST, 'OPTIONS')):
                 request = await self.request('/v1/alipay_order/goods', method, origin=origin)
                 self.assertIsNone(request.response)
 
-    async def test_control_rejects_payloads_invalid_phases_and_other_owner_atomically(self):
+    async def test_控制命令原子拒绝响应载荷错误阶段与其他归属(self):
         self.assertEqual(await self.control({'name': 'slot', 'userId': SELF}), 200)
         for body in (None, [], {}, {'name': []}, {'name': 'unknown'}, {'name': 'slot', 'phase': []},
                      {'name': 'slot', 'phase': 'hold'}, {'name': 'slot', 'result': {}},
@@ -79,7 +109,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await self.control({'name': 'none'}, token='wrong'), 403)
         self.assertEqual(self.addon.name, 'slot')
 
-    async def test_environment_is_explicit_and_keeps_real_login_health_and_options(self):
+    async def test_环境必须显式选择且保留真实登录健康与预检(self):
         self.assertIsNone((await self.request('/public/v10/profile/country')).response)
         self.assertEqual(await self.control({'visual': True}, path='environment'), 200)
         country = await self.request('/public/v10/profile/country')
@@ -90,14 +120,14 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone((await self.request('/public/v10/profile/country', 'OPTIONS')).response)
         chat = await self.request('/widget', origin='https://wchat.freshchat.com')
         self.assertIsNotNone(chat.error)
-        feedback = await self.request('/', origin='https://feedback.userreport.com')
+        feedback = await self.request('/', origin='https://feedback.invalid')
         self.assertIn(b'<!DOCTYPE html>', feedback.response.content)
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             fresh = ScenarioFixtures()
         self.assertFalse(fresh.visual)
         self.assertEqual(fresh.name, 'none')
 
-    async def test_pagination_keeps_cursor_order_and_terminal_page(self):
+    async def test_分页保留游标顺序与末页行为(self):
         await self.control({'name': 'pagination', 'userId': SELF})
         base = f'/v10/buy_in/auditor/{SELF}/applications/'
         pending = await self.request(base + 'pending')
@@ -113,7 +143,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone((await self.request(base + 'processed', 'POST')).response)
         self.assertIsNone((await self.request(base.replace(SELF, OTHER) + 'processed')).response)
 
-    async def test_wallet_empty_only_matches_selected_users_read_statement(self):
+    async def test_钱包空态只匹配所选账号的只读账单(self):
         await self.control({'name': 'wallet-empty', 'userId': SELF})
         path = f'/v11/wallet/{SELF}/currency/coin/statement'
         self.assertEqual((await self.request(path)).response.json()['result'], {'statements': []})
@@ -121,7 +151,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone((await self.request(path, 'POST')).response)
         self.assertIsNone((await self.request(f'/v10/wallet/{SELF}', 'PUT')).response)
 
-    async def test_fault_release_reissues_real_request_instead_of_fake_success(self):
+    async def test_故障释放后重新读取真实上游(self):
         for scene, path in (('club-error', f'/v10/club?user_id={SELF}'),
                             ('hall-error', '/public/v1/hall_matching/available.json')):
             await self.control({'name': scene})
@@ -133,7 +163,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
             self.assertIsNone(recovered.error)
             self.assertEqual(self.addon.requests, 2)
 
-    async def test_launch_hold_releases_without_replacing_health_response(self):
+    async def test_启动等待释放后不替换健康响应(self):
         await self.control({'name': 'launch', 'phase': 'hold'})
         task = asyncio.create_task(self.request('/node/v1/status'))
         await asyncio.sleep(0)
@@ -143,7 +173,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         await self.control({'name': 'launch', 'phase': 'release'})
         self.assertIsNone((await asyncio.wait_for(task, 1)).response)
 
-    async def test_daily_bonus_only_changes_own_coin_after_successful_upstream(self):
+    async def test_每日奖励仅在真实上游成功后修改所属账号金币(self):
         await self.control({'name': 'daily-bonus', 'userId': SELF})
         original = {'ok': True, 'new_envelope': 42, 'result': {'id': 'real-wallet', 'currencies': [
             {'code': 'coin', 'balance': '0'}, {'code': 'diamond', 'balance': '60'}]}}
@@ -166,7 +196,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         self.addon.response(other)
         self.assertEqual(other.response.json(), original)
 
-    async def test_auto_rebuy_requires_successful_creation_and_never_forwards_owned_write(self):
+    async def test_自动补充必须绑定成功建房且隔离所属写入(self):
         await self.control({'name': 'none', 'userId': SELF})
         self.assertEqual(await self.control({'name': 'auto-rebuy', 'roomId': ROOM}), 400)
         body = {'user_id': SELF, 'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
@@ -209,7 +239,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
                              ('PUT', {'building_ids': [OTHER]}), ('PUT', {'building_ids': [ROOM, OTHER]})):
             self.assertIsNone((await self.request(path, method, body)).response)
 
-    async def test_slot_isolates_unbound_and_foreign_http_spins(self):
+    async def test_老虎机隔离未绑定与其他账号的旋转请求(self):
         await self.control({'name': 'slot'})
         path = f'/v2/slot_machine/user/{SELF}/spin'
         self.assertFalse((await self.request(path, 'POST')).response.json()['ok'])
@@ -220,7 +250,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         await self.control({'name': 'slot', 'phase': 'exhausted'})
         self.assertEqual((await self.request(path, 'POST')).response.json()['error'], 'energy_not_enough')
 
-    async def test_websocket_mixed_batch_preserves_subscription_ping_and_reply_order(self):
+    async def test_混合长连接批次保留订阅心跳与回复顺序(self):
         await self.control({'name': 'slot', 'userId': SELF})
         socket = flow(HOST + '/connection/websocket')
         socket.websocket = websocket.WebSocketData()
@@ -245,7 +275,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         self.addon.websocket_message(socket)
         self.assertEqual(message.content, before)
 
-    async def test_matching_isolates_http_and_websocket_writes(self):
+    async def test_匹配场景隔离两种传输的写入(self):
         await self.control({'name': 'matching'})
         for path in ('/v1/hall_matching/join', '/v1/hall_matching/quit', '/v1/hall_matching/keep_waiting'):
             self.assertEqual((await self.request(path, 'POST')).response.json(), {'ok': True, 'result': {}})
