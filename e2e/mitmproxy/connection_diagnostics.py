@@ -7,10 +7,27 @@ import json
 import os
 import re
 import time
+from pathlib import Path
 from urllib.parse import urlsplit
 from mitmproxy import http
 
 CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
+PATH_TEMPLATES = [(path, path.split('/')) for path in json.loads(
+    (Path(__file__).parent / 'data' / 'diagnostic-paths.json').read_text())]
+EVENTS = {'proxy.request', 'proxy.response', 'proxy.nodes', 'proxy.nodes-filtered', 'proxy.error',
+          'proxy.websocket-open', 'proxy.websocket-close', 'proxy.websocket-reply', 'proxy.websocket-command'}
+
+
+def safe_path(value):
+    if not isinstance(value, str) or not value.startswith('/') or value.startswith('//'):
+        return '[未知接口]'
+    segments = re.split(r'[?#]', value, maxsplit=1)[0].split('/')
+    for path, template in PATH_TEMPLATES:
+        if len(segments) == len(template) and all(
+                segment not in ('', '.', '..') if expected.startswith('{') else segment == expected
+                for segment, expected in zip(segments, template)):
+            return path
+    return '[未知接口]'
 
 
 def safe_address(match):
@@ -69,9 +86,10 @@ class ConnectionDiagnostics:
     def record(self, event, flow, **fields):
         if len(self.events) == self.events.maxlen:
             self.dropped += 1
-        entry = {'event': event, 'observedAt': int(time.time() * 1000),
+        entry = {'event': event if event in EVENTS else 'application.event', 'observedAt': int(time.time() * 1000),
                  'requestId': flow.id, 'node': node_name(flow.request.host),
-                 'path': urlsplit(flow.request.path).path, 'method': flow.request.method, **fields}
+                 'path': flow.request.path, 'method': flow.request.method, **fields}
+        entry['path'] = safe_path(entry['path'])
         self.events.append({key: [safe_text(item).replace(flow.request.host, node_name(flow.request.host))
                                   for item in value] if isinstance(value, list)
                            else value if key in ('event', 'path')

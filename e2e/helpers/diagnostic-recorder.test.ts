@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { diagnosticFields, diagnosticNode, diagnosticText } from './diagnostic-privacy';
 import { DiagnosticRecorder } from './diagnostic-recorder';
+import diagnosticPaths from '../mitmproxy/data/diagnostic-paths.json';
 
 test('连接地址与认证参数不进入诊断，节点标签与 Python 保持一致', () => {
   const host = 'api.fixture.invalid';
@@ -66,4 +67,38 @@ test('合并旧代理历史不会挤掉最新的浏览器失败现场', () => {
   recorder.merge(Array.from({ length: 5000 }, (_, index) => ({ event: 'proxy.request', observedAt: index })));
   assert.equal(recorder.snapshot().events.at(-1)?.event, 'test.failure');
   assert.equal(recorder.dropped, 1);
+});
+
+test('相对路径仅输出已知操作模板，记录和代理合并均不保留任意路径段', () => {
+  const inputs = ['api.fixture.invalid', '192.0.2.10:8443', '[2001:db8::10]:9443',
+    'token=synthetic-secret', 'Bearer synthetic-secret', 'synthetic-secret',
+    '%61pi.fixture.invalid', '%31%39%32.0.2.10', '%255B2001%253Adb8%253A%253A10%255D'];
+  const recorder = new DiagnosticRecorder();
+  for (const input of inputs) {
+    const path = `/nested/${input}/operation.json`;
+    assert.equal(diagnosticFields({ path }).path, '[未知接口]');
+    assert.equal(diagnosticFields({ path: `/v10/wallet/${input}` }).path, '/v10/wallet/{user}');
+    recorder.record('http.failed', { path, status: 503 });
+    recorder.merge([{ event: 'proxy.error', path }]);
+  }
+  for (const path of ['/node/v1/status', '/public/v13/metadata/servers',
+    '/public/v1/hall_matching/available.json', '/public/v11/game_log/available.json',
+    '/v3/pay_action/batch/price']) {
+    assert.equal(diagnosticFields({ path: `${path}?token=synthetic-secret#private` }).path, path);
+  }
+  for (const path of ['//api.fixture.invalid/private', 'https://api.fixture.invalid/private',
+    '/v10/wallet/user/extra', '/v10/wallet/../profile', '/v10/wallet/', '/', '[未知接口]']) {
+    assert.equal(diagnosticFields({ path }).path, '[未知接口]');
+  }
+  assert.equal(diagnosticFields({ path: ['secret'] }).path, '[未知接口]');
+  const output = JSON.stringify(recorder.snapshot()) + recorder.markdown('case');
+  for (const input of inputs) assert.ok(!output.includes(input), '任意路径段不能进入附件或终端摘要');
+  assert.ok(recorder.snapshot().events.some(event => event.status === 503), '真实失败状态仍保留');
+});
+
+test('共用路径登记保留操作语义且重复清理不改变实体模板', () => {
+  for (const path of diagnosticPaths) {
+    assert.equal(diagnosticFields({ path }).path, path);
+    assert.equal(diagnosticFields({ path: path.replace(/\{[^}]+\}/g, 'token=synthetic-secret') }).path, path);
+  }
 });

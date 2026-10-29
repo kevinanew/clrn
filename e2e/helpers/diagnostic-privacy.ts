@@ -1,6 +1,23 @@
 /** 只修改日志副本；连接资料使用 laiwan_prd 逻辑标签，不影响真实请求。 */
 import { createHash } from 'node:crypto';
 import { isIP } from 'node:net';
+import diagnosticPaths from '../mitmproxy/data/diagnostic-paths.json';
+
+const pathTemplates = diagnosticPaths.map(path => ({ path, segments: path.split('/') }));
+
+/**
+ * 只输出已登记的操作模板，实体段、未知入口和查询参数都不进入日志。
+ * @param value - 不可信的请求路径或代理历史字段。
+ */
+export function diagnosticPath(value: unknown): string {
+  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return '[未知接口]';
+  const segments = value.split(/[?#]/)[0].split('/');
+  const match = pathTemplates.find(template => template.segments.length === segments.length
+    && template.segments.every((segment, index) => segment.startsWith('{')
+      ? Boolean(segments[index]) && !['.', '..'].includes(segments[index])
+      : segment === segments[index]));
+  return match?.path ?? '[未知接口]';
+}
 
 /**
  * 使用与 Python 代理相同的主机散列，关联候选、HTTP 与 WebSocket。
@@ -51,10 +68,8 @@ export function diagnosticFields(value: unknown): Record<string, string | number
         ? item : 'application.event';
       continue;
     }
-    // 相对接口路径属于逻辑操作；其中的 .json 不是主机，查询参数仍不保留。
-    if (key === 'path' && typeof item === 'string' && item.startsWith('/')
-        && !item.startsWith('//') && !item.includes('://')) {
-      result[key] = item.split(/[?#]/)[0].slice(0, 2000);
+    if (key === 'path') {
+      result[key] = diagnosticPath(item);
       continue;
     }
     const sanitize = nodeFields.has(key) ? diagnosticNode : diagnosticText;
