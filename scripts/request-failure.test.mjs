@@ -71,8 +71,41 @@ test('操作、原因及诊断消息均采用允许列表；不猜测未知异�
     requestFailure('room-create', 'http-error', 503).message);
 });
 
+test('私有接口、本地Release及UI状态使用固定逻辑来源，未知或本地阶段不能伪造HTTP状态', () => {
+  for (const operation of ['release-readiness', 'release-static-read']) {
+    const error = requestFailure(operation, 'http-error', 503);
+    assert.match(error.message, new RegExp(`method=GET operation=${operation} source=release-static status=503 response=received`));
+    assert.equal(safeDiagnosticReason(new Error(sensitive, { cause: error })), error.message);
+    assert.equal(safeDiagnosticReason(error.message), error.message);
+    checkPrivate(error);
+  }
+  assert.match(requestFailure('prepare-account-login', 'http-error', 500).message,
+    /method=POST operation=prepare-account-login source=laiwan_prd status=500 response=received/);
+  for (const [operation, method, source] of [
+    ['room-read-session', 'LOCAL', 'browser-state'],
+    ['existing-account-setup', 'LOCAL', 'browser-ui'],
+    ['existing-account-login-await', 'UNKNOWN', 'browser-ui'],
+    ['unknown-request', 'UNKNOWN', 'unknown'],
+  ]) {
+    const error = requestFailure(operation, 'request-failed', 500);
+    assert.match(error.message, new RegExp(`method=${method} operation=${operation} source=${source} status=unavailable response=not-received`));
+    checkPrivate(error);
+  }
+  const injected = requestFailure(sensitive, sensitive, 500, sensitive);
+  assert.match(injected.message, /method=UNKNOWN operation=unknown-request source=unknown status=unavailable/);
+  checkPrivate(injected);
+});
+
 test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不回显消息或调用日志', () => {
   for (const method of ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch']) {
+    for (const ending of ['', `\nCall log:\n - ${sensitive}`, `\r\nCall log:\r\n - ${sensitive}`]) {
+      const error = new Error(`apiRequestContext.${method}: socket hang up${ending}`);
+      assert.equal(error.code, undefined);
+      assert.equal(requestFailureReason(error), 'connection-failed');
+      const failure = requestFailure('room-read-diamonds', requestFailureReason(error));
+      checkPrivate(failure);
+      assert.match(failure.message, /status=unavailable response=not-received reason=connection-failed$/);
+    }
     for (const [prefix, code] of [['connect', 'ECONNREFUSED'], ['read', 'ECONNRESET'],
       ['getaddrinfo', 'ENOTFOUND'], ['getaddrinfo', 'EAI_AGAIN'], ['', 'UND_ERR_SOCKET']]) {
       const error = new Error(`apiRequestContext.${method}: ${prefix ? `${prefix} ` : ''}${code} ${sensitive}\nCall log:\n - ${sensitive}`);
@@ -90,7 +123,33 @@ test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不
     `apiRequestContext.put: ${sensitive}\nCall log:\n - ECONNREFUSED`,
     `apiRequestContext.put: connect ECONNREFUSED_UNKNOWN ${sensitive}`,
     `apiRequestContext.put: connect ECONNREFUSED.invalid ${sensitive}`,
+    `apiRequestContext.get: socket hang up ${sensitive}`,
+    'apiRequestContext.get: socket hang up.invalid',
+    `apiRequestContext.get: ${sensitive}/socket hang up`,
+    'apiRequestContext.get: UnknownError\nCall log:\n - socket hang up',
+    'apiRequestContext.get: UnknownError\napiRequestContext.get: socket hang up',
     `apiRequestContext.put: UnknownError\napiRequestContext.put: connect ECONNREFUSED ${sensitive}`]) {
     assert.equal(requestFailureReason(new Error(message)), 'request-failed', '任意消息、地址或调用日志中的字样不能充当连接错误枚举');
+  }
+});
+
+test('Playwright 重试耗尽的固定断连包装仍保留连接失败，不能从任意内部文本推断', () => {
+  for (const method of ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch']) {
+    for (const ending of ['', `\nCall log:\n - ${sensitive}`, `\r\nCall log:\r\n - ${sensitive}`]) {
+      const raw = new Error(`apiRequestContext.${method}: Failed after 3 attempt(s): Error: socket hang up${ending}`);
+      assert.equal(requestFailureReason(raw), 'connection-failed');
+      const failure = requestFailure('existing-account-session', requestFailureReason(raw));
+      assert.match(failure.message, /method=GET operation=existing-account-session source=laiwan_prd status=unavailable response=not-received reason=connection-failed$/);
+      assert.equal(safeDiagnosticReason(new Error(sensitive, { cause: failure })), failure.message);
+      checkPrivate(failure);
+    }
+  }
+  for (const detail of ['Failed after 0 attempt(s): Error: socket hang up',
+    'Failed after 3 attempts: Error: socket hang up',
+    `Failed after 3 attempt(s): Error: socket hang up ${sensitive}`,
+    'Failed after 3 attempt(s): Error: socket hang up.invalid',
+    `Failed after 3 attempt(s): Error: ${sensitive}/socket hang up`,
+    'UnknownError\nFailed after 3 attempt(s): Error: socket hang up']) {
+    assert.equal(requestFailureReason(new Error(`apiRequestContext.get: ${detail}`)), 'request-failed');
   }
 });

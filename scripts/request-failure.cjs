@@ -12,16 +12,26 @@ const operations = {
   'renewal-wallet': ['续时数据准备', 'PUT'],
   'leaderboard-profile': ['个人排行榜数据准备', 'GET'],
   'leaderboard-statistics': ['个人排行榜数据准备', 'PUT'],
-  'room-read-session': ['读取建房会话', 'LOCAL'],
+  'room-read-session': ['读取建房会话', 'LOCAL', 'browser-state'],
   'room-read-diamonds': ['读取测试钻石余额', 'PUT'],
   'room-top-up-diamonds': ['测试账号补钻', 'POST'],
   'room-create': ['创建私人房间', 'POST'],
   'room-delete': ['解散本次私人房间', 'DELETE'],
   'texas-enter': ['德州观察者连接', 'PUT'],
   'validate-account': ['账户接口校验', 'GET'],
-  'release-readiness': ['检查 Release 静态服务', 'GET'],
-  'release-static-read': ['读取 Release 静态资源', 'GET'],
-  'unknown-request': ['接口请求', 'UNKNOWN'],
+  'existing-account-setup': ['准备已有只读账号页面', 'LOCAL', 'browser-ui'],
+  'existing-account-origin': ['核对只读账号页面来源', 'LOCAL', 'browser-ui'],
+  'existing-account-login-ui': ['准备已有只读账号登录表单', 'LOCAL', 'browser-ui'],
+  'existing-account-login-await': ['等待已有只读账号登录响应（请求未观察到）', 'UNKNOWN', 'browser-ui'],
+  'existing-account-session-check': ['准备只读账号会话校验', 'LOCAL', 'browser-state'],
+  'existing-account-wallet-check': ['准备只读账号钱包读取', 'LOCAL', 'browser-state'],
+  'functional-open-hall': ['打开功能测试大厅', 'GET', 'web-entry'],
+  'existing-account-login': ['已有只读账号登录', 'POST'],
+  'existing-account-session': ['核对已有只读账号会话', 'GET'],
+  'existing-account-wallet': ['读取已有只读账号钱包', 'PUT'],
+  'release-readiness': ['检查 Release 静态服务', 'GET', 'release-static'],
+  'release-static-read': ['读取 Release 静态资源', 'GET', 'release-static'],
+  'unknown-request': ['接口请求', 'UNKNOWN', 'unknown'],
 };
 const trustedFailures = new WeakMap();
 const trustedMessages = new Set();
@@ -29,6 +39,8 @@ const reasons = new Set(['http-error', 'timeout', 'connection-failed', 'aborted'
   'invalid-json', 'body-read-failed', 'business-rejected', 'invalid-response']);
 // Playwright 会移除顶层 code；只识别异常首部的固定枚举，不能扫描 URL 或 Call log。
 const playwrightConnectionFailure = /^apiRequestContext\.(?:get|head|post|put|patch|delete|fetch): (?:(?:connect|read|write|getaddrinfo) )?(?:ECONNRESET|ECONNREFUSED|ENOTFOUND|EAI_AGAIN|UND_ERR_SOCKET)(?=[ \t\r\n]|$)/;
+// 锁定版本在有限重试耗尽时增加此固定包装；只接纳确切的断连首行。
+const playwrightSocketClosed = /^apiRequestContext\.(?:get|head|post|put|patch|delete|fetch): (?:Failed after [1-9][0-9]* attempt\(s\): Error: )?socket hang up(?:\r?\n|$)/;
 
 /**
  * 仅将底层异常映射到固定原因，不序列化消息、堆栈、URL、请求头或嵌套异常。
@@ -43,7 +55,8 @@ function requestFailureReason(error) {
         || typeof error.message === 'string' && /^apiRequestContext\.(?:get|put|post|delete|fetch): Timeout \d+ms exceeded/.test(error.message)) return 'timeout';
       if (error.name === 'AbortError') return 'aborted';
       if (['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', 'UND_ERR_SOCKET'].includes(error.code)
-        || typeof error.message === 'string' && playwrightConnectionFailure.test(error.message)) return 'connection-failed';
+        || typeof error.message === 'string' && (playwrightConnectionFailure.test(error.message)
+          || playwrightSocketClosed.test(error.message))) return 'connection-failed';
       error = error.cause;
     } catch { break; }
   }
@@ -59,9 +72,10 @@ function requestFailureReason(error) {
 function requestFailure(operation, reason = 'request-failed', status) {
   if (!Object.hasOwn(operations, operation)) operation = 'unknown-request';
   if (!reasons.has(reason)) reason = 'request-failed';
-  const [stage, method] = operations[operation];
-  const received = Number.isInteger(status) && status >= 100 && status <= 599;
-  const error = new Error(`${stage}失败：method=${method} operation=${operation} source=laiwan_prd status=${received ? status : 'unavailable'} response=${received ? 'received' : 'not-received'} reason=${reason}`);
+  const [stage, method, source = 'laiwan_prd'] = operations[operation];
+  const received = method !== 'LOCAL' && method !== 'UNKNOWN'
+    && Number.isInteger(status) && status >= 100 && status <= 599;
+  const error = new Error(`${stage}失败：method=${method} operation=${operation} source=${source} status=${received ? status : 'unavailable'} response=${received ? 'received' : 'not-received'} reason=${reason}`);
   trustedFailures.set(error, error.message);
   trustedMessages.add(error.message);
   return error;

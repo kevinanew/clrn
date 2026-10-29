@@ -87,7 +87,11 @@ test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告�
       attachments.push(options.path ? await readFile(options.path, 'utf8') : options.body || '');
     } } as unknown as TestInfo;
   const diagnostic = await installConnectionDiagnostics(browser, page, info, { diagnostics: /** 注入不可信代理诊断。 */ async () => ({ dropped: 0,
-    events: [{ event: 'proxy.error', reason: secret, status: 500, method: 'POST', operation: 'room-create' }] }) });
+    events: [{ event: 'proxy.error', reason: secret, status: 500, method: 'POST', operation: 'room-create' },
+      { event: 'proxy.response', status: 500, method: 'GET', operation: 'release-static-read',
+        originMatch: 'matched', upstreamMatch: 'different', fixtureHit: false, releaseRequestId: 'unverified' },
+      { event: 'proxy.request', originMatch: 'matched', upstreamMatch: 'not-applicable', fixtureHit: true },
+      { event: 'proxy.error', originMatch: secret, upstreamMatch: secret, status: 'unavailable', response: 'not-received' }] }) });
   const request = { url: /** 静态路径和查询也不能进入新加的资源日志。 */ () => `${secret.split(' ')[0]}/asset.webp`,
     method: /** 固定资源方法。 */ () => 'GET', resourceType: /** 模拟静态资源。 */ () => 'image',
     failure: /** 注入底层失败文本。 */ () => ({ errorText: secret }) } as unknown as Request;
@@ -98,6 +102,8 @@ test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告�
   events.emit('request', noResponse);
   events.emit('requestfailed', noResponse);
   for (const failure of [requestFailure('room-create', 'http-error', 500),
+    new Error(requestErrorSummary(new Error(`apiRequestContext.post: socket hang up\nCall log:\n - ${secret}`), 'room-create')),
+    new Error(requestErrorSummary(new Error(`apiRequestContext.get: Failed after 3 attempt(s): Error: socket hang up\nCall log:\n - ${secret}`), 'existing-account-session')),
     new Error(requestErrorSummary(new Error(`apiRequestContext.post: connect ECONNREFUSED ${secret}\nCall log:\n - ${secret}`), 'room-create'))]) {
     attachments.length = 0;
     terminal.length = 0;
@@ -109,11 +115,18 @@ test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告�
     assert.equal(failed[0].response, 'received');
     assert.equal(failed[1].status, 'unavailable');
     assert.equal(failed[1].response, 'not-received');
+    const proxy = JSON.parse(json).events.find((event: { event: string }) => event.event === 'proxy.response');
+    assert.equal(proxy.originMatch, 'matched');
+    assert.equal(proxy.upstreamMatch, 'different');
+    assert.equal(proxy.releaseRequestId, 'unverified');
     assert.ok(terminal.length > 0);
     assert.ok(attachments.length > 0);
     for (const output of [json, markdown, ...attachments, ...terminal]) {
       privateOutput(output);
       assert.ok(output.includes(failure.message));
+      assert.ok(output.includes('"upstreamMatch":"different"') || output.includes('"upstreamMatch": "different"'));
+      assert.ok(output.includes('"upstreamMatch":"not-applicable"') || output.includes('"upstreamMatch": "not-applicable"'));
+      assert.ok(output.includes('"upstreamMatch":"unavailable"') || output.includes('"upstreamMatch": "unavailable"'));
     }
   }
   privateOutput(requestErrorSummary(new Error(secret), 'room-create'));
@@ -128,7 +141,7 @@ test('读取建房会话失败或包含合成凭据的损坏 JSON 不能传播�
     } } as unknown as Page;
     await assert.rejects(createPrivateGameRoom(page, () => {}, 'texas_react_native'), error => {
       assert.ok(error instanceof Error);
-      assert.match(error.message, /operation=room-read-session source=laiwan_prd status=unavailable/);
+      assert.match(error.message, /operation=room-read-session source=browser-state status=unavailable/);
       privateOutput(error.stack || '');
       return true;
     });

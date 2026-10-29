@@ -20,7 +20,7 @@ const secret = 'synthetic-playwright-secret';
  */
 function checkFailure(error, status, reason) {
   assert.ok(error instanceof Error);
-  assert.match(error.message, new RegExp(`method=GET operation=release-readiness source=laiwan_prd status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}$`));
+  assert.match(error.message, new RegExp(`method=GET operation=release-readiness source=release-static status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}$`));
   assert.equal(error.cause, undefined);
   const upper = new Error(secret, { cause: error });
   const outputs = [inspect(error, { depth: 20 }), safeDiagnosticReason(upper), safeDiagnosticReason(error.message)];
@@ -31,12 +31,13 @@ function checkFailure(error, status, reason) {
   }
 }
 
-test('真实 Playwright HTTP500、无效 JSON、超时和拒绝连接仍失败且安全定位', async context => {
+test('真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接仍失败且安全定位', async context => {
   const seen = new Set();
   const server = createServer((incoming, outgoing) => {
     const route = new URL(incoming.url, 'http://fixture.invalid').pathname;
     seen.add(route);
     if (route === '/timeout') return;
+    if (route === '/disconnect') { incoming.socket.destroy(); return; }
     outgoing.writeHead(route === '/http-error' ? 500 : 201, { 'Content-Type': 'application/json' });
     outgoing.end(secret);
   });
@@ -62,10 +63,11 @@ test('真实 Playwright HTTP500、无效 JSON、超时和拒绝连接仍失败�
     const response = await api.get(`${origin}${route}?token=${secret}`, {
       timeout: 1000, maxRetries: 0, maxRedirects: 0,
     }).catch(error => {
-      if (route === '/timeout' || route === '/refused') {
+      if (route === '/timeout' || route === '/refused' || route === '/disconnect') {
         assert.equal(error.code, undefined, '覆盖 Playwright 丢弃顶层 code 的真实形态');
         assert.equal(error.name, route === '/timeout' ? 'TimeoutError' : 'Error');
         if (route === '/refused') assert.ok(error.message.includes('ECONNREFUSED'));
+        if (route === '/disconnect') assert.equal(error.message.split(/\r?\n/)[0], 'apiRequestContext.get: socket hang up');
         assert.equal(requestFailureReason(error), route === '/timeout' ? 'timeout' : 'connection-failed');
       }
       throw new Error(requestErrorSummary(error, 'release-readiness'));
@@ -75,7 +77,8 @@ test('真实 Playwright HTTP500、无效 JSON、超时和拒绝连接仍失败�
   }
 
   for (const [route, status, reason] of [['/http-error', '500', 'http-error'],
-    ['/invalid-json', '201', 'invalid-json'], ['/timeout', 'unavailable', 'timeout']]) {
+    ['/invalid-json', '201', 'invalid-json'], ['/timeout', 'unavailable', 'timeout'],
+    ['/disconnect', 'unavailable', 'connection-failed']]) {
     await context.test(reason, async () => {
       await assert.rejects(read(route), error => { checkFailure(error, status, reason); return true; });
       assert.ok(seen.has(route), '确认请求实际到达本例服务');

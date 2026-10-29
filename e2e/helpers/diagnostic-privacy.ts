@@ -31,7 +31,7 @@ export function diagnosticText(value: unknown): string {
 }
 
 const allowedFields = new Set(['event', 'source', 'node', 'path', 'method', 'status', 'requestId',
-  'connectionId', 'upstreamConnectionId', 'releaseRequestId', 'operation', 'response', 'originMatch', 'fixtureHit', 'reason', 'code', 'elapsedMs', 'timeoutMs', 'cacheAgeMs', 'candidates', 'selected',
+  'connectionId', 'upstreamConnectionId', 'releaseRequestId', 'operation', 'response', 'originMatch', 'upstreamMatch', 'fixtureHit', 'reason', 'code', 'elapsedMs', 'timeoutMs', 'cacheAgeMs', 'candidates', 'selected',
   'excluded', 'before', 'after', 'phase', 'target', 'roomId', 'attempt', 'limit', 'count', 'remaining',
   'backendDelay', 'serverLoad', 'outcome', 'observedAt', 'messageType', 'commandId', 'channel', 'dropped']);
 const nodeFields = new Set(['node', 'candidates', 'selected', 'excluded', 'before', 'after']);
@@ -45,6 +45,12 @@ export function diagnosticFields(value: unknown): Record<string, string | number
   const result: Record<string, string | number | boolean | string[]> = {};
   for (const [key, item] of Object.entries(value)) {
     if (!allowedFields.has(key)) continue;
+    if (key === 'originMatch' || key === 'upstreamMatch') {
+      const allowed = key === 'originMatch' ? ['matched', 'different', 'unconfigured', 'invalid-configuration']
+        : ['matched', 'different', 'unconfigured', 'invalid-configuration', 'unavailable', 'not-applicable'];
+      result[key] = typeof item === 'string' && allowed.includes(item) ? item : 'unavailable';
+      continue;
+    }
     if (key === 'reason') { result[key] = safeDiagnosticReason(item); continue; }
     // 事件是逻辑阶段，不能把任意主机或自由文本作为事件名写入日志。
     if (key === 'event') {

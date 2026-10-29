@@ -61,7 +61,7 @@ def candidates(flow):
 
 
 def release_origin_match(flow):
-    """只在本地精确比较本轮协议、主机和端口，公开日志不输出其值。"""
+    """仅比较请求 URL，不代表实际套接字来源；公开日志不输出连接值。"""
     configured = os.environ.get('CLRN_RELEASE_WEB_URL')
     if not configured:
         return 'unconfigured'
@@ -75,6 +75,22 @@ def release_origin_match(flow):
             expected.scheme, expected.hostname, expected.port) else 'different'
     except ValueError:
         return 'invalid-configuration'
+
+
+def release_upstream_match(flow):
+    """独立核对已完成 TCP 建连的实际 peer；未建连及 fixture 不充当来源证明。"""
+    configured = release_origin_match(flow)
+    if configured in ('unconfigured', 'invalid-configuration'):
+        return configured
+    if flow.metadata.get('diagnostic_source') == 'fixture':
+        return 'not-applicable'
+    connection = flow.server_conn
+    if connection.timestamp_tcp_setup is None or not connection.peername:
+        return 'unavailable'
+    expected = urlsplit(os.environ['CLRN_RELEASE_WEB_URL'])
+    return 'matched' if (connection.transport_protocol == 'tcp'
+                         and not connection.tls
+                         and connection.peername[:2] == (expected.hostname, expected.port)) else 'different'
 
 
 def error_reason(value):
@@ -100,6 +116,7 @@ class ConnectionDiagnostics:
                  'requestId': flow.id, 'node': node_name(flow.request.host),
                  'path': urlsplit(flow.request.path).path, 'method': flow.request.method,
                  'originMatch': release_origin_match(flow),
+                 'upstreamMatch': release_upstream_match(flow),
                  'operation': 'release-static-read' if release_origin_match(flow) == 'matched' else 'proxied-request',
                  'connectionId': str(flow.client_conn.id),
                  'upstreamConnectionId': str(flow.server_conn.id), **fields}
@@ -128,6 +145,8 @@ class ConnectionDiagnostics:
         identifier = flow.response.headers.get('X-Clrn-Release-Request', '')
         server_id = os.environ.get('CLRN_RELEASE_SERVER_ID', '')
         release_id = identifier if (release_origin_match(flow) == 'matched'
+                                   and release_upstream_match(flow) == 'matched'
+                                   and flow.metadata.get('diagnostic_source') == 'upstream'
                                    and re.fullmatch(r'[a-f0-9-]{36}', server_id)
                                    and re.fullmatch(re.escape(server_id) + r'-[1-9][0-9]*', identifier)) else 'unverified'
         self.record('proxy.response', flow, releaseRequestId=release_id, source=flow.metadata.get('diagnostic_source', 'unknown'),
@@ -144,7 +163,8 @@ class ConnectionDiagnostics:
     def error(self, flow):
         if flow.request.host not in CONTROL_HOSTS:
             self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
-                        source='laiwan_prd', status=flow.response.status_code if flow.response else 'unavailable',
+                        source='release-static' if release_origin_match(flow) == 'matched' else 'laiwan_prd',
+                        status=flow.response.status_code if flow.response else 'unavailable',
                         response='received' if flow.response else 'not-received')
 
     def websocket_start(self, flow):
