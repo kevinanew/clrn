@@ -27,6 +27,8 @@ const trustedFailures = new WeakMap();
 const trustedMessages = new Set();
 const reasons = new Set(['http-error', 'timeout', 'connection-failed', 'aborted', 'request-failed',
   'invalid-json', 'body-read-failed', 'business-rejected', 'invalid-response']);
+// Playwright 会移除顶层 code；只识别异常首部的固定枚举，不能扫描 URL 或 Call log。
+const playwrightConnectionFailure = /^apiRequestContext\.(?:get|head|post|put|patch|delete|fetch): (?:(?:connect|read|write|getaddrinfo) )?(?:ECONNRESET|ECONNREFUSED|ENOTFOUND|EAI_AGAIN|UND_ERR_SOCKET)(?=[ \t\r\n]|$)/;
 
 /**
  * 仅将底层异常映射到固定原因，不序列化消息、堆栈、URL、请求头或嵌套异常。
@@ -40,7 +42,8 @@ function requestFailureReason(error) {
       if (error.name === 'TimeoutError' || ['ETIMEDOUT', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_BODY_TIMEOUT'].includes(error.code)
         || typeof error.message === 'string' && /^apiRequestContext\.(?:get|put|post|delete|fetch): Timeout \d+ms exceeded/.test(error.message)) return 'timeout';
       if (error.name === 'AbortError') return 'aborted';
-      if (['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', 'UND_ERR_SOCKET'].includes(error.code)) return 'connection-failed';
+      if (['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', 'UND_ERR_SOCKET'].includes(error.code)
+        || typeof error.message === 'string' && playwrightConnectionFailure.test(error.message)) return 'connection-failed';
       error = error.cause;
     } catch { break; }
   }

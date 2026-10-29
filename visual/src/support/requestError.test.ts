@@ -97,18 +97,24 @@ test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告�
   const noResponse = { ...request, url: /** 模拟未收到响应的独立请求。 */ () => 'https://diagnostic.invalid/resource' } as Request;
   events.emit('request', noResponse);
   events.emit('requestfailed', noResponse);
-  const failure = new Error(requestFailure('room-create', 'http-error', 500).message);
-  await diagnostic.save(new Error(secret, { cause: new Error(secret, { cause: failure }) }));
-  const json = await readFile(path.join(directory, 'connection-diagnostics.json'), 'utf8');
-  const markdown = await readFile(path.join(directory, 'connection-summary.md'), 'utf8');
-  const failed = JSON.parse(json).events.filter((event: { event: string }) => event.event === 'http.failed');
-  assert.equal(failed[0].status, 206, '收到响应后中断不能丢失原状态');
-  assert.equal(failed[0].response, 'received');
-  assert.equal(failed[1].status, 'unavailable');
-  assert.equal(failed[1].response, 'not-received');
-  for (const output of [json, markdown, ...attachments, ...terminal]) {
-    privateOutput(output);
-    assert.match(output, /method=POST operation=room-create source=laiwan_prd status=500/);
+  for (const failure of [requestFailure('room-create', 'http-error', 500),
+    new Error(requestErrorSummary(new Error(`apiRequestContext.post: connect ECONNREFUSED ${secret}\nCall log:\n - ${secret}`), 'room-create'))]) {
+    attachments.length = 0;
+    terminal.length = 0;
+    await diagnostic.save(new Error(secret, { cause: new Error(secret, { cause: failure }) }));
+    const json = await readFile(path.join(directory, 'connection-diagnostics.json'), 'utf8');
+    const markdown = await readFile(path.join(directory, 'connection-summary.md'), 'utf8');
+    const failed = JSON.parse(json).events.filter((event: { event: string }) => event.event === 'http.failed');
+    assert.equal(failed[0].status, 206, '收到响应后中断不能丢失原状态');
+    assert.equal(failed[0].response, 'received');
+    assert.equal(failed[1].status, 'unavailable');
+    assert.equal(failed[1].response, 'not-received');
+    assert.ok(terminal.length > 0);
+    assert.ok(attachments.length > 0);
+    for (const output of [json, markdown, ...attachments, ...terminal]) {
+      privateOutput(output);
+      assert.ok(output.includes(failure.message));
+    }
   }
   privateOutput(requestErrorSummary(new Error(secret), 'room-create'));
 });

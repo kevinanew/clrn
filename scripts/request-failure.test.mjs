@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { inspect } from 'node:util';
 import test from 'node:test';
 import { prepareTestAccountCoins } from './prepare-test-account.mjs';
-import { requestFailure, safeDiagnosticReason } from './request-failure.cjs';
+import { requestFailure, requestFailureReason, safeDiagnosticReason } from './request-failure.cjs';
 
 const sensitive = 'https://user:synthetic-password@request.invalid:9443/private?token=synthetic-token 192.0.2.10 [2001:db8::10] Bearer synthetic-bearer Cookie: sid=synthetic-cookie';
 const session = { user_id: '11111111-2222-4333-8444-555555555555', username: 'fixture01',
@@ -69,4 +69,28 @@ test('操作、原因及诊断消息均采用允许列表；不猜测未知异�
   assert.equal(safeDiagnosticReason({ /** 模拟不可访问的底层异常。 */ get cause() { throw raw; } }), 'detail=withheld reason=request-failed');
   assert.equal(safeDiagnosticReason(requestFailure('room-create', 'http-error', 503).message),
     requestFailure('room-create', 'http-error', 503).message);
+});
+
+test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不回显消息或调用日志', () => {
+  for (const method of ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch']) {
+    for (const [prefix, code] of [['connect', 'ECONNREFUSED'], ['read', 'ECONNRESET'],
+      ['getaddrinfo', 'ENOTFOUND'], ['getaddrinfo', 'EAI_AGAIN'], ['', 'UND_ERR_SOCKET']]) {
+      const error = new Error(`apiRequestContext.${method}: ${prefix ? `${prefix} ` : ''}${code} ${sensitive}\nCall log:\n - ${sensitive}`);
+      assert.equal(error.name, 'Error');
+      assert.equal(error.code, undefined);
+      assert.equal(requestFailureReason(error), 'connection-failed');
+      const failure = requestFailure('room-read-diamonds', requestFailureReason(error));
+      assert.match(failure.message, /method=PUT operation=room-read-diamonds source=laiwan_prd status=unavailable response=not-received reason=connection-failed$/);
+      checkPrivate(failure);
+      assert.equal(safeDiagnosticReason(new Error(sensitive, { cause: failure })), failure.message);
+      assert.equal(requestFailureReason(new Error(sensitive, { cause: error })), 'connection-failed');
+    }
+  }
+  for (const message of [sensitive, `ECONNREFUSED ${sensitive}`, `apiRequestContext.put: UnknownError ${sensitive}`,
+    `apiRequestContext.put: ${sensitive}\nCall log:\n - ECONNREFUSED`,
+    `apiRequestContext.put: connect ECONNREFUSED_UNKNOWN ${sensitive}`,
+    `apiRequestContext.put: connect ECONNREFUSED.invalid ${sensitive}`,
+    `apiRequestContext.put: UnknownError\napiRequestContext.put: connect ECONNREFUSED ${sensitive}`]) {
+    assert.equal(requestFailureReason(new Error(message)), 'request-failed', '任意消息、地址或调用日志中的字样不能充当连接错误枚举');
+  }
 });

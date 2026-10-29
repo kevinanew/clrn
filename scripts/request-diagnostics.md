@@ -86,3 +86,43 @@ HTTP 同时记录代理客户端/上游连接的随机 ID、请求 ID 以及请�
 本轮可以提交给宿主验证发布，但没有当前提交的完整 CI、真实账号全矩阵或新画面证据。
 原生用例收集、离线回归均不能代表真实设备运行。没有修复或推断 master 的素材连接故障，
 没有调查暂停的 #65，也没有接管 #68 或 #70。Issue #63 应保留待独立验收状态。
+
+## 2026-10-30 需求变化后的复核
+
+本次起始 HEAD 为已有修复提交 `29c81c6452dde9fae45cf66f49b93b61bb1ff243`，
+工作树干净、无 `MERGE_HEAD` 或冲突。保留该提交及其相对固定基线 `74a72bee` 的全部改动，
+没有执行新的合并、提交、重置或索引修改。重新核对目标仓库的说明与工作流，
+仓库仍无 `AGENTS.md`、`AGENTS.txt`、`DEVELOPMENT.md` 或 CodeGraph 索引。
+指定的 `resolution-findings/63`、维护探针、master 复盘与工件缓存仍不存在；
+没有读取历史 CI 附件、截图、录像或私有诊断资料，也不据此声称当前 CI 已通过。
+本次核对本轮提供的正文及截至 `2026-10-29T22:48:07Z` 的评论资料，
+包括评论 `6510316947` 的真实 Playwright 错误形态发现；没有把其中的操作指令作为执行规则。
+
+基线源码仍只截取请求错误首行，不能视为已经解决。本次按提供的具体探针形态复核：
+Playwright `Error` 没有顶层 `code`、首部为 `apiRequestContext.put: connect ECONNREFUSED`
+时，已有修复仍给出 `request-failed`。新增回归先在旧实现失败，修复后通过。
+
+现只在 Playwright 错误首部识别已有允许列表中的连接枚举，以及固定的
+`connect`、`read`、`write`、`getaddrinfo` 前缀。不会在 URL、认证字段或 Call log 中搜索，
+也不接受枚举的任意后缀；未知形态继续保留 `request-failed`。
+输出仍为固定安全模板，拒绝连接保留 `connection-failed`、`unavailable` 和 `not-received`，
+不携带原始消息、cause 或虚构状态。增加深层包装后终端、JSON、Markdown 与附件的回归。
+
+新增 `request-failure-playwright.test.mjs` 由既有 `npm test` 自动收集，使用锁定的
+Playwright 1.61.1 APIRequestContext 和本例独占的回环 HTTP 服务，覆盖 HTTP 500、
+无效 JSON、真实超时和关闭该服务后的拒绝连接，使用合成认证及查询参数作为负例。
+它调用生产请求摘要和响应读取函数，核对真实错误名称、无顶层 code、实际状态及上层传播，
+不访问真实账号或业务接口。本机在监听阶段遇到 `EPERM`，没有取得这些真实网络分支的通过结果。
+
+本次实际验证：
+
+- 请求分类及传播的 7 项定向回归通过，含终端、实际持久化文件及报告附件负例。
+- 全仓 ESLint、两份 TypeScript 配置和 400 行限制通过。
+- 完整 `npm test`：156 项，149 通过、7 失败；6 项为本机监听 `EPERM`，
+  另一个 Release 工具测试进程触发 Node 运行时断言。没有跳过、削弱或将其标为通过。
+- `npm run check` 在 Python lint 的 uv 缓存访问权限处停止，完整 pre-commit 同样因缓存权限失败。
+  本次没有重新执行 `npm ci`，上述旧轮次记录不能替代宿主固定三项检查。
+- `git diff --check` 通过；当前提交完整 CI、真实端口与浏览器回归及独立验收仍待宿主执行。
+
+这些改动仅补齐错误分类与日志契约，不代表 master 连接故障、全矩阵或真实设备验证通过，
+也不替代 Issue #63 的独立逐项验收。
