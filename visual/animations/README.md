@@ -148,6 +148,12 @@ VISUAL_SUITE=texas ANIMATION_PART=card-sprite-control node scripts/with-test-acc
 附件包含时钟模式、构建／测试／重复身份、时间线和成功／失败截图。
 正常时间页的原始失败为 `card-sprite-diagnostics-normal-failure.json`；不会恢复或替换其时钟。
 
+普通动画配置的手机、桌面项目均排除独立对照，桌面继续排除旧搜索提示用例。
+独立配置显式清除继承的项目级排除，仅收集两种视口的对照。
+`collection.test.ts` 用真实 Playwright CLI 的 `--list` 核对全部原普通用例和独立入口，
+随 `npm test` 执行；当前普通配置 41 项、9 个文件，独立配置 4 项、三遍重复 12 项。
+这些数字仅表示收集结果，不代表浏览器、真实牌局或原生设备运行通过。
+
 独立页还通过 React DevTools 提交协议观察组件匿名身份、提交和移除，以及符合已知
 SpriteImage 结构的三个状态值（visible、scaleX、scaleY）。只读取，不调用组件回调或 setter；
 不保存 props、牌名、玩家或任意 hook 值。已有开发工具 hook 不覆盖；未知 renderer、
