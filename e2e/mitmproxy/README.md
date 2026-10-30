@@ -63,7 +63,15 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 | 德州 `ui_states.py`：`…/user_settings/{enable,disable}_auto_rebuy`、`…/hand_prediction`、`GET /v11/buy_in/room/applications`、RPC 错误 | 本房间开关／猜牌写隔离、申请空／待处理／已处理／分页、错误反馈；共用 auto-rebuy 暂缓优先 |
 | 德州 `game_log.py`：本房间结算、局数、单局牌谱与用户 games | 旧版牌谱完整展示；仅本房间与虚拟局 ID |
 | 德州 `records_v2.py`：`GET /v11/game_log/user/play_session_record/session`、`…/round/round` | 真实成功进入响应确认 session 后展示新版空／非空牌谱；版本覆盖仍保留上游失败 |
-| 拼三张 `zhajinhua_replay.py`／`addon.py`：目标房间游戏和聊天 RPC、虚拟玩家资料、coin 钱包、本房间结算 | 独立三张牌协议、操作奖励和消息回放；只限本房间／虚拟 ID，不共享德州数据，保留带入及操作写隔离 |
+| 拼三张 `zhajinhua_replay.py`／`addon.py`：目标房间游戏和聊天 RPC、虚拟玩家资料、coin 钱包、本房间结算 | 独立三张牌协议、操作奖励和消息回放；只限本房间／虚拟 ID，不共享德州数据，保留带入及操作写隔离；本轮本地 Release 页面读取当前已创建房间空榜时，配套 GET 预检也由夹具处理 |
+
+拼三张空榜预检只在 `visual-stable`、明确配置的接口主机、成功创建且尚未释放的本房间、
+确切结算路径下启用。`Origin` 必须精确匹配本轮 `CLRN_RELEASE_WEB_URL` 的本机来源，
+`Access-Control-Request-Method` 必须为 `GET`，请求头限于固定应用 `ApiHeaderFactory`
+使用的名称。缺少或损坏配置、其他来源、未知头、其他方法及资料接口的预检仍透传；
+不会为真实建房、健康探测或任意业务返回成功。原 GET 空榜范围保持一致。
+`test_settlement_preflight.py` 使用真实浏览器与生产代理、成功建房绑定及受控本机上游，
+确认必要预检不受上游无响应影响，其他房间的真实 503 仍原样返回。
 
 ## 浏览器初始化逐项分类
 
