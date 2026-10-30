@@ -12,6 +12,7 @@ import tempfile
 import threading
 import time
 import unittest
+from unittest.mock import patch
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,16 +21,21 @@ OTHER = '22222222-2222-4222-8222-222222222222'
 SETTLEMENT = f'/v1/game_log/room/{ROOM}/settlement'
 
 BROWSER = r"""
-const { chromium } = await import('@playwright/test');
-const configuration = JSON.parse(process.argv[1]);
-const browser = await chromium.launch({
-  proxy: { server: configuration.proxy, bypass: '<-loopback>' },
-  ...(process.env.DIAGNOSTIC_CHROME_PATH ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}),
-});
+let stage = 'module-import';
+let browser;
 try {
+  const { chromium } = await import('@playwright/test');
+  const configuration = JSON.parse(process.argv[1]);
+  stage = 'browser-launch';
+  browser = await chromium.launch({
+    proxy: { server: configuration.proxy, bypass: '<-loopback>' },
+    ...(process.env.DIAGNOSTIC_CHROME_PATH ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}),
+  });
   const context = await browser.newContext();
   const page = await context.newPage();
+  stage = 'page-navigation';
   await page.goto(configuration.origin);
+  stage = 'request';
   const observed = await page.evaluate(async configuration => {
     try {
       const response = await fetch(configuration.target, {
@@ -44,8 +50,43 @@ try {
   }, configuration);
   await context.close();
   console.log(JSON.stringify(observed));
-} finally { await browser.close(); }
+} catch (error) {
+  // 仅输出受控阶段及已知原因，绝不输出异常正文、启动命令或连接参数。
+  const reason = error.code === 'ERR_MODULE_NOT_FOUND' ? 'module-not-found'
+    : stage === 'browser-launch' ? 'browser-launch-failed' : 'unclassified';
+  console.error(JSON.stringify({ event: 'settlement-browser-failure', stage, reason }));
+  process.exitCode = 1;
+} finally { if (browser) await browser.close(); }
 """
+
+
+def browser_working_directory(repository=None, invocation_directory=None):
+    """优先使用调用方已安装的依赖；画面独立安装时从画面目录启动。"""
+    repository = ROOT if repository is None else repository
+    invocation_directory = Path.cwd() if invocation_directory is None else invocation_directory
+    projects = (repository, repository / 'visual', repository / 'e2e')
+    # 子项目显式调用时不借用其他版本；根目录发现共用测试时按实际安装位置选择。
+    candidates = (invocation_directory,) if invocation_directory in projects[1:] else projects
+    for directory in candidates:
+        if (directory / 'node_modules/@playwright/test/package.json').is_file():
+            return directory
+    raise AssertionError('真实浏览器依赖未安装：reason=module-not-found；请在调用子项目安装锁定依赖和浏览器。')
+
+
+def browser_failure_diagnostic(stderr):
+    """只接受子进程有限诊断字段，未知输出不作为可公开异常内容。"""
+    for line in reversed(stderr.splitlines()[-10:]):
+        if len(line) > 512:
+            continue
+        try:
+            diagnostic = json.loads(line)
+        except ValueError:
+            continue
+        if (isinstance(diagnostic, dict) and diagnostic.get('event') == 'settlement-browser-failure'
+                and diagnostic.get('stage') in ('module-import', 'browser-launch', 'page-navigation', 'request')
+                and diagnostic.get('reason') in ('module-not-found', 'browser-launch-failed', 'unclassified')):
+            return f"stage={diagnostic['stage']} reason={diagnostic['reason']}"
+    return 'stage=unclassified reason=unclassified'
 
 
 class Upstream(BaseHTTPRequestHandler):
@@ -154,10 +195,31 @@ class SettlementPreflightTests(unittest.TestCase):
     def browse(self, path=SETTLEMENT, **options):
         configuration = {'proxy': f'http://127.0.0.1:{self.port}', 'origin': self.origin,
                          'target': 'http://node-0.service.invalid' + path, **options}
+        directory = browser_working_directory()
         completed = subprocess.run(['node', '--input-type=module', '-e', BROWSER, json.dumps(configuration)],
-                                   cwd=ROOT / 'e2e', capture_output=True, text=True, timeout=20)
-        self.assertEqual(completed.returncode, 0, '真实浏览器对照必须正常结束')
+                                   cwd=directory, capture_output=True, text=True, timeout=20)
+        project = {ROOT: '仓库根目录', ROOT / 'visual': '画面子项目', ROOT / 'e2e': '端到端子项目'}
+        self.assertEqual(completed.returncode, 0,
+                         f'真实浏览器对照未完成：上下文={project.get(directory, "隔离布局")} '
+                         + browser_failure_diagnostic(completed.stderr)
+                         + '；请核对调用子项目的锁定依赖及浏览器安装。')
         return json.loads(completed.stdout)
+
+    def test_独立依赖布局均能启动真实浏览器并保留预检负例(self):
+        modules = browser_working_directory() / 'node_modules'
+        for project in ('visual', 'e2e', ''):
+            with self.subTest(project=project), tempfile.TemporaryDirectory() as temporary:
+                repository = Path(temporary)
+                directory = repository / project
+                directory.mkdir(parents=True, exist_ok=True)
+                (directory / 'node_modules').symlink_to(modules, target_is_directory=True)
+                invocation = directory if project == 'e2e' else repository
+                selected = browser_working_directory(repository, invocation)
+                self.assertEqual(selected, directory, '只能使用该隔离布局中已安装的子项目依赖')
+                with patch(__name__ + '.browser_working_directory', return_value=selected):
+                    self.assertEqual(self.browse()['status'], 200)
+                    self.assertEqual(self.browse(extraHeaders={'X-Unknown': 'offline'})['outcome'], 'TimeoutError',
+                                     '不同启动布局不能跳过未知请求头的真实浏览器负例')
 
     def test_上游预检无响应时当前房间仍通过本地预检读取空榜(self):
         observed = self.browse()
