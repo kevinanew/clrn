@@ -60,18 +60,108 @@ def candidates(flow):
         return None
 
 
+def release_origin_match(flow):
+    """仅比较请求 URL，不代表实际套接字来源；公开日志不输出连接值。"""
+    configured = os.environ.get('CLRN_RELEASE_WEB_URL')
+    if not configured:
+        return 'unconfigured'
+    try:
+        expected = urlsplit(configured)
+        if (expected.scheme != 'http' or expected.hostname != '127.0.0.1'
+                or expected.username or expected.password or not expected.port):
+            return 'invalid-configuration'
+        actual = flow.request
+        return 'matched' if (actual.scheme, actual.host, actual.port) == (
+            expected.scheme, expected.hostname, expected.port) else 'different'
+    except ValueError:
+        return 'invalid-configuration'
+
+
+def release_upstream_match(flow):
+    """独立核对已完成 TCP 建连的实际 peer；未建连及 fixture 不充当来源证明。"""
+    configured = release_origin_match(flow)
+    if configured in ('unconfigured', 'invalid-configuration'):
+        return configured
+    if flow.metadata.get('diagnostic_source') == 'fixture':
+        return 'not-applicable'
+    return release_peer_match(flow.server_conn)
+
+
+def release_peer_match(connection):
+    """只比较实际已建立的 peer，不输出连接地址或猜测 HTTP 响应。"""
+    if connection.timestamp_tcp_setup is None or not connection.peername:
+        return 'unavailable'
+    expected = urlsplit(os.environ['CLRN_RELEASE_WEB_URL'])
+    return 'matched' if (connection.transport_protocol == 'tcp'
+                         and not connection.tls
+                         and connection.peername[:2] == (expected.hostname, expected.port)) else 'different'
+
+
+def error_reason(value):
+    """只识别固定错误或已知 OS 错误首部，不从地址、凭据和后续文本猜测原因。"""
+    text = value.lower() if isinstance(value, str) else ''
+    if text in ('timeout', 'timed out', 'connection timed out') or re.fullmatch(
+            r'\[errno (?:60|110|10060)\] (?:operation|connection) timed out', text):
+        return 'timeout'
+    # mitmproxy 12.2.3 的 HTTP/1 断连及 asyncio 建连错误；连接值只参与匹配，绝不输出。
+    if text in ('server closed connection', 'connection cancelled', 'connection closed by peer.',
+                'connection refused', 'connection reset by peer') or re.fullmatch(
+            r'\[errno (?:61|111|10061)\] (?:connect call failed|connection refused)(?: \([^\r\n]*\))?', text) or re.fullmatch(
+            r'\[errno (?:54|104|10054)\] connection reset by peer', text):
+        return 'connection-failed'
+    return 'detail-withheld'
+
+
 class ConnectionDiagnostics:
     def __init__(self):
         self.events = deque(maxlen=5000)
         self.dropped = 0
         self.pending_commands = {}
 
+    def server_event(self, event, data):
+        """仅收集本任务 Release 目标的真实连接钩子，不记录其他目标或异常正文。"""
+        try:
+            expected = urlsplit(os.environ.get('CLRN_RELEASE_WEB_URL', ''))
+            if (expected.scheme != 'http' or expected.hostname != '127.0.0.1'
+                    or expected.username or expected.password or not expected.port
+                    or data.server.transport_protocol != 'tcp'
+                    or data.server.address != (expected.hostname, expected.port)):
+                return
+        except ValueError:
+            return
+        if len(self.events) == self.events.maxlen:
+            self.dropped += 1
+        self.events.append({'event': event, 'observedAt': int(time.time() * 1000),
+                            'source': 'release-static', 'operation': 'release-static-connect',
+                            'connectionId': str(data.client.id),
+                            'upstreamConnectionId': str(data.server.id),
+                            'upstreamMatch': release_peer_match(data.server)})
+
+    def server_connect(self, data):
+        self.server_event('proxy.server-connect', data)
+
+    def server_connected(self, data):
+        self.server_event('proxy.server-connected', data)
+
+    def server_connect_error(self, data):
+        self.server_event('proxy.server-connect-error', data)
+
+    def server_disconnected(self, data):
+        self.server_event('proxy.server-disconnected', data)
+
     def record(self, event, flow, **fields):
         if len(self.events) == self.events.maxlen:
             self.dropped += 1
         entry = {'event': event, 'observedAt': int(time.time() * 1000),
                  'requestId': flow.id, 'node': node_name(flow.request.host),
-                 'path': urlsplit(flow.request.path).path, 'method': flow.request.method, **fields}
+                 'path': urlsplit(flow.request.path).path, 'method': flow.request.method,
+                 'originMatch': release_origin_match(flow),
+                 'upstreamMatch': release_upstream_match(flow),
+                 'operation': 'release-static-read' if release_origin_match(flow) == 'matched' else 'proxied-request',
+                 'connectionId': str(flow.client_conn.id),
+                 'upstreamConnectionId': str(flow.server_conn.id), **fields}
+        if 'reason' in entry:
+            entry['reason'] = error_reason(entry['reason'])
         self.events.append({key: [safe_text(item).replace(flow.request.host, node_name(flow.request.host))
                                   for item in value] if isinstance(value, list)
                            else value if key in ('event', 'path')
@@ -86,12 +176,20 @@ class ConnectionDiagnostics:
             return
         source = 'fixture' if flow.response is not None else 'upstream'
         flow.metadata['diagnostic_source'] = source
-        self.record('proxy.request', flow, source=source)
+        self.record('proxy.request', flow, source=source, fixtureHit=source == 'fixture',
+                    operation='release-static-read' if release_origin_match(flow) == 'matched' else 'proxied-request')
 
     def response(self, flow):
         if flow.request.host in CONTROL_HOSTS:
             return
-        self.record('proxy.response', flow, source=flow.metadata.get('diagnostic_source', 'unknown'),
+        identifier = flow.response.headers.get('X-Clrn-Release-Request', '')
+        server_id = os.environ.get('CLRN_RELEASE_SERVER_ID', '')
+        release_id = identifier if (release_origin_match(flow) == 'matched'
+                                   and release_upstream_match(flow) == 'matched'
+                                   and flow.metadata.get('diagnostic_source') == 'upstream'
+                                   and re.fullmatch(r'[a-f0-9-]{36}', server_id)
+                                   and re.fullmatch(re.escape(server_id) + r'-[1-9][0-9]*', identifier)) else 'unverified'
+        self.record('proxy.response', flow, releaseRequestId=release_id, source=flow.metadata.get('diagnostic_source', 'unknown'),
                     status=flow.response.status_code,
                     elapsedMs=round((time.time() - flow.request.timestamp_start) * 1000))
         before = flow.metadata.get('diagnostic_candidates_before')
@@ -104,7 +202,10 @@ class ConnectionDiagnostics:
 
     def error(self, flow):
         if flow.request.host not in CONTROL_HOSTS:
-            self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown')
+            self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
+                        source='release-static' if release_origin_match(flow) == 'matched' else 'laiwan_prd',
+                        status=flow.response.status_code if flow.response else 'unavailable',
+                        response='received' if flow.response else 'not-received')
 
     def websocket_start(self, flow):
         self.record('proxy.websocket-open', flow, connectionId=flow.id)
@@ -142,7 +243,7 @@ class ConnectionDiagnostics:
                                 source='fixture' if message.injected else 'client' if message.from_client else 'upstream',
                                 messageType={1: 'subscribe', 2: 'unsubscribe', 9: 'rpc'}.get(method, 'error'),
                                 commandId=frame.get('id') if isinstance(frame.get('id'), int) else None,
-                                code=error.get('code') if isinstance(error, dict) else None)
+                                code=error.get('code') if isinstance(error, dict) and isinstance(error.get('code'), int) else None)
         except (ValueError, TypeError):
             pass
 

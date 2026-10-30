@@ -25,7 +25,7 @@ test('收尾使用固定 staging 入口删除本轮房间，不依赖客户端�
 test('清理失败不会被当作测试成功', async context => {
   for (const response of [Response.json({ ok: false }), new Response('failed', { status: 503 })]) {
     context.mock.method(globalThis, 'fetch', async () => response);
-    await assert.rejects(deletePrivateGameRoom(room), /本次新建房间应成功解散/);
+    await assert.rejects(deletePrivateGameRoom(room), new RegExp(`method=DELETE operation=room-delete source=laiwan_prd status=${response.status} response=received reason=${response.ok ? 'business-rejected' : 'http-error'}`));
     context.mock.restoreAll();
   }
 });

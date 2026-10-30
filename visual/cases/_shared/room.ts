@@ -3,7 +3,8 @@ import type { APIRequestContext, Page } from '@playwright/test';
 import { expect as playwrightExpect } from '@playwright/test';
 const expect = playwrightExpect.configure({ timeout: 30_000 });
 import { canTopUpVisualAccount } from '../../test-account';
-import { requestErrorSummary } from '../../src/support/requestError';
+import { readRequestJson, fetchRequestJson } from '../../src/support/requestJson';
+import { requestFailure, requestErrorSummary } from '../../src/support/requestError';
 import { recordDiagnostic } from '../../src/support/connectionDiagnostics';
 
 export type RoomSession = { roomId: string; apiOrigin: string; authorization: string };
@@ -15,10 +16,13 @@ const ROOM_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
  * @param page - 执行操作的 Playwright 页面。
  */
 async function visualAccount(page: Page) {
-  const raw = await page.evaluate(() => localStorage.getItem('save.user.origin.data.from.server.key'));
-  const auth = raw ? JSON.parse(raw) : null;
+  const raw = await page.evaluate(() => localStorage.getItem('save.user.origin.data.from.server.key'))
+    .catch(error => { throw new Error(requestErrorSummary(error, 'room-read-session')); });
+  let auth;
+  try { auth = raw ? JSON.parse(raw) : null; }
+  catch { throw requestFailure('room-read-session', 'invalid-response'); }
   if (!ROOM_ID_PATTERN.test(auth?.user_id || '') || !auth?.api_token?.access_token || !auth?.username) {
-    throw new Error('视觉测试登录态缺少有效用户 ID 或 API token');
+    throw requestFailure('room-read-session', 'invalid-response');
   }
   return {
     userId: String(auth.user_id),
@@ -37,15 +41,18 @@ async function readDiamondBalance(request: APIRequestContext, account: Account):
     headers: { Authorization: account.authorization },
     data: { currencies: ['diamond'] },
   }).catch(error => {
-    throw new Error(`读取测试钻石余额请求失败：${requestErrorSummary(error)}`);
+    throw new Error(requestErrorSummary(error, 'room-read-diamonds'));
   });
-  const body = await response.json();
-  await response.dispose();
-  if (!response.ok() || body?.ok !== true) throw new Error('无法读取视觉测试账号钻石余额');
-  const diamond = body.result?.currencies?.find((item: { code: string }) => item.code === 'diamond');
-  const balance = Number(diamond?.balance);
-  if (!Number.isFinite(balance)) throw new Error('视觉测试账号钻石余额无效');
-  return balance;
+  try {
+    const body = await readRequestJson(response, 'room-read-diamonds');
+    const currencies = body.result?.currencies;
+    const diamond = Array.isArray(currencies) ? currencies.find((item: { code: string }) => item?.code === 'diamond') : undefined;
+    const balance = Number(diamond?.balance);
+    if (!Number.isFinite(balance)) throw requestFailure('room-read-diamonds', 'invalid-response', response.status());
+    return balance;
+  } finally {
+    await response.dispose().catch(() => { throw requestFailure('room-read-diamonds', 'body-read-failed', response.status()); });
+  }
 }
 
 /**
@@ -60,17 +67,16 @@ export async function ensureRoomBalance(request: APIRequestContext, account: Acc
   }
   const token = process.env.TESTING_API_TOKEN?.trim();
   if (!token) throw new Error('账号不足 10 钻；需要 TESTING_API_TOKEN 为 staging 测试账号补钻');
-  const response = await fetch(`https://api.shafayouxi.org/public/v1/wallet/${account.userId}/set_balance/testing`, {
+  const { body, status } = await fetchRequestJson(`https://api.shafayouxi.org/public/v1/wallet/${account.userId}/set_balance/testing`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Testing-Api-Token': token },
     body: JSON.stringify({ currency_name: 'diamond', balance: '60' }),
     redirect: 'error',
     signal: AbortSignal.timeout(15_000),
-  });
-  const body = await response.json();
-  if (!response.ok || body?.ok !== true || body.result?.wallet_id !== account.userId
+  }, 'room-top-up-diamonds');
+  if (body.result?.wallet_id !== account.userId
     || body.result?.currency_name !== 'diamond' || Number(body.result?.balance) !== 60) {
-    throw new Error('staging 测试账号补钻结果无效');
+    throw requestFailure('room-top-up-diamonds', 'invalid-response', status);
   }
   await expect.poll(() => readDiamondBalance(request, account)).toBe(60);
 }
@@ -103,25 +109,21 @@ export async function createPrivateGameRoom(
   recordDiagnostic(page, '提交建房并等待响应', { method: 'POST', path: '/v3/pay_action/do', timeoutMs: 60_000 });
   const responsePromise = page.waitForResponse(response =>
     response.request().method() === 'POST'
-    && new URL(response.url()).pathname === '/v3/pay_action/do', { timeout: 60_000 });
+    && new URL(response.url()).pathname === '/v3/pay_action/do', { timeout: 60_000 })
+    .then(response => ({ response }), error => ({ error }));
   const clickError = await page.locator('[data-testid="creat-room-button"]:visible').last()
     .click().then(() => null, error => error as Error);
-  const response = await responsePromise;
-  const body = await response.json().catch(() => {
-    throw new Error(`${gameType} 房间创建接口返回非 JSON：HTTP ${response.status()}，类型 ${response.headers()['content-type'] || '未知'}，地址 ${response.url()}`);
-  });
+  const result = await responsePromise;
+  if ('error' in result) throw new Error(requestErrorSummary(result.error, 'room-create'));
+  const response = result.response;
+  const body = await readRequestJson(response, 'room-create');
   const roomId = body?.result?.room_id;
-  if (!response.ok() || body?.ok !== true || !ROOM_ID_PATTERN.test(roomId || '')) {
-    const errorCode = body?.error_type ?? body?.error?.code ?? body?.error_code ?? body?.code ?? 'unknown';
-    const resultKeys = body?.result && typeof body.result === 'object' ? Object.keys(body.result).join(',') : 'none';
-    const topKeys = body && typeof body === 'object' ? Object.keys(body).join(',') : 'none';
-    const reason = body?.error_message ?? body?.error?.message ?? body?.error ?? body?.message ?? body?.reason ?? '';
-    const fields = JSON.stringify(body?.errors ?? []).slice(0, 300);
-    throw new Error(`${gameType} 房间创建失败：HTTP ${response.status()}，ok=${String(body?.ok)}，业务代码 ${String(errorCode).slice(0, 80)}，顶层字段 ${topKeys}，结果字段 ${resultKeys}，原因 ${String(reason).slice(0, 120)}，校验字段 ${fields}`);
+  if (!ROOM_ID_PATTERN.test(roomId || '')) {
+    throw requestFailure('room-create', 'invalid-response', response.status());
   }
   const room = { roomId, apiOrigin: new URL(response.url()).origin, authorization: account.authorization };
   onCreated(room);
-  if (clickError) throw clickError;
+  if (clickError) throw requestFailure('room-create', 'request-failed', response.status());
   return room;
 }
 
@@ -132,11 +134,9 @@ export async function createPrivateGameRoom(
 export async function deletePrivateGameRoom(room: RoomSession): Promise<void> {
   if (!ROOM_ID_PATTERN.test(room.roomId)) throw new Error('清理房间需要本轮创建响应中的有效 UUID');
   // 固定 staging 入口；客户端选中的地区代理可能已不可用，收尾不再依赖该节点。
-  const response = await fetch(`https://api.shafayouxi.org/v1/room/${room.roomId}`, {
+  await fetchRequestJson(`https://api.shafayouxi.org/v1/room/${room.roomId}`, {
     method: 'DELETE', headers: { Authorization: room.authorization },
     redirect: 'error', signal: AbortSignal.timeout(15_000),
-  });
-  const body = await response.json().catch(() => null);
-  expect(response.ok && body?.ok === true, `本次新建房间应成功解散（HTTP ${response.status}，业务成功=${body?.ok === true}）`).toBe(true);
+  }, 'room-delete');
   console.log('ROOM CLEANUP > 本次新建房间已解散');
 }

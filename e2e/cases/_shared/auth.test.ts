@@ -39,7 +39,7 @@ for (const scenario of [
     };
     if (scenario.resets === 3) {
       await assert.rejects(accountStatus(page, session), (error: Error) => {
-        assert.equal(error.message, '账号会话状态读取失败：网络请求未完成');
+        assert.equal(error.message, '核对已有只读账号会话失败：method=GET operation=existing-account-session source=laiwan_prd status=unavailable response=not-received reason=connection-failed');
         assert.equal(error.stack?.includes(authorization), false);
         return true;
       });

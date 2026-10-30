@@ -1,6 +1,7 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page, type Request } from '@playwright/test';
 import { environment } from '../../helpers/environment';
 import { openLoginForm, unique } from './page';
+import { requestFailure, requestFailureReason } from '../../../scripts/request-failure.cjs';
 
 export type Session = { userId: string; accountUrl: string; authorization: string };
 
@@ -13,37 +14,64 @@ export async function signIn(page: Page, credentials = {
   username: environment.testUsername,
   password: environment.testPassword,
 }): Promise<Session> {
-  // 登录表单会自动注册不存在的用户名；测试账号缺失必须失败，禁止创建新账号。
-  await page.route('**/public/v11/user/register/**', (route) => route.abort('blockedbyclient'));
-  await openLoginForm(page);
-  await (await unique(page, 'username-input')).fill(credentials.username);
-  await (await unique(page, 'password-input')).fill(credentials.password);
-  const loginResponse = page.waitForResponse(
-    (response) => new URL(response.url()).pathname === '/public/v10/user/login/username/password'
-      && response.request().method() === 'POST',
-    { timeout: 60_000 },
-  );
-  await (await unique(page, 'sign-in-button')).click();
-  const response = await loginResponse;
-  if (!response.ok()) {
-    // 登录失败时关闭密码表单，避免 Playwright 的错误上下文保存输入值。
-    await page.close();
-    throw new Error(`真实登录请求失败（HTTP ${response.status()}，节点 ${new URL(response.url()).hostname}）`);
-  }
-  await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible({ timeout: 60_000 });
-  const session = await page.evaluate(() => {
-    const raw = localStorage.getItem('save.user.origin.data.from.server.key');
-    const auth = raw ? JSON.parse(raw) : null;
-    if (!auth?.user_id || !auth?.api_token?.access_token || !auth?.api_token?.token_type) {
-      throw new Error('登录后未生成完整认证缓存');
-    }
-    return { userId: String(auth.user_id), authorization: `${auth.api_token.token_type} ${auth.api_token.access_token}` };
-  });
-  return {
-    userId: session.userId,
-    accountUrl: `${new URL(response.url()).origin}/v11/user/${encodeURIComponent(session.userId)}/account`,
-    authorization: session.authorization,
+  let status: number | undefined;
+  let waiting = false;
+  let observed = false;
+  /**
+   * 只记录固定登录请求确已发出，不读取地址、认证头或表单内容用于诊断。
+   * @param request - 浏览器实际发出的请求。
+   */
+  const observeLogin = (request: Request) => {
+    if (request.method() === 'POST'
+      && new URL(request.url()).pathname === '/public/v10/user/login/username/password') observed = true;
   };
+  try {
+    // 登录表单会自动注册不存在的用户名；测试账号缺失必须失败，禁止创建新账号。
+    await page.route('**/public/v11/user/register/**', (route) => route.abort('blockedbyclient'));
+    await openLoginForm(page);
+    await (await unique(page, 'username-input')).fill(credentials.username);
+    await (await unique(page, 'password-input')).fill(credentials.password);
+    page.on('request', observeLogin);
+    waiting = true;
+    const loginResponse = page.waitForResponse(
+      (response) => new URL(response.url()).pathname === '/public/v10/user/login/username/password'
+        && response.request().method() === 'POST',
+      { timeout: 60_000 },
+    ).then(response => {
+      status = response.status();
+      return { response };
+    }, error => ({ error }));
+    await (await unique(page, 'sign-in-button')).click();
+    const result = await loginResponse;
+    if ('error' in result) throw result.error;
+    const response = result.response;
+    if (!response.ok()) {
+      // 登录失败时关闭密码表单，避免 Playwright 的错误上下文保存输入值。
+      throw requestFailure('existing-account-login', 'http-error', status);
+    }
+    await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible({ timeout: 60_000 });
+    const session = await page.evaluate(() => {
+      const raw = localStorage.getItem('save.user.origin.data.from.server.key');
+      const auth = raw ? JSON.parse(raw) : null;
+      if (!auth?.user_id || !auth?.api_token?.access_token || !auth?.api_token?.token_type) {
+        throw new Error('登录后未生成完整认证缓存');
+      }
+      return { userId: String(auth.user_id), authorization: `${auth.api_token.token_type} ${auth.api_token.access_token}` };
+    });
+    return {
+      userId: session.userId,
+      accountUrl: `${new URL(response.url()).origin}/v11/user/${encodeURIComponent(session.userId)}/account`,
+      authorization: session.authorization,
+    };
+  } catch (error) {
+    await page.close().catch(() => undefined);
+    const operation = status !== undefined || observed ? 'existing-account-login'
+      : waiting ? 'existing-account-login-await' : 'existing-account-login-ui';
+    throw requestFailure(operation, status === undefined ? requestFailureReason(error)
+      : status < 200 || status >= 300 ? 'http-error' : 'invalid-response', status);
+  } finally {
+    page.off('request', observeLogin);
+  }
 }
 
 /**
@@ -57,11 +85,11 @@ export async function accountStatus(page: Page, session: Session): Promise<numbe
     timeout: 15_000,
     // Playwright 只对 ECONNRESET 重试；200、401 等 HTTP 响应保持原样。
     maxRetries: 2,
-  }).catch(() => {
+  }).catch(error => {
     // APIRequestContext 的原始错误包含请求头，不能直接写入测试报告。
-    throw new Error('账号会话状态读取失败：网络请求未完成');
+    throw requestFailure('existing-account-session', requestFailureReason(error));
   });
   const status = response.status();
-  await response.dispose();
+  await response.dispose().catch(() => { throw requestFailure('existing-account-session', 'body-read-failed', status); });
   return status;
 }
