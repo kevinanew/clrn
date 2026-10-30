@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
-import { observeReleaseResponse, releaseDiagnosticWriter, releaseDiagnosticDirectory } from './release-diagnostics.mjs';
+import { observeReleaseConnection, observeReleaseResponse, releaseDiagnosticWriter, releaseDiagnosticDirectory } from './release-diagnostics.mjs';
 import { startReleaseWebServer } from './release-web-server.mjs';
 
 const secret = 'https://release.invalid:9443/private?token=synthetic-token Bearer synthetic-secret';
@@ -18,6 +18,31 @@ const secret = 'https://release.invalid:9443/private?token=synthetic-token Beare
 function verifyPrivacy(output) {
   for (const value of ['release.invalid', '9443', '/private', 'synthetic-', '127.0.0.1']) assert.ok(!output.includes(value), value);
 }
+
+test('连接事件模拟与请求使用同一编号，关闭原因未知不猜测且持久化不含连接值', async context => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'clrn-tcp-log-'));
+  context.after(() => rm(directory, { force: true, recursive: true }));
+  const record = releaseDiagnosticWriter(directory);
+  const socket = Object.assign(new EventEmitter(), { remoteAddress: secret, remotePort: 9443 });
+  observeReleaseConnection(socket, { connectionId: 'connection-1', serverId: 'server-1' }, record);
+  const response = Object.assign(new EventEmitter(), { headersSent: true, statusCode: 200, writableFinished: true });
+  for (const requestId of ['request-1', 'request-2']) {
+    observeReleaseResponse({ method: 'GET', url: secret }, response,
+      { connectionId: 'connection-1', serverId: 'server-1', requestId }, record);
+  }
+  socket.emit('timeout');
+  socket.emit('error', new Error(secret, { cause: new Error(secret) }));
+  socket.emit('end');
+  socket.emit('close', true);
+  const output = await readFile(path.join(directory, 'release-server-events.jsonl'), 'utf8');
+  verifyPrivacy(output);
+  const events = output.trim().split('\n').map(line => JSON.parse(line));
+  assert.deepEqual(events.map(event => event.event), ['release.tcp-open', 'release.request', 'release.request',
+    'release.tcp-timeout', 'release.tcp-error', 'release.tcp-end', 'release.tcp-close']);
+  assert.ok(events.every(event => event.connectionId === 'connection-1'));
+  assert.ok(events.filter(event => event.event.startsWith('release.tcp')).every(event => !('status' in event) && !('method' in event)));
+  assert.equal(events.at(-1).outcome, 'error');
+});
 
 test('无响应头的读取失败不能记为默认200，已发200后的中断仍保留200及未完成状态', async context => {
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-stream-log-'));
@@ -73,7 +98,10 @@ test('实际静态服务成功、404和文件流失败仍保持原传输结果�
   assert.ok(events.some(event => event.event === 'release.finish' && event.status === 200));
   assert.ok(events.some(event => event.event === 'release.finish' && event.status === 404));
   assert.ok(events.some(event => event.event === 'release.stream-error'));
-  assert.ok(events.every(event => event.connectionId && event.requestId));
+  assert.ok(events.filter(event => event.operation === 'release-static-read').every(event => event.connectionId && event.requestId));
+  const configuration = events.find(event => event.event === 'release.listen');
+  assert.equal(configuration.keepAliveTimeoutMs, server.keepAliveTimeout);
+  assert.equal(configuration.keepAliveTimeoutBufferMs, server.keepAliveTimeoutBuffer);
   verifyPrivacy(JSON.stringify(events));
 });
 

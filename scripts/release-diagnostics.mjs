@@ -36,6 +36,29 @@ export function releaseDiagnosticWriter(directory) {
 }
 
 /**
+ * 观察真实 TCP 套接字；不推断关闭方、HTTP 结果或后端实例。
+ * @param socket - 本服务实际接受的连接。
+ * @param identifiers - 本服务生成的关联编号。
+ * @param record - 本轮持久化出口。
+ */
+export function observeReleaseConnection(socket, identifiers, record) {
+  const start = Date.now();
+  /**
+   * 仅写固定阶段和结果；连接值与异常对象不进入出口。
+   * @param event - 已审阅的连接事件。
+   * @param outcome - 固定结果标记。
+   */
+  const emit = (event, outcome = 'observed') => record({ event, observedAt: Date.now(),
+    source: 'release-static', operation: 'release-static-connect', ...identifiers,
+    elapsedMs: Date.now() - start, outcome });
+  emit('release.tcp-open');
+  socket.once('end', () => emit('release.tcp-end'));
+  socket.on('timeout', () => emit('release.tcp-timeout'));
+  socket.on('error', () => emit('release.tcp-error'));
+  socket.once('close', hadError => emit('release.tcp-close', hadError ? 'error' : 'closed'));
+}
+
+/**
  * 绑定一次响应与文件流事件，不改变传输、状态或错误退出。
  * @param request - 实际收到的请求。
  * @param response - 服务器响应。

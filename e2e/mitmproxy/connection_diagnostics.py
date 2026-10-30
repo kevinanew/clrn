@@ -84,7 +84,11 @@ def release_upstream_match(flow):
         return configured
     if flow.metadata.get('diagnostic_source') == 'fixture':
         return 'not-applicable'
-    connection = flow.server_conn
+    return release_peer_match(flow.server_conn)
+
+
+def release_peer_match(connection):
+    """只比较实际已建立的 peer，不输出连接地址或猜测 HTTP 响应。"""
     if connection.timestamp_tcp_setup is None or not connection.peername:
         return 'unavailable'
     expected = urlsplit(os.environ['CLRN_RELEASE_WEB_URL'])
@@ -108,6 +112,37 @@ class ConnectionDiagnostics:
         self.events = deque(maxlen=5000)
         self.dropped = 0
         self.pending_commands = {}
+
+    def server_event(self, event, data):
+        """仅收集本任务 Release 目标的真实连接钩子，不记录其他目标或异常正文。"""
+        try:
+            expected = urlsplit(os.environ.get('CLRN_RELEASE_WEB_URL', ''))
+            if (expected.scheme != 'http' or expected.hostname != '127.0.0.1'
+                    or expected.username or expected.password or not expected.port
+                    or data.server.transport_protocol != 'tcp'
+                    or data.server.address != (expected.hostname, expected.port)):
+                return
+        except ValueError:
+            return
+        if len(self.events) == self.events.maxlen:
+            self.dropped += 1
+        self.events.append({'event': event, 'observedAt': int(time.time() * 1000),
+                            'source': 'release-static', 'operation': 'release-static-connect',
+                            'connectionId': str(data.client.id),
+                            'upstreamConnectionId': str(data.server.id),
+                            'upstreamMatch': release_peer_match(data.server)})
+
+    def server_connect(self, data):
+        self.server_event('proxy.server-connect', data)
+
+    def server_connected(self, data):
+        self.server_event('proxy.server-connected', data)
+
+    def server_connect_error(self, data):
+        self.server_event('proxy.server-connect-error', data)
+
+    def server_disconnected(self, data):
+        self.server_event('proxy.server-disconnected', data)
 
     def record(self, event, flow, **fields):
         if len(self.events) == self.events.maxlen:

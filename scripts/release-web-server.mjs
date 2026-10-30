@@ -1,6 +1,6 @@
 /** 为已校验的 Release 静态目录提供独立 HTTP 服务；不构建应用，不代理业务接口。 */
 import { randomUUID } from 'node:crypto';
-import { observeReleaseResponse } from './release-diagnostics.mjs';
+import { observeReleaseConnection, observeReleaseResponse } from './release-diagnostics.mjs';
 import { createServer } from 'node:http';
 import { createReadStream } from 'node:fs';
 import { readFile, realpath, stat } from 'node:fs/promises';
@@ -14,6 +14,22 @@ const contentTypes = {
   '.ttf': 'font/ttf', '.otf': 'font/otf', '.woff': 'font/woff', '.woff2': 'font/woff2',
   '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.wav': 'audio/wav', '.wasm': 'application/wasm',
 };
+
+/**
+ * 传输静态文件；由响应的生命周期管理文件源。
+ * @param stream - 本次请求独占的文件流。
+ * @param response - 实际 HTTP 响应或隔离测试的可写边界。
+ */
+export function pipeReleaseFile(stream, response) {
+  /** 客户端退出后立即释放源；destroy 也会等待尚未完成的文件打开再关闭句柄。 */
+  const destroySource = () => stream.destroy();
+  response.once('close', destroySource);
+  stream.once('close', () => response.removeListener('close', destroySource));
+  stream.once('error', () => response.destroy());
+  if (response.destroyed) { stream.destroy(); return; }
+  // 取消时无 error 的 destroy 不伪造文件读取错误，响应仍记录 interrupted。
+  stream.pipe(response);
+}
 
 /**
  * 校验实际入口版本，避免仅凭压缩包标签把错误构建交给浏览器。
@@ -44,7 +60,6 @@ export async function startReleaseWebServer(directory, { record = () => {}, open
    * @param request - 浏览器请求。
    * @param response - HTTP 响应。
    */ async (request, response) => {
-    if (!connections.has(request.socket)) connections.set(request.socket, `connection-${++connectionSequence}`);
     const requestId = `${serverId}-${++sequence}`;
     response.setHeader('X-Clrn-Release-Request', requestId);
     const diagnostic = observeReleaseResponse(request, response,
@@ -73,6 +88,8 @@ export async function startReleaseWebServer(directory, { record = () => {}, open
         response.writeHead(404).end();
         return;
       }
+      // 文件系统核验期间客户端可能已经退出；不再为已关闭的响应打开文件。
+      if (response.destroyed) return;
       const extension = path.extname(filename).toLowerCase();
       response.writeHead(200, {
         'Content-Type': contentTypes[extension] || 'application/octet-stream',
@@ -84,12 +101,17 @@ export async function startReleaseWebServer(directory, { record = () => {}, open
       else {
         const stream = openStream(filename);
         diagnostic.stream(stream);
-        stream.on('error', /** 读取失败时继续中断响应，不伪造成功。 */ () => response.destroy()).pipe(response);
+        pipeReleaseFile(stream, response);
       }
     } catch {
       diagnostic.emit('release.file-unavailable');
       response.writeHead(404).end();
     }
+  });
+  server.on('connection', socket => {
+    const connectionId = `connection-${++connectionSequence}`;
+    connections.set(socket, connectionId);
+    observeReleaseConnection(socket, { serverId, connectionId }, record);
   });
   await new Promise(/**
    * 等待服务完成监听后才允许测试访问。
@@ -99,5 +121,8 @@ export async function startReleaseWebServer(directory, { record = () => {}, open
     server.once('error', reject);
     server.listen(0, '127.0.0.1', resolve);
   });
+  record({ event: 'release.listen', observedAt: Date.now(), source: 'release-static', serverId,
+    keepAliveTimeoutMs: server.keepAliveTimeout,
+    keepAliveTimeoutBufferMs: Number.isInteger(server.keepAliveTimeoutBuffer) ? server.keepAliveTimeoutBuffer : 'unavailable' });
   return { server, serverId, baseUrl: `http://127.0.0.1:${server.address().port}/` };
 }
