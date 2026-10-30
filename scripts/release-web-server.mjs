@@ -60,6 +60,9 @@ export async function startReleaseWebServer(directory, { record = () => {}, open
    * @param request - 浏览器请求。
    * @param response - HTTP 响应。
    */ async (request, response) => {
+    // 本地静态资源每次响应后关闭上游连接，避免代理在空闲 FIN 尚未处理时复用旧连接。
+    // 不改变业务连接、HTTP 状态、文件传输结果或重试次数。
+    response.setHeader('Connection', 'close');
     const requestId = `${serverId}-${++sequence}`;
     response.setHeader('X-Clrn-Release-Request', requestId);
     const diagnostic = observeReleaseResponse(request, response,
