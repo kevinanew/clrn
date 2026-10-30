@@ -11,6 +11,7 @@ import { paceNetworkClock } from './networkClock';
 import { installConnectionDiagnostics, recordDiagnostic } from '../src/support/connectionDiagnostics';
 import { diagnosticNode, diagnosticText } from '../../e2e/helpers/diagnostic-privacy';
 import { installCardSpriteDiagnostics, observeCardSpriteClockControl, saveCardSpriteDiagnostics } from './cardSpriteDiagnostics';
+import { useNormalCardSpriteClock, type CardSpriteClock } from './cardSpriteClock';
 
 export type TableSession = { page: Page; roomId: string; self: string; clip: CaptureArea };
 
@@ -22,19 +23,23 @@ export type TableSession = { page: Page; roomId: string; self: string; clip: Cap
  * @param proxy - 专用游戏代理地址。
  * @param task - 在真实牌桌执行的动画流程。
  * @param hall - 是否使用大厅显示夹具和本房间观察者连接。
+ * @param clock - 独立图集取证时可选择原生时间，默认仍为原动画冻结策略。
+ * @param lifecycle - 是否为独立取证页安装 React 提交观察器。
  */
 export async function withTable(browser: Browser, info: TestInfo, game: 'texas' | 'zhajinhua',
-  proxy: { server: string; network: Mitmproxy; diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> }, task: (session: TableSession) => Promise<void>, hall = false): Promise<void> {
+  proxy: { server: string; network: Mitmproxy; diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> }, task: (session: TableSession) => Promise<void>, hall = false,
+  clock: CardSpriteClock = 'frozen', lifecycle = false): Promise<void> {
   const viewport = info.project.use.viewport!;
   const context = await browser.newContext({ viewport, locale: 'en-US', deviceScaleFactor: 1,
     proxy: { server: proxy.server, bypass: '<-loopback>' }, ignoreHTTPSErrors: true,
     reducedMotion: 'no-preference' });
   bindScenarioProxy(context, proxy.network);
   const page = await context.newPage();
+  if (clock === 'normal') useNormalCardSpriteClock(page);
   let room: RoomSession | undefined;
   const diagnostics = await installConnectionDiagnostics(context, page, info, proxy);
   try {
-    if (game === 'texas') await installCardSpriteDiagnostics(page);
+    if (game === 'texas') await installCardSpriteDiagnostics(page, lifecycle);
     recordDiagnostic(page, '初始化大厅');
     console.log(`TABLE > ${game}/${info.project.name} 初始化大厅`);
     await openApplication(context, page, info, `signed_in_${game}_pre_game`);
@@ -72,8 +77,10 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
       }
     }
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
-    paceNetworkClock(page);
-    await freeze(page);
+    if (clock === 'frozen') {
+      paceNetworkClock(page);
+      await freeze(page);
+    }
     console.log('TABLE > 牌桌已就绪，开始动画采样');
     const self = await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
     const width = info.project.name === 'mobile' ? 375 : 450;

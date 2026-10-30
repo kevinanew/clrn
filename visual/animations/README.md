@@ -103,7 +103,7 @@ HTML 报告位于 `visual/playwright-report/animations/<suite>/`，失败图片�
 ## 牌面图集超时诊断（#68）
 
 德州在导航前安装只读 DOM 观察器，`card-sprite-diagnostics.json` 保留最近 1000 条变化，
-超出计入 `dropped`。记录匿名牌槽、图集容器和图片编号，挂载／移除、布局、资源路径、
+超出计入 `dropped`。记录匿名牌槽、图集容器和图片编号，挂载／移除、布局、资源指纹、
 图片原始尺寸与 DOM 解码结果、翻转侧、回退层 display、内容 opacity 和裁切 transform。
 记录不包含玩家 ID、牌桌正文、图片数据 URI 或 URL 查询参数。宿主收到事件的真实时间
 与页面虚拟时间分别保存；应用版本、Release、CI 测试提交、运行编号、视口及重复序号随附件保存。
@@ -118,6 +118,52 @@ HTML 报告位于 `visual/playwright-report/animations/<suite>/`，失败图片�
 CSS 采样暂停保持原状，因此这是 JS 时钟恢复后的顺序观察，不能代替从新页面开始的独立对照，
 也不能单凭恢复断定原故障属于测试。若节点被替换，应通过匿名编号区别恢复与重挂载。
 
+### 独立新页面取证
+
+手动工作流可指定 `release_record`（完整固定发布记录 JSON）与
+`expected_application_commit`，沿用下载、大小、SHA-256、build-info 和页面版本核验。
+原 #68 构建记录位于 Git 提交 `6ee4425bd4916705c2db84b8f1b8438021b5800e`
+的 `deployments/staging.json`，预期应用提交为
+`69f9251d3b5f2b93aa2d880d27abbeefe16ee645`。不要使用当前默认构建替代该记录。
+选择 `suite=texas` 或 `all` 并启用 `card_sprite_control`，在原比较结束后额外运行
+`cardSpriteControl.spec.ts`，原比较失败时也会收集对照；任何一步失败都保留失败结果。
+
+本机在准备好同一固定 Release 并设置准备命令输出的三项环境变量后，可以运行：
+
+```sh
+VISUAL_SUITE=texas ANIMATION_PART=card-sprite-control node scripts/with-test-account.mjs -- \
+  node scripts/with-release-web-server.mjs npm --prefix visual run test:animations:ci -- --repeat-each=3
+```
+
+两种模式各用新的 context、页面和真实房间，从相同翻牌前状态经公共牌到全押、摊牌。
+每遍交替顺序，手机和桌面各三遍、每遍两种模式，零失败重试。
+`normal` 不安装 Playwright 时钟、不暂停 CSS；推进动作只等待对应真实时间，布局等待
+不调用 `runFor(0)`。`frozen` 沿用现有暂停、CSS 与真实网络配速策略。
+两者都使用原有图集 10 秒硬断言，不生成或比较候选基准，也不替代原动画用例。
+这是聚焦图集的独立牌局对照：没有复现原玩法用例的完整倒计时、动作和弹层历史，
+即使全部成功也不能宣称原失败已经排除或完成根因归属。
+
+独立报告保存到 `visual/test-results/card-sprite-control/` 与
+`visual/playwright-report/card-sprite-control/`，不会清空原动画失败工件。
+附件包含时钟模式、构建／测试／重复身份、时间线和成功／失败截图。
+正常时间页的原始失败为 `card-sprite-diagnostics-normal-failure.json`；不会恢复或替换其时钟。
+
+普通动画配置的手机、桌面项目均排除独立对照，桌面继续排除旧搜索提示用例。
+独立配置显式清除继承的项目级排除，仅收集两种视口的对照。
+`collection.test.ts` 用真实 Playwright CLI 的 `--list` 核对全部原普通用例和独立入口，
+随 `npm test` 执行；当前普通配置 41 项、9 个文件，独立配置 4 项、三遍重复 12 项。
+这些数字仅表示收集结果，不代表浏览器、真实牌局或原生设备运行通过。
+
+独立页还通过 React DevTools 提交协议观察组件匿名身份、提交和移除，以及符合已知
+SpriteImage 结构的三个状态值（visible、scaleX、scaleY）。只读取，不调用组件回调或 setter；
+不保存 props、牌名、玩家或任意 hook 值。已有开发工具 hook 不覆盖；未知 renderer、
+未识别组件和截断明确标记，独立用例不会把这些情况当作生命周期取证完成。
+这是额外的观察环境，需核对固定构建是否支持及观察器是否影响复现；它没有直接观测
+RN Web 独立 ImageLoader 回调的进入／返回，组件 visible 的提交也不能单独解释根因。
+
+图集图片路径在宿主持久化前统一变为 `asset-<指纹>`；包括路径内嵌地址、编码、凭据
+和 data URI。仅按稳定逻辑标识关联，私有资料来源仍仅标为 `laiwan_prd`。
+
 历史证据及尚未知项见 [issue-68-investigation.md](issue-68-investigation.md)。
 离线浏览器回归增加 `cardSpriteDiagnostics.browser.ts`，覆盖定时回调恢复、持续回退、
 原始失败保留、DOM 移除和脱敏；这些夹具不代表真实应用或原生设备回归通过。
@@ -129,6 +175,8 @@ node --import tsx --test e2e/helpers/diagnostic-recorder.test.ts
 node --import tsx --test e2e/helpers/connection-diagnostics.browser.ts
 node --import tsx --test visual/animations/timeline.browser.ts
 node --import tsx --test visual/animations/cardSpriteDiagnostics.browser.ts
+node --import tsx --test visual/animations/cardSpriteClock.browser.ts
+node --import tsx --test visual/animations/cardSpritePrivacy.test.ts visual/animations/cardSpriteLifecycle.test.ts
 # 使用系统 Chrome 时设置 DIAGNOSTIC_CHROME_PATH 为浏览器可执行文件路径。
 e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 ```

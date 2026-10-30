@@ -47,6 +47,11 @@ on:
       expected_application_commit:
         required: true
         type: string
+      card_sprite_control:
+        description: 额外运行独立新页面的冻结与正常时间图集取证
+        required: false
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       suite:
@@ -62,6 +67,14 @@ on:
         description: 本轮需要验证的 staging 应用完整提交编号
         type: string
         required: true
+      release_record:
+        description: 可选的固定历史 Release 发布记录 JSON（仍校验提交、大小和摘要）
+        type: string
+        required: false
+      card_sprite_control:
+        description: 额外运行独立新页面的冻结与正常时间图集取证（选择 texas 或 all）
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -143,8 +156,9 @@ jobs:
         run: npm run typecheck
       - name: 验证关键帧差异汇总、牌面就绪、素材定位与续时准备
         if: matrix.suite == 'texas' && matrix.part == 'gameplay'
-        run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/cardSpriteReadiness.browser.ts visual/animations/cardSpriteDiagnostics.browser.ts visual/animations/playerAnimationAsset.browser.ts visual/animations/renewReadiness.browser.ts visual/animations/leaderboardReadiness.browser.ts
+        run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/cardSpriteReadiness.browser.ts visual/animations/cardSpriteDiagnostics.browser.ts visual/animations/cardSpriteClock.browser.ts visual/animations/playerAnimationAsset.browser.ts visual/animations/renewReadiness.browser.ts visual/animations/leaderboardReadiness.browser.ts
       - name: 准备本轮 Release 构建包
+        id: release
         uses: ./.github/actions/prepare-release-web
         with:
           release-record: ${{ inputs.release_record || '' }}
@@ -174,6 +188,12 @@ jobs:
       - name: 连续三次比较手机和桌面动画关键帧
         working-directory: visual
         run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --repeat-each=3
+      - name: 独立新牌局图集时钟对照（不替代动画比较）
+        if: ${{ !cancelled() && steps.release.outcome == 'success' && inputs.card_sprite_control == true && matrix.suite == 'texas' && matrix.part == 'gameplay' }}
+        working-directory: visual
+        env:
+          ANIMATION_PART: card-sprite-control
+        run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --repeat-each=3
       - name: 展示连接诊断摘要
         if: always()
         run: node scripts/connection-diagnostic-summary.mjs
@@ -199,6 +219,8 @@ jobs:
           path: |
             visual/playwright-report/animations/
             visual/test-results/animations/
+            visual/playwright-report/card-sprite-control/
+            visual/test-results/card-sprite-control/
             visual/test-results/animation-candidates/
       - name: 单独保存失败截图
         if: always()

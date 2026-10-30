@@ -3,11 +3,13 @@ import { defineConfig } from '@playwright/test';
 import path from 'node:path';
 import visualConfig from '../playwright.config';
 
+const independentControls = ['**/cardSpriteControl.spec.ts'];
+
 export default defineConfig({
   ...visualConfig,
   testDir: '.',
   testMatch: '**/*.spec.ts',
-  testIgnore: [],
+  testIgnore: independentControls,
   outputDir: '../test-results/animations',
   snapshotPathTemplate: '{testDir}/snapshots/{arg}{ext}',
   fullyParallel: false,
@@ -16,7 +18,8 @@ export default defineConfig({
   timeout: 300_000,
   projects: [
     { name: 'mobile', use: { viewport: { width: 375, height: 812 } } },
-    { name: 'desktop', testIgnore: ['**/search-prompt.spec.ts'], use: { viewport: { width: 1440, height: 900 } } },
+    // 项目级 testIgnore 会覆盖全局值，必须同时保留独立对照与旧搜索的排除。
+    { name: 'desktop', testIgnore: [...independentControls, '**/search-prompt.spec.ts'], use: { viewport: { width: 1440, height: 900 } } },
   ],
   // 缺失基准也必须失败；只有显式传入 --update-snapshots 才生成候选图。
   updateSnapshots: 'none',

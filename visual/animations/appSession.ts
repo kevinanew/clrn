@@ -6,6 +6,7 @@ import { dismissSignedInPopups, ensureAppReadyPastStaging, waitForSignInState } 
 import { applyContentStabilizers } from '../src/support/pageStabilizers';
 import { CLOCK_START } from './timeline';
 import { recordDiagnostic, recordBlockedTarget } from '../src/support/connectionDiagnostics';
+import { advanceCardSpriteClock, hasNormalCardSpriteClock } from './cardSpriteClock';
 
 /**
  * 定位当前显示的真实入口，避免命中导航保留的隐藏页面。
@@ -41,7 +42,7 @@ export async function pressTarget(target: Locator): Promise<void> {
         return null;
       });
 
-      if (!point) await page.clock.runFor(16);
+      if (!point) await advanceCardSpriteClock(page, 16);
       return Boolean(point);
     }, { message: `入口必须在视口内且未被遮罩拦截：${target}` }).toBe(true);
   } catch (error) {
@@ -95,7 +96,7 @@ export async function openApplication(context: BrowserContext, page: Page, info:
     .find(item => item.pageLabel === pageLabel && item.viewport.label === info.project.name);
   if (!scenario) throw new Error(`缺少动画基础场景 ${pageLabel}/${info.project.name}`);
   await setupContextForScenario(context, scenario, page, { animations: 'allow' });
-  await page.clock.install({ time: CLOCK_START });
+  if (!hasNormalCardSpriteClock(page)) await page.clock.install({ time: CLOCK_START });
   await page.goto('/');
   await recordApplicationBuild(page, info);
   await ensureAppReadyPastStaging(page);
