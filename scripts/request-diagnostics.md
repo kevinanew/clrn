@@ -327,3 +327,59 @@ texas/social 为 10 通过、2 失败，日志包含多帧像素差异及 angry 
 本轮修正可确认的文件源泄漏，并补足后续取证；HTTP 断连及业务失败的根因仍未知。
 未证明 #78 根因、master 恢复或 Issue #63 全部验收完成，#65 仍暂停。
 受保护执行依赖已有源码变化，须由宿主正式审阅并迁移配置后验证发布；不能沿用旧门禁身份。
+
+## 5f35765 后续复核：代理错误有限分类
+
+本轮起始 HEAD 为 `5f35765a205e41358657f5870669abb8e2ad35ec`，工作树干净，
+无 MERGE_HEAD 或冲突；PR #79 仍开放，base 为固定基线 `74a72bee`，head 与本地一致。
+基线没有这些修复，不能以工作树干净或旧检查成功判为 already-resolved。
+目标项目仍无 AGENTS.md、AGENTS.txt、DEVELOPMENT.md 或 CodeGraph 索引；已读取项目及
+相关子目录 README 和仓库检查、视觉、动画、功能、交互、E2E 工作流。
+指定的 resolution-findings/63、维护缓存和 investigation 证据目录在本地仍不存在。
+已有 45 个相对基线的修改文件全部保留，没有改动项目 Git 现场。
+
+### 本轮已复现和修正
+
+Python `error_reason` 仍按任意文本中的 timeout/connection/disconnect 子串分类。
+隔离负例仅将这些字样放入保留域名、Cookie 或后续诊断，便误报超时或连接失败；
+真实 asyncio 错误形态 `[Errno 111] Connect call failed (...)` 反而未归为连接失败。
+新增回归在修复前产生 8 个断言失败，修复后全部通过。
+
+现在只接纳固定错误文本及有限 OS 错误码与固定消息的组合，
+保留锁定 mitmproxy 12.2.3 的 `server closed connection`，不扫描地址、凭据或后续行。
+未知输入继续为 detail-withheld；输出仍只含固定原因，不保留匹配到的原消息。
+回归同时核对 operation、GET、laiwan_prd、unavailable/not-received 和合成凭据负例。
+这修正分类准确性，不证明历史 CI 曾泄露信息，也不证明静态断连根因。
+
+### 当前提交 CI 与附件边界
+
+只读取得运行 `40983292805` 两项失败作业的完整日志和产物身份。PR head 为 `5f35765`，
+实际检出测试合并提交 `49872b77d46952a95885f4f44f8dce09cb62888c`，Node 为 24.22.1；
+应用仍为 `9df567fda8d72f3742576256d5597523aff33171`，
+Release 为 `web-staging-200001201-9df567fda8d7`。
+
+- texas/social 作业 `123828353049`：11 通过、1 失败，mobile repeat2 多帧像素差异，
+  随后等待语音按钮可见失败。仅凭日志无法判断缺少按钮或画面差异的根因。
+- app/ui 作业 `123828353146`：44 通过、1 失败，desktop repeat1 的
+  hall-slot-banner-0ms 有 1546 像素差异。
+- 报告分别为 `12946509228`（35162605 字节）及 `12945839323`（3334778 字节）。
+  下载工具返回 ZIP 引用，本地读取均因 URLError 失败，未读取报告截图、录像或上下文。
+  没有提供视觉批准，未更改图片、阈值或重试；两项 CI 失败继续保留，不能用 f0d 截图解释本轮。
+
+### 本轮实际检查
+
+- Python 诊断文件 10 项通过；锁定 mitmproxy 12.2.3 的共用套件 53 项中 51 项通过，
+  五入口集成及 Node/mitmdump 集成均因本机监听权限失败。
+- 请求错误、上层传播、持久化与文件源定向 Node 回归为 26 项，24 通过；
+  2 项生产 HTTP 路径在 listen EPERM 处失败，5 项真实文件源回归通过。
+- 完整 npm test 为 172 项、164 通过、8 失败；7 项监听 EPERM，
+  Release 工具测试进程另有 Node 原生运行时断言失败，没有跳过或记为通过。
+- 全仓 ESLint、两份 TypeScript 配置、400 行检查、改动 Python 的 Ruff 0.15.12
+  和 diff 空白检查通过。npm run check 与完整 pre-commit 原命令止于 uv 缓存权限。
+- 真实 Playwright 请求回归止于 listen EPERM；认证文件实际启动 12 项，
+  均因 Chromium MachPortRendezvous 权限退出而未通过，用例收集不代表执行通过。
+  本轮使用已有依赖，未重跑 npm ci；宿主仍须运行全部固定检查和新提交完整 CI。
+
+本轮仅补齐有限分类并保留已有修复，当前画面失败及 master 断连根因仍未知，#65 继续暂停。
+当前附件审阅、真实回环/浏览器与独立验收留待宿主；不能宣称 Issue #63 全部完成或 master 已恢复。
+Python 执行依赖有新变化，发布验证前仍须正式审阅配置身份，不能沿用旧配置或旧提交 CI。

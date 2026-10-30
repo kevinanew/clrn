@@ -98,11 +98,16 @@ def release_peer_match(connection):
 
 
 def error_reason(value):
-    """仅保留审阅的错误类别，任意服务端文本与深层异常不得进入持久化记录。"""
-    text = str(value or '').lower()
-    if 'timeout' in text or 'timed out' in text:
+    """只识别固定错误或已知 OS 错误首部，不从地址、凭据和后续文本猜测原因。"""
+    text = value.lower() if isinstance(value, str) else ''
+    if text in ('timeout', 'timed out', 'connection timed out') or re.fullmatch(
+            r'\[errno (?:60|110|10060)\] (?:operation|connection) timed out', text):
         return 'timeout'
-    if 'connection' in text or 'disconnect' in text:
+    # mitmproxy 12.2.3 的 HTTP/1 断连及 asyncio 建连错误；连接值只参与匹配，绝不输出。
+    if text in ('server closed connection', 'connection cancelled', 'connection closed by peer.',
+                'connection refused', 'connection reset by peer') or re.fullmatch(
+            r'\[errno (?:61|111|10061)\] (?:connect call failed|connection refused)(?: \([^\r\n]*\))?', text) or re.fullmatch(
+            r'\[errno (?:54|104|10054)\] connection reset by peer', text):
         return 'connection-failed'
     return 'detail-withheld'
 

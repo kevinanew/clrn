@@ -3,12 +3,49 @@ import json
 import unittest
 from unittest.mock import patch
 from mitmproxy import http
+from mitmproxy.flow import Error
 from mitmproxy.websocket import WebSocketData, WebSocketMessage
 from connection_diagnostics import ConnectionDiagnostics, safe_text, node_name
 from test_network_faults import flow
 
 
 class DiagnosticTests(unittest.TestCase):
+    def test_原因只识别已知错误首部而不扫描地址凭据或后续诊断(self):
+        known = [
+            ('server closed connection', 'connection-failed'),
+            ('connection cancelled', 'connection-failed'),
+            ('[Errno 111] Connect call failed (\'192.0.2.40\', 18080)', 'connection-failed'),
+            ('[Errno 61] Connection refused', 'connection-failed'),
+            ('[Errno 104] Connection reset by peer', 'connection-failed'),
+            ('[Errno 110] Connection timed out', 'timeout'),
+            ('timed out', 'timeout'),
+        ]
+        unknown = [
+            'https://timeout.fixture.invalid/private?token=synthetic-secret',
+            'Cookie: connection=synthetic-secret',
+            'https://disconnect.fixture.invalid/private',
+            'unrecognized diagnostic: connection timeout',
+            'unknown\nserver closed connection',
+            'server closed connection https://fixture.invalid/private',
+            '[Errno 111] https://timeout.fixture.invalid/private',
+            '[Errno 1111] Connect call failed',
+        ]
+        for message, reason in known + [(message, 'detail-withheld') for message in unknown]:
+            with self.subTest(message=message):
+                diagnostics = ConnectionDiagnostics()
+                request = flow('https://fixture.invalid/node/v1/status')
+                request.error = Error(message)
+                diagnostics.error(request)
+                event = diagnostics.snapshot()['events'][0]
+                self.assertEqual(event['reason'], reason)
+                self.assertEqual(event['operation'], 'proxied-request')
+                self.assertEqual(event['method'], 'GET')
+                self.assertEqual(event['source'], 'laiwan_prd')
+                self.assertEqual(event['status'], 'unavailable')
+                self.assertEqual(event['response'], 'not-received')
+                for value in ('fixture.invalid', '192.0.2.40', 'synthetic-secret', '/private'):
+                    self.assertNotIn(value, json.dumps(diagnostics.snapshot()))
+
     def test_错误中的连接地址与主机不进入公开诊断(self):
         diagnostics = ConnectionDiagnostics()
         request = flow('https://api.invalid/node/v1/status')
