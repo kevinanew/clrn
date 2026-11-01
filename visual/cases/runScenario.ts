@@ -57,6 +57,20 @@ export async function runVisualScenario(
     if (scenario.pageLabel === 'guest_club') {
       await assertGuestClubReady(page);
     }
+    if (scenario.pageLabel === 'signed_in_club_populated') {
+      const list = page.locator('[data-testid="club-list-screen"]:visible').last();
+      await expect(list.locator('[data-testid^="club-"][data-testid$="-profile"]'), '我的俱乐部应显示三张卡片')
+        .toHaveCount(3);
+      await expect(list.getByTestId('club-title'), '三张卡片应展示固定名称').toHaveText([
+        '星光俱乐部', '周末俱乐部', '好友俱乐部',
+      ]);
+      await expect(list.getByTestId('club-member-amount-container'), '卡片应展示各俱乐部成员人数')
+        .toHaveText(['18', '36', '72']);
+      await expect(list.getByTestId('default-club-avatar-text'), '默认头像应显示俱乐部名称首字')
+        .toHaveText(['星', '周', '好']);
+      await expect(list.getByTestId('create-room-no-clubs-container'), '有俱乐部时应移除空状态').toHaveCount(0);
+      await expect(list.getByTestId('club-list-load-error'), '列表应加载成功').toHaveCount(0);
+    }
     if (scenario.pageLabel === 'signed_in_club_rooms_populated') {
       // 大厅也会挂载同一批牌局；断言只检查当前俱乐部页，避免把两处卡片合并计数。
       const clubRoomScreen = page.locator('[data-testid="club-rooms-screen"]:visible').last();

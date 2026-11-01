@@ -52,7 +52,7 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 | --- | --- |
 | `network_faults.py`：大厅版本、登录密码、俱乐部列表断连及登录用户名存在检查 | 弱网错误恢复；仅登录失败场景固定“已存在”以避免注册，其他登录保持真实 |
 | 同上：`GET /v10/club/search?keyword=…`、`PUT /v10/clubs` | 精确 GET 关键词与 PUT 虚拟俱乐部 ID 批次的只读命中卡片；功能和视觉共用，其他关键词、方法及预检透传 |
-| `visual/cases/club/mitmproxy/addon.py`：`GET /v10/club`、`PUT /v10/clubs`、`PUT /v2/building/rooms` | 有数据俱乐部列表；资料与房间批次仅限虚拟俱乐部，保留专用场景计数 |
+| `visual/cases/club/mitmproxy/addon.py`：`GET /v10/club`、`PUT /v10/clubs`、`PUT /v2/building/rooms` | 牌局有数据场景保留原响应；已加入列表使用 `club-list-populated`，绑定本轮账号并返回三个虚拟俱乐部。资料、默认头像查询及空房间批次仅匹配虚拟标识，其他账号和请求透传；保留专用场景计数 |
 | `visual/cases/game-record/mitmproxy/{addon,data}.py`：`/v10/texas_holdem/user/user/game_records`、`/v11/game_log/user/play_session_record/recent` | 战绩新旧版、空／列表／分页／列表错误；仅本轮 user 与虚拟记录 |
 | 同上：`PUT /v1/room`、`/v{1,11}/game_log/room/settlement`、`/v1/game_log/user/user/rooms/settlement` | 固定虚拟房名与汇总 |
 | 同上：`/v1/game_log/room/room/{game_amount,game,settlement}`、`/v1/game_log/room/game_amount`、`/v1/game_log/user/user/games` | 虚拟战绩详情、牌谱及错误分支；删除只作用于虚拟记录，保留删除错误断言 |
