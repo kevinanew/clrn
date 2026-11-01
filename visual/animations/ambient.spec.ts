@@ -4,6 +4,7 @@ import { setupContextForScenario } from '../src/support/pageSetup';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 import { openApplication, recordApplicationBuild } from './appSession';
 import { appearance, captureTimeline, CLOCK_START, fixedArea, freeze } from './timeline';
+import { prepareSlotBannerTimeline } from './slotBannerPreparation';
 
 test('launch branding fades in', async ({ context, page }, info) => {
   const scenario = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SUITE: 'app' })
@@ -32,7 +33,7 @@ test('大厅老虎机横幅自动旋转并重复', async ({ context, page }, inf
   const clip = await fixedArea(page, banner, 0);
   await freeze(page);
   // 基准从快进终点触发的真实旋转开始采样，不能再等待下一轮，否则图标序列会错位。
-  await page.clock.fastForward(12_000);
+  await prepareSlotBannerTimeline(page);
   await captureTimeline(page, info, 'hall-slot-banner', banner,
     { clip, times: [0, 160, 500, 1000, 1200, 4000, 4500, 5200] });
 });
