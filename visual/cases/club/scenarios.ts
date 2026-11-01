@@ -1,6 +1,14 @@
+/** 定义俱乐部空状态、已加入列表、牌局和搜索的独立截图场景。 */
 import { type SignedInPageDef } from '../../scenarioTypes';
 
 export const pages: SignedInPageDef[] = [
+  {
+    // 显式选择我的俱乐部，避免初始标签随牌局数据变化。
+    label: 'signed_in_club_populated',
+    tabTestId: 'club-tab',
+    navClickTestIds: ['club_tab_my_club'],
+    visualReadySelector: '[data-testid="club-list-screen"] [data-testid="club-00000000-0000-4000-8000-000000000163-profile"]',
+  },
   {
     // club API mock 为空列表，ClubScreen 空态下默认已落在「我的俱乐部」tab
     label: 'signed_in_club',
