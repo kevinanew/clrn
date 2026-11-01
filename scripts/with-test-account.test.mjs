@@ -186,7 +186,7 @@ test('房间准备失败不启动测试命令，并释放账号锁', async conte
   await writeFile(join(directory, 'reject-wallet'), '/v2/building/rooms');
   const result = await launch(context, pool, [process.execPath, '-e', 'console.log("SHOULD_NOT_START")']).finished;
   assert.equal(result.code, 1);
-  assert.match(result.stderr, /准备测试私人房间失败/);
+  assert.match(result.stderr, /method=PUT operation=prepare-room-list source=laiwan_prd status=401 response=received reason=http-error/);
   assert.ok(!result.stdout.includes('SHOULD_NOT_START'));
   assert.deepEqual(await readdir(join(directory, 'locks')), []);
 });

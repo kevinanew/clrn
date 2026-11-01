@@ -1,6 +1,8 @@
 /** 在测试命令执行期间托管指定 Release；向全部子进程传递同一地址并在结束时清理。 */
+import { requestFailure, requestFailureReason, safeDiagnosticReason } from './request-failure.cjs';
 import { spawn } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
+import { releaseDiagnosticDirectory, releaseDiagnosticWriter } from './release-diagnostics.mjs';
 import { startReleaseWebServer, verifyBuildVersion } from './release-web-server.mjs';
 
 /**
@@ -11,8 +13,9 @@ import { startReleaseWebServer, verifyBuildVersion } from './release-web-server.
 export async function runWithReleaseWebServer(command, environment = process.env) {
   if (!command.length || !environment.CLRN_RELEASE_WEB_ROOT) throw new Error('缺少测试命令或已校验的 Release 目录');
   await verifyBuildVersion(environment.CLRN_RELEASE_WEB_ROOT, environment.CLRN_EXPECTED_APPLICATION_COMMIT);
-  const { server, baseUrl } = await startReleaseWebServer(environment.CLRN_RELEASE_WEB_ROOT);
-  console.log(`Release ${environment.CLRN_RELEASE_TAG || ''}：${baseUrl}`);
+  const record = releaseDiagnosticWriter(releaseDiagnosticDirectory(command));
+  const { server, serverId, baseUrl } = await startReleaseWebServer(environment.CLRN_RELEASE_WEB_ROOT, { record });
+  console.log('Release 静态服务已启动：source=release-static');
   let child;
   let terminationTimer;
   /**
@@ -31,11 +34,12 @@ export async function runWithReleaseWebServer(command, environment = process.env
   process.once('SIGINT', interrupt);
   process.once('SIGTERM', shutdown);
   try {
-    const response = await fetch(baseUrl, { signal: AbortSignal.timeout(5000) });
-    if (!response.ok) throw new Error('Release Web Server 未就绪');
-    await response.body.cancel();
+    const response = await fetch(baseUrl, { signal: AbortSignal.timeout(5000) })
+      .catch(error => { throw requestFailure('release-readiness', requestFailureReason(error)); });
+    if (!response.ok) throw requestFailure('release-readiness', 'http-error', response.status);
+    await response.body.cancel().catch(() => { throw requestFailure('release-readiness', 'body-read-failed', response.status); });
     child = spawn(command[0], command.slice(1), { stdio: 'inherit', detached: true,
-      env: { ...environment, CLRN_RELEASE_WEB_URL: baseUrl, VISUAL_BASE_URL: baseUrl,
+      env: { ...environment, CLRN_RELEASE_WEB_URL: baseUrl, CLRN_RELEASE_SERVER_ID: serverId, VISUAL_BASE_URL: baseUrl,
         E2E_STAGING_URL: baseUrl, E2E_INTERACTION_BASE_URL: baseUrl,
         E2E_EXPECT_BUILD_SHA: environment.CLRN_EXPECTED_APPLICATION_COMMIT } });
     return await new Promise(/**
@@ -68,6 +72,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
    * @param code - 测试退出码。
    */ code => { process.exitCode = code; }).catch(/**
    * 输出不含凭据的失败原因。
-   * @param error - 启动或执行错误。
-   */ error => { console.error(error.message); process.exitCode = 1; });
+   * @param error - 启动或执行失败。
+   */ error => { console.error(`Release 测试命令失败：operation=release-test-command ${safeDiagnosticReason(error)}`); process.exitCode = 1; });
 }

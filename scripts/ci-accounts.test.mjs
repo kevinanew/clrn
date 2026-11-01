@@ -145,7 +145,7 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
             CLRN_CI_ACCOUNT: selected, CLRN_CI_TEST_ACCOUNTS: JSON.stringify({ accounts }) },
         });
       assert.notEqual(rejected.status, 0);
-      assert.match(rejected.stderr, /失败（HTTP 401）/);
+      assert.match(rejected.stderr, /失败：method=(POST|PUT) operation=(prepare-account|prepare-room)-[a-z-]+ source=laiwan_prd status=401 response=received reason=http-error/);
       assert.equal(readFileSync(environment, 'utf8'), '');
       assert.ok(!rejected.stderr.includes('private-token'));
     }

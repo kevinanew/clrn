@@ -108,6 +108,59 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.addon.request(request)
         self.assertEqual(json.loads(request.response.content)['result']['nickname'], 'Player1')
 
+    def preflight(self, url=None, **headers):
+        request = flow(url or f'https://node-0.service.invalid/v1/game_log/room/{ROOM}/settlement', 'OPTIONS')
+        request.request.headers.update({'Origin': 'http://127.0.0.1:43210',
+            'Access-Control-Request-Method': 'GET',
+            'Access-Control-Request-Headers': 'app-id,app-version,authorization,content-type', **headers})
+        self.addon.request(request)
+        return request
+
+    def test_空榜预检只允许当前房间与本轮页面的必要读取(self):
+        self.creation()
+        with patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': 'http://127.0.0.1:43210/'}):
+            request = self.preflight()
+            self.assertEqual(request.response.status_code, 204)
+            self.assertEqual(request.response.content, b'')
+            self.assertEqual(request.response.headers['Access-Control-Allow-Origin'], 'http://127.0.0.1:43210')
+            self.assertEqual(request.response.headers['Access-Control-Allow-Methods'], 'GET')
+            self.assertEqual(request.response.headers['Access-Control-Allow-Headers'],
+                             'app-id,app-version,authorization,content-type')
+            self.assertEqual(request.response.headers['Access-Control-Allow-Credentials'], 'true')
+            self.assertEqual(self.preflight(**{'Access-Control-Request-Headers': ' Authorization, CONTENT-TYPE '})
+                             .response.status_code, 204, '请求头名称不区分大小写')
+
+    def test_其他来源方法请求头场景与未绑定房间的预检保持透传(self):
+        with patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': 'http://127.0.0.1:43210'}):
+            self.assertIsNone(self.preflight().response, '未观察到成功建房时不能放行')
+            self.creation()
+            for headers in ({'Origin': ''}, {'Origin': 'null'}, {'Origin': 'http://127.0.0.1:43211'},
+                            {'Origin': 'https://page.invalid'}, {'Access-Control-Request-Method': ''},
+                            {'Access-Control-Request-Method': 'POST'}, {'Access-Control-Request-Method': 'get'},
+                            {'Access-Control-Request-Headers': ''},
+                            {'Access-Control-Request-Headers': 'authorization,x-unknown'},
+                            {'Access-Control-Request-Headers': 'authorization,,content-type'}):
+                with self.subTest(headers=headers):
+                    self.assertIsNone(self.preflight(**headers).response)
+            for url in (f'https://node-9.service.invalid/v1/game_log/room/{ROOM}/settlement',
+                        f'https://node-0.service.invalid/v1/game_log/room/{OTHER}/settlement',
+                        f'https://node-0.service.invalid/v1/game_log/room/{ROOM}/settlement/extra',
+                        f'https://node-0.service.invalid/v10/profile/{PLAYER_IDS[0]}'):
+                self.assertIsNone(self.preflight(url).response)
+            self.addon.scenario = None
+            self.assertIsNone(self.preflight().response)
+            self.addon.scenario = 'visual-stable'
+            self.control('/zhajinhua/release', {})
+            self.assertIsNone(self.preflight().response, '释放当前房间后不能沿用预检许可')
+
+    def test_本轮页面来源配置缺失损坏或带凭据时预检保持透传(self):
+        self.creation()
+        for configured in ('', 'invalid', 'http://127.0.0.1:bad', 'http://127.0.0.1',
+                           'https://page.invalid', 'http://token@127.0.0.1:43210',
+                           'http://127.0.0.1:43210/other', 'http://127.0.0.1:43210?token=offline'):
+            with self.subTest(configured=configured), patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': configured}):
+                self.assertIsNone(self.preflight().response)
+
     def test_本人资料保持真实且混合批次仅补充虚拟对手(self):
         self.addon.replay.room_id, self.addon.replay.self_id = ROOM, SELF
         for path in (f'/v10/profile/{SELF}', f'/v10/wallet/{SELF}/currency/coin'):

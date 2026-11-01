@@ -84,7 +84,7 @@ test('续时读取的 HTTP 错误、业务拒绝、无效 JSON 和连接中断�
       await assert.rejects(openRenewPopup(page).then(() => { sampled = true; }), error => {
         assert.match(String(error), /续时数据准备失败：method=POST operation=renewal-price/);
         assert.match(String(error), mode === 'http' ? /status=503/ : mode === 'abort'
-          ? /status=未收到响应/ : /status=200/);
+          ? /source=laiwan_prd status=unavailable response=not-received/ : /status=200/);
         assert.doesNotMatch(String(error), /不得传播的响应正文|renewal\.invalid/);
         return true;
       });

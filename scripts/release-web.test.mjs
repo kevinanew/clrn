@@ -193,17 +193,17 @@ test('完整测试命令继承同一入口，失败退出码和取消均会关�
       require('node:assert/strict').equal(process.env.E2E_STAGING_URL, process.env.VISUAL_BASE_URL);
       fetch(process.env.VISUAL_BASE_URL).then(response => response.text()).then(html => {
         require('node:assert/strict').match(html, new RegExp(process.env.CLRN_EXPECTED_APPLICATION_COMMIT));
-        console.log('verified');
-      });`], { env: environment });
+        console.log('verified', process.env.VISUAL_BASE_URL);
+      });`], { env: environment, cwd: path.dirname(prepared.webRoot) });
     assert.match(result.stdout, /verified/);
     const address = result.stdout.match(/http:\/\/127\.0\.0\.1:\d+\//)[0];
     await assert.rejects(fetch(address));
     await assert.rejects(execute(process.execPath, [wrapper, process.execPath, '-e', 'process.exit(17)'],
-      { env: environment }), { code: 17 });
+      { env: environment, cwd: path.dirname(prepared.webRoot) }), { code: 17 });
     const outputFile = path.join(path.dirname(prepared.webRoot), 'child-ready');
     const child = spawn(process.execPath, [wrapper, process.execPath, '-e', `
       require('node:fs').writeFileSync(process.argv[1], process.env.VISUAL_BASE_URL);
-      setInterval(() => {}, 1000);`, outputFile], { env: environment, stdio: 'ignore' });
+      setInterval(() => {}, 1000);`, outputFile], { env: environment, cwd: path.dirname(prepared.webRoot), stdio: 'ignore' });
     const completion = new Promise(resolve => child.once('exit', resolve));
     let cancelledAddress;
     try {

@@ -1,3 +1,4 @@
+import { safeDiagnosticReason } from '../../scripts/request-failure.cjs';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -23,7 +24,7 @@ export class MitmdumpProcess {
      * @param data - 子进程输出的数据块。
      */
     const captureOutput = (data: Buffer) => {
-      this.diagnostics = (this.diagnostics + data.toString()).slice(-MAX_DIAGNOSTIC_LENGTH);
+      this.diagnostics = (this.diagnostics + safeDiagnosticReason(data.toString())).slice(-MAX_DIAGNOSTIC_LENGTH);
     };
     child.stdout?.on('data', captureOutput);
     child.stderr?.on('data', captureOutput);
@@ -44,7 +45,7 @@ export class MitmdumpProcess {
     const deadline = Date.now() + STARTUP_TIMEOUT_MS;
     while (true) {
       if (this.startupError || !this.isRunning) {
-        const reason = this.startupError?.message || this.diagnostics;
+        const reason = this.startupError ? safeDiagnosticReason(this.startupError) : this.diagnostics;
         throw new Error(`mitmproxy 启动失败；请安装 e2e/mitmproxy/requirements.txt。\n${reason}`);
       }
       try {

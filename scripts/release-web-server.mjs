@@ -1,4 +1,6 @@
 /** 为已校验的 Release 静态目录提供独立 HTTP 服务；不构建应用，不代理业务接口。 */
+import { randomUUID } from 'node:crypto';
+import { observeReleaseConnection, observeReleaseResponse } from './release-diagnostics.mjs';
 import { createServer } from 'node:http';
 import { createReadStream } from 'node:fs';
 import { readFile, realpath, stat } from 'node:fs/promises';
@@ -12,6 +14,22 @@ const contentTypes = {
   '.ttf': 'font/ttf', '.otf': 'font/otf', '.woff': 'font/woff', '.woff2': 'font/woff2',
   '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.wav': 'audio/wav', '.wasm': 'application/wasm',
 };
+
+/**
+ * 传输静态文件；由响应的生命周期管理文件源。
+ * @param stream - 本次请求独占的文件流。
+ * @param response - 实际 HTTP 响应或隔离测试的可写边界。
+ */
+export function pipeReleaseFile(stream, response) {
+  /** 客户端退出后立即释放源；destroy 也会等待尚未完成的文件打开再关闭句柄。 */
+  const destroySource = () => stream.destroy();
+  response.once('close', destroySource);
+  stream.once('close', () => response.removeListener('close', destroySource));
+  stream.once('error', () => response.destroy());
+  if (response.destroyed) { stream.destroy(); return; }
+  // 取消时无 error 的 destroy 不伪造文件读取错误，响应仍记录 interrupted。
+  stream.pipe(response);
+}
 
 /**
  * 校验实际入口版本，避免仅凭压缩包标签把错误构建交给浏览器。
@@ -29,14 +47,26 @@ export async function verifyBuildVersion(directory, expectedCommit) {
 /**
  * 在回环地址和随机端口启动服务；返回服务句柄供调用方在测试结束后关闭。
  * @param directory - 本任务独占的静态根目录。
+ * @param options - 本轮日志出口与隔离自测的文件流边界。
  */
-export async function startReleaseWebServer(directory) {
+export async function startReleaseWebServer(directory, { record = () => {}, openStream = createReadStream } = {}) {
   const root = await realpath(directory);
+  const serverId = randomUUID();
+  const connections = new WeakMap();
+  let sequence = 0;
+  let connectionSequence = 0;
   const server = createServer(/**
    * 只提供根目录中的真实文件，缺失资源返回 404，避免把 HTML 误当脚本。
    * @param request - 浏览器请求。
    * @param response - HTTP 响应。
    */ async (request, response) => {
+    // 本地静态资源每次响应后关闭上游连接，避免代理在空闲 FIN 尚未处理时复用旧连接。
+    // 不改变业务连接、HTTP 状态、文件传输结果或重试次数。
+    response.setHeader('Connection', 'close');
+    const requestId = `${serverId}-${++sequence}`;
+    response.setHeader('X-Clrn-Release-Request', requestId);
+    const diagnostic = observeReleaseResponse(request, response,
+      { requestId, connectionId: connections.get(request.socket), serverId }, record);
     try {
       if (!['GET', 'HEAD'].includes(request.method)) {
         response.writeHead(405, { Allow: 'GET, HEAD' }).end();
@@ -61,6 +91,8 @@ export async function startReleaseWebServer(directory) {
         response.writeHead(404).end();
         return;
       }
+      // 文件系统核验期间客户端可能已经退出；不再为已关闭的响应打开文件。
+      if (response.destroyed) return;
       const extension = path.extname(filename).toLowerCase();
       response.writeHead(200, {
         'Content-Type': contentTypes[extension] || 'application/octet-stream',
@@ -69,10 +101,20 @@ export async function startReleaseWebServer(directory) {
           ? 'max-age=31536000' : 'no-store, max-age=0',
       });
       if (request.method === 'HEAD') response.end();
-      else createReadStream(filename).on('error', /** 读取失败时中断响应。 */ () => response.destroy()).pipe(response);
+      else {
+        const stream = openStream(filename);
+        diagnostic.stream(stream);
+        pipeReleaseFile(stream, response);
+      }
     } catch {
+      diagnostic.emit('release.file-unavailable');
       response.writeHead(404).end();
     }
+  });
+  server.on('connection', socket => {
+    const connectionId = `connection-${++connectionSequence}`;
+    connections.set(socket, connectionId);
+    observeReleaseConnection(socket, { serverId, connectionId }, record);
   });
   await new Promise(/**
    * 等待服务完成监听后才允许测试访问。
@@ -82,5 +124,8 @@ export async function startReleaseWebServer(directory) {
     server.once('error', reject);
     server.listen(0, '127.0.0.1', resolve);
   });
-  return { server, baseUrl: `http://127.0.0.1:${server.address().port}/` };
+  record({ event: 'release.listen', observedAt: Date.now(), source: 'release-static', serverId,
+    keepAliveTimeoutMs: server.keepAliveTimeout,
+    keepAliveTimeoutBufferMs: Number.isInteger(server.keepAliveTimeoutBuffer) ? server.keepAliveTimeoutBuffer : 'unavailable' });
+  return { server, serverId, baseUrl: `http://127.0.0.1:${server.address().port}/` };
 }

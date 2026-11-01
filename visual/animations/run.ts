@@ -18,6 +18,7 @@ const parts: Record<Exclude<typeof selected, 'all'>, Record<string, { files: str
   texas: {
     table: { files: ['texas.spec.ts'], grep: 'texas (panels animations|hall panel animations)' },
     gameplay: { files: ['texas.spec.ts'], grep: 'texas gameplay animations' },
+    'card-sprite-control': { files: ['cardSpriteControl.spec.ts'] },
     social: { files: ['texas.spec.ts'], grep: 'texas (social|assets) animations' },
   },
   zhajinhua: Object.fromEntries(['panels', 'gameplay'].map(part => [part,
@@ -46,11 +47,13 @@ try {
       : parts[suite as keyof typeof parts][selectedPart];
     const environment = { ...process.env, VISUAL_SUITE: suite, VISUAL_LOCALES: 'en',
       VISUAL_AUTH_STATE_PATH: path.join(temporary, `${suite}-auth.json`),
-      PLAYWRIGHT_HTML_OUTPUT_DIR: path.join(directory, 'playwright-report', 'animations', suite) };
+      PLAYWRIGHT_HTML_OUTPUT_DIR: path.join(directory, 'playwright-report',
+        selectedPart === 'card-sprite-control' ? 'card-sprite-control' : 'animations', suite) };
     run(['tsx', 'src/captureAuthState.ts'], environment);
-    run(['playwright', 'test', '--config', 'animations/playwright.config.ts',
+    run(['playwright', 'test', '--config', selectedPart === 'card-sprite-control'
+      ? 'animations/cardSpriteControl.config.ts' : 'animations/playwright.config.ts',
       ...selection.files, ...(selection.grep ? [`--grep=${selection.grep}`] : []),
-      `--output=test-results/animations/${suite}`,
+      `--output=test-results/${selectedPart === 'card-sprite-control' ? 'card-sprite-control' : 'animations'}/${suite}`,
       ...process.argv.slice(2)], environment);
   }
 } finally { rmSync(temporary, { recursive: true, force: true }); }

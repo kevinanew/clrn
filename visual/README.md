@@ -312,7 +312,9 @@ CI 从 `CLRN_CI_TEST_ACCOUNTS_V3` Secret 为每个任务注入 `VISUAL_USERNAME`
 登录采集通过 `tsx` 运行，注入浏览器的脚本必须能独立序列化；
 `src/support/pageSetup.test.ts` 在独立执行环境检查语言固定和禁动画脚本，
 防止编译器的 `__name` 助手导致 Linux 的 `en-US@posix` 修正失效。
-账户校验和钱包/入房请求失败仅记录首行原因，避免 Playwright Call log 把 Authorization 写进报告。
+账户校验和钱包/入房请求失败使用固定安全模板，保留阶段、方法、operation、逻辑来源及真实状态；
+无响应时明确不可得，不复制原始异常、Call log、认证信息或服务端正文。详见
+[请求失败诊断](../scripts/request-diagnostics.md)。
 
 ## 工作原理
 

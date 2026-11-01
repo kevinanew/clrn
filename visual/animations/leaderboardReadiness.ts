@@ -1,4 +1,6 @@
 import { type Page, type Request } from '@playwright/test';
+import { readRequestJson } from '../src/support/requestJson';
+import { requestErrorSummary } from '../src/support/requestError';
 import { press } from './appSession';
 
 /**
@@ -20,16 +22,10 @@ export async function openPersonalLeaderboard(page: Page, roomId: string, self: 
       { method: 'GET', path: `/v10/profile/${self}`, operation: 'leaderboard-profile' },
       { method: 'PUT', path: `/v10/texas_holdem/room/${roomId}/player_statistics`, operation: 'leaderboard-statistics' },
     ].map(async ({ method, path, operation }) => {
-      const context = `个人排行榜数据准备失败：method=${method} operation=${operation}`;
       const response = await page.waitForResponse(response => requests.has(response.request())
         && response.request().method() === method && new URL(response.url()).pathname === path,
-      { timeout: 15_000 }).catch(() => { throw new Error(`${context} status=未收到响应`); });
-      const status = response.status();
-      if (!response.ok()) throw new Error(`${context} status=${status}；HTTP 响应失败`);
-      const body = await response.json().catch(() => {
-        throw new Error(`${context} status=${status}；响应不是有效 JSON`);
-      });
-      if (body?.ok !== true) throw new Error(`${context} status=${status}；业务结果未成功`);
+      { timeout: 15_000 }).catch(error => { throw new Error(requestErrorSummary(error, operation)); });
+      await readRequestJson(response, operation);
     });
     // 先安装等待再点击真实入口；不伪造响应，不推进动画相位。
     await Promise.all([...reads, press(page, 'texas-holdem-leaderboard-button')]);

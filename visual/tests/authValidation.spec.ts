@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { inspect } from 'node:util';
 import type { AddressInfo } from 'node:net';
 import { expect, type Page, test } from '@playwright/test';
 import { isSignedIn, waitForSignInState } from '../src/support/authFlow';
@@ -7,6 +8,28 @@ const COMPLETE_AUTH = {
   user_id: 'visual-user',
   api_token: { access_token: 'valid-token', token_type: 'Bearer' },
 };
+const PRIVATE_DIAGNOSTIC = 'https://user:synthetic-password@fixture.invalid:9443/private?token=synthetic-token 192.0.2.40 Bearer synthetic-bearer Cookie: synthetic-cookie';
+
+/**
+ * 核对认证错误的完整安全契约与脱敏，失败仍须拒绝 Promise。
+ * @param result - 真实认证函数的执行结果。
+ * @param status - 实际响应状态，无响应时明确不可得。
+ * @param reason - 本例注入故障对应的固定原因。
+ */
+async function expectValidationFailure(
+  result: Promise<unknown>, status: number | 'unavailable', reason: string,
+): Promise<void> {
+  const error: unknown = await result.then(() => null, failure => failure);
+  expect(error).toBeInstanceOf(Error);
+  if (!(error instanceof Error)) throw new Error('认证失败用例必须抛出错误');
+  expect(error.message).toBe(`账户接口校验失败：method=GET operation=validate-account source=laiwan_prd status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}`);
+  expect(error.cause).toBeUndefined();
+  const output = inspect(error, { depth: 20 });
+  for (const secret of ['fixture.invalid', '127.0.0.1', '192.0.2.40', '9443', '/private',
+    'synthetic-', 'Authorization', 'Cookie', 'Call log', COMPLETE_AUTH.api_token.access_token]) {
+    expect(output).not.toContain(secret);
+  }
+}
 
 /**
  * 启动本机认证测试服务，返回独立地址和异步关闭方法。
@@ -272,26 +295,26 @@ test('a failing optional level request does not affect successful account valida
   }
 });
 
-test('account validation fails explicitly on 429 and 503', async ({ page }) => {
-  for (const failureStatus of [429, 503]) {
+for (const failureStatus of [429, 503]) {
+  test(`account validation fails explicitly on HTTP ${failureStatus}`, async ({ page }) => {
     const server = await startTestServer((request, response) => {
       response.writeHead(request.url === '/' ? 200 : failureStatus, {
         'Content-Type': request.url === '/' ? 'text/html' : 'application/json',
       });
-      response.end(request.url === '/' ? '<div id="root"></div>' : '{}');
+      response.end(request.url === '/' ? '<div id="root"></div>' : PRIVATE_DIAGNOSTIC);
     });
 
     try {
       await openAuthFixture(page, server.origin);
       await setPersistedAuth(page);
-      await expect(waitForSignInState(page, { apiBaseUrl: server.origin })).rejects.toThrow(
-        `HTTP ${failureStatus}`,
+      await expectValidationFailure(
+        waitForSignInState(page, { apiBaseUrl: server.origin }), failureStatus, 'http-error',
       );
     } finally {
       await server.close();
     }
-  }
-});
+  });
+}
 
 test('account validation fails explicitly on a network error', async ({ page }) => {
   const server = await startTestServer((request, response) => {
@@ -306,8 +329,8 @@ test('account validation fails explicitly on a network error', async ({ page }) 
   try {
     await openAuthFixture(page, server.origin);
     await setPersistedAuth(page);
-    await expect(waitForSignInState(page, { apiBaseUrl: server.origin })).rejects.toThrow(
-      '网络错误或超时',
+    await expectValidationFailure(
+      waitForSignInState(page, { apiBaseUrl: server.origin }), 'unavailable', 'connection-failed',
     );
   } finally {
     await server.close();
@@ -330,13 +353,9 @@ test('account validation fails explicitly on request timeout', async ({ page }) 
   try {
     await openAuthFixture(page, server.origin);
     await setPersistedAuth(page);
-    const error = await waitForSignInState(page, { apiBaseUrl: server.origin, requestTimeoutMs: 100 })
-      .then(() => null, failure => failure as Error);
-    expect(error).toBeInstanceOf(Error);
-    expect(error!.message).toContain('网络错误或超时');
-    expect(error!.message).toContain('Timeout');
-    expect(error!.message).not.toContain('Authorization');
-    expect(error!.message).not.toContain(COMPLETE_AUTH.api_token.access_token);
+    await expectValidationFailure(
+      waitForSignInState(page, { apiBaseUrl: server.origin, requestTimeoutMs: 100 }), 'unavailable', 'timeout',
+    );
   } finally {
     await server.close();
   }

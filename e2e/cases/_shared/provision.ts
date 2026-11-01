@@ -6,6 +6,8 @@ import { signIn, type Session } from './auth';
 import { createTestingAccount } from './test-user';
 import { readTestApiToken } from './test-wallet';
 import { openHall, prepareContext } from './page';
+import { requestFailure, requestFailureReason } from '../../../scripts/request-failure.cjs';
+import { readRequestJson } from '../../../visual/src/support/requestJson';
 
 export type ProvisionedAccount = Session & {
   username: string;
@@ -28,16 +30,20 @@ export async function readDiamondBalance(page: Page, account: Session): Promise<
       headers: { Authorization: account.authorization },
       data: { currencies: ['diamond'] },
     },
-  );
-  expect(response.ok(), '测试账号钱包应可读取').toBeTruthy();
-  const body = await response.json();
-  await response.dispose();
-  expect(body.ok, '钱包业务响应应成功').toBe(true);
-  const diamond = body.result?.currencies?.find((asset: { code: string }) => asset.code === 'diamond');
-  expect(diamond, '钱包应返回 diamond 币种').toBeDefined();
-  const balance = Number(diamond.balance);
-  expect(Number.isFinite(balance), '钻石余额应为有限数字').toBeTruthy();
-  return balance;
+  ).catch(error => { throw requestFailure('existing-account-wallet', requestFailureReason(error)); });
+  try {
+    const body = await readRequestJson(response, 'existing-account-wallet');
+    const currencies = body.result?.currencies;
+    const diamond = Array.isArray(currencies) ? currencies.find(asset => asset?.code === 'diamond') : undefined;
+    if (!diamond) throw requestFailure('existing-account-wallet', 'invalid-response', response.status());
+    let balance: number;
+    try { balance = Number(diamond.balance); }
+    catch { throw requestFailure('existing-account-wallet', 'invalid-response', response.status()); }
+    if (!Number.isFinite(balance)) throw requestFailure('existing-account-wallet', 'invalid-response', response.status());
+    return balance;
+  } finally {
+    await response.dispose().catch(() => { throw requestFailure('existing-account-wallet', 'body-read-failed', response.status()); });
+  }
 }
 
 /**

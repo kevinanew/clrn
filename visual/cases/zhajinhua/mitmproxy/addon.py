@@ -31,6 +31,37 @@ def respond(flow, data, status=200):
     })
 
 
+def respond_settlement_preflight(flow):
+    """仅为本轮本地 Release 页面的必要读取预检响应，不扩大其他业务的跨域范围。"""
+    if (flow.request.method != 'OPTIONS'
+            or flow.request.headers.get('Access-Control-Request-Method') != 'GET'):
+        return False
+    try:
+        release = urlsplit(os.environ.get('CLRN_RELEASE_WEB_URL', ''))
+        if (release.scheme != 'http' or release.hostname != '127.0.0.1' or not release.port
+                or release.username or release.password or release.path not in ('', '/')
+                or release.query or release.fragment):
+            return False
+        origin = f'http://127.0.0.1:{release.port}'
+    except ValueError:
+        return False
+    if flow.request.headers.get('Origin') != origin:
+        return False
+    requested_headers = flow.request.headers.get('Access-Control-Request-Headers', '')
+    names = {name.strip().lower() for name in requested_headers.split(',')}
+    # 固定应用的 ApiHeaderFactory 使用这些头；未知头仍交由真实上游判断。
+    if not names <= {'accept', 'accept-language', 'content-type', 'app-id', 'app-version', 'authorization'}:
+        return False
+    flow.response = http.Response.make(204, b'', {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Methods': 'GET',
+        'Access-Control-Allow-Headers': requested_headers,
+        'Vary': 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
+    })
+    return True
+
+
 class ZhajinhuaVisualProxy:
     def __init__(self):
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
@@ -122,9 +153,11 @@ class ZhajinhuaVisualProxy:
             return
         path = urlsplit(flow.request.path).path
         # 仅当前真实创建的房间使用固定空榜；其他房间和节点健康请求继续透传。
-        if (self.created_room_id and flow.request.method == 'GET'
-                and path == f'/v1/game_log/room/{self.created_room_id}/settlement'):
-            respond(flow, {'ok': True, 'result': {'settlements': []}})
+        if self.created_room_id and path == f'/v1/game_log/room/{self.created_room_id}/settlement':
+            if flow.request.method == 'GET':
+                respond(flow, {'ok': True, 'result': {'settlements': []}})
+            elif not respond_settlement_preflight(flow):
+                return
             self.stabilized_requests += 1
             return
         if self.replay.room_id and prepare_profiles(flow, self.replay.self_id, PLAYER_IDS):

@@ -86,7 +86,7 @@ test('个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连�
       await assert.rejects(openPersonalLeaderboard(page, roomId, self).then(() => { sampled = true; }), error => {
         assert.match(String(error), /个人排行榜数据准备失败：method=PUT operation=leaderboard-statistics/);
         assert.match(String(error), mode === 'http' ? /status=503/ : mode === 'abort'
-          ? /status=未收到响应/ : /status=200/);
+          ? /source=laiwan_prd status=unavailable response=not-received/ : /status=200/);
         assert.doesNotMatch(String(error), /不得传播的响应正文|leaderboard\.invalid/);
         return true;
       });

@@ -43,6 +43,14 @@ for (const recovers of [true, false]) {
           </div>
         </div>`);
       await sampleCardSprites(page, 'fixture-mounted');
+      await page.evaluate(async () => {
+        const state = window as typeof window & { __clrnCardSpriteEvent: (entry: unknown) => Promise<void> };
+        for (const path of ['/assets/probe.example.invalid/card.png', '/assets/192.0.2.7/card.png',
+          '/assets/[2001:db8::7]/card.png', '/assets/probe%2eexample%2einvalid/token=fixture-secret']) {
+          await state.__clrnCardSpriteEvent({ event: 'privacy-probe', virtualTime: Date.now(),
+            cards: [{ id: 9000, connected: false, image: { path } }] });
+        }
+      });
       await page.evaluate(recovers => {
         if (recovers) setTimeout(() => {
           document.querySelector<HTMLElement>('[data-testid="sprite-image-fallback"]')!.style.display = 'none';
@@ -69,6 +77,8 @@ for (const recovers of [true, false]) {
       assert.ok(frozen.failed);
       assert.ok(frozen.entries.some(entry => entry.event === 'wait-failed'));
       assert.ok(frozen.entries.some(entry => entry.cards.some(card => card.image?.decode === 'fulfilled')));
+      assert.doesNotMatch(frozenContents, /probe\.example|192\.0\.2\.7|2001:db8|probe%2e|fixture-secret/);
+      assert.match(frozenContents, /asset-[a-f0-9]{16}/, '冻结附件必须使用逻辑资源指纹');
       const original = frozen.entries.flatMap(entry => entry.cards).find(card => card.connected)!;
       await observeCardSpriteClockControl(page);
       assert.equal(await page.locator('[data-testid="sprite-image-fallback"]').evaluate(node => getComputedStyle(node).display),
@@ -87,6 +97,7 @@ for (const recovers of [true, false]) {
       assert.ok(control.some(entry => entry.cards.some(card => card.id === original.id
         && card.opacity === (recovers ? '1' : '0'))), '对照须关联原始 DOM 节点');
       assert.doesNotMatch(contents, /private-player-id|private-token|private-text|base64/);
+      assert.doesNotMatch(contents, /probe\.example|192\.0\.2\.7|2001:db8|probe%2e|fixture-secret/);
       assert.equal(await readFile(path.join(directory, 'card-sprite-diagnostics-frozen.json'), 'utf8'), frozenContents,
         '对照附件不能覆盖原始冻结现场');
       await page.evaluate(async () => {

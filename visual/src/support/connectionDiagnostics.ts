@@ -1,8 +1,9 @@
 /** 在导航前安装浏览器和应用事件采集；失败时先保存诊断，再由调用方清理房间。 */
 import type { BrowserContext, Page, Request, TestInfo } from '@playwright/test';
+import { safeDiagnosticReason } from '../../../scripts/request-failure.cjs';
 import { writeFile } from 'node:fs/promises';
 import { DiagnosticRecorder } from '../../../e2e/helpers/diagnostic-recorder';
-import { diagnosticFields, diagnosticNode, diagnosticText } from '../../../e2e/helpers/diagnostic-privacy';
+import { diagnosticFields, diagnosticNode } from '../../../e2e/helpers/diagnostic-privacy';
 
 type DiagnosticProxy = { diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> };
 const recordings = new WeakMap<Page, DiagnosticRecorder>();
@@ -38,7 +39,7 @@ export async function installConnectionDiagnostics(context: BrowserContext, page
   proxy: DiagnosticProxy = {}) {
   const recorder = new DiagnosticRecorder();
   recordings.set(page, recorder);
-  const requests = new Map<Request, { requestId: string; node: string; path: string; method: string; start: number }>();
+  const requests = new Map<Request, { requestId: string; node: string; path: string; operation: string; method: string; start: number; status?: number }>();
   const pendingMetadata = new Set<Promise<unknown>>();
   let sequence = 0;
   let applicationEvents = 0;
@@ -52,16 +53,17 @@ export async function installConnectionDiagnostics(context: BrowserContext, page
   });`);
   page.on('request', request => {
     const url = new URL(request.url());
-    if (!/^(xhr|fetch|document)$/.test(request.resourceType())) return;
-    const entry = { requestId: `http-${++sequence}`, node: diagnosticNode(url.origin), path: url.pathname,
+    const entry = { requestId: `http-${++sequence}`, node: diagnosticNode(url.origin), path: /^(xhr|fetch|document)$/.test(request.resourceType()) ? url.pathname : '',
+      operation: /^(xhr|fetch)$/.test(request.resourceType()) ? 'browser-api-request' : 'browser-resource-read',
       method: request.method(), start: Date.now() };
     requests.set(request, entry);
-    recorder.record('http.start', entry);
+    recorder.record('http.start', { ...entry, status: 'unavailable', response: 'not-received' });
   });
   page.on('response', response => {
     const entry = requests.get(response.request());
     if (!entry) return;
-    recorder.record('http.response', { ...entry, status: response.status(), elapsedMs: Date.now() - entry.start,
+    entry.status = response.status();
+    recorder.record('http.response', { ...entry, status: response.status(), response: 'received', elapsedMs: Date.now() - entry.start,
       source: response.fromServiceWorker() ? 'service-worker' : 'browser' });
     // 仅读取节点列表响应；从不收集登录、钱包或游戏请求的正文。
     if (/^\/public\/v1[23]\/metadata\/servers$/.test(entry.path)) {
@@ -77,12 +79,14 @@ export async function installConnectionDiagnostics(context: BrowserContext, page
   });
   page.on('requestfinished', request => {
     const entry = requests.get(request);
-    if (entry) recorder.record('http.finished', { ...entry, elapsedMs: Date.now() - entry.start });
+    if (entry) recorder.record('http.finished', { ...entry, status: entry.status ?? 'unavailable',
+      response: entry.status === undefined ? 'not-received' : 'received', elapsedMs: Date.now() - entry.start });
     requests.delete(request);
   });
   page.on('requestfailed', request => {
     const entry = requests.get(request);
-    if (entry) recorder.record('http.failed', { ...entry, elapsedMs: Date.now() - entry.start,
+    if (entry) recorder.record('http.failed', { ...entry, status: entry.status ?? 'unavailable',
+      response: entry.status === undefined ? 'not-received' : 'received', elapsedMs: Date.now() - entry.start,
       reason: request.failure()?.errorText || 'unknown' });
     requests.delete(request);
   });
@@ -94,7 +98,7 @@ export async function installConnectionDiagnostics(context: BrowserContext, page
     socket.on('close', () => recorder.record('websocket.closed', connection));
     // 不保存原始消息：认证与业务正文可能包含凭据；订阅及 RPC 概要由应用/代理提供。
   });
-  page.on('pageerror', error => recorder.record('page.error', { reason: diagnosticText(error.stack || error.message) }));
+  page.on('pageerror', error => recorder.record('page.error', { reason: safeDiagnosticReason(error.message) }));
   page.on('crash', () => recorder.record('page.crash'));
   return {
     recorder,
@@ -109,13 +113,14 @@ export async function installConnectionDiagnostics(context: BrowserContext, page
       })]);
       clearTimeout(timer);
       recorder.record(failure ? 'test.failure' : 'test.complete',
-        { reason: failure instanceof Error ? failure.message : failure === undefined ? '' : String(failure) });
-      for (const entry of requests.values()) recorder.record('http.pending', { ...entry, elapsedMs: Date.now() - entry.start });
+        { reason: failure === undefined ? '' : safeDiagnosticReason(failure) });
+      for (const entry of requests.values()) recorder.record('http.pending', { ...entry, status: entry.status ?? 'unavailable',
+        response: entry.status === undefined ? 'not-received' : 'received', elapsedMs: Date.now() - entry.start });
       if (proxy.diagnostics) {
         try {
           const history = await proxy.diagnostics();
           recorder.merge(history.events, history.dropped);
-        } catch (error) { recorder.record('proxy.diagnostics-unavailable', { reason: String(error) }); }
+        } catch (error) { recorder.record('proxy.diagnostics-unavailable', { reason: safeDiagnosticReason(error) }); }
       }
       const title = `${info.title} / ${info.project.name} / repeat ${info.repeatEachIndex} / retry ${info.retry}`;
       const summary = recorder.markdown(title);
