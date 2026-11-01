@@ -1,10 +1,19 @@
 /** 校验本次流水响应及当前币种列表，拒绝空容器、错币种和不完整的截图内容。 */
 import { expect, type Page, type Response } from '@playwright/test';
-import type { Statement } from '../../../e2e/cases/settings-012-wallet-currencies/statements';
 import type { LocaleCode } from '../../scenarioTypes';
 import { readRequestJson } from '../../src/support/requestJson';
 
 export type TransactionCurrency = 'coin' | 'diamond';
+/** 视觉夹具的流水契约独立于功能测试，避免类型导入引入另一套 Playwright 依赖。 */
+export type TransactionStatement = {
+  currency_name: TransactionCurrency;
+  amount: string;
+  balance: string;
+  event: 'deposit' | 'withdraw';
+  create_at: string;
+  memo: string;
+  statement_id: string;
+};
 const expectedAmounts = { coin: ['-300', '+800', '-1200', '+20000'], diamond: ['-5', '+10', '-10', '+100'] };
 const balanceLabels = { 'zh-Hans': '余额', 'zh-Hant': '餘額', en: 'Balance' };
 // 这些文案精确匹配应用翻译资源，作为界面预期值，不参与生成网络响应。
@@ -39,13 +48,13 @@ export function waitForTransactionResponse(page: Page, userId: string, currency:
  * @param response - 本次导航实际收到的流水响应。
  * @param currency - 请求目标币种。
  */
-export async function readTransactionFixture(response: Response, currency: TransactionCurrency): Promise<Statement[]> {
-  // 视觉与功能套件各自加载 Playwright；这里只共享类型，避免运行时重复加载测试框架。
+export async function readTransactionFixture(response: Response, currency: TransactionCurrency): Promise<TransactionStatement[]> {
+  // 视觉与功能套件独立安装依赖；编译和运行时均只使用视觉套件的类型及响应解析入口。
   const body = await readRequestJson(response, 'wallet-statements');
   expect(body.result, '流水响应必须包含所选币种与列表').toMatchObject({
     currency_name: currency, statements: expect.any(Array),
   });
-  const statements: Statement[] = body.result.statements;
+  const statements: TransactionStatement[] = body.result.statements;
   expect(statements, '固定流水场景必须返回四条记录，不能把空响应当成就绪').toHaveLength(4);
   for (const statement of statements) {
     expect(statement, '固定流水的币种与必要字段必须完整').toMatchObject({
@@ -73,7 +82,7 @@ export async function readTransactionFixture(response: Response, currency: Trans
  * @param statements - 本次响应中已经通过校验的记录。
  */
 export async function assertTransactionsReady(page: Page, currency: TransactionCurrency,
-  locale: LocaleCode, statements: Statement[]): Promise<void> {
+  locale: LocaleCode, statements: TransactionStatement[]): Promise<void> {
   const identifier = currency === 'coin' ? 'coin-transaction-record-view' : 'account-security-items-list';
   const list = page.getByTestId(identifier);
   await expect(list, '目标币种列表必须位于当前可见页面').toBeInViewport();

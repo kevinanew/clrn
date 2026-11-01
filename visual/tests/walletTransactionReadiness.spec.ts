@@ -2,11 +2,10 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page, type Response } from '@playwright/test';
-import type { Statement } from '../../e2e/cases/settings-012-wallet-currencies/statements';
-import { assertTransactionsReady, readTransactionFixture } from '../cases/wallet/transactionReadiness';
+import { assertTransactionsReady, readTransactionFixture, type TransactionStatement } from '../cases/wallet/transactionReadiness';
 import { lockPageWidth } from '../src/support/pageStabilizers';
 
-const records: { coin: Statement[]; diamond: Statement[] } = JSON.parse(readFileSync(
+const records: { coin: TransactionStatement[]; diamond: TransactionStatement[] } = JSON.parse(readFileSync(
   path.resolve(__dirname, '../../e2e/mitmproxy/data/wallet-statements.json'), 'utf8',
 ));
 const remarks = ['申请买入金币', '房间退款', '入座买入金币', '注册奖励'];
