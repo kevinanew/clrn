@@ -170,7 +170,8 @@ export async function setupContextForScenario(
     signed_in_daily_bonus: 'daily-bonus', signed_in_club: 'club-empty',
     signed_in_club_rooms: 'club-empty', signed_in_club_more: 'club-empty',
     signed_in_club_search: 'club-empty', signed_in_mall: 'mall',
-    signed_in_wallet_coin: 'wallet-empty', signed_in_wallet_diamond: 'wallet-empty',
+    signed_in_currency_transaction: 'wallet-populated',
+    signed_in_currency_transaction_diamond: 'wallet-populated',
   };
   const authEntries = readAuthStateEntries();
   if (scenes[scenario.pageLabel]) {

@@ -31,6 +31,7 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 | 同上：`GET /v10/house/user/user`、访问历史、`/v2/building/rooms` 空数组 | 固定私人房归属与房间列表 | 删除全局覆盖；真实房号、归属、历史及列表透传 |
 | 同上：`GET /v*/alipay_order/goods` | 商城商品卡片 | 仅 `mall`，`goods.json`；不产生订单，不点击真实购买 |
 | 同上：`GET /v11/wallet/user/currency/{coin,diamond}/statement` | 钱包流水空态 | 仅 `wallet-empty`，绑定本轮 user；钱包余额仍真实 |
+| 同一流水接口 | 金币与钻石有数据截图 | `wallet-populated`，绑定本轮 user；`data/wallet-statements.json` 为每种币种提供四条逆序收支、连续余额、固定时间与备注；其他账号、写入和预检透传 |
 | 同上：`GET /v2/check_in/seven_day/{rule,current}` | 每日奖励已签到展示，不领取 | 仅 `daily-bonus`，规则数据文件和当天签到时间；保留日期文字稳定化 |
 | 同上：`/v10/club/application`、`/v10/buy_in/auditor/user/applications/pending` 空数组 | 全局压制通知状态 | 删除全局覆盖；仅分页用例需要时控制申请列表 |
 | `cases/hall/walletPresentation.ts`：`PUT /v10/wallet/user` | 每日奖励救济金按钮固定展示 | 迁入 `daily-bonus` response hook；先获取真实成功钱包，仅改本人 coin 展示为 1000，保留钻石、身份、未知字段及失败响应，不修改服务端资产 |

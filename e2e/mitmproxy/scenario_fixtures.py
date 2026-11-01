@@ -15,7 +15,7 @@ from response_overrides import is_staging, patch_result
 CONTROL_HOST = 'fixtures-mitmproxy.invalid'
 DATA = Path(__file__).with_name('data')
 MATCHING_PATHS = {f'/v1/hall_matching/{action}' for action in ('join', 'quit', 'keep_waiting')}
-SCENES = {'none', 'daily-bonus', 'club-empty', 'wallet-empty', 'mall',
+SCENES = {'none', 'daily-bonus', 'club-empty', 'wallet-empty', 'wallet-populated', 'mall',
           'invitation', 'matching', 'slot', 'club-skeleton', 'launch', 'pagination',
           'club-error', 'hall-error', 'auto-rebuy'}
 PHASES = {name: {'ready'} for name in SCENES}
@@ -182,8 +182,11 @@ class ScenarioFixtures:
             result(flow, {'clubs': []})
         elif self.name == 'mall' and method == 'GET' and re.fullmatch(r'/v\d+/alipay_order/goods', path):
             respond(flow, data('goods'))
-        elif self.name == 'wallet-empty' and self.user_id and method == 'GET' and re.fullmatch(rf'/v11/wallet/{re.escape(self.user_id)}/currency/(coin|diamond)/statement', path):
-            result(flow, {'statements': []})
+        elif self.name in ('wallet-empty', 'wallet-populated') and self.user_id and method == 'GET' and re.fullmatch(rf'/v11/wallet/{re.escape(self.user_id)}/currency/(coin|diamond)/statement', path):
+            currency = path.split('/')[-2]
+            statements = data('wallet-statements')[currency] if self.name == 'wallet-populated' else []
+            self.observed.append(f'wallet:{currency}')
+            result(flow, {'currency_name': currency, 'statements': statements})
         elif self.name == 'daily-bonus' and method == 'GET' and path == '/v2/check_in/seven_day/rule':
             respond(flow, data('check-in-rule'))
         elif self.name == 'daily-bonus' and method == 'GET' and path == '/v2/check_in/seven_day/current':
