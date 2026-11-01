@@ -5,11 +5,48 @@ from unittest.mock import patch
 from mitmproxy import http
 from mitmproxy.flow import Error
 from mitmproxy.websocket import WebSocketData, WebSocketMessage
-from connection_diagnostics import ConnectionDiagnostics, safe_text, node_name
+from connection_diagnostics import ConnectionDiagnostics, PATH_TEMPLATES, safe_path, safe_text, node_name
 from test_network_faults import flow
 
 
 class DiagnosticTests(unittest.TestCase):
+    def test_共用路径登记保留操作语义且重复清理不改变实体模板(self):
+        for path, segments in PATH_TEMPLATES:
+            with self.subTest(path=path):
+                self.assertEqual(safe_path(path), path)
+                self.assertEqual(safe_path('/'.join('token=synthetic-secret' if part.startswith('{') else part
+                                                   for part in segments)), path)
+        for path in ('//api.fixture.invalid/private', 'https://api.fixture.invalid/private',
+                     '/v10/wallet/user/extra', '/v10/wallet/../profile', '/v10/wallet/', '/', ['secret']):
+            self.assertEqual(safe_path(path), '[未知接口]')
+
+    def test_相对路径与事件名不保留任意连接资料或凭据(self):
+        diagnostics = ConnectionDiagnostics()
+        inputs = ('api.fixture.invalid', '192.0.2.10:8443', '[2001:db8::10]:9443',
+                  'token=synthetic-secret', 'Bearer synthetic-secret', 'synthetic-secret',
+                  '%61pi.fixture.invalid', '%31%39%32.0.2.10', '%255B2001%253Adb8%253A%253A10%255D')
+        for value in inputs:
+            with self.subTest(value=value):
+                request = flow('https://api.invalid/node/v1/status')
+                diagnostics.record(f'proxy.{value}', request, path=f'/nested/{value}/operation.json', status=503)
+                self.assertEqual(diagnostics.events[-1]['event'], 'application.event')
+                self.assertEqual(diagnostics.events[-1]['path'], '[未知接口]')
+                request.request.path = f'/nested/{value}/operation.json'
+                diagnostics.request(request)
+                self.assertEqual(diagnostics.events[-1]['path'], '[未知接口]')
+                diagnostics.record('proxy.request', request, path=f'/v10/wallet/{value}')
+                self.assertEqual(diagnostics.events[-1]['path'], '/v10/wallet/{user}')
+        for path in ('/node/v1/status', '/public/v13/metadata/servers',
+                     '/public/v1/hall_matching/available.json', '/public/v11/game_log/available.json',
+                     '/v3/pay_action/batch/price'):
+            request = flow(f'https://api.invalid{path}?token=synthetic-secret')
+            diagnostics.request(request)
+            self.assertEqual(diagnostics.events[-1]['path'], path)
+        serialized = json.dumps(diagnostics.snapshot())
+        for value in inputs:
+            self.assertNotIn(value, serialized)
+        self.assertTrue(any(event.get('status') == 503 for event in diagnostics.events))
+
     def test_原因只识别已知错误首部而不扫描地址凭据或后续诊断(self):
         known = [
             ('server closed connection', 'connection-failed'),
@@ -134,6 +171,7 @@ class DiagnosticTests(unittest.TestCase):
                     diagnostics.request(request)
                     event = diagnostics.events[-1]
                     self.assertEqual(event['originMatch'], 'matched', '只证明请求地址')
+                    self.assertEqual(event['path'], '[未知接口]', '来源核验仍须隐藏未登记的素材路径及查询凭据')
                     self.assertEqual(event['upstreamMatch'], expected)
                     self.assertEqual(event['fixtureHit'], fixture)
                     request.response = response
@@ -148,6 +186,8 @@ class DiagnosticTests(unittest.TestCase):
                     self.assertEqual(diagnostics.events[-1]['status'], 'unavailable')
                     self.assertEqual(diagnostics.events[-1]['response'], 'not-received')
                     self.assertEqual(diagnostics.events[-1]['upstreamMatch'], expected)
+                    self.assertEqual(diagnostics.events[-1]['path'], '[未知接口]')
+                    self.assertEqual(diagnostics.events[-1]['reason'], 'detail-withheld')
             output = json.dumps(diagnostics.snapshot())
             for value in ('127.0.0.1', '192.0.2.40', '18080', '18081', 'synthetic-secret'):
                 self.assertNotIn(value, output)

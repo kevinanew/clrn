@@ -11,6 +11,7 @@ from room_view import RoomView
 from game_log import fixture as log_fixture
 from records_v2 import RecordsV2
 from ui_states import UIStates
+from virtual_player_preflight import respond_virtual_player_preflight
 
 # mitmdump 将 addon 目录加入 sys.path；三个独立代理共用字段覆盖工具。
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
@@ -127,6 +128,9 @@ class TexasVisualProxy:
             return
         self.proxied_requests += 1
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
+            return
+        if respond_virtual_player_preflight(flow, self.texas.room_id):
+            self.stabilized_requests += 1
             return
         if self.texas.room_id and prepare_profiles(flow, self.texas.self_id, TABLE_PLAYER_IDS):
             return

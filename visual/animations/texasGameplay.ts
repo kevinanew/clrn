@@ -9,6 +9,7 @@ import { closeTableMask } from './tablePanels';
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import type { TableSession } from './tableSession';
 import { sampleCardSprites } from './cardSpriteDiagnostics';
+import { openPlayerProfile } from './playerProfileReadiness';
 
 /**
  * 按真实消息协议采样德州牌张、玩家状态、结算和互动效果。
@@ -118,7 +119,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     // 手机端下方操作按钮会独立变化；每帧仍保留资料弹层实际覆盖的全部像素。
     foregroundBelow: info.project.name === 'mobile' ? { y: 500,
       locator: page.getByTestId('player-profile-popup-close').locator('xpath=../..') } : undefined,
-    open: /** 点击真实入口。 */ () => press(page, `texas-holdem-player-container-${opponent}`),
+    open: /** 等待本次资料读取成功后再采样真实弹层。 */ () => openPlayerProfile(page, opponent),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'player-profile-popup-close') });
   await freeze(page);
   await proxy.replayTexas(roomId, restoreTable(self, 'river'));
