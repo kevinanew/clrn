@@ -34,6 +34,11 @@ test('private room invitation bottom sheet enter and exit', async ({ context, pa
     clip: { x: 0, y: page.viewportSize()!.height - 300, width: page.viewportSize()!.width, height: 300 },
     open: /** 点击真实入口。 */ () => press(page, 'invite-friends-button'),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'invite-friend-popup-cancel-button'),
+    // 预热开关可能让浏览器保留 1px 文档滚动；固定视口裁切前复位，避免整幅画面偏移。
+    beforeEntrance: /** 只复位文档滚动，保留弹层自身的动画位置。 */ async () => {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    },
   });
 });
 
