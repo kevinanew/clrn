@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { environment } from '../../helpers/environment';
-import { accountStatus, signIn, type Session } from './auth';
+import { signIn, type Session } from './auth';
+import { accountPreparationError, verifyAccountSession } from './account-diagnostics';
 import { openHall, prepareContext } from './page';
 import { createTestingAccount } from './test-user';
 import { readTestApiToken } from './test-wallet';
@@ -31,11 +32,11 @@ export async function createSecondAccount(browser: Browser, viewport: { width: n
     await openHall(page);
     const session = await signIn(page, { username, password });
     expect(session.userId, '第二账号必须是刚创建的用户').toBe(created.userId);
-    expect(await accountStatus(page, session)).toBe(200);
+    await verifyAccountSession(page, session);
     await clickAfterSignInNotices(page, 'hall-tab');
     return { ...session, page, context, username };
-  } catch {
-    await context.close();
-    throw new Error('多用户 staging 测试账号准备失败；不会重试注册');
+  } catch (error) {
+    await context.close().catch(() => undefined);
+    throw accountPreparationError(error, 'second-account-setup');
   }
 }

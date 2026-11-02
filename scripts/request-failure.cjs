@@ -1,5 +1,13 @@
 /** 请求错误只输出已审阅的操作表、原因枚举与真实响应状态，不携带原始 cause。 */
 const operations = {
+  'create-test-account': ['创建测试账号', 'POST'],
+  'set-creation-diamonds': ['设置创建账号钻石', 'POST'],
+  'creation-account-setup': ['准备创建账号页面', 'LOCAL', 'browser-ui'],
+  'creation-account-state': ['读取创建账号状态', 'LOCAL', 'browser-state'],
+  'creation-account-session-check': ['准备创建账号会话校验', 'LOCAL', 'browser-state'],
+  'creation-account-notices': ['处理创建账号登录提示', 'LOCAL', 'browser-ui'],
+  'second-account-setup': ['准备多用户测试账号', 'LOCAL', 'browser-ui'],
+  'register-account-setup': ['准备测试注册账号', 'LOCAL', 'browser-ui'],
   'prepare-account-login': ['准备账号登录', 'POST'],
   'prepare-account-set-coins': ['设置测试金币', 'POST'],
   'prepare-account-verify-coins': ['核对测试金币', 'PUT'],
