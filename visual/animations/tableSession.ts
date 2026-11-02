@@ -48,11 +48,31 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     await expect(visible(page, 'create-game-button')).toBeVisible({ timeout: 90_000 });
     recordDiagnostic(page, '创建本轮房间');
     console.log('TABLE > 从真实入口创建本轮房间');
-    room = await createPrivateGameRoom(page, created => {
+    /**
+     * 立即登记真实创建响应，保证后续失败仍能精确清理。
+     * @param created - 本次创建成功的房间。
+     */
+    const registerRoom = (created: RoomSession) => {
       room = created;
       recordDiagnostic(page, '建房成功', { roomId: created.roomId, node: diagnosticNode(created.apiOrigin) });
       writeFileSync(info.outputPath('created-room.json'), JSON.stringify({ roomId: created.roomId, apiNode: diagnosticNode(created.apiOrigin) }));
-    }, game === 'texas' ? 'texas_react_native' : 'zhajinhua');
+    };
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        room = await createPrivateGameRoom(page, registerRoom, game === 'texas' ? 'texas_react_native' : 'zhajinhua');
+        break;
+      } catch (error) {
+        const alert = visible(page, 'common-alert-container').filter({ hasText: 'timeout of 10000ms exceeded' });
+        // 只重试表单加载阶段的已知读取超时；提交建房后的失败绝不能再次建房。
+        if (attempt > 0 || room || !(error instanceof Error)
+          || !error.message.includes('base-create-room-screen') || !await alert.isVisible()) throw error;
+        recordDiagnostic(page, '建房表单读取超时，返回后重试', { attempt: attempt + 1 });
+        await alert.locator('[data-testid^="common-alert-button-"]').click();
+        await visible(page, 'navigation-bar-back-image').last().click();
+        await expect(visible(page, 'create-game-button').last()).toBeVisible({ timeout: 90_000 });
+      }
+    }
+    if (!room) throw new Error('建房未返回本轮房间');
     recordDiagnostic(page, '等待牌桌连接及订阅就绪');
     const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
     if (hall) await enterTexasRoom(page, room);
