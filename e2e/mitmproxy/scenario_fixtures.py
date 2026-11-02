@@ -15,6 +15,7 @@ from response_overrides import is_staging, patch_result
 CONTROL_HOST = 'fixtures-mitmproxy.invalid'
 DATA = Path(__file__).with_name('data')
 MATCHING_PATHS = {f'/v1/hall_matching/{action}' for action in ('join', 'quit', 'keep_waiting')}
+PAYMENT_ORDER = re.compile(r'/v\d+/(?:alipay_order/order|virtual_payment/order|telegram_payment/user/[^/]+/order)')
 SCENES = {'none', 'daily-bonus', 'club-empty', 'wallet-empty', 'wallet-populated', 'mall',
           'invitation', 'matching', 'slot', 'club-skeleton', 'launch', 'pagination',
           'club-error', 'hall-error', 'auto-rebuy'}
@@ -54,6 +55,19 @@ def applications(start, count):
              'user_id': 'interaction-player', 'created_at': '2026-09-01T00:00:00Z',
              'auditor_id': 'interaction-auditor', 'nickname': f'滚动玩家{i}',
              'building_name': '交互测试', 'room_name': '分页牌局'} for i in range(start, start + count)]
+
+
+def parse_websocket_command(line):
+    """解析命令及其路由；无效帧交由调用者原样透传。"""
+    frame = json.loads(line)
+    if not isinstance(frame, dict):
+        raise ValueError('Not a command')
+    params = frame.get('params') or {}
+    payload = params.get('data') or {}
+    path = payload.get('path', '')
+    if not isinstance(path, str):
+        raise ValueError('Not a path')
+    return frame, payload, path
 
 
 class ScenarioFixtures:
@@ -140,6 +154,19 @@ class ScenarioFixtures:
         except ValueError:
             return False
 
+    def blocks_payment(self, path, method):
+        """固定商品仅用于展示；视觉环境和商城场景不得发出真实订单写入。"""
+        return ((self.visual or self.name == 'mall') and isinstance(path, str)
+                and method in ('POST', 'PUT', 'PATCH', 'DELETE') and PAYMENT_ORDER.fullmatch(path))
+
+    def blocked_write_error(self, path, method):
+        """统一返回 HTTP 夹具禁止真实写入时的错误码。"""
+        if self.blocks_payment(path, method):
+            return 'fixture_payment_forbidden'
+        if self.visual and re.fullmatch(r'/public/v\d+/user/register/.*', path):
+            return 'fixture_registration_forbidden'
+        return None
+
     async def request(self, flow):
         if flow.request.host == CONTROL_HOST:
             self.control(flow)
@@ -163,8 +190,8 @@ class ScenarioFixtures:
             return
         if not is_staging(flow.request.host) or method == 'OPTIONS':
             return
-        if self.visual and re.fullmatch(r'/public/v\d+/user/register/.*', path):
-            respond(flow, {'ok': False, 'error': 'fixture_registration_forbidden'}, 403)
+        if error := self.blocked_write_error(path, method):
+            respond(flow, {'ok': False, 'error': error}, 403)
             return
         if self.visual and method == 'GET' and path == '/public/v10/profile/country':
             respond(flow, data('country'))
@@ -274,39 +301,39 @@ class ScenarioFixtures:
             patch_result(flow, change)
 
     def websocket_message(self, flow):
-        if self.name not in ('slot', 'matching') or not is_staging(flow.request.host) or not flow.websocket:
+        if ((self.name not in ('slot', 'matching', 'mall') and not self.visual)
+                or not is_staging(flow.request.host) or not flow.websocket):
             return
         message = flow.websocket.messages[-1]
         if not message.from_client or not message.is_text or message.injected:
             return
-        forward, replies = [], []
-        for line in message.text.splitlines():
+        forward, replies, handled = [], [], False
+        for line in message.text.split('\n'):
             try:
-                frame = json.loads(line)
-                if not isinstance(frame, dict):
-                    raise ValueError('Not a command')
-                params = frame.get('params') or {}
-                payload = params.get('data') or {}
-                path = payload.get('path', '')
-                if not isinstance(path, str):
-                    raise ValueError('Not a path')
+                frame, payload, path = parse_websocket_command(line)
             except (ValueError, TypeError, AttributeError):
                 forward.append(line)
                 continue
             matching = self.name == 'matching' and path in MATCHING_PATHS
             slot = self.name == 'slot' and re.fullmatch(r'/v2/slot_machine/user/[^/]+/(energy|spin)', path)
-            if frame.get('method') != 9 or not (matching or slot):
+            payment = self.blocks_payment(path, payload.get('method'))
+            if frame.get('method') != 9 or not (matching or slot or payment):
                 forward.append(line)
                 continue
+            handled = True
             answer = {'ok': True, 'result': {}}
-            if slot:
+            if payment:
+                answer = {'ok': False, 'error': 'fixture_payment_forbidden'}
+            elif slot:
                 answer = self.slot_reply(path)
             else:
                 self.requests += 1
             if 'id' in frame:
                 replies.append({'id': frame['id'], 'result': {'data': answer}})
+        if not handled:
+            return
         message.content = '\n'.join(forward).encode()
-        if not forward:
+        if not any(line.strip() for line in forward):
             message.drop()
         if replies:
             ctx.master.commands.call('inject.websocket', flow, True,

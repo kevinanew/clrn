@@ -6,15 +6,18 @@
     "node": ">=24"
   },
   "scripts": {
-    "lint": "npm run lint:js && npm run lint:python && npm run lint:shell && npm run lint:workflows && npm run lint:lines",
+    "lint": "npm run lint:js && npm run lint:python && npm run lint:architecture && npm run lint:duplication && npm run lint:shell && npm run lint:workflows && npm run lint:lines",
     "test": "node scripts/test-local.mjs",
     "check": "npm run lint && npm run typecheck && npm test",
-    "lint:js": "eslint . --max-warnings=0",
-    "lint:python": "uvx --from ruff==0.15.12 ruff check .",
+    "lint:js": "node scripts/quality.mjs javascript",
+    "lint:python": "node scripts/quality.mjs python",
     "lint:shell": "node scripts/lint-shell.mjs",
     "lint:workflows": "uvx --from actionlint-py==1.7.12.25 --with shellcheck-py==0.11.0.1 actionlint -pyflakes= -ignore 'unexpected key \"queue\" for \"concurrency\" section'",
     "lint:lines": "node lint-lines.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p visual/tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p visual/tsconfig.json --noEmit",
+    "lint:architecture": "node scripts/quality.mjs architecture",
+    "lint:duplication": "node scripts/quality.mjs duplication",
+    "quality:report": "node scripts/quality.mjs report"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -22,10 +25,12 @@
     "@types/node": "22.15.30",
     "@types/pixelmatch": "5.2.6",
     "@types/pngjs": "6.0.5",
+    "dependency-cruiser": "18.7.0",
     "eslint": "10.12.0",
     "eslint-plugin-jsdoc": "63.0.0",
     "eslint-plugin-tsdoc": "0.5.4",
     "globals": "17.13.0",
+    "jscpd": "5.4.2",
     "pixelmatch": "5.3.0",
     "pngjs": "7.0.0",
     "tsx": "4.20.3",

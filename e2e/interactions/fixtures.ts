@@ -5,24 +5,10 @@ import { gotoDeployedSite, initializePage } from '../helpers/page';
 import { confirmStagingNotice } from '../helpers/staging-notice';
 import { signIn } from '../cases/_shared/auth';
 import { clickAfterSignInNotices, installSignInNoticeHandler } from '../cases/_shared/sign-in-notices';
+import { installTutorialHandler } from '../helpers/tutorials';
 
 const baseURL = process.env.E2E_INTERACTION_BASE_URL || environment.stagingUrl;
 type StorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
-
-/**
- * 配置语言、设备和引导前置条件，保留真实组件、导航和账号鉴权。
- * @param context - 首次导航前配置的浏览器上下文。
- */
-async function prepare(context: BrowserContext): Promise<void> {
-  await initializePage(context);
-  await context.addInitScript(
-    /** 标记已完成新手引导。 */ () => {
-      for (const name of ['personal.house', 'create.room']) {
-        localStorage.setItem(`${name}.screen.tutorial.complete.key`, 'true');
-      }
-    },
-  );
-}
 
 /**
  * 正常点击启动提示；不隐藏节点，也不忽略点击被遮挡的错误。
@@ -30,6 +16,7 @@ async function prepare(context: BrowserContext): Promise<void> {
  * @param signedIn - 是否等待大厅显示已登录状态。
  */
 export async function openApp(page: Page, signedIn = true): Promise<void> {
+  await installTutorialHandler(page);
   await gotoDeployedSite(page, baseURL);
   const startup = page.getByTestId('staging-dialog');
   await expect(page.getByTestId('hall-screen').or(startup).first()).toBeVisible({
@@ -65,7 +52,7 @@ export const test = base.extend<{ interactionSetup: void }, { accountState: Stor
      * @param fixtures - Playwright 注入的页面和浏览器上下文。
      * @param use - 初始化完成后执行测试的回调。
      */ async ({ context, page }, use) => {
-      await prepare(context);
+      await initializePage(context);
       await installSignInNoticeHandler(page);
       await use();
     },
@@ -89,7 +76,7 @@ export const test = base.extend<{ interactionSetup: void }, { accountState: Stor
       });
       let state: StorageState;
       try {
-        await prepare(context);
+        await initializePage(context);
         const page = await context.newPage();
         await openApp(page, false);
         // 复用仅定位可见表单的真实登录流程，阻断账号缺失时的自动注册。
