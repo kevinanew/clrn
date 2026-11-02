@@ -3,6 +3,7 @@ import { navigate, openApplication, visible, press, pressTarget } from './appSes
 import { exercisePopup } from './popups';
 import { captureTimeline, freeze } from './timeline';
 import { selectScenario } from '../../e2e/helpers/scenario-proxy';
+import { lockBottomSheetDocumentScroll } from './bottomSheetScroll';
 
 test('guest search confirmation enter and exit', async ({ context, page }, info) => {
   await openApplication(context, page, info, 'hall');
@@ -30,6 +31,7 @@ test('private room invitation bottom sheet enter and exit', async ({ context, pa
   await selectScenario(context, 'invitation');
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'copy-house-number-button')).toBeVisible();
+  await lockBottomSheetDocumentScroll(page);
   await exercisePopup(page, info, { name: 'invite-friends', target: page.getByTestId('invite-friend-popup-cancel-button'),
     clip: { x: 0, y: page.viewportSize()!.height - 300, width: page.viewportSize()!.width, height: 300 },
     open: /** 点击真实入口。 */ () => press(page, 'invite-friends-button'),
