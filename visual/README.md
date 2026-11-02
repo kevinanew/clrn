@@ -73,6 +73,7 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 | 消息-系统通知 | 消息 tab → `message-notification-item-system`（空态） | 测试账号 | |
 | 私人局 tab | 底部 `private-room-tab`（等 `copy-house-number-button`，确认房屋数据加载完成） | 测试账号 | |
 | 俱乐部 tab | 底部 `club-tab`（club API mock 为空列表，默认落在「我的俱乐部」） | 测试账号 | |
+| 俱乐部-已加入多个俱乐部 | 俱乐部 tab → `club_tab_my_club`；独立 mitmproxy 为当前账号返回三个俱乐部，覆盖三语言及手机、桌面，共六张截图 | 测试账号 | 固定名称、成员人数及默认头像；核对三张卡片、空状态消失及代理接口命中 |
 | 俱乐部-牌局空态 | 俱乐部 tab → `club_tab_room`（空态） | 测试账号 | |
 | 俱乐部-牌局有数据 | 俱乐部 tab → `club_tab_room`；独立 mitmproxy 提供一间俱乐部和两条固定牌局 | 测试账号 | 仅本场景启用代理，核对俱乐部和牌局接口均经过代理 |
 | 俱乐部-更多弹层 | 俱乐部 tab → `show-more-button`（不点选项） | 测试账号 | |
@@ -131,8 +132,8 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 
 主干新增德州状态的 198 张三语言基准与本次战绩的 372 张基准均纳入执行清单。
 
-- 全量（`VISUAL_LOCALES=all`）= 每语言 **477 张**，三语言共 **1431 张**（417 个场景）
-- 默认仅简中 = **477 张**（139 个场景）
+- 全量（`VISUAL_LOCALES=all`）= 每语言 **479 张**，三语言共 **1437 张**（423 个场景）
+- 默认仅简中 = **479 张**（141 个场景）
 - 核心范围（`VISUAL_SCOPE=core`）= 简中 **412 张**（74 个场景）
   （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、游客牌局登录提示、搜索登录提示、登录后大厅/消息/私人局/俱乐部/我的/商城）
 
@@ -201,8 +202,8 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 
 ```bash
 cd visual
-pnpm run test          # 简中 477 张
-pnpm run test:all      # 全部语言 1431 张
+pnpm run test          # 简中 479 张
+pnpm run test:all      # 全部语言 1437 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
@@ -253,9 +254,9 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 | 值 | 用途 |
 | --- | --- |
-| `zh-Hans`（默认） | 本地单语言检查（477 张） |
+| `zh-Hans`（默认） | 本地单语言检查（479 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 1431 张（GitHub Actions 默认范围） |
+| `all` | 全量 1437 张（GitHub Actions 默认范围） |
 
 环境变量 `VISUAL_SCOPE`：
 
@@ -267,10 +268,10 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 ## CI
 
 [视觉工作流](../.github/workflows/visual.yml) 在视觉相关 PR、`master` 代码合入和应用部署调用时，
-均访问线上并检查三种语言的完整场景，共 1431 张截图。部署记录单独推送到 `master` 时，
+均访问线上并检查三种语言的完整场景，共 1437 张截图。部署记录单独推送到 `master` 时，
 由部署工作流调用画面测试，避免同一部署重复运行；仓库没有定时画面任务。
 CI 按「应用 app」「德州 texas」「拼三张 zhajinhua」和三种语言拆为九个独立任务并行执行。
-应用每种语言覆盖 235 张，德州每种语言覆盖 190 张，拼三张覆盖 52 张，各任务分别保存失败报告。
+应用每种语言覆盖 237 张，德州每种语言覆盖 190 张，拼三张覆盖 52 张，各任务分别保存失败报告。
 不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 手动触发可用 `suite` 选择 `all`、`app`、`texas` 或 `zhajinhua`，只重跑所需部分。
 手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
@@ -286,7 +287,7 @@ CI 按「应用 app」「德州 texas」「拼三张 zhajinhua」和三种语言
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
 原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
-因此已从执行清单移除。历史图片保留，不计入当前 1431 张有效截图。
+因此已从执行清单移除。历史图片保留，不计入当前 1437 张有效截图。
 德州通过 mitmproxy 回放固定牌局和弹窗数据，所有入口仍由实际 UI 点击打开。
 覆盖清单、协议和当前源码限制见 [COVERAGE.md](cases/texas-holdem/COVERAGE.md)。
 服务端房间保持等待状态，回放房间的操作 RPC 被代理隔离，每例精确解散本次真实创建的房间。

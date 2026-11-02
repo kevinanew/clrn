@@ -1,3 +1,4 @@
+/** 验证视觉场景的语言、视口、数量和导航覆盖。 */
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import {
@@ -71,25 +72,25 @@ describe('visual scenarios', () => {
     });
   });
 
-  test('VISUAL_SCOPE=full 在简中生成全部 139 个场景', () => {
+  test('VISUAL_SCOPE=full 在简中生成全部 141 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 139);
-    assert.equal(expectedScenarioCount(), 139);
+    assert.equal(buildScenarios().length, 141);
+    assert.equal(expectedScenarioCount(), 141);
   });
 
-  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 139 个场景', () => {
+  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 141 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     delete process.env.VISUAL_SCOPE;
-    assert.equal(buildScenarios().length, 139);
-    assert.equal(expectedScenarioCount(), 139);
+    assert.equal(buildScenarios().length, 141);
+    assert.equal(expectedScenarioCount(), 141);
   });
 
-  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 417 个场景', () => {
+  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 423 个场景', () => {
     process.env.VISUAL_LOCALES = 'all';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 417);
-    assert.equal(expectedScenarioCount(), 417);
+    assert.equal(buildScenarios().length, 423);
+    assert.equal(expectedScenarioCount(), 423);
   });
 
   test('新增业务页面有对应导航与就绪定位，签到日期固定且不提交业务', () => {

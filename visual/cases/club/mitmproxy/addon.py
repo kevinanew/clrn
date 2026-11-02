@@ -1,4 +1,4 @@
-"""仅为俱乐部房间有数据截图提供固定业务响应，并保留独立代理的选址稳定化。"""
+"""为俱乐部已加入列表和牌局截图提供隔离的固定业务响应，其他请求继续透传。"""
 
 import json
 import os
@@ -7,6 +7,9 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from mitmproxy import http
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from joined_clubs import JOINED_CLUB_IDENTIFIERS, JOINED_CLUBS  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
 from response_overrides import is_staging  # noqa: E402
@@ -65,6 +68,7 @@ class ClubRoomVisualProxy:
     def __init__(self):
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
+        self.user_id = None
         self.proxied_requests = 0
         self.stabilized_requests = 0
         self.club_room_requests = {}
@@ -87,13 +91,19 @@ class ClubRoomVisualProxy:
         path = urlsplit(flow.request.path).path
         if flow.request.method == 'POST' and path == '/scenario':
             try:
-                scenario = json.loads(flow.request.content)['scenario']
+                command = json.loads(flow.request.content)
+                scenario = command['scenario']
+                user_id = command.get('userId')
             except (ValueError, KeyError, TypeError):
                 scenario = False
-            if scenario not in (None, 'visual-stable'):
+                user_id = None
+            if scenario not in (None, 'visual-stable', 'club-list-populated') or (
+                scenario == 'club-list-populated' and (not isinstance(user_id, str) or not user_id)
+            ):
                 flow.response = http.Response.make(400, b'{}')
                 return
             self.scenario = scenario
+            self.user_id = user_id if scenario == 'club-list-populated' else None
             self.club_room_requests = {}
         elif flow.request.method != 'GET' or path != '/status':
             flow.response = http.Response.make(400, b'{}')
@@ -105,6 +115,8 @@ class ClubRoomVisualProxy:
         url = urlsplit(flow.request.path)
         path = url.path
         method = flow.request.method
+        if self.scenario == 'club-list-populated':
+            return self.joined_clubs_fixture(flow)
         if path == '/v10/club' and method == 'GET' and parse_qs(url.query).get('user_id'):
             return {'clubs': [{'id': CLUB_IDENTIFIER}]}
         if method != 'PUT':
@@ -124,6 +136,31 @@ class ClubRoomVisualProxy:
             return CLUB_ROOMS
         return None
 
+    def joined_clubs_fixture(self, flow):
+        """仅替换本轮账号的已加入列表和确切虚拟批次，虚拟俱乐部没有牌局。"""
+        url = urlsplit(flow.request.path)
+        if flow.request.method == 'GET' and url.path == '/v10/club':
+            if parse_qs(url.query, keep_blank_values=True).get('user_id') == [self.user_id]:
+                return {'clubs': [{'id': identifier} for identifier in JOINED_CLUB_IDENTIFIERS]}
+            return None
+        if flow.request.method == 'GET':
+            for club in JOINED_CLUBS:
+                if url.path == f"/v10/club/{club['id']}/profile":
+                    return club
+        if flow.request.method != 'PUT':
+            return None
+        try:
+            body = json.loads(flow.request.content)
+        except (ValueError, TypeError):
+            return None
+        if not isinstance(body, dict):
+            return None
+        if url.path == '/v10/clubs' and body.get('club_ids') == JOINED_CLUB_IDENTIFIERS:
+            return JOINED_CLUBS
+        if url.path == '/v2/building/rooms' and body.get('building_ids') == JOINED_CLUB_IDENTIFIERS:
+            return []
+        return None
+
     def request(self, flow):
         """控制请求单独处理；业务请求必须经过场景和 staging 地址核对。"""
         if flow.response:
@@ -132,7 +169,7 @@ class ClubRoomVisualProxy:
             self.control(flow)
             return
         self.proxied_requests += 1
-        if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
+        if self.scenario not in ('visual-stable', 'club-list-populated') or not is_staging(flow.request.host):
             return
         result = self.fixture(flow)
         if result is None:
