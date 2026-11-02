@@ -64,8 +64,16 @@ test('完整记录普通、局部比较和数字遮罩的差异，保留失败�
     assert.equal(comparison.status, 1, comparison.error?.message || comparison.stdout + comparison.stderr);
     const report: { suites: ReportSuite[] } = JSON.parse(await readFile(reportPath, 'utf8'));
     const results = collectResults(report.suites);
-    assert.equal(results.length, 16);
+    assert.equal(results.length, 25);
     for (const { title, result } of results) {
+      if (title.startsWith('局部稳定性有效面积：')) {
+        const unstable = title.includes('over-boundary/');
+        assert.equal(result.status, unstable ? 'failed' : 'passed', title);
+        assert.equal(result.attachments.some(attachment => attachment.name === '局部稳定性检查之后'), !unstable, title);
+        if (unstable) assert.ok(result.errors.some(error => error.message?.includes('首帧画面应稳定')),
+          '五十一个有效差异像素必须在稳定性检查时失败，不能依赖后续基准比较');
+        continue;
+      }
       if (title.startsWith('相邻截图稳定性：tolerated/')) {
         assert.equal(result.status, 'passed', '阈值内的相邻截图微差不得阻止后续采样');
         assert.ok(result.attachments.some(attachment => attachment.name === '稳定性检查之后'));

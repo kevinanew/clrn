@@ -5,6 +5,7 @@ import { PNG } from 'pngjs';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import { areScreenshotsEquivalent } from './screenshotComparison';
+import { preparePartialComparison, timelineExcludedRegions } from './timelineComparison';
 import { settleLayout } from './renderReadiness';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
@@ -241,14 +242,16 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         await info.attach(`${snapshot}-unmasked`, { body: original, contentType: 'image/png' });
         frame = masked;
         expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparedPixels));
-      } else if (foregroundBelow) {
-        // 弹层缩放期间保留其每帧实际覆盖的像素，排除下方未被遮住的牌桌操作区。
-        // 暂停时钟后按共用比例确认稳定，再将相关区域交给 Playwright 原有像素比较器。
+      } else if (foregroundBelow || options.excludedBackground?.length) {
+        // 稳定性与最终断言共用原有排除区域及有效面积；报告仍保存完整截图。
         frame = Buffer.alloc(0);
+        let excluded: ExcludedPixelRectangle[] = [];
         await expect.poll(async () => {
           const previousFrame = await page.screenshot(screenshotOptions);
           frame = await page.screenshot(screenshotOptions);
-          return areScreenshotsEquivalent(frame, previousFrame);
+          excluded = await timelineExcludedRegions(frame, options, elements, name);
+          const comparison = preparePartialComparison(frame, previousFrame, excluded);
+          return areScreenshotsEquivalent(comparison.png, previousFrame, comparison.comparedPixels);
         }, { message: `${name} 首帧画面应稳定` }).toBe(true);
         const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
         const update = info.config.updateSnapshots;
@@ -257,76 +260,12 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
           // 普通比较缺少基准时由软断言报告，不能先读文件中止后续采样。
           expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1));
         } else {
+          const reference = readFileSync(snapshotPath);
           const actual = PNG.sync.read(frame);
-          const expected = PNG.sync.read(readFileSync(snapshotPath));
+          const expected = PNG.sync.read(reference);
           expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
-          expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeGreaterThan(0);
-          expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeLessThanOrEqual(actual.height);
-          // 退场末帧弹层可能已卸载；此时只比较指定高度以上的画面。
-          const box = await foregroundBelow.locator.evaluateAll(nodes => {
-            if (!nodes[0]) return null;
-            const rect = nodes[0].getBoundingClientRect();
-            return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-          });
-          if (name.endsWith('-enter')) expect(box, `${snapshot} 弹层必须保留在画面中`).not.toBeNull();
-          const x = box ? Math.max(0, Math.floor(box.x - (options.clip?.x || 0))) : 0;
-          const right = box ? Math.min(actual.width, Math.ceil(box.x + box.width - (options.clip?.x || 0))) : 0;
-          const top = box ? Math.max(foregroundBelow.y, Math.floor(box.y - (options.clip?.y || 0))) : foregroundBelow.y;
-          const bottom = box ? Math.min(actual.height, Math.ceil(box.y + box.height - (options.clip?.y || 0))) : foregroundBelow.y;
-          for (let row = foregroundBelow.y; row < actual.height; row++) {
-            const start = row * actual.width * 4;
-            if (row < top || row >= bottom) {
-              actual.data.set(expected.data.subarray(start, start + actual.width * 4), start);
-            } else {
-              actual.data.set(expected.data.subarray(start, start + x * 4), start);
-              actual.data.set(expected.data.subarray(start + right * 4, start + actual.width * 4), start + right * 4);
-            }
-          }
-          const comparedPixels = actual.width * foregroundBelow.y + Math.max(0, bottom - top) * Math.max(0, right - x);
-          expect.soft(PNG.sync.write(actual)).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparedPixels));
-        }
-      } else if (options.excludedBackground?.length) {
-        // 比较仍保存完整原图；只在比对弹层时排除独立用例已覆盖的背景动画。
-        frame = Buffer.alloc(0);
-        await expect.poll(async () => {
-          const previousFrame = await page.screenshot(screenshotOptions);
-          frame = await page.screenshot(screenshotOptions);
-          return areScreenshotsEquivalent(frame, previousFrame);
-        }, { message: `${name} 首帧画面应稳定` }).toBe(true);
-        const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
-        const update = info.config.updateSnapshots;
-        if (update === 'all' || update === 'changed' || !existsSync(snapshotPath)) {
-          expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1));
-        } else {
-          const actual = PNG.sync.read(frame);
-          const expected = PNG.sync.read(readFileSync(snapshotPath));
-          expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
-          const excluded: ExcludedPixelRectangle[] = [];
-          for (const background of options.excludedBackground) {
-            const box = await background.evaluateAll(nodes => {
-              if (!nodes[0]) return null;
-              const rect = nodes[0].getBoundingClientRect();
-              return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-            });
-            expect(box, `${snapshot} 背景排除区域必须存在`).not.toBeNull();
-            for (const subject of elements) {
-              expect(box!.x + box!.width <= subject.x || subject.x + subject.width <= box!.x
-                || box!.y + box!.height <= subject.y || subject.y + subject.height <= box!.y,
-              `${snapshot} 背景排除区域不能遮住弹层`).toBe(true);
-            }
-            const left = Math.max(0, Math.floor(box!.x - (options.clip?.x || 0)));
-            const right = Math.min(actual.width, Math.ceil(box!.x + box!.width - (options.clip?.x || 0)));
-            const top = Math.max(0, Math.floor(box!.y - (options.clip?.y || 0)));
-            const bottom = Math.min(actual.height, Math.ceil(box!.y + box!.height - (options.clip?.y || 0)));
-            excluded.push({ left, right, top, bottom });
-            for (let row = top; row < bottom; row++) {
-              const start = (row * actual.width + left) * 4;
-              const end = (row * actual.width + right) * 4;
-              actual.data.set(expected.data.subarray(start, end), start);
-            }
-          }
-          expect.soft(PNG.sync.write(actual)).toMatchSnapshot(snapshot,
-            imageComparisonOptions(0.1, remainingPixelCount(actual.width, actual.height, excluded)));
+          const comparison = preparePartialComparison(frame, reference, excluded);
+          expect.soft(comparison.png).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparison.comparedPixels));
         }
       } else {
         // 采集失败或画面持续变化仍立即中止，避免后续帧建立在无效状态上。
