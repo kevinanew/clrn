@@ -44,7 +44,8 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     console.log(`TABLE > ${game}/${info.project.name} 初始化大厅`);
     await openApplication(context, page, info, `signed_in_${game}_pre_game`);
     await navigate(page, 'private-room-tab');
-    await expect(visible(page, 'create-game-button')).toBeVisible();
+    // 私房页需等待真实资料及房间请求结束，不能沿用动画帧断言的 15 秒超时。
+    await expect(visible(page, 'create-game-button')).toBeVisible({ timeout: 90_000 });
     recordDiagnostic(page, '创建本轮房间');
     console.log('TABLE > 从真实入口创建本轮房间');
     room = await createPrivateGameRoom(page, created => {
