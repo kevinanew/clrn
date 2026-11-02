@@ -206,7 +206,7 @@ pnpm run test          # 简中 479 张
 pnpm run test:all      # 全部语言 1437 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
-pnpm run approve      # 审核失败截图后更新基准
+pnpm run approve      # reference 的兼容别名；仍需选择场景并逐图审核
 pnpm run report       # 查看报告
 pnpm run lint         # 检查仓库代码文件不超过 400 行
 ```
@@ -239,13 +239,13 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 - 同一账号再次登录会作废旧凭据，即使 deviceId 相同也如此。CI 使用 100 个专用账号，
   套件／语言矩阵的九个任务各用一个账号；跨工作流以 `h5-staging-account-<用户名>` 互斥。
   不同账号可并行，选中同一账号的任务排队；本机账号池与 CI 账号池分开。
-- test/reference/approve 均按语言分片，每批默认最多 3 个场景；拆分后每种语言的应用
+- test/reference 均按语言分片，每批默认最多 3 个场景；拆分后每种语言的应用
   全量为 36 批、核心为 15 批，德州为 7 批、拼三张为 2 批。分片之间重新采集登录态，
   场景只注入已有缓存，不自行回退登录。
 - `VISUAL_TEST_SHARDS` / `VISUAL_REFERENCE_SHARDS` 可调整批数（1–80）；
   `VISUAL_REFERENCE_START_SHARD` 可从指定分片恢复 reference。
 - 每批使用新的浏览器进程释放资源；无需重启任何应用服务器。
-- 截图前校验图片已加载，缺图会明确失败。`VISUAL_RETRIES` 默认为 1。
+- 截图前校验图片已加载，缺图会明确失败。普通比较零重试，不创建或修改基准。
 - `reference-host.sh` 的锁阻止本机两轮 reference 同时运行；它不替代跨机器的账号协调。
 
 ## 语言过滤
@@ -275,19 +275,19 @@ CI 按「应用 app」「德州 texas」「拼三张 zhajinhua」和三种语言
 不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 手动触发可用 `suite` 选择 `all`、`app`、`texas` 或 `zhajinhua`，只重跑所需部分。
 手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
-不会自动提交图片；`filter` 可只选新增场景。生成新图片时跳过依赖已有图片的完整性检查，
-小幅文案变化可能落在截图容差内；此时配合 `filter` 和 `refresh_all=true` 重采所选基准
-（本地 Linux 入口对应 `VISUAL_REFERENCE_UPDATE_ALL=true`），审核后再独立运行 compare。
+不会自动提交图片；`filter` 应选择已经确认需要更新的场景。所有套件均重采所选画面，
+包括容差内的预期文案变化，不再需要额外刷新开关。生成新图片时跳过依赖已有图片的完整性检查。
+只有确认属于预期应用变化才能采集；逐图核对实际图和差异，审核后再独立运行 compare。
 失败时的 reference artifact 可能不完整，需先修复并跑通；提交后 `mode=compare` 和 push CI
 会执行完整检查和截图对比。
 类型检查和场景配置测试只在简中应用任务运行一次（仅跑某个玩法时由其简中任务执行）；
 浏览器辅助测试属于应用，只在简中应用任务运行；
-本机运行 `test`、`reference` 或 `approve` 仍会执行浏览器辅助测试。
+本机运行比较或采集仍会执行浏览器辅助测试。`approve` 仅映射到 `reference`，
+不会自动筛选上轮失败场景；需要 `VISUAL_FILTER` 明确选择范围。
 结果反映运行时已部署版本，不代表测试仓库提交已部署到应用。
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
-原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
-因此已从执行清单移除。历史图片保留，不计入当前 1437 张有效截图。
+每种语言、视口和业务状态只保留当前基准；磁盘图片与场景清单逐项一致，旧版本由 Git 历史保存。
 德州通过 mitmproxy 回放固定牌局和弹窗数据，所有入口仍由实际 UI 点击打开。
 覆盖清单、协议和当前源码限制见 [COVERAGE.md](cases/texas-holdem/COVERAGE.md)。
 服务端房间保持等待状态，回放房间的操作 RPC 被代理隔离，每例精确解散本次真实创建的房间。
@@ -415,7 +415,7 @@ Android、iOS 已有基准均显示横幅；这不代表其最新构建已完成
 | `cases/texas-holdem/proxy.ts`、`mitmproxy/` | 德州独立代理 fixture、HTTP 数据与 WebSocket 回放 |
 | `cases/zhajinhua/proxy.ts`、`mitmproxy/` | 拼三张独立 HTTP 选址、资料夹具与 WebSocket 回放 |
 | `src/captureAuthState.ts` | 运行开头的一次性登录态采集 |
-| `run-visual.ts` | Docker/CI 入口（test / reference / approve） |
+| `run-visual.ts` | Docker/CI 入口（test / reference；approve 为兼容别名） |
 | `../lint-lines.mjs` | 仓库代码文件 400 行上限，CI 会执行 |
 
 ## 统一截图浏览
