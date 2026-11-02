@@ -3,6 +3,7 @@ import { navigate, openApplication, visible, press, pressTarget } from './appSes
 import { exercisePopup } from './popups';
 import { captureTimeline, freeze } from './timeline';
 import { selectScenario } from '../../e2e/helpers/scenario-proxy';
+import { lockBottomSheetDocumentScroll } from './bottomSheetScroll';
 
 test('guest search confirmation enter and exit', async ({ context, page }, info) => {
   await openApplication(context, page, info, 'hall');
@@ -30,15 +31,11 @@ test('private room invitation bottom sheet enter and exit', async ({ context, pa
   await selectScenario(context, 'invitation');
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'copy-house-number-button')).toBeVisible();
+  await lockBottomSheetDocumentScroll(page);
   await exercisePopup(page, info, { name: 'invite-friends', target: page.getByTestId('invite-friend-popup-cancel-button'),
     clip: { x: 0, y: page.viewportSize()!.height - 300, width: page.viewportSize()!.width, height: 300 },
     open: /** 点击真实入口。 */ () => press(page, 'invite-friends-button'),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'invite-friend-popup-cancel-button'),
-    // 预热开关可能让浏览器保留 1px 文档滚动；固定视口裁切前复位，避免整幅画面偏移。
-    beforeEntrance: /** 只复位文档滚动，保留弹层自身的动画位置。 */ async () => {
-      await page.evaluate(() => window.scrollTo(0, 0));
-      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-    },
   });
 });
 
@@ -46,6 +43,7 @@ test('create room game picker enter and exit', async ({ context, page }, info) =
   await openApplication(context, page, info);
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'create-game-button')).toBeVisible();
+  await lockBottomSheetDocumentScroll(page);
   await exercisePopup(page, info, { name: 'game-picker', target: page.getByTestId('select-game-category-text'),
     clip: { x: 0, y: page.viewportSize()!.height - 400, width: page.viewportSize()!.width, height: 400 },
     open: /** 点击真实入口。 */ () => press(page, 'create-game-button'),
