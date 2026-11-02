@@ -115,12 +115,15 @@ node ../scripts/with-test-account.mjs -- pnpm run test:ci
 
 验证账号分配与失败释放：`node --test scripts/with-test-account.test.mjs`。
 
-仓库检查需要 Node.js 24 和 [uv](https://docs.astral.sh/uv/getting-started/installation/)；在仓库根目录先执行 `npm ci`，再执行 `npm run check`。
-首次克隆后还需安装 Python `pre-commit` 的 Git hook；Git 不会复制本地 hook：
+仓库检查使用 Node.js 24.14.0、npm 11.9.0、Python 3.12.12、uv 0.11.32 和 pre-commit 4.6.0。
+先安装 Node.js 和 [uv](https://docs.astral.sh/uv/getting-started/installation/)，再在仓库根目录执行：
 
 ```sh
-uvx --from pre-commit==4.6.0 pre-commit install
-uvx --from pre-commit==4.6.0 pre-commit run --all-files
+npm ci
+uv venv --python 3.12.12 .venv
+uv pip install --python .venv/bin/python -r requirements-dev.txt
+.venv/bin/pre-commit install
+.venv/bin/pre-commit run --all-files
 ```
 
 提交时检查全部源码、工作流、文件长度，以及根目录和 `visual/` 两份 TypeScript 配置。
@@ -128,6 +131,7 @@ uvx --from pre-commit==4.6.0 pre-commit run --all-files
 hook 只检查，不自动修改文件；失败后修复、重新暂存并重试提交。每个新克隆都要安装 hook。
 CI 使用相同版本的 `pre-commit` 独立执行全部检查，再运行本机单元测试；
 真实账号、浏览器和线上截图测试仍由原有工作流执行，不放入提交 hook。
+隔离环境、升级、卸载、部分暂存及失败处理见 [提交前检查](docs/pre-commit.md)。
 
 `npm run lint` 检查根目录、`scripts/`、`e2e/`、`visual/` 中全部 JavaScript／TypeScript，函数、命名箭头函数、类及方法
 必须有含有效说明的 TSDoc；已有参数必须写 `@param 参数名 - 说明`。
@@ -137,6 +141,8 @@ JSDoc 类型写法均会导致检查失败，警告也视为失败。
 及 [require-jsdoc 规则](https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/require-jsdoc.md)。
 
 检查还包括全部 Python 的 Ruff 规则、全部 Shell 的 ShellCheck、GitHub Actions 的 actionlint 和 JavaScript／TypeScript 的 400 行上限。
+复杂度、嵌套、循环/分层依赖、TS 网络响应伪造及新增重复也由同一入口阻止；
+固定工具版本、初始测量、精确历史清单及迁移方法见 [静态质量门禁](quality/README.md)。
 `npm run typecheck` 对全仓库 TypeScript 执行严格类型检查；`npm test` 自动收集全仓库 Node 单元测试。
 依赖、虚拟环境及测试报告等生成文件不检查。线上 Playwright 案例由各自测试入口运行，静态检查和本机单元测试无需真实凭据。
 actionlint 当前尚未识别 GitHub 已支持的 `concurrency.queue`，仅忽略这一条兼容性误报，其他工作流与内嵌 Shell 错误仍会失败。

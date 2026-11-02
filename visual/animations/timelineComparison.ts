@@ -10,58 +10,90 @@ type PartialComparisonOptions = {
 };
 
 /**
- * 取得局部比较原有的排除区域，稳定性与基准比较共用相同区域及几何断言。
- * @param frame - 本次实际截图。
- * @param options - 原有裁切、前景或背景排除设置。
- * @param subjects - 采样时记录的动画主体位置。
- * @param name - 报告中的动画名称，入场仍要求弹层存在。
+ * 读取首个元素的实际位置，保留原有的缺失判断。
+ * @param locator - 原有前景或背景定位器。
  */
-export async function timelineExcludedRegions(frame: Buffer, options: PartialComparisonOptions,
-  subjects: Rectangle[], name: string): Promise<ExcludedPixelRectangle[]> {
-  const { width, height } = PNG.sync.read(frame);
-  const foreground = options.foregroundBelow;
-  if (foreground) {
-    expect(foreground.y, `${name} 比较区域高度`).toBeGreaterThan(0);
-    expect(foreground.y, `${name} 比较区域高度`).toBeLessThanOrEqual(height);
-    const box = await foreground.locator.evaluateAll(nodes => {
-      if (!nodes[0]) return null;
-      const rect = nodes[0].getBoundingClientRect();
-      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-    });
-    if (name.endsWith('-enter')) expect(box, `${name} 弹层必须保留在画面中`).not.toBeNull();
-    const left = box ? Math.max(0, Math.floor(box.x - (options.clip?.x || 0))) : 0;
-    const right = box ? Math.min(width, Math.ceil(box.x + box.width - (options.clip?.x || 0))) : 0;
-    const top = box ? Math.max(foreground.y, Math.floor(box.y - (options.clip?.y || 0))) : foreground.y;
-    const bottom = box ? Math.min(height, Math.ceil(box.y + box.height - (options.clip?.y || 0))) : foreground.y;
-    if (right <= left || bottom <= top) return [{ left: 0, right: width, top: foreground.y, bottom: height }];
-    return [
-      { left: 0, right: width, top: foreground.y, bottom: top },
-      { left: 0, right: left, top, bottom },
-      { left: right, right: width, top, bottom },
-      { left: 0, right: width, top: bottom, bottom: height },
-    ];
-  }
+async function locatorRectangle(locator: Locator): Promise<Rectangle | null> {
+  return locator.evaluateAll(nodes => {
+    if (!nodes[0]) return null;
+    const rect = nodes[0].getBoundingClientRect();
+    return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+  });
+}
+
+/**
+ * 将页面坐标按原有取整方式转换到截图坐标。
+ * @param box - 页面中的元素位置。
+ * @param clip - 截图原有裁切区域。
+ * @param size - 实际截图大小。
+ */
+function screenshotRectangle(box: Rectangle, clip: Rectangle | undefined, size: { width: number; height: number }) {
+  const x = clip?.x || 0, y = clip?.y || 0;
+  return { left: Math.max(0, Math.floor(box.x - x)), right: Math.min(size.width, Math.ceil(box.x + box.width - x)),
+    top: Math.max(0, Math.floor(box.y - y)), bottom: Math.min(size.height, Math.ceil(box.y + box.height - y)) };
+}
+
+/**
+ * 排除分界线以下未被前景覆盖的像素；退场卸载后仍比较分界线以上。
+ * @param size - 实际截图大小。
+ * @param foreground - 原有前景定位器及分界线。
+ * @param clip - 原有裁切区域。
+ * @param name - 动画名称。
+ */
+async function foregroundRegions(size: { width: number; height: number },
+  foreground: { y: number; locator: Locator }, clip: Rectangle | undefined, name: string) {
+  const { width, height } = size;
+  expect(foreground.y, `${name} 比较区域高度`).toBeGreaterThan(0);
+  expect(foreground.y, `${name} 比较区域高度`).toBeLessThanOrEqual(height);
+  const box = await locatorRectangle(foreground.locator);
+  if (name.endsWith('-enter')) expect(box, `${name} 弹层必须保留在画面中`).not.toBeNull();
+  const below = { left: 0, right: width, top: foreground.y, bottom: height };
+  if (!box) return [below];
+  const rectangle = screenshotRectangle(box, clip, size);
+  const { left, right, bottom } = rectangle;
+  const top = Math.max(foreground.y, rectangle.top);
+  if (right <= left || bottom <= top) return [below];
+  return [
+    { ...below, bottom: top }, { left: 0, right: left, top, bottom },
+    { left: right, right: width, top, bottom }, { ...below, top: bottom },
+  ];
+}
+
+/**
+ * 取得原有背景排除区域，并保留区域必须存在且不遮挡主体的断言。
+ * @param size - 实际截图大小。
+ * @param options - 原有背景定位器及裁切设置。
+ * @param subjects - 动画主体位置。
+ * @param name - 动画名称。
+ */
+async function backgroundRegions(size: { width: number; height: number }, options: PartialComparisonOptions,
+  subjects: Rectangle[], name: string) {
   const excluded: ExcludedPixelRectangle[] = [];
   for (const background of options.excludedBackground || []) {
-    const box = await background.evaluateAll(nodes => {
-      if (!nodes[0]) return null;
-      const rect = nodes[0].getBoundingClientRect();
-      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-    });
+    const box = await locatorRectangle(background);
     expect(box, `${name} 背景排除区域必须存在`).not.toBeNull();
     for (const subject of subjects) {
       expect(box!.x + box!.width <= subject.x || subject.x + subject.width <= box!.x
         || box!.y + box!.height <= subject.y || subject.y + subject.height <= box!.y,
       `${name} 背景排除区域不能遮住弹层`).toBe(true);
     }
-    excluded.push({
-      left: Math.max(0, Math.floor(box!.x - (options.clip?.x || 0))),
-      right: Math.min(width, Math.ceil(box!.x + box!.width - (options.clip?.x || 0))),
-      top: Math.max(0, Math.floor(box!.y - (options.clip?.y || 0))),
-      bottom: Math.min(height, Math.ceil(box!.y + box!.height - (options.clip?.y || 0))),
-    });
+    excluded.push(screenshotRectangle(box!, options.clip, size));
   }
   return excluded;
+}
+
+/**
+ * 取得局部比较原有的排除区域，稳定性与基准比较共用相同区域及几何断言。
+ * @param frame - 本次实际截图。
+ * @param options - 原有裁切、前景或背景排除设置。
+ * @param subjects - 采样时记录的动画主体位置。
+ * @param name - 动画名称，入场仍要求弹层存在。
+ */
+export async function timelineExcludedRegions(frame: Buffer, options: PartialComparisonOptions,
+  subjects: Rectangle[], name: string): Promise<ExcludedPixelRectangle[]> {
+  const size = PNG.sync.read(frame);
+  if (options.foregroundBelow) return foregroundRegions(size, options.foregroundBelow, options.clip, name);
+  return backgroundRegions(size, options, subjects, name);
 }
 
 /**
