@@ -60,6 +60,8 @@ class Upstream(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
     def do_POST(self):
+        if urlsplit(self.path).path.endswith('/order'):
+            self.server.order_writes.append(self.path)
         self.do_GET()
 
     def do_PUT(self):
@@ -78,6 +80,7 @@ class Upstream(BaseHTTPRequestHandler):
 class LiveOverrideTests(unittest.TestCase):
     def test_五个代理保留全部候选节点及真实健康结果(self):
         upstream = ThreadingHTTPServer(('127.0.0.1', 0), Upstream)
+        upstream.order_writes = []
         worker = threading.Thread(target=upstream.serve_forever, daemon=True)
         worker.start()
         try:
@@ -88,6 +91,7 @@ class LiveOverrideTests(unittest.TestCase):
                           'visual/cases/club/mitmproxy/addon.py'):
                 with self.subTest(addon=addon):
                     self.check_addon(upstream.server_port, addon)
+                    self.assertEqual(upstream.order_writes, [], '五个入口均不得把订单提交给真实上游')
         finally:
             upstream.shutdown()
             upstream.server_close()
@@ -167,6 +171,13 @@ class LiveOverrideTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertNotIn('x-upstream', headers)
         self.assertEqual(len(body['result']), 7)
+        for path in ('/v1/alipay_order/order', '/v1/virtual_payment/order',
+                     f'/v2/telegram_payment/user/{OWNER}/order'):
+            status, headers, body = self.fetch(port, 'http://node-0.service.invalid' + path, 'POST')
+            self.assertEqual(status, 403)
+            self.assertNotIn('x-upstream', headers, '真实订单不能到达上游')
+            self.assertEqual(body, {'ok': False, 'error': 'fixture_payment_forbidden'})
+            self.check_preflight(port, 'http://node-0.service.invalid' + path)
         # 恢复默认后必须再次到达同一真实上游，不能有 Node 后备响应服务器。
         self.assertEqual(self.fetch(port, control, 'POST', {'name': 'none'})[0], 200)
         self.assertEqual(self.fetch(port, goods)[1]['x-upstream'], 'real')

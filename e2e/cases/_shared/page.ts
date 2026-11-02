@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { expect, type BrowserContext, type Locator, type Page } from '@playwright/test';
 import { confirmStagingNotice } from '../../helpers/staging-notice';
 import { requestFailure, requestFailureReason } from '../../../scripts/request-failure.cjs';
+import { installTutorialHandler } from '../../helpers/tutorials';
 
 /**
  * 查找当前页面内唯一可见的测试元素，排除导航历史中的隐藏页面。
@@ -16,7 +17,7 @@ export async function unique(page: Page, testId: string): Promise<Locator> {
 }
 
 /**
- * 在首次导航前设置设备标识和引导完成标记，保留用户已选择的语言。
+ * 在首次导航前设置设备标识，保留用户已选择的语言。
  * @param context - 首次导航前配置的浏览器上下文。
  * @param deviceId - 本轮浏览器使用的设备标识。
  */
@@ -27,13 +28,6 @@ export async function prepareContext(context: BrowserContext, deviceId = randomU
       localStorage.setItem('app.language.code.key', 'zh-Hans');
     }
     localStorage.setItem('deviceId', device);
-    for (const key of [
-      'hall.screen.tutorial.complete.key',
-      'personal.house.screen.tutorial.complete.key',
-      'create.room.screen.tutorial.complete.key',
-    ]) {
-      localStorage.setItem(key, 'true');
-    }
   }, deviceId);
 }
 
@@ -48,6 +42,7 @@ export async function openHall(page: Page): Promise<void> {
   if (!response) throw requestFailure('functional-open-hall', 'invalid-response');
   if (!response.ok()) throw requestFailure('functional-open-hall', 'http-error', response.status());
   try {
+    await installTutorialHandler(page);
     // staging 首次访问必须确认提示后才挂载大厅。
     const ready = page.getByTestId('hall-screen').or(page.getByTestId('staging-dialog'));
     await expect(ready.first()).toBeVisible({ timeout: 60_000 });
