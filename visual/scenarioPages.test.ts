@@ -193,6 +193,11 @@ describe('visual scenarios', () => {
         navClickTestIds: ['mall', 'currency-transaction-record-button'],
         visualReadySelector: '[data-testid="coin-transaction-record-view"]',
       },
+      {
+        pageLabel: 'signed_in_currency_transaction_diamond',
+        navClickTestIds: ['mall', 'currency-transaction-record-button', 'currency_transaction_top_tab_bar_diamond'],
+        visualReadySelector: '[data-testid="account-security-items-list"]',
+      },
     ];
 
     expected.forEach(({ pageLabel, navClickTestIds, visualReadySelector }) => {

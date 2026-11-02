@@ -99,7 +99,7 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 | 账号安全-注销首屏 | 账号安全 → `account-security-item-3`（不点下一步） | 测试账号 | |
 | 等级 | 我的 tab → `user-level` | 测试账号 | |
 | 商城 | 我的 tab → `mall` | 测试账号 | 金币/钻石余额 |
-| 钱包流水 | 商城 → `currency-transaction-record-button`（金币 tab 空态） | 测试账号 | 余额 |
+| 钱包流水 | 商城 → `currency-transaction-record-button`，覆盖金币与钻石页签及切换往返 | 测试账号 | mitmproxy 为本轮账号提供每种币种四条固定收支，逐条核对后截图 |
 | 购买记录 | 我的 tab → `purchase-history`（空态） | 测试账号 | 列表头版本号 |
 | 游戏记录 | 我的 tab → `game-record`（空态） | 测试账号 | |
 | 礼品卡 | 我的 tab → `gift-card` | 测试账号 | |
@@ -132,10 +132,20 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 
 主干新增德州状态的 198 张三语言基准与本次战绩的 372 张基准均纳入执行清单。
 
-- 全量（`VISUAL_LOCALES=all`）= 每语言 **478 张**，三语言共 **1434 张**（420 个场景）
-- 默认仅简中 = **478 张**（140 个场景）
+- 全量（`VISUAL_LOCALES=all`）= 每语言 **479 张**，三语言共 **1437 张**（423 个场景）
+- 默认仅简中 = **479 张**（141 个场景）
 - 核心范围（`VISUAL_SCOPE=core`）= 简中 **412 张**（74 个场景）
   （大厅、未登录私人局、登录首页、用户名登录、未登录俱乐部、游客牌局登录提示、搜索登录提示、登录后大厅/消息/私人局/俱乐部/我的/商城）
+
+钱包流水的原金币截图名称保持不变，另增 `signed_in_currency_transaction_diamond` 钻石截图。
+两种场景均在首次导航前选择 `wallet-populated`，只匹配本轮真实登录账号的
+`GET /v11/wallet/{userId}/currency/{coin,diamond}/statement`。固定数据位于
+`../e2e/mitmproxy/data/wallet-statements.json`，不修改服务端资产；登录、初始化、钱包余额和其他请求继续透传。
+场景固定 `Asia/Shanghai` 时区，在点击前监听确切响应，核对 HTTP 与业务成功、币种、四条收支及代理命中，
+再逐条验证当前列表内的金额、余额、日期、本地化备注和房间标识均完整可见。
+金币与钻石切换往返后再次校验，防止非活动列表的残留内容或空容器进入基准。
+页面限宽辅助函数保留钱包双页轨道的原有宽度，避免第二页随轨道平移后被截图准备逻辑裁空。
+独立的 `wallet-empty` 夹具及 Python 空态验证继续保留；本次不改变应用无流水时的展示。
 
 ### 易变内容固定填充（不用隐藏遮罩）
 
@@ -192,8 +202,8 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 
 ```bash
 cd visual
-pnpm run test          # 简中 476 张
-pnpm run test:all      # 全部语言 1434 张
+pnpm run test          # 简中 479 张
+pnpm run test:all      # 全部语言 1437 张
 pnpm run test:locales  # 繁中与英文
 pnpm run reference    # 在 Linux 重建线上基准，需审核差异
 pnpm run approve      # 审核失败截图后更新基准
@@ -244,9 +254,9 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 
 | 值 | 用途 |
 | --- | --- |
-| `zh-Hans`（默认） | 本地单语言检查（476 张） |
+| `zh-Hans`（默认） | 本地单语言检查（479 张） |
 | `zh-Hant,en` | 仅非简中语言 |
-| `all` | 全量 1434 张（GitHub Actions 默认范围） |
+| `all` | 全量 1437 张（GitHub Actions 默认范围） |
 
 环境变量 `VISUAL_SCOPE`：
 
@@ -258,10 +268,10 @@ cd visual && VISUAL_FILTER=zh-Hans_desktop pnpm run test     # 只跑简中桌�
 ## CI
 
 [视觉工作流](../.github/workflows/visual.yml) 在视觉相关 PR、`master` 代码合入和应用部署调用时，
-均访问线上并检查三种语言的完整场景，共 1434 张截图。部署记录单独推送到 `master` 时，
+均访问线上并检查三种语言的完整场景，共 1437 张截图。部署记录单独推送到 `master` 时，
 由部署工作流调用画面测试，避免同一部署重复运行；仓库没有定时画面任务。
 CI 按「应用 app」「德州 texas」「拼三张 zhajinhua」和三种语言拆为九个独立任务并行执行。
-应用每种语言覆盖 236 张，德州每种语言覆盖 190 张，拼三张覆盖 52 张，各任务分别保存失败报告。
+应用每种语言覆盖 237 张，德州每种语言覆盖 190 张，拼三张覆盖 52 张，各任务分别保存失败报告。
 不需要应用仓库 deploy key、Freshchat 构建配置或应用依赖。
 手动触发可用 `suite` 选择 `all`、`app`、`texas` 或 `zhajinhua`，只重跑所需部分。
 手动 `mode=reference` 在 Linux 中生成基准并上传 reference artifact，供下载和审查，
@@ -277,7 +287,7 @@ CI 按「应用 app」「德州 texas」「拼三张 zhajinhua」和三种语言
 
 失败上传 HTML 报告与截图；关闭网络 trace，不上传 `auth-state.json`。
 原来固定等待开局与翻牌圈的 12 张图片依赖应用专用 visual 构建，正常线上站点没有对应入口，
-因此已从执行清单移除。历史图片保留，不计入当前 1434 张有效截图。
+因此已从执行清单移除。历史图片保留，不计入当前 1437 张有效截图。
 德州通过 mitmproxy 回放固定牌局和弹窗数据，所有入口仍由实际 UI 点击打开。
 覆盖清单、协议和当前源码限制见 [COVERAGE.md](cases/texas-holdem/COVERAGE.md)。
 服务端房间保持等待状态，回放房间的操作 RPC 被代理隔离，每例精确解散本次真实创建的房间。

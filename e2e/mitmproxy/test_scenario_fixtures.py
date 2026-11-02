@@ -146,7 +146,8 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
     async def test_钱包空态只匹配所选账号的只读账单(self):
         await self.control({'name': 'wallet-empty', 'userId': SELF})
         path = f'/v11/wallet/{SELF}/currency/coin/statement'
-        self.assertEqual((await self.request(path)).response.json()['result'], {'statements': []})
+        self.assertEqual((await self.request(path)).response.json()['result'],
+                         {'currency_name': 'coin', 'statements': []})
         self.assertIsNone((await self.request(path.replace(SELF, OTHER))).response)
         self.assertIsNone((await self.request(path, 'POST')).response)
         self.assertIsNone((await self.request(f'/v10/wallet/{SELF}', 'PUT')).response)

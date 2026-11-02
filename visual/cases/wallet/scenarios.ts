@@ -1,3 +1,4 @@
+/** 配置商城、固定收支流水及礼品卡等钱包相关截图入口。 */
 import { type SignedInPageDef, BALANCE_FIXED_TEXT } from '../../scenarioTypes';
 
 export const pages: SignedInPageDef[] = [
@@ -11,12 +12,20 @@ export const pages: SignedInPageDef[] = [
     fixedTexts: [BALANCE_FIXED_TEXT],
   },
   {
-    // 商城 → 钱包流水空态（默认金币 tab）
+    // 商城 → 钱包流水；保留原截图名称，改为展示固定金币收支。
     label: 'signed_in_currency_transaction',
     viewports: ['mobile'],
     tabTestId: 'settings-tab',
     navClickTestIds: ['mall', 'currency-transaction-record-button'],
     visualReadySelector: '[data-testid="coin-transaction-record-view"]',
+    fixedTexts: [BALANCE_FIXED_TEXT],
+  },
+  {
+    label: 'signed_in_currency_transaction_diamond',
+    viewports: ['mobile'],
+    tabTestId: 'settings-tab',
+    navClickTestIds: ['mall', 'currency-transaction-record-button', 'currency_transaction_top_tab_bar_diamond'],
+    visualReadySelector: '[data-testid="account-security-items-list"]',
     fixedTexts: [BALANCE_FIXED_TEXT],
   },
   {

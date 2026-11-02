@@ -259,7 +259,7 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
 }
 
 /**
- * 锁定页面宽度，同时保留俱乐部分页轨道和精灵图内部画布的固有尺寸。
+ * 锁定页面宽度，同时保留俱乐部、钱包分页轨道和精灵图内部画布的固有尺寸。
  *
  * SpriteImage 通过在完整图集上平移来显示指定牌面；覆盖 sprite-image-view 的宽度会
  * 让平移坐标与画布尺寸失配，牌面因此被裁切或出现在错误位置。
@@ -283,6 +283,11 @@ export async function lockPageWidth(page: Page, width: number): Promise<void> {
       // 俱乐部通过平移双页轨道显示当前页。轨道宽度必须保留为两页之和，
       // 否则第二页会被新增的 overflow 裁掉；页面视口及应用自身容器负责裁切。
       if (el.closest('[data-testid="club-tab-screen"]')) {
+        return;
+      }
+      // 钱包也使用双页轨道；保留列表及其祖先的原始宽度，避免切换钻石时整页被裁空。
+      const coinTransactionList = '[data-testid="coin-transaction-record-view"]';
+      if (el.closest(coinTransactionList) || el.querySelector(coinTransactionList)) {
         return;
       }
       // 扑克牌精灵图的内部画布天然宽于视口，不能改变画布或其裁切容器的尺寸；

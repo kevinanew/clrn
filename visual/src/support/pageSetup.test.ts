@@ -1,8 +1,40 @@
+/** 验证浏览器初始化脚本及货币流水的具名代理场景选择。 */
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 import type { BrowserContext } from '@playwright/test';
-import { disableAnimations, fixNavigatorLanguage } from './pageSetup';
+import { disableAnimations, fixNavigatorLanguage, setupContextForScenario } from './pageSetup';
+import { buildScenarios } from '../../scenarios';
+import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
+import type { Mitmproxy } from '../../../e2e/helpers/mitmproxy-client';
+
+test('金币和钻石截图的实际场景名均选择非空流水代理',
+  /** 验证真实场景矩阵与代理入口连接，防止错误名称导致静默透传。 */
+  async () => {
+    const scenarios = buildScenarios({ VISUAL_LOCALES: 'all', VISUAL_SUITE: 'app' })
+      .filter(/**
+       * 只选择两种货币流水截图。
+       * @param scenario - 实际生成的视觉场景。
+       */
+      scenario => scenario.pageLabel.startsWith('signed_in_currency_transaction'));
+    assert.equal(scenarios.length, 6, '两种币种必须覆盖三种现有截图语言');
+    for (const scenario of scenarios) {
+      const commands: { endpoint: string; payload: { name?: string } }[] = [];
+      const context = { addInitScript: /** 网络选择测试不执行浏览器脚本。 */ async () => {} } as unknown as BrowserContext;
+      bindScenarioProxy(context, {
+        /**
+         * 只记录网络控制边界，不生成响应或替代页面行为。
+         * @param endpoint - 控制接口路径。
+         * @param payload - 具名场景参数。
+         */
+        command: async (endpoint: string, payload: { name?: string }) => { commands.push({ endpoint, payload }); },
+      } as unknown as Mitmproxy);
+      await setupContextForScenario(context, scenario);
+      assert.equal(commands[1]?.endpoint, 'fixtures/select', '首次导航前必须选择网络场景');
+      assert.equal(commands[1]?.payload.name, 'wallet-populated', '必须使用非空流水夹具');
+    }
+  },
+);
 
 /**
  * 捕获上下文初始化脚本并序列化，用于验证浏览器执行不依赖外部编译辅助函数。

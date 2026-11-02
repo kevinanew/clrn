@@ -1,0 +1,14 @@
+{
+  "coin": [
+    {"amount": "300", "balance": "19300", "create_at": "2026-10-09T04:04:00Z", "event": "withdraw", "currency_name": "coin", "memo": "Apply buy in coin in room 00000000-0000-4000-8000-000000000001", "statement_id": "visual-coin-4"},
+    {"amount": "800", "balance": "19600", "create_at": "2026-10-09T03:03:00Z", "event": "deposit", "currency_name": "coin", "memo": "Refund room 00000000-0000-4000-8000-000000000001", "statement_id": "visual-coin-3"},
+    {"amount": "1200", "balance": "18800", "create_at": "2026-10-09T02:02:00Z", "event": "withdraw", "currency_name": "coin", "memo": "Enter sit buy in coin in room 00000000-0000-4000-8000-000000000001", "statement_id": "visual-coin-2"},
+    {"amount": "20000", "balance": "20000", "create_at": "2026-10-09T01:01:00Z", "event": "deposit", "currency_name": "coin", "memo": "Registration reward", "statement_id": "visual-coin-1"}
+  ],
+  "diamond": [
+    {"amount": "5", "balance": "95", "create_at": "2026-10-09T04:04:00Z", "event": "withdraw", "currency_name": "diamond", "memo": "更新俱乐部简介扣款", "statement_id": "visual-diamond-4"},
+    {"amount": "10", "balance": "100", "create_at": "2026-10-09T03:03:00Z", "event": "deposit", "currency_name": "diamond", "memo": "操作失败退款", "statement_id": "visual-diamond-3"},
+    {"amount": "10", "balance": "90", "create_at": "2026-10-09T02:02:00Z", "event": "withdraw", "currency_name": "diamond", "memo": "创建俱乐部扣款", "statement_id": "visual-diamond-2"},
+    {"amount": "100", "balance": "100", "create_at": "2026-10-09T01:01:00Z", "event": "deposit", "currency_name": "diamond", "memo": "Registration reward", "statement_id": "visual-diamond-1"}
+  ]
+}

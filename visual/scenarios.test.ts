@@ -72,25 +72,25 @@ describe('visual scenarios', () => {
     });
   });
 
-  test('VISUAL_SCOPE=full 在简中生成全部 140 个场景', () => {
+  test('VISUAL_SCOPE=full 在简中生成全部 141 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 140);
-    assert.equal(expectedScenarioCount(), 140);
+    assert.equal(buildScenarios().length, 141);
+    assert.equal(expectedScenarioCount(), 141);
   });
 
-  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 140 个场景', () => {
+  test('未设置 VISUAL_SCOPE 时在简中默认生成全部 141 个场景', () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     delete process.env.VISUAL_SCOPE;
-    assert.equal(buildScenarios().length, 140);
-    assert.equal(expectedScenarioCount(), 140);
+    assert.equal(buildScenarios().length, 141);
+    assert.equal(expectedScenarioCount(), 141);
   });
 
-  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 420 个场景', () => {
+  test('VISUAL_LOCALES=all VISUAL_SCOPE=full 生成 423 个场景', () => {
     process.env.VISUAL_LOCALES = 'all';
     process.env.VISUAL_SCOPE = 'full';
-    assert.equal(buildScenarios().length, 420);
-    assert.equal(expectedScenarioCount(), 420);
+    assert.equal(buildScenarios().length, 423);
+    assert.equal(expectedScenarioCount(), 423);
   });
 
   test('新增业务页面有对应导航与就绪定位，签到日期固定且不提交业务', () => {
