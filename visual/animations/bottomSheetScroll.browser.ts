@@ -21,3 +21,25 @@ test('底部弹层预热后文档仍固定在视口原点，内部容器可以�
     assert.ok(await page.locator('#sheet').evaluate(node => node.scrollTop) > 0);
   } finally { await browser.close(); }
 });
+
+test('body 的独立滚动不会使底部关键帧偏移一个像素', async () => {
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
+    await page.setContent(`<style>html, body { margin: 0; height: 100%; overflow: hidden }
+      #root { height: 813px } #sheet { height: 100px; overflow: auto }
+      #content { height: 300px }</style>
+      <div id="root"><div id="sheet"><div id="content"></div><button>Cancel</button></div></div>`);
+    await page.evaluate(() => { document.body.scrollTop = 1; });
+    assert.equal(await page.evaluate(() => window.scrollY), 0);
+    assert.equal(await page.evaluate(() => document.body.scrollTop), 1);
+    await lockBottomSheetDocumentScroll(page);
+    await page.evaluate(() => {
+      document.body.scrollTop = 1;
+      document.querySelector('button')!.focus();
+    });
+    assert.equal(await page.evaluate(() => document.body.scrollTop), 0);
+    assert.equal(await page.locator('#root').evaluate(node => node.getBoundingClientRect().y), 0);
+    assert.ok(await page.locator('#sheet').evaluate(node => node.scrollTop) > 0);
+  } finally { await browser.close(); }
+});

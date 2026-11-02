@@ -10,6 +10,11 @@ export async function lockBottomSheetDocumentScroll(page: Page): Promise<void> {
     Object.assign(document.documentElement.style, {
       position: 'fixed', inset: '0', width: '100%', height: '100%', overflow: 'clip',
     });
+    // body 的 overflow:hidden 仍允许焦点恢复触发程序滚动，且不会反映在 window.scrollY。
+    document.body.scrollTop = 0;
+    document.body.scrollLeft = 0;
+    document.body.style.overflow = 'clip';
   });
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect.poll(() => page.evaluate(() => document.body.scrollTop)).toBe(0);
 }
