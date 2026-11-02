@@ -1,0 +1,1673 @@
+{
+  "revision": "347b50a4b4782d07c48cb8256efcda3f13f26e49",
+  "versions": {
+    "node": "v24.14.0",
+    "eslint": "10.12.0",
+    "ruff": "0.15.12",
+    "typescript": "5.9.3",
+    "dependency-cruiser": "18.7.0",
+    "jscpd": "5.4.2"
+  },
+  "files": {
+    "javascript": 296,
+    "python": 41
+  },
+  "thresholds": {
+    "javascriptComplexity": 10,
+    "maxDepth": 3,
+    "pythonC901": 10,
+    "cloneMinLines": 5,
+    "cloneMinTokens": 70
+  },
+  "counts": {
+    "javascriptComplexity": 46,
+    "maxDepth": 20,
+    "pythonC901": 15,
+    "networkEntrances": 98
+  },
+  "architecture": {
+    "modules": 317,
+    "edges": 1064,
+    "violations": []
+  },
+  "duplication": {
+    "statistics": {
+      "detectionDate": "2026-11-02T13:18:15.457Z",
+      "formats": {
+        "javascript": {
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "lines": 3104,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "sources": 33,
+          "tokens": 27557
+        },
+        "python": {
+          "clones": 21,
+          "duplicatedLines": 349,
+          "duplicatedTokens": 3314,
+          "lines": 6145,
+          "percentage": 5.679414157851912,
+          "percentageTokens": 5.77372033868776,
+          "sources": 41,
+          "tokens": 57398
+        },
+        "typescript": {
+          "clones": 22,
+          "duplicatedLines": 269,
+          "duplicatedTokens": 2559,
+          "lines": 20483,
+          "percentage": 1.3132841868866865,
+          "percentageTokens": 1.6174295574348667,
+          "sources": 248,
+          "tokens": 158214
+        }
+      },
+      "total": {
+        "clones": 43,
+        "duplicatedLines": 618,
+        "duplicatedTokens": 5873,
+        "lines": 29732,
+        "percentage": 2.078568545674694,
+        "percentageTokens": 2.4151927260464943,
+        "sources": 322,
+        "tokens": 243169
+      }
+    },
+    "duplicates": [
+      {
+        "firstFile": {
+          "end": 58,
+          "endLoc": {
+            "column": 1,
+            "line": 58,
+            "position": 2597
+          },
+          "name": "e2e/cases/_shared/navigation.ts",
+          "start": 52,
+          "startLoc": {
+            "column": 45,
+            "line": 52,
+            "position": 2394
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 7,
+        "secondFile": {
+          "end": 19,
+          "endLoc": {
+            "column": 1,
+            "line": 19,
+            "position": 769
+          },
+          "name": "e2e/cases/settings-004-help-download/test.spec.ts",
+          "start": 13,
+          "startLoc": {
+            "column": 12,
+            "line": 13,
+            "position": 502
+          }
+        },
+        "tokens": 72,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 55,
+          "endLoc": {
+            "column": 83,
+            "line": 55,
+            "position": 3235
+          },
+          "name": "e2e/cases/club-002-create-and-dismiss-game/test.spec.ts",
+          "start": 49,
+          "startLoc": {
+            "column": 6,
+            "line": 49,
+            "position": 2702
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 7,
+        "secondFile": {
+          "end": 26,
+          "endLoc": {
+            "column": 83,
+            "line": 26,
+            "position": 1621
+          },
+          "name": "e2e/cases/private-003-join-created-room/test.spec.ts",
+          "start": 22,
+          "startLoc": {
+            "column": 6,
+            "line": 22,
+            "position": 1199
+          }
+        },
+        "tokens": 98,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 61,
+          "endLoc": {
+            "column": 79,
+            "line": 61,
+            "position": 3527
+          },
+          "name": "e2e/cases/club-002-create-and-dismiss-game/test.spec.ts",
+          "start": 51,
+          "startLoc": {
+            "column": 88,
+            "line": 51,
+            "position": 2887
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 11,
+        "secondFile": {
+          "end": 40,
+          "endLoc": {
+            "column": 79,
+            "line": 40,
+            "position": 2390
+          },
+          "name": "e2e/cases/private-001-create-and-dismiss/test.spec.ts",
+          "start": 30,
+          "startLoc": {
+            "column": 67,
+            "line": 30,
+            "position": 1750
+          }
+        },
+        "tokens": 121,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 106,
+          "endLoc": {
+            "column": 41,
+            "line": 106,
+            "position": 5789
+          },
+          "name": "e2e/cases/club-004-member-management/test.spec.ts",
+          "start": 98,
+          "startLoc": {
+            "column": 6,
+            "line": 98,
+            "position": 5084
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 9,
+        "secondFile": {
+          "end": 87,
+          "endLoc": {
+            "column": 41,
+            "line": 87,
+            "position": 4564
+          },
+          "name": "e2e/cases/club-005-join-approval-invite/test.spec.ts",
+          "start": 79,
+          "startLoc": {
+            "column": 6,
+            "line": 79,
+            "position": 3859
+          }
+        },
+        "tokens": 138,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 31,
+          "endLoc": {
+            "column": 18,
+            "line": 31,
+            "position": 1236
+          },
+          "name": "e2e/helpers/network-fixture.ts",
+          "start": 5,
+          "startLoc": {
+            "column": 52,
+            "line": 5,
+            "position": 330
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 27,
+        "secondFile": {
+          "end": 31,
+          "endLoc": {
+            "column": 18,
+            "line": 31,
+            "position": 1276
+          },
+          "name": "visual/src/support/networkFixture.ts",
+          "start": 5,
+          "startLoc": {
+            "column": 71,
+            "line": 5,
+            "position": 370
+          }
+        },
+        "tokens": 119,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 18,
+          "endLoc": {
+            "column": 7,
+            "line": 18,
+            "position": 1162
+          },
+          "name": "visual/animations/ambient.spec.ts",
+          "start": 9,
+          "startLoc": {
+            "column": 31,
+            "line": 9,
+            "position": 514
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 10,
+        "secondFile": {
+          "end": 17,
+          "endLoc": {
+            "column": 7,
+            "line": 17,
+            "position": 1053
+          },
+          "name": "visual/animations/dialogs.spec.ts",
+          "start": 9,
+          "startLoc": {
+            "column": 51,
+            "line": 9,
+            "position": 527
+          }
+        },
+        "tokens": 126,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 32,
+          "endLoc": {
+            "column": 28,
+            "line": 32,
+            "position": 1746
+          },
+          "name": "visual/animations/cardSpriteDiagnostics.browser.ts",
+          "start": 26,
+          "startLoc": {
+            "column": 35,
+            "line": 26,
+            "position": 1395
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 7,
+        "secondFile": {
+          "end": 18,
+          "endLoc": {
+            "column": 26,
+            "line": 18,
+            "position": 960
+          },
+          "name": "visual/animations/cardSpriteReadiness.browser.ts",
+          "start": 12,
+          "startLoc": {
+            "column": 39,
+            "line": 12,
+            "position": 621
+          }
+        },
+        "tokens": 84,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 15,
+          "endLoc": {
+            "column": 35,
+            "line": 15,
+            "position": 797
+          },
+          "name": "visual/animations/cardSpriteReadiness.browser.ts",
+          "start": 8,
+          "startLoc": {
+            "column": 79,
+            "line": 8,
+            "position": 406
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 8,
+        "secondFile": {
+          "end": 15,
+          "endLoc": {
+            "column": 35,
+            "line": 15,
+            "position": 811
+          },
+          "name": "visual/animations/playerAnimationAsset.browser.ts",
+          "start": 8,
+          "startLoc": {
+            "column": 103,
+            "line": 8,
+            "position": 420
+          }
+        },
+        "tokens": 92,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 29,
+          "endLoc": {
+            "column": 47,
+            "line": 29,
+            "position": 1496
+          },
+          "name": "visual/animations/leaderboardReadiness.browser.ts",
+          "start": 23,
+          "startLoc": {
+            "column": 106,
+            "line": 23,
+            "position": 1185
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 7,
+        "secondFile": {
+          "end": 30,
+          "endLoc": {
+            "column": 47,
+            "line": 30,
+            "position": 1490
+          },
+          "name": "visual/animations/playerProfileReadiness.browser.ts",
+          "start": 24,
+          "startLoc": {
+            "column": 109,
+            "line": 24,
+            "position": 1179
+          }
+        },
+        "tokens": 76,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 38,
+          "endLoc": {
+            "column": 17,
+            "line": 38,
+            "position": 1956
+          },
+          "name": "visual/animations/leaderboardReadiness.browser.ts",
+          "start": 23,
+          "startLoc": {
+            "column": 106,
+            "line": 23,
+            "position": 1185
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 16,
+        "secondFile": {
+          "end": 36,
+          "endLoc": {
+            "column": 17,
+            "line": 36,
+            "position": 1814
+          },
+          "name": "visual/animations/renewReadiness.browser.ts",
+          "start": 21,
+          "startLoc": {
+            "column": 97,
+            "line": 21,
+            "position": 1043
+          }
+        },
+        "tokens": 202,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 37,
+          "endLoc": {
+            "column": 24,
+            "line": 37,
+            "position": 1931
+          },
+          "name": "visual/animations/leaderboardReadiness.browser.ts",
+          "start": 31,
+          "startLoc": {
+            "column": 42,
+            "line": 31,
+            "position": 1664
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 7,
+        "secondFile": {
+          "end": 39,
+          "endLoc": {
+            "column": 24,
+            "line": 39,
+            "position": 1930
+          },
+          "name": "visual/animations/playerProfileReadiness.browser.ts",
+          "start": 33,
+          "startLoc": {
+            "column": 22,
+            "line": 33,
+            "position": 1663
+          }
+        },
+        "tokens": 70,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 67,
+          "endLoc": {
+            "column": 5,
+            "line": 67,
+            "position": 3533
+          },
+          "name": "visual/animations/leaderboardReadiness.browser.ts",
+          "start": 49,
+          "startLoc": {
+            "column": 28,
+            "line": 49,
+            "position": 2541
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 19,
+        "secondFile": {
+          "end": 65,
+          "endLoc": {
+            "column": 5,
+            "line": 65,
+            "position": 3347
+          },
+          "name": "visual/animations/renewReadiness.browser.ts",
+          "start": 47,
+          "startLoc": {
+            "column": 29,
+            "line": 47,
+            "position": 2355
+          }
+        },
+        "tokens": 231,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 76,
+          "endLoc": {
+            "column": 27,
+            "line": 76,
+            "position": 4155
+          },
+          "name": "visual/animations/leaderboardReadiness.browser.ts",
+          "start": 67,
+          "startLoc": {
+            "column": 112,
+            "line": 67,
+            "position": 3640
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 10,
+        "secondFile": {
+          "end": 74,
+          "endLoc": {
+            "column": 27,
+            "line": 74,
+            "position": 3960
+          },
+          "name": "visual/animations/renewReadiness.browser.ts",
+          "start": 65,
+          "startLoc": {
+            "column": 103,
+            "line": 65,
+            "position": 3445
+          }
+        },
+        "tokens": 127,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 86,
+          "endLoc": {
+            "column": 27,
+            "line": 86,
+            "position": 4808
+          },
+          "name": "visual/animations/leaderboardReadiness.browser.ts",
+          "start": 76,
+          "startLoc": {
+            "column": 47,
+            "line": 76,
+            "position": 4175
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 11,
+        "secondFile": {
+          "end": 84,
+          "endLoc": {
+            "column": 27,
+            "line": 84,
+            "position": 4601
+          },
+          "name": "visual/animations/renewReadiness.browser.ts",
+          "start": 74,
+          "startLoc": {
+            "column": 35,
+            "line": 74,
+            "position": 3968
+          }
+        },
+        "tokens": 152,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 84,
+          "endLoc": {
+            "column": 77,
+            "line": 84,
+            "position": 4753
+          },
+          "name": "visual/animations/leaderboardReadiness.browser.ts",
+          "start": 77,
+          "startLoc": {
+            "column": 66,
+            "line": 77,
+            "position": 4302
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 8,
+        "secondFile": {
+          "end": 83,
+          "endLoc": {
+            "column": 79,
+            "line": 83,
+            "position": 4542
+          },
+          "name": "visual/animations/playerProfileReadiness.browser.ts",
+          "start": 76,
+          "startLoc": {
+            "column": 92,
+            "line": 76,
+            "position": 4077
+          }
+        },
+        "tokens": 107,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 262,
+          "endLoc": {
+            "column": 119,
+            "line": 262,
+            "position": 14316
+          },
+          "name": "visual/animations/timeline.ts",
+          "start": 244,
+          "startLoc": {
+            "column": 32,
+            "line": 244,
+            "position": 12969
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 19,
+        "secondFile": {
+          "end": 303,
+          "endLoc": {
+            "column": 119,
+            "line": 303,
+            "position": 17271
+          },
+          "name": "visual/animations/timeline.ts",
+          "start": 288,
+          "startLoc": {
+            "column": 51,
+            "line": 288,
+            "position": 16261
+          }
+        },
+        "tokens": 185,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 32,
+          "endLoc": {
+            "column": 5,
+            "line": 32,
+            "position": 1350
+          },
+          "name": "visual/cases/game-record/mitmproxy/addon.py",
+          "start": 23,
+          "startLoc": {
+            "column": 4,
+            "line": 23,
+            "position": 891
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 10,
+        "secondFile": {
+          "end": 38,
+          "endLoc": {
+            "column": 5,
+            "line": 38,
+            "position": 1467
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/addon.py",
+          "start": 29,
+          "startLoc": {
+            "column": 4,
+            "line": 29,
+            "position": 1008
+          }
+        },
+        "tokens": 73,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 160,
+          "endLoc": {
+            "column": 13,
+            "line": 160,
+            "position": 9097
+          },
+          "name": "visual/cases/game-record/mitmproxy/test_addon.py",
+          "start": 155,
+          "startLoc": {
+            "column": 91,
+            "line": 155,
+            "position": 8804
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 6,
+        "secondFile": {
+          "end": 178,
+          "endLoc": {
+            "column": 13,
+            "line": 178,
+            "position": 10742
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+          "start": 173,
+          "startLoc": {
+            "column": 34,
+            "line": 173,
+            "position": 10449
+          }
+        },
+        "tokens": 76,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 35,
+          "endLoc": {
+            "column": 6,
+            "line": 35,
+            "position": 1459
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/addon.py",
+          "start": 18,
+          "startLoc": {
+            "column": 92,
+            "line": 18,
+            "position": 746
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 18,
+        "secondFile": {
+          "end": 31,
+          "endLoc": {
+            "column": 6,
+            "line": 31,
+            "position": 1252
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/addon.py",
+          "start": 14,
+          "startLoc": {
+            "column": 77,
+            "line": 14,
+            "position": 539
+          }
+        },
+        "tokens": 103,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 59,
+          "endLoc": {
+            "column": 25,
+            "line": 59,
+            "position": 2310
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/addon.py",
+          "start": 47,
+          "startLoc": {
+            "column": 26,
+            "line": 47,
+            "position": 1796
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 13,
+        "secondFile": {
+          "end": 84,
+          "endLoc": {
+            "column": 25,
+            "line": 84,
+            "position": 3623
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/addon.py",
+          "start": 72,
+          "startLoc": {
+            "column": 37,
+            "line": 72,
+            "position": 3109
+          }
+        },
+        "tokens": 105,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 91,
+          "endLoc": {
+            "column": 37,
+            "line": 91,
+            "position": 4149
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/addon.py",
+          "start": 81,
+          "startLoc": {
+            "column": 16,
+            "line": 81,
+            "position": 3586
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 11,
+        "secondFile": {
+          "end": 107,
+          "endLoc": {
+            "column": 37,
+            "line": 107,
+            "position": 5087
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/addon.py",
+          "start": 97,
+          "startLoc": {
+            "column": 16,
+            "line": 97,
+            "position": 4524
+          }
+        },
+        "tokens": 82,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 131,
+          "endLoc": {
+            "column": 18,
+            "line": 131,
+            "position": 6080
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/addon.py",
+          "start": 120,
+          "startLoc": {
+            "column": 4,
+            "line": 120,
+            "position": 5614
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 12,
+        "secondFile": {
+          "end": 153,
+          "endLoc": {
+            "column": 18,
+            "line": 153,
+            "position": 7296
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/addon.py",
+          "start": 142,
+          "startLoc": {
+            "column": 4,
+            "line": 142,
+            "position": 6830
+          }
+        },
+        "tokens": 87,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 26,
+          "endLoc": {
+            "column": 11,
+            "line": 26,
+            "position": 984
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+          "start": 14,
+          "startLoc": {
+            "column": 0,
+            "line": 14,
+            "position": 435
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 13,
+        "secondFile": {
+          "end": 26,
+          "endLoc": {
+            "column": 11,
+            "line": 26,
+            "position": 979
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+          "start": 14,
+          "startLoc": {
+            "column": 0,
+            "line": 14,
+            "position": 430
+          }
+        },
+        "tokens": 106,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 42,
+          "endLoc": {
+            "column": 5,
+            "line": 42,
+            "position": 1480
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+          "start": 29,
+          "startLoc": {
+            "column": 0,
+            "line": 29,
+            "position": 1015
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 14,
+        "secondFile": {
+          "end": 42,
+          "endLoc": {
+            "column": 5,
+            "line": 42,
+            "position": 1472
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+          "start": 29,
+          "startLoc": {
+            "column": 0,
+            "line": 29,
+            "position": 1007
+          }
+        },
+        "tokens": 90,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 51,
+          "endLoc": {
+            "column": 7,
+            "line": 51,
+            "position": 1871
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+          "start": 44,
+          "startLoc": {
+            "column": 33,
+            "line": 44,
+            "position": 1572
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 8,
+        "secondFile": {
+          "end": 51,
+          "endLoc": {
+            "column": 7,
+            "line": 51,
+            "position": 1871
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+          "start": 44,
+          "startLoc": {
+            "column": 37,
+            "line": 44,
+            "position": 1572
+          }
+        },
+        "tokens": 77,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 61,
+          "endLoc": {
+            "column": 80,
+            "line": 61,
+            "position": 2539
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+          "start": 53,
+          "startLoc": {
+            "column": 109,
+            "line": 53,
+            "position": 2069
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 9,
+        "secondFile": {
+          "end": 81,
+          "endLoc": {
+            "column": 80,
+            "line": 81,
+            "position": 3714
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+          "start": 73,
+          "startLoc": {
+            "column": 106,
+            "line": 73,
+            "position": 3244
+          }
+        },
+        "tokens": 111,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 92,
+          "endLoc": {
+            "column": 28,
+            "line": 92,
+            "position": 4276
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+          "start": 65,
+          "startLoc": {
+            "column": 44,
+            "line": 65,
+            "position": 2792
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 28,
+        "secondFile": {
+          "end": 112,
+          "endLoc": {
+            "column": 28,
+            "line": 112,
+            "position": 5452
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+          "start": 85,
+          "startLoc": {
+            "column": 48,
+            "line": 85,
+            "position": 3968
+          }
+        },
+        "tokens": 316,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 111,
+          "endLoc": {
+            "column": 21,
+            "line": 111,
+            "position": 5305
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+          "start": 93,
+          "startLoc": {
+            "column": 44,
+            "line": 93,
+            "position": 4374
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 19,
+        "secondFile": {
+          "end": 131,
+          "endLoc": {
+            "column": 21,
+            "line": 131,
+            "position": 6482
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+          "start": 113,
+          "startLoc": {
+            "column": 48,
+            "line": 113,
+            "position": 5551
+          }
+        },
+        "tokens": 191,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 124,
+          "endLoc": {
+            "column": 17,
+            "line": 124,
+            "position": 6089
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+          "start": 115,
+          "startLoc": {
+            "column": 44,
+            "line": 115,
+            "position": 5588
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 10,
+        "secondFile": {
+          "end": 144,
+          "endLoc": {
+            "column": 17,
+            "line": 144,
+            "position": 7264
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+          "start": 135,
+          "startLoc": {
+            "column": 48,
+            "line": 135,
+            "position": 6763
+          }
+        },
+        "tokens": 111,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 166,
+          "endLoc": {
+            "column": 7,
+            "line": 166,
+            "position": 8273
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+          "start": 125,
+          "startLoc": {
+            "column": 63,
+            "line": 125,
+            "position": 6183
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 42,
+        "secondFile": {
+          "end": 186,
+          "endLoc": {
+            "column": 7,
+            "line": 186,
+            "position": 9447
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+          "start": 145,
+          "startLoc": {
+            "column": 63,
+            "line": 145,
+            "position": 7357
+          }
+        },
+        "tokens": 422,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 224,
+          "endLoc": {
+            "column": 19,
+            "line": 224,
+            "position": 11843
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+          "start": 212,
+          "startLoc": {
+            "column": 47,
+            "line": 212,
+            "position": 11158
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 13,
+        "secondFile": {
+          "end": 234,
+          "endLoc": {
+            "column": 19,
+            "line": 234,
+            "position": 12238
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+          "start": 222,
+          "startLoc": {
+            "column": 40,
+            "line": 222,
+            "position": 11553
+          }
+        },
+        "tokens": 131,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 35,
+          "endLoc": {
+            "column": 30,
+            "line": 35,
+            "position": 1331
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+          "start": 26,
+          "startLoc": {
+            "column": 4,
+            "line": 26,
+            "position": 799
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 10,
+        "secondFile": {
+          "end": 30,
+          "endLoc": {
+            "column": 30,
+            "line": 30,
+            "position": 1118
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+          "start": 21,
+          "startLoc": {
+            "column": 4,
+            "line": 21,
+            "position": 586
+          }
+        },
+        "tokens": 101,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 50,
+          "endLoc": {
+            "column": 13,
+            "line": 50,
+            "position": 2027
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+          "start": 38,
+          "startLoc": {
+            "column": 55,
+            "line": 38,
+            "position": 1468
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 13,
+        "secondFile": {
+          "end": 45,
+          "endLoc": {
+            "column": 13,
+            "line": 45,
+            "position": 1815
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+          "start": 33,
+          "startLoc": {
+            "column": 59,
+            "line": 33,
+            "position": 1256
+          }
+        },
+        "tokens": 110,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 85,
+          "endLoc": {
+            "column": 47,
+            "line": 85,
+            "position": 3778
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+          "start": 59,
+          "startLoc": {
+            "column": 50,
+            "line": 59,
+            "position": 2423
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 27,
+        "secondFile": {
+          "end": 84,
+          "endLoc": {
+            "column": 47,
+            "line": 84,
+            "position": 3799
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+          "start": 58,
+          "startLoc": {
+            "column": 47,
+            "line": 58,
+            "position": 2444
+          }
+        },
+        "tokens": 279,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 136,
+          "endLoc": {
+            "column": 22,
+            "line": 136,
+            "position": 6742
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+          "start": 91,
+          "startLoc": {
+            "column": 16,
+            "line": 91,
+            "position": 4217
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 46,
+        "secondFile": {
+          "end": 134,
+          "endLoc": {
+            "column": 22,
+            "line": 134,
+            "position": 6622
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+          "start": 89,
+          "startLoc": {
+            "column": 16,
+            "line": 89,
+            "position": 4097
+          }
+        },
+        "tokens": 483,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 187,
+          "endLoc": {
+            "column": 37,
+            "line": 187,
+            "position": 9497
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+          "start": 176,
+          "startLoc": {
+            "column": 8,
+            "line": 176,
+            "position": 8851
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 12,
+        "secondFile": {
+          "end": 173,
+          "endLoc": {
+            "column": 37,
+            "line": 173,
+            "position": 8667
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+          "start": 162,
+          "startLoc": {
+            "column": 8,
+            "line": 162,
+            "position": 8021
+          }
+        },
+        "tokens": 112,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 33,
+          "endLoc": {
+            "column": 75,
+            "line": 33,
+            "position": 1505
+          },
+          "name": "visual/cases/texas-holdem/mitmproxy/virtual_player_preflight.py",
+          "start": 19,
+          "startLoc": {
+            "column": 12,
+            "line": 19,
+            "position": 739
+          }
+        },
+        "format": "python",
+        "kind": "exact",
+        "lines": 15,
+        "secondFile": {
+          "end": 51,
+          "endLoc": {
+            "column": 75,
+            "line": 51,
+            "position": 2227
+          },
+          "name": "visual/cases/zhajinhua/mitmproxy/addon.py",
+          "start": 37,
+          "startLoc": {
+            "column": 12,
+            "line": 37,
+            "position": 1461
+          }
+        },
+        "tokens": 148,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 23,
+          "endLoc": {
+            "column": 60,
+            "line": 23,
+            "position": 1158
+          },
+          "name": "visual/cases/texas-holdem/proxy.ts",
+          "start": 8,
+          "startLoc": {
+            "column": 24,
+            "line": 8,
+            "position": 464
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 16,
+        "secondFile": {
+          "end": 23,
+          "endLoc": {
+            "column": 60,
+            "line": 23,
+            "position": 1151
+          },
+          "name": "visual/cases/zhajinhua/proxy.ts",
+          "start": 8,
+          "startLoc": {
+            "column": 28,
+            "line": 8,
+            "position": 457
+          }
+        },
+        "tokens": 85,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 221,
+          "endLoc": {
+            "column": 48,
+            "line": 221,
+            "position": 11374
+          },
+          "name": "visual/cases/texas-holdem/texas-holdem.spec.ts",
+          "start": 212,
+          "startLoc": {
+            "column": 26,
+            "line": 212,
+            "position": 10952
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 10,
+        "secondFile": {
+          "end": 26,
+          "endLoc": {
+            "column": 48,
+            "line": 26,
+            "position": 1569
+          },
+          "name": "visual/cases/zhajinhua/zhajinhua.spec.ts",
+          "start": 19,
+          "startLoc": {
+            "column": 30,
+            "line": 19,
+            "position": 1159
+          }
+        },
+        "tokens": 80,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 45,
+          "endLoc": {
+            "column": 7,
+            "line": 45,
+            "position": 1316
+          },
+          "name": "visual/scenarioPages.test.ts",
+          "start": 17,
+          "startLoc": {
+            "column": 18,
+            "line": 17,
+            "position": 452
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 29,
+        "secondFile": {
+          "end": 47,
+          "endLoc": {
+            "column": 7,
+            "line": 47,
+            "position": 1402
+          },
+          "name": "visual/scenarios.test.ts",
+          "start": 19,
+          "startLoc": {
+            "column": 11,
+            "line": 19,
+            "position": 538
+          }
+        },
+        "tokens": 138,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 316,
+          "endLoc": {
+            "column": 52,
+            "line": 316,
+            "position": 12449
+          },
+          "name": "visual/scenarioPages.test.ts",
+          "start": 309,
+          "startLoc": {
+            "column": 67,
+            "line": 309,
+            "position": 12035
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 8,
+        "secondFile": {
+          "end": 347,
+          "endLoc": {
+            "column": 52,
+            "line": 347,
+            "position": 13706
+          },
+          "name": "visual/scenarioPages.test.ts",
+          "start": 340,
+          "startLoc": {
+            "column": 79,
+            "line": 340,
+            "position": 13292
+          }
+        },
+        "tokens": 90,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 165,
+          "endLoc": {
+            "column": 26,
+            "line": 165,
+            "position": 6451
+          },
+          "name": "visual/tests/authValidation.spec.ts",
+          "start": 154,
+          "startLoc": {
+            "column": 0,
+            "line": 154,
+            "position": 6044
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 12,
+        "secondFile": {
+          "end": 191,
+          "endLoc": {
+            "column": 26,
+            "line": 191,
+            "position": 7390
+          },
+          "name": "visual/tests/authValidation.spec.ts",
+          "start": 180,
+          "startLoc": {
+            "column": 87,
+            "line": 180,
+            "position": 6983
+          }
+        },
+        "tokens": 89,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      },
+      {
+        "firstFile": {
+          "end": 247,
+          "endLoc": {
+            "column": 6,
+            "line": 247,
+            "position": 9201
+          },
+          "name": "visual/tests/authValidation.spec.ts",
+          "start": 237,
+          "startLoc": {
+            "column": 0,
+            "line": 237,
+            "position": 8843
+          }
+        },
+        "format": "typescript",
+        "kind": "exact",
+        "lines": 11,
+        "secondFile": {
+          "end": 350,
+          "endLoc": {
+            "column": 6,
+            "line": 350,
+            "position": 12521
+          },
+          "name": "visual/tests/authValidation.spec.ts",
+          "start": 340,
+          "startLoc": {
+            "column": 77,
+            "line": 340,
+            "position": 12163
+          }
+        },
+        "tokens": 77,
+        "reason": "既有重复：先保留业务场景/代理回放及断言语义，逐组提取实际共用逻辑；仅允许删除此指纹或降低次数。"
+      }
+    ]
+  }
+}

@@ -1,7 +1,8 @@
-name: 源文件行数检查
+name: 静态检查与本机单元测试
 
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -9,10 +10,31 @@ permissions:
 
 jobs:
   lint:
-    name: 检查文件行数
+    name: 全仓静态门禁
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
-      - name: 检查 400 行上限
-        run: node lint-lines.mjs
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.14.0'
+          cache: npm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.11.32'
+      - name: 安装固定依赖
+        run: npm ci
+      - name: 选择历史清单比较基准
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BASE: ${{ github.event.before }}
+        run: |
+          base="${PR_BASE:-${PUSH_BASE:-HEAD}}"
+          if [[ "$base" =~ ^0+$ ]]; then base=HEAD; fi
+          echo "QUALITY_BASE_REF=$base" >> "$GITHUB_ENV"
+      - name: 执行与本机相同的 pre-commit 检查
+        run: uvx --from pre-commit==4.6.0 pre-commit run --all-files
+      - name: 保留全部本机单元测试
+        run: npm test

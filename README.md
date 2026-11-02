@@ -137,6 +137,8 @@ JSDoc 类型写法均会导致检查失败，警告也视为失败。
 及 [require-jsdoc 规则](https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/require-jsdoc.md)。
 
 检查还包括全部 Python 的 Ruff 规则、全部 Shell 的 ShellCheck、GitHub Actions 的 actionlint 和 JavaScript／TypeScript 的 400 行上限。
+复杂度、嵌套、循环/分层依赖、TS 网络响应伪造及新增重复也由同一入口阻止；
+固定工具版本、初始测量、精确历史清单及迁移方法见 [静态质量门禁](quality/README.md)。
 `npm run typecheck` 对全仓库 TypeScript 执行严格类型检查；`npm test` 自动收集全仓库 Node 单元测试。
 依赖、虚拟环境及测试报告等生成文件不检查。线上 Playwright 案例由各自测试入口运行，静态检查和本机单元测试无需真实凭据。
 actionlint 当前尚未识别 GitHub 已支持的 `concurrency.queue`，仅忽略这一条兼容性误报，其他工作流与内嵌 Shell 错误仍会失败。

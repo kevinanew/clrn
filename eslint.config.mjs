@@ -3,6 +3,7 @@ import jsdoc from 'eslint-plugin-jsdoc';
 import tsdoc from 'eslint-plugin-tsdoc';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
+import quality from './scripts/quality-rules.mjs';
 
 export default [
   { ignores: ['**/node_modules/**', '**/.venv/**', '**/test-results/**', '**/playwright-report/**', '**/blob-report/**', '.ttyctl/**', '**/snapshots/**'] },
@@ -12,9 +13,12 @@ export default [
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
     },
-    plugins: { jsdoc, tsdoc },
+    plugins: { jsdoc, tsdoc, quality },
     rules: {
       ...js.configs.recommended.rules,
+      complexity: ['error', { max: 10, variant: 'classic' }],
+      'max-depth': ['error', 3],
+      'quality/no-quality-disable': 'error',
       // require-jsdoc 要求注释存在；tsdoc/syntax 再校验其遵循 TSDoc 格式。
       'jsdoc/require-jsdoc': ['error', {
         enableFixer: false,
@@ -46,6 +50,7 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_', ignoreRestSiblings: true }],
       // Playwright 用空解构参数声明不依赖其他 fixture，不能改成普通参数名。
       'no-empty-pattern': ['error', { allowObjectPatternsAsParameters: true }],
+      'quality/no-network-response': 'error',
     },
   },
 ];
