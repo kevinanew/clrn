@@ -43,7 +43,7 @@ test('create room game picker enter and exit', async ({ context, page }, info) =
   await openApplication(context, page, info);
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'create-game-button')).toBeVisible();
-  await lockBottomSheetDocumentScroll(page);
+  await lockBottomSheetDocumentScroll(page, visible(page, 'create-game-button'));
   await exercisePopup(page, info, { name: 'game-picker', target: page.getByTestId('select-game-category-text'),
     clip: { x: 0, y: page.viewportSize()!.height - 400, width: page.viewportSize()!.width, height: 400 },
     open: /** 点击真实入口。 */ () => press(page, 'create-game-button'),
