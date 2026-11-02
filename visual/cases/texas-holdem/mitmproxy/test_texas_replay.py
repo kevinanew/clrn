@@ -40,29 +40,6 @@ def message(result, frames, from_client=True, injected=False):
 
 
 class TexasReplayTests(unittest.TestCase):
-    def test_房间规则只读请求不要求同一连接订阅牌桌(self):
-        self.replay.room_id = ROOM
-        rpc_socket = socket_flow()
-        request = {'id': 71, 'method': 9, 'params': {'data': {
-            'method': 'GET', 'path': f'/v10/texas_holdem/room/{ROOM}/profile'}}}
-        msg = message(rpc_socket, [request])
-        with patch('texas_replay.ctx.master', create=True) as master:
-            self.replay.websocket_message(rpc_socket)
-            self.assertTrue(msg.dropped)
-            args = master.commands.call.call_args.args
-            self.assertEqual(args[1], rpc_socket)
-            self.assertTrue(args[2])
-            self.assertEqual(json.loads(args[3]), {'id': 71, 'result': {
-                'data': {'ok': True, 'result': {'all_time_based_rule': []}}}})
-        for method, room in [('GET', OTHER), ('PUT', ROOM)]:
-            request['params']['data'] = {'method': method,
-                                       'path': f'/v10/texas_holdem/room/{room}/profile'}
-            msg = message(rpc_socket, [request])
-            with patch('texas_replay.ctx.master', create=True) as master:
-                self.replay.websocket_message(rpc_socket)
-                self.assertFalse(msg.dropped)
-                master.commands.call.assert_not_called()
-
     def setUp(self):
         self.replay = TexasReplay()
         self.socket = socket_flow()

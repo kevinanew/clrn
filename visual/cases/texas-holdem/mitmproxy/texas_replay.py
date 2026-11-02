@@ -86,8 +86,7 @@ class TexasReplay:
             # 本次新建的房间须在订阅前隔离自动入座；其他回放仍要求目标频道所在连接。
             target_flow = self.room_id and (self.created_room_id == self.room_id or any(
                 channel.startswith(f"texas_holdem>{self.room_id}#") for channel in channels))
-            blocked = [frame for frame in frames if self.is_room_profile_rpc(frame)
-                       or (target_flow and self.is_replay_rpc(frame))]
+            blocked = [frame for frame in frames if target_flow and self.is_replay_rpc(frame)]
             if blocked:
                 kept = [frame for frame in frames if frame not in blocked]
                 message.content = "\n".join(json.dumps(frame) for frame in kept).encode()
@@ -127,14 +126,6 @@ class TexasReplay:
         self.subscriptions.pop(flow.id, None)
         self.pending_subscriptions.pop(flow.id, None)
 
-    def is_room_profile_rpc(self, frame):
-        """本轮房间的只读规则请求可能使用未订阅牌桌的 RPC 连接。"""
-        params = frame.get('params')
-        data = params.get('data') if isinstance(params, dict) else None
-        return bool(self.room_id and frame.get('method') == 9 and isinstance(data, dict)
-                    and data.get('method') == 'GET'
-                    and data.get('path') == f'/v10/texas_holdem/room/{self.room_id}/profile')
-
     def is_replay_rpc(self, frame):
         if frame.get("method") != 9:
             return False
@@ -161,8 +152,6 @@ class TexasReplay:
         if error is not None:
             return error
         path = frame['params']['data']['path']
-        if self.is_room_profile_rpc(frame):
-            return {'ok': True, 'result': {'all_time_based_rule': []}}
         if path.startswith(f'/v1/chat_room/{self.room_id}/'):
             return {'ok': True, 'result': {
                 'users': [self.self_id] if self.self_id else [], 'user_id': self.self_id,
