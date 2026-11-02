@@ -5,6 +5,7 @@
 import { expect } from '@playwright/test';
 import { confirmStagingNotice } from '../../../e2e/helpers/staging-notice';
 import { isSignedIn, USER_ATTRIBUTE_STORAGE_KEY } from './authValidation';
+import { installTutorialHandler } from '../../../e2e/helpers/tutorials';
 export { isSignedIn, waitForSignInState } from './authValidation';
 
 /**
@@ -12,6 +13,7 @@ export { isSignedIn, waitForSignInState } from './authValidation';
  * @param page - 执行操作的 Playwright 页面。
  */
 export async function ensureAppReadyPastStaging(page: any): Promise<void> {
+  await installTutorialHandler(page);
   const deadline = Date.now() + 90000;
 
   while (Date.now() < deadline) {
