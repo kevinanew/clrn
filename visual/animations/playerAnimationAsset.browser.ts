@@ -1,9 +1,33 @@
 /** 在真实浏览器验证素材定位及失败边界，不调用真实账号或业务接口。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from '@playwright/test';
 import { PNG } from 'pngjs';
 import { waitForPlayerAnimationAsset } from './playerAnimationAsset';
+
+test('慢速素材超过动画断言时限后仍等待真实图片，且不推进动画', async () => {
+  const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
+    ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
+  try {
+    const page = await browser.newPage();
+    await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+    await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
+    const bitmap = new PNG({ width: 12, height: 12 });
+    bitmap.data.fill(255);
+    await page.route('https://animation.invalid/**', async route => {
+      await delay(16_000);
+      await route.fulfill({ contentType: 'image/png', body: PNG.sync.write(bitmap) });
+    });
+    await page.setContent(`<div data-testid="texas-holdem-player-container-self">
+      <img src="https://animation.invalid/frames/image/stickers/smirk.current.webp" width="40" height="40">
+    </div>`, { waitUntil: 'domcontentloaded' });
+    const before = await page.evaluate(() => Date.now());
+    const image = await waitForPlayerAnimationAsset(page, 'self', 'stickers', 'smirk');
+    assert.equal(await image.evaluate((node: HTMLImageElement) => node.naturalWidth), 12);
+    assert.equal(await page.evaluate(() => Date.now()), before);
+  } finally { await browser.close(); }
+});
 
 test('素材必须属于目标玩家和当前效果，预加载、旧效果及损坏图片不能代替', async () => {
   const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
