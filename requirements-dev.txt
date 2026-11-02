@@ -1,0 +1,2 @@
+# 本地 Git hook 和代码仓库检查 CI 共用此版本。
+pre-commit==4.6.0

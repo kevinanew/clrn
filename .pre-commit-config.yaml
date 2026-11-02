@@ -1,3 +1,8 @@
+minimum_pre_commit_version: '4.6.0'
+default_install_hook_types: [pre-commit]
+default_stages: [pre-commit]
+# 所有路径均触发全仓库检查，包括只改文档和删除文件的提交。
+files: ^
 repos:
   - repo: local
     hooks:
@@ -7,9 +12,11 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+        require_serial: true
       - id: typecheck
         name: 检查根目录与视觉子项目的 TypeScript 类型
         entry: npm run typecheck
         language: system
         pass_filenames: false
         always_run: true
+        require_serial: true
