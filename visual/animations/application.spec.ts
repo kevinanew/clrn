@@ -31,7 +31,7 @@ test('private room invitation bottom sheet enter and exit', async ({ context, pa
   await selectScenario(context, 'invitation');
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'copy-house-number-button')).toBeVisible();
-  await lockBottomSheetDocumentScroll(page);
+  await lockBottomSheetDocumentScroll(page, visible(page, 'invite-friends-button'));
   await exercisePopup(page, info, { name: 'invite-friends', target: page.getByTestId('invite-friend-popup-cancel-button'),
     clip: { x: 0, y: page.viewportSize()!.height - 300, width: page.viewportSize()!.width, height: 300 },
     open: /** 点击真实入口。 */ () => press(page, 'invite-friends-button'),
