@@ -50,12 +50,6 @@ const BROWSER_LAUNCH_ARGS = [
   '--lang=en-US',
 ];
 
-const TUTORIAL_COMPLETE_KEYS = [
-  'hall.screen.tutorial.complete.key',
-  'personal.house.screen.tutorial.complete.key',
-  'create.room.screen.tutorial.complete.key',
-];
-
 /**
  * 创建采集或验证登录态的隔离上下文，预置统一语言和网络稳定配置。
  * @param browser - 用于创建隔离上下文的浏览器实例。
@@ -94,19 +88,14 @@ async function createAuthContext(
     ({
       device,
       langKey,
-      tutorialKeys,
     }: {
       device: string;
       langKey: string;
-      tutorialKeys: string[];
     }) => {
       window.localStorage.setItem(langKey, 'zh-Hans');
       window.localStorage.setItem('deviceId', device);
-      for (const key of tutorialKeys) {
-        window.localStorage.setItem(key, 'true');
-      }
     },
-    { device: deviceId, langKey: LANGUAGE_STORAGE_KEY, tutorialKeys: TUTORIAL_COMPLETE_KEYS },
+    { device: deviceId, langKey: LANGUAGE_STORAGE_KEY },
   );
   return context;
 }

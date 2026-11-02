@@ -1,12 +1,38 @@
 /** 在导航前安装浏览器和应用事件采集；失败时先保存诊断，再由调用方清理房间。 */
-import type { BrowserContext, Page, Request, TestInfo } from '@playwright/test';
+import type { Request, TestInfo } from '@playwright/test';
 import { safeDiagnosticReason } from '../../../scripts/request-failure.cjs';
 import { writeFile } from 'node:fs/promises';
 import { DiagnosticRecorder } from '../../../e2e/helpers/diagnostic-recorder';
 import { diagnosticFields, diagnosticNode } from '../../../e2e/helpers/diagnostic-privacy';
 
 type DiagnosticProxy = { diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> };
-const recordings = new WeakMap<Page, DiagnosticRecorder>();
+// 两套 Playwright 独立安装；共享采集器只依赖实际调用的能力，避免完整对象类型跨版本传播。
+type DiagnosticRequest = Pick<Request, 'url' | 'resourceType' | 'method' | 'failure'>;
+interface DiagnosticResponse {
+  request(): DiagnosticRequest;
+  status(): number;
+  fromServiceWorker(): boolean;
+  json(): Promise<any>;
+}
+interface DiagnosticSocket {
+  url(): string;
+  on(event: 'socketerror', listener: (reason: string) => void): unknown;
+  on(event: 'close', listener: () => void): unknown;
+}
+interface DiagnosticPage {
+  on(event: 'request' | 'requestfinished' | 'requestfailed', listener: (request: DiagnosticRequest) => void): unknown;
+  on(event: 'response', listener: (response: DiagnosticResponse) => void): unknown;
+  on(event: 'websocket', listener: (socket: DiagnosticSocket) => void): unknown;
+  on(event: 'pageerror', listener: (error: Error) => void): unknown;
+  on(event: 'crash', listener: () => void): unknown;
+}
+interface DiagnosticContext {
+  exposeBinding(name: string, callback: (source: unknown, fields: unknown) => void): Promise<unknown>;
+  addInitScript(script: string): Promise<unknown>;
+}
+type DiagnosticInfo = Pick<TestInfo, 'title' | 'repeatEachIndex' | 'retry' | 'outputPath' | 'attach'>
+  & { project: { name: string } };
+const recordings = new WeakMap<object, DiagnosticRecorder>();
 
 /**
  * 记录真实操作入口；未启用诊断的测试不受影响。
@@ -14,7 +40,7 @@ const recordings = new WeakMap<Page, DiagnosticRecorder>();
  * @param phase - 当前阶段或操作。
  * @param fields - 不包含业务正文的辅助信息。
  */
-export function recordDiagnostic(page: Page, phase: string, fields: unknown = {}): void {
+export function recordDiagnostic(page: object, phase: string, fields: unknown = {}): void {
   recordings.get(page)?.record('test.step', { ...diagnosticFields(fields), phase });
 }
 
@@ -24,7 +50,7 @@ export function recordDiagnostic(page: Page, phase: string, fields: unknown = {}
  * @param target - 无法点击的控件标识。
  * @param details - 定位器测得的几何及命中信息。
  */
-export function recordBlockedTarget(page: Page, target: string, details: unknown): void {
+export function recordBlockedTarget(page: object, target: string, details: unknown): void {
   recordings.get(page)?.record('ui.blocked', { target, reason: JSON.stringify(details) });
 }
 
@@ -35,11 +61,11 @@ export function recordBlockedTarget(page: Page, target: string, details: unknown
  * @param info - 当前测试报告。
  * @param proxy - 可提供脱敏运行历史的测试代理。
  */
-export async function installConnectionDiagnostics(context: BrowserContext, page: Page, info: TestInfo,
+export async function installConnectionDiagnostics(context: DiagnosticContext, page: DiagnosticPage, info: DiagnosticInfo,
   proxy: DiagnosticProxy = {}) {
   const recorder = new DiagnosticRecorder();
   recordings.set(page, recorder);
-  const requests = new Map<Request, { requestId: string; node: string; path: string; operation: string; method: string; start: number; status?: number }>();
+  const requests = new Map<DiagnosticRequest, { requestId: string; node: string; path: string; operation: string; method: string; start: number; status?: number }>();
   const pendingMetadata = new Set<Promise<unknown>>();
   let sequence = 0;
   let applicationEvents = 0;

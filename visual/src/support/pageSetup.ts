@@ -1,6 +1,6 @@
 /**
  * 场景级 context 设置：
- * 语言/deviceId/新手引导标记、登录态注入、具名代理场景。
+ * 语言/deviceId、真实登录态恢复、具名代理场景。
  * 必须在 page.goto 之前调用。
  */
 
@@ -134,9 +134,6 @@ export function buildStorageStateForScenario(
   Object.assign(entries, {
     [LANGUAGE_STORAGE_KEY]: scenario.locale,
     deviceId: scenario.deviceId,
-    'hall.screen.tutorial.complete.key': 'true',
-    'personal.house.screen.tutorial.complete.key': 'true',
-    'create.room.screen.tutorial.complete.key': 'true',
   });
 
   return {
@@ -185,10 +182,6 @@ export async function setupContextForScenario(
       // 固定 deviceId（所有场景，含未登录）：随机 deviceId 会让启动期设备注册
       // 回调在点击后触发导航重置，杀掉刚打开的登录 modal
       window.localStorage.setItem('deviceId', deviceId);
-      // 三个 copilot 新手引导全部标记为已完成，避免遮挡截图
-      window.localStorage.setItem('hall.screen.tutorial.complete.key', 'true');
-      window.localStorage.setItem('personal.house.screen.tutorial.complete.key', 'true');
-      window.localStorage.setItem('create.room.screen.tutorial.complete.key', 'true');
     },
     { locale: scenario.locale, langKey: LANGUAGE_STORAGE_KEY, deviceId: scenario.deviceId },
   );

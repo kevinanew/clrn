@@ -43,6 +43,7 @@ test('create room game picker enter and exit', async ({ context, page }, info) =
   await openApplication(context, page, info);
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'create-game-button')).toBeVisible();
+  await lockBottomSheetDocumentScroll(page);
   await exercisePopup(page, info, { name: 'game-picker', target: page.getByTestId('select-game-category-text'),
     clip: { x: 0, y: page.viewportSize()!.height - 400, width: page.viewportSize()!.width, height: 400 },
     // 手机底部导航有 1px 布局舍入差；仍比较 BottomSheetBody 覆盖的全部区域（含拖动条）。

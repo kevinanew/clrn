@@ -60,6 +60,7 @@ test('入口健康检查仍拒绝500和无响应；收到200后的页面错误�
   for (const [status, brokenUi, reason] of [[500, false, 'http-error'],
     [undefined, false, 'timeout'], [200, true, 'invalid-response'], [200, false, null]] as const) {
     const page = {
+      addLocatorHandler: /** 网络边界测试不触发 UI 引导。 */ async () => {},
       goto: /** 注入真实导航边界的响应或失败形态。 */ async () => {
         if (status === undefined) throw Object.assign(new Error(secret), { name: 'TimeoutError' });
         return { ok: /** 保持HTTP成功要求。 */ () => status === 200,
@@ -156,6 +157,7 @@ test('实际只读fixture准备链保留本地阶段与真实会话状态，仍�
     let walletReads = 0;
     const status = phase === 'session-401' ? 401 : phase === 'session-503' ? 503 : phase === 'session-201' ? 201 : 200;
     const page = {
+      addLocatorHandler: /** 网络边界测试不触发 UI 引导。 */ async () => {},
       goto: /** 成功的隔离入口导航。 */ async () => ({ ok: /** HTTP成功。 */ () => true, status: /** 已收到200。 */ () => 200 }),
       getByTestId: /** 本例UI均已就绪。 */ () => new Locator(),
       url: /** 来源错误只使用保留域名，其他分支读取现有配置但不连接。 */ () => phase === 'origin' ? 'https://account.invalid/' : environment.stagingUrl,
