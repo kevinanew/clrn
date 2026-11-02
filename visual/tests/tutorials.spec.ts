@@ -1,13 +1,12 @@
 /** 真实浏览器验证引导按钮与应用存储的边界，不访问业务服务。 */
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { expect, test } from '@playwright/test';
 import { installTutorialHandler } from '../../e2e/helpers/tutorials';
 
 for (const [locale, skip, finish] of [['zh-Hans', '跳过', '完成'], ['zh-Hant', '跳過', '完成'], ['en', 'Skip', 'Finish']]) {
   test(`${locale} 引导通过真实点击完成，延迟引导与业务按钮互不干扰`, async ({ page }) => {
-    await page.route('https://tutorials.invalid/', route => route.fulfill({
-      contentType: 'text/html', body: '<button id="business">Skip</button><div id="guide"></div>',
-    }));
-    await page.goto('https://tutorials.invalid/');
+    await page.goto(pathToFileURL(path.join(__dirname, 'fixtures/tutorials.html')).href);
     await installTutorialHandler(page);
     await installTutorialHandler(page);
     await page.evaluate(() => {
