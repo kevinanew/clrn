@@ -43,6 +43,10 @@ test('create room game picker enter and exit', async ({ context, page }, info) =
   await expect(visible(page, 'create-game-button')).toBeVisible();
   await exercisePopup(page, info, { name: 'game-picker', target: page.getByTestId('select-game-category-text'),
     clip: { x: 0, y: page.viewportSize()!.height - 400, width: page.viewportSize()!.width, height: 400 },
+    // 手机底部导航有 1px 布局舍入差；仍比较 BottomSheetBody 覆盖的全部区域（含拖动条）。
+    foregroundBelow: info.project.name === 'mobile' ? { y: 350,
+      locator: page.getByTestId('select-game-category-text')
+        .locator('xpath=ancestor::div[contains(@style, "transform:")][1]') } : undefined,
     open: /** 点击真实入口。 */ () => press(page, 'create-game-button'),
     close: /** 通过实际按钮或遮罩关闭。 */ () => pressTarget(page.getByRole('button', { name: /Bottom sheet backdrop/i })),
   });
