@@ -1,7 +1,7 @@
 import { expect, type Locator } from '@playwright/test';
 import { PNG } from 'pngjs';
 import { remainingPixelCount, type ExcludedPixelRectangle } from '../screenshotComparisonConfiguration';
-import type { CaptureArea } from './timeline';
+import type { CaptureArea } from './captureTypes';
 
 export type NumericTextMask = { container: Locator; locator: Locator; expectedCount: number };
 
@@ -34,18 +34,30 @@ export async function maskNumericFields(frame: Buffer, masks: NumericTextMask[],
     expect(boxes, '所属控件存在时，金币和钻石数字节点必须完整').toHaveLength(mask.expectedCount);
     for (const box of boxes) {
       if (box.opacity === 0) continue;
-      const left = Math.max(0, Math.floor(box.x - (clip?.x || 0)));
-      const right = Math.min(bitmap.width, Math.ceil(box.x + box.width - (clip?.x || 0)));
-      const top = Math.max(0, Math.floor(box.y - (clip?.y || 0)));
-      const bottom = Math.min(bitmap.height, Math.ceil(box.y + box.height - (clip?.y || 0)));
-      if (right <= left || bottom <= top) continue;
-      excluded.push({ left, right, top, bottom });
-      for (let row = top; row < bottom; row++) {
-        for (let column = left; column < right; column++) {
-          bitmap.data.set([255, 0, 255, 255], (row * bitmap.width + column) * 4);
-        }
-      }
+      const rectangle = maskRectangle(bitmap, box, clip);
+      if (rectangle) excluded.push(rectangle);
     }
   }
   return { png: PNG.sync.write(bitmap), comparedPixels: remainingPixelCount(bitmap.width, bitmap.height, excluded) };
+}
+
+/**
+ * 将可见数字区域裁切到截图范围并填入固定颜色。
+ * @param bitmap - 截图像素。
+ * @param box - 页面中的数字边界。
+ * @param clip - 截图裁切区域。
+ */
+function maskRectangle(bitmap: PNG, box: { x: number; y: number; width: number; height: number }, clip?: CaptureArea) {
+  const offset = clip || { x: 0, y: 0 };
+  const left = Math.max(0, Math.floor(box.x - offset.x));
+  const right = Math.min(bitmap.width, Math.ceil(box.x + box.width - offset.x));
+  const top = Math.max(0, Math.floor(box.y - offset.y));
+  const bottom = Math.min(bitmap.height, Math.ceil(box.y + box.height - offset.y));
+  if (right <= left || bottom <= top) return undefined;
+  for (let row = top; row < bottom; row++) {
+    for (let column = left; column < right; column++) {
+      bitmap.data.set([255, 0, 255, 255], (row * bitmap.width + column) * 4);
+    }
+  }
+  return { left, right, top, bottom };
 }

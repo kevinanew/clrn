@@ -1,0 +1,1766 @@
+{
+  "version": 1,
+  "revision": "347b50a4b4782d07c48cb8256efcda3f13f26e49",
+  "findings": [
+    {
+      "file": "e2e/cases/_shared/account-fixture.ts",
+      "rule": "complexity",
+      "line": 22,
+      "column": 1,
+      "message": "Function 'validate' has a complexity of 12. Maximum allowed is 10.",
+      "anchor": "d1312cc22fd3b6991d9aed1860b8c95dabb2f253f88f26d05dc8ae3f16551516",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/account-fixture.ts",
+      "rule": "complexity",
+      "line": 59,
+      "column": 3,
+      "message": "Async method 'newAccount' has a complexity of 12. Maximum allowed is 10.",
+      "anchor": "81c4d35fa13f59d66c8597529f4ccd473e8ef5d4c0a7adc718939a362af03fbf",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/auth.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 2,
+      "column": 1,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "ae322597c0425871acadf16d29c44f304a237678dca48a969002b6a573635172",
+      "kind": "adapter-unit",
+      "reason": "现有登录辅助函数单测：本机 HTTP 服务注入状态与错误；不启动应用或真实账号。"
+    },
+    {
+      "file": "e2e/cases/_shared/auth.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 16,
+      "column": 20,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "34a8b5bc10731473b308aea89fba4146c18cf335b50c57e358de634131fd2c57",
+      "kind": "adapter-unit",
+      "reason": "现有登录辅助函数单测：本机 HTTP 服务注入状态与错误；不启动应用或真实账号。"
+    },
+    {
+      "file": "e2e/cases/_shared/auth.ts",
+      "rule": "complexity",
+      "line": 13,
+      "column": 8,
+      "message": "Async function 'signIn' has a complexity of 11. Maximum allowed is 10.",
+      "anchor": "e72a67f564b920f2ff635b3c0b611dae8f14dffe8f29be62c92eea0065f63890",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/auth.ts",
+      "rule": "quality/no-network-response",
+      "line": 30,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "c98354098f19a2096f9df6d0da0340bedcb203d0c2c826da853fddaf454ffc2b",
+      "kind": "migration",
+      "reason": "既有注册请求阻断用于防止登录自动创建账号，仅 abort；后续迁往代理，禁止扩张为响应伪造。"
+    },
+    {
+      "file": "e2e/cases/_shared/creation-account-fixture.ts",
+      "rule": "complexity",
+      "line": 19,
+      "column": 3,
+      "message": "Async method 'newAccount' has a complexity of 20. Maximum allowed is 10.",
+      "anchor": "2d242c655cc268ae8c3633c2492081605c7b173c9be942ce2afc005d6a3f476a",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/read-account-diagnostics.test.ts",
+      "rule": "complexity",
+      "line": 186,
+      "column": 42,
+      "message": "Arrow function has a complexity of 14. Maximum allowed is 10.",
+      "anchor": "a8ff554b1dcf1a357b4682bd0162cf92d236cfcc8b6b32505db0599a8662cf1f",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/sign-in-notices.ts",
+      "rule": "complexity",
+      "line": 21,
+      "column": 54,
+      "message": "Async arrow function has a complexity of 14. Maximum allowed is 10.",
+      "anchor": "0eadc3d76ab520afa02e4ef9393a9b6aa417c951a4cb5442108a925df1694c27",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/sign-in-notices.ts",
+      "rule": "complexity",
+      "line": 80,
+      "column": 8,
+      "message": "Async function 'clickAfterSignInNotices' has a complexity of 13. Maximum allowed is 10.",
+      "anchor": "aa870a79e60b17a8a04a48a9d3731a3229a314ba5041afffb68b3a6ffdbfd274",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/sign-in-notices.ts",
+      "rule": "max-depth",
+      "line": 99,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "37fb05e24852eb8712f5a59943729d494ac22c84138138149c1cad5e88a8443b",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/sign-in-notices.ts",
+      "rule": "max-depth",
+      "line": 110,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "2eebea01afce6cf6d14068d1b0f23da61c79b7b1b44341c0b193c7fe06cb3c87",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/sign-in-notices.ts",
+      "rule": "max-depth",
+      "line": 119,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "ddf219a454dba5f52864e1498614e3e12ffdf9c7e8edf137ce7d62becbc34c5f",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/test-user.ts",
+      "rule": "complexity",
+      "line": 8,
+      "column": 8,
+      "message": "Async function 'createTestingAccount' has a complexity of 12. Maximum allowed is 10.",
+      "anchor": "f34bc9f568a1288b018b185ba276b313244d0c7e4435aaf8daa6d3a51e6f2d4c",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/cases/_shared/test-wallet.ts",
+      "rule": "complexity",
+      "line": 34,
+      "column": 8,
+      "message": "Async function 'setCreationDiamondBalance' has a complexity of 20. Maximum allowed is 10.",
+      "anchor": "f4aca2547b2dbe7858e1d51236eb98ac62be0f6b40b004362989af2e852d4ae8",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/cases/club-005-join-approval-invite/test.spec.ts",
+      "rule": "max-depth",
+      "line": 193,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "d1987c64d2485fc21ea0e81b1907e12ff84047cf55ab3ce8a8c4021219ded238",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "e2e/cases/club-005-join-approval-invite/test.spec.ts",
+      "rule": "max-depth",
+      "line": 201,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "b76f342754f1bf92c02ffb85f6fa6fa52d02c28b6294a419a93c179e8e6eb0be",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "e2e/cases/private-001-create-and-dismiss/test.spec.ts",
+      "rule": "max-depth",
+      "line": 80,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "d438f0dd6fb1c1b7e3a473e66c1c590b34670fca1bf19805c19f752d711c5eb7",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "e2e/cases/private-001-create-and-dismiss/test.spec.ts",
+      "rule": "max-depth",
+      "line": 83,
+      "column": 11,
+      "message": "Blocks are nested too deeply (5). Maximum allowed is 3.",
+      "anchor": "03d9aba6351173e5f8c479f3e786247afca28bd814dd42e6477fa51b48c9fe36",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 4,
+      "column": 1,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "ae322597c0425871acadf16d29c44f304a237678dca48a969002b6a573635172",
+      "kind": "adapter-unit",
+      "reason": "现有浏览器诊断适配器单测：本机服务器制造连接中断，验证诊断和脱敏。"
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 13,
+      "column": 18,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "3a4869deb970b5b79a78368fe82dd64369d4802b444ef5bff22d5d351f79e907",
+      "kind": "adapter-unit",
+      "reason": "现有浏览器诊断适配器单测：本机服务器制造连接中断，验证诊断和脱敏。"
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "rule": "complexity",
+      "line": 60,
+      "column": 8,
+      "message": "Function 'diagnosticFields' has a complexity of 22. Maximum allowed is 10.",
+      "anchor": "201ec5b8b22955a56334f436541bd167e2c33a800f8f754edb7808aae96e8544",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "rule": "complexity",
+      "line": 52,
+      "column": 3,
+      "message": "Method 'markdown' has a complexity of 20. Maximum allowed is 10.",
+      "anchor": "578d6324de4d9a2ce0e54d1e8c481427fcbee174d63142a2696cd662bb27fce0",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 22,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "889eb2371b517e9e9b175678fe256ac602a3fc73c4bc0188458dab9621df5fc4",
+      "kind": "adapter-unit",
+      "reason": "代理源发现适配器单测：替换和恢复 fetch，覆盖元数据解析、验证及失败；不得发送真实业务请求。"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 37,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d66fe9c582139f6454279c1a0667e0374c66cd973e70472bf454e60d68d81613",
+      "kind": "adapter-unit",
+      "reason": "代理源发现适配器单测：替换和恢复 fetch，覆盖元数据解析、验证及失败；不得发送真实业务请求。"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 55,
+      "column": 7,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "b3a33678b11a31e0be85f4eca4556ce4de0ecc7ba32cac128ea05874e36544c5",
+      "kind": "adapter-unit",
+      "reason": "代理源发现适配器单测：替换和恢复 fetch，覆盖元数据解析、验证及失败；不得发送真实业务请求。"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 60,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "bcd0ef37328c37b9ee8e3a79731c752c5f09104d3b1b01259dbb9ee1c5066597",
+      "kind": "adapter-unit",
+      "reason": "代理源发现适配器单测：替换和恢复 fetch，覆盖元数据解析、验证及失败；不得发送真实业务请求。"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 63,
+      "column": 15,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "5714d8b4abdaf73a1f43693e3115faf6397e971815396b0982de5d9bf4408a26",
+      "kind": "adapter-unit",
+      "reason": "代理源发现适配器单测：替换和恢复 fetch，覆盖元数据解析、验证及失败；不得发送真实业务请求。"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 72,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "f040959015ac87492380714d6bdeb185d7455d0951916d8d4d97da622dcd1190",
+      "kind": "adapter-unit",
+      "reason": "代理源发现适配器单测：替换和恢复 fetch，覆盖元数据解析、验证及失败；不得发送真实业务请求。"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 86,
+      "column": 15,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "5714d8b4abdaf73a1f43693e3115faf6397e971815396b0982de5d9bf4408a26",
+      "kind": "adapter-unit",
+      "reason": "代理源发现适配器单测：替换和恢复 fetch，覆盖元数据解析、验证及失败；不得发送真实业务请求。"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "rule": "complexity",
+      "line": 43,
+      "column": 1,
+      "message": "Async function 'metadataHosts' has a complexity of 14. Maximum allowed is 10.",
+      "anchor": "ec6be07f760edeeb8f9572450f68687a9cb16caf4a1e19e9fee02b417eb2189d",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "rule": "complexity",
+      "line": 8,
+      "column": 8,
+      "message": "Function 'readTestWebUrl' has a complexity of 19. Maximum allowed is 10.",
+      "anchor": "75ea8c11fd4ad995171fb0b881ff363f5b277a67cfb6362fa1e80c8042f18045",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 1,
+      "column": 1,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "ae322597c0425871acadf16d29c44f304a237678dca48a969002b6a573635172",
+      "kind": "adapter-unit",
+      "reason": "代理适配器集成单测：本机回源服务器验证转发与故障注入，不提供应用业务夹具。"
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 6,
+      "column": 20,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "1099f57475793911c7f63891d2476726ad097af408bc3ca440ba8e9e47f3f1e1",
+      "kind": "adapter-unit",
+      "reason": "代理适配器集成单测：本机回源服务器验证转发与故障注入，不提供应用业务夹具。"
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "rule": "complexity",
+      "line": 18,
+      "column": 60,
+      "message": "Async arrow function has a complexity of 12. Maximum allowed is 10.",
+      "anchor": "4d868a4c81c005ec8b9cb336bc4a40ab66cbb7bf6a3f6f2f711d9dcf1ad9d835",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 20,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "b57c92264682b7cded7432be95ee41973be20d7eadf77b02466a1638bb57235d",
+      "kind": "migration",
+      "reason": "既有导航重试/超时辅助函数离线浏览器测试；逐位置保留，未来迁出普通集成入口。"
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 33,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "3565dea4a2f5c32db22cebc74fb643f8a4f1456074ef091ca6ff33a8f129495a",
+      "kind": "migration",
+      "reason": "既有导航重试/超时辅助函数离线浏览器测试；逐位置保留，未来迁出普通集成入口。"
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 77,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "e34f95019a541d863493e754d6ae221ca2651b4aaaeb70feac57b03550cb1c39",
+      "kind": "migration",
+      "reason": "既有导航重试/超时辅助函数离线浏览器测试；逐位置保留，未来迁出普通集成入口。"
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 80,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d373cd00a1cb7633f76a8a105040df053c7a85cd2e8713a381fb8a3fe6d8daa1",
+      "kind": "migration",
+      "reason": "既有导航重试/超时辅助函数离线浏览器测试；逐位置保留，未来迁出普通集成入口。"
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 8,
+      "column": 24,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "1795bf3d36d83f8ff6ef680dd0ed9453e5f025c2b33dddecaf4472a9061a786e",
+      "kind": "migration",
+      "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 16,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "b189f4399122fcb007ff7069aa4e6ae36df478cbd8b903f51cb5976fcc7a313e",
+      "kind": "migration",
+      "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 30,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d26d34840c5fbde7092259d9f111dc97933010c5a5b077ccb8fa1e224cd190f8",
+      "kind": "migration",
+      "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 39,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "f528ea64f445cbc59fb87123c824e604ee57fc4c46d8440d364dccb31ababa17",
+      "kind": "migration",
+      "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 52,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "ed06f548431905a12b74b1c3fb50711ac0c8bd25198969ca3eafad72b4df8813",
+      "kind": "migration",
+      "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 56,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "4ef0ba451cd3b8a0fa9f91c6c55791f7764f340e9c500ba9c926dfa03989959f",
+      "kind": "migration",
+      "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 59,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "e2bf702008255bbb006d11186bb7eb9dbbe88148def3e6c80ab6cc31aca65dcc",
+      "kind": "migration",
+      "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 15,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "a51c2b36289fc9b39c88263b6a0f2c2aa1b03e60ccf531db022efc523180b21e",
+      "kind": "migration",
+      "reason": "既有钱包辅助函数的 fetch 边界单测及恢复操作；保留失败语义，后续整理单测入口。"
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 32,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "9a984cb7ce458eece4f3f6303cc6f26947e6f8e964536572c9b33a01cd189dcf",
+      "kind": "migration",
+      "reason": "既有钱包辅助函数的 fetch 边界单测及恢复操作；保留失败语义，后续整理单测入口。"
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 50,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "b189f4399122fcb007ff7069aa4e6ae36df478cbd8b903f51cb5976fcc7a313e",
+      "kind": "migration",
+      "reason": "既有钱包辅助函数的 fetch 边界单测及恢复操作；保留失败语义，后续整理单测入口。"
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 65,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "bbb496a1122a6787bdf069ff9261bfb9c1162ee9b20e455713dd701f83167031",
+      "kind": "migration",
+      "reason": "既有钱包辅助函数的 fetch 边界单测及恢复操作；保留失败语义，后续整理单测入口。"
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 79,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "ed06f548431905a12b74b1c3fb50711ac0c8bd25198969ca3eafad72b4df8813",
+      "kind": "migration",
+      "reason": "既有钱包辅助函数的 fetch 边界单测及恢复操作；保留失败语义，后续整理单测入口。"
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 83,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "4ef0ba451cd3b8a0fa9f91c6c55791f7764f340e9c500ba9c926dfa03989959f",
+      "kind": "migration",
+      "reason": "既有钱包辅助函数的 fetch 边界单测及恢复操作；保留失败语义，后续整理单测入口。"
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 89,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "e2bf702008255bbb006d11186bb7eb9dbbe88148def3e6c80ab6cc31aca65dcc",
+      "kind": "migration",
+      "reason": "既有钱包辅助函数的 fetch 边界单测及恢复操作；保留失败语义，后续整理单测入口。"
+    },
+    {
+      "file": "scripts/account-network-fixture.mjs",
+      "rule": "complexity",
+      "line": 13,
+      "column": 41,
+      "message": "Async arrow function has a complexity of 12. Maximum allowed is 10.",
+      "anchor": "b189f4399122fcb007ff7069aa4e6ae36df478cbd8b903f51cb5976fcc7a313e",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/ci-accounts.mjs",
+      "rule": "complexity",
+      "line": 70,
+      "column": 8,
+      "message": "Function 'ciAccountCredentials' has a complexity of 17. Maximum allowed is 10.",
+      "anchor": "0b56601bc061257548e625dea36961bad1048a48ae5b8f0f074980c0b25b9dc2",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/prepare-release-web.mjs",
+      "rule": "complexity",
+      "line": 20,
+      "column": 1,
+      "message": "Async function 'downloadAsset' has a complexity of 16. Maximum allowed is 10.",
+      "anchor": "345c4549989ade46ab6b1bb1cf36d59c436b3a09c1a67baef394cebb0e74c1c0",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/prepare-release-web.mjs",
+      "rule": "complexity",
+      "line": 49,
+      "column": 8,
+      "message": "Async function 'prepareReleaseWeb' has a complexity of 18. Maximum allowed is 10.",
+      "anchor": "a52ef84c66a43e9026a759bf11e3409778b20885edd25f3fd98ca6de55e25b52",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/prepare-test-account-rooms.mjs",
+      "rule": "complexity",
+      "line": 37,
+      "column": 1,
+      "message": "Function 'recoverable' has a complexity of 15. Maximum allowed is 10.",
+      "anchor": "3e1aed4e9616c5c711fdefb090377e88c50c47df1ba4fe6b2b5f32f59cac40f6",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/prepare-test-account-rooms.mjs",
+      "rule": "complexity",
+      "line": 49,
+      "column": 8,
+      "message": "Async function 'prepareTestAccountRooms' has a complexity of 17. Maximum allowed is 10.",
+      "anchor": "17790954b6f02a3fd95df1be85600f5b230118539ecbbb3aa0fceb138d1ec6c2",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/prepare-test-account.mjs",
+      "rule": "complexity",
+      "line": 13,
+      "column": 8,
+      "message": "Async function 'readTestingApiToken' has a complexity of 11. Maximum allowed is 10.",
+      "anchor": "7937202e543d63926b9f35f7ceea00e9ad3c76d629aa04c6958bd0fa41c93bbf",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/prepare-test-account.mjs",
+      "rule": "complexity",
+      "line": 68,
+      "column": 8,
+      "message": "Async function 'prepareTestAccountCoins' has a complexity of 26. Maximum allowed is 10.",
+      "anchor": "3b93cdce439a44efbe0e6fe76eb9c47ef0e535ff5546a283586f5ffb3f6f76db",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/release-web-server.mjs",
+      "rule": "complexity",
+      "line": 62,
+      "column": 33,
+      "message": "Async arrow function has a complexity of 15. Maximum allowed is 10.",
+      "anchor": "c872c3c4e70c54f965f31a412ab64e9e09a91285a071f3d47c36182c5d03249d",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/request-failure.cjs",
+      "rule": "complexity",
+      "line": 52,
+      "column": 1,
+      "message": "Function 'requestFailureReason' has a complexity of 15. Maximum allowed is 10.",
+      "anchor": "5e839a9b238f22bea0ee482fe49dd33265dcd11fe2f5bfd9b9be8a46d855700b",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/request-failure.cjs",
+      "rule": "complexity",
+      "line": 75,
+      "column": 1,
+      "message": "Function 'requestFailure' has a complexity of 11. Maximum allowed is 10.",
+      "anchor": "4e2a83ee0473ecb09a9194d223a059ee046ea6c1bba3ea56242b9a32568d9f11",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/request-failure.cjs",
+      "rule": "complexity",
+      "line": 99,
+      "column": 1,
+      "message": "Function 'safeDiagnosticReason' has a complexity of 13. Maximum allowed is 10.",
+      "anchor": "38ea8a638578d5e4e40b60e17f5c13194386ff425ac81af52460e0a20440d928",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/staging-deployment.mjs",
+      "rule": "complexity",
+      "line": 38,
+      "column": 8,
+      "message": "Async function 'loadDeploymentRelease' has a complexity of 26. Maximum allowed is 10.",
+      "anchor": "4ce7c9ff7313f97d98c8ac1a1e5598cb5a575f5e4d19810d027c8a6759efa1f3",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/staging-deployment.mjs",
+      "rule": "complexity",
+      "line": 84,
+      "column": 8,
+      "message": "Async function 'waitForDeployment' has a complexity of 21. Maximum allowed is 10.",
+      "anchor": "6135bfc819e65aa87145d72112c8a64267b1d261e8a4beb5c864ddc18b39075a",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "scripts/with-test-account.mjs",
+      "rule": "complexity",
+      "line": 39,
+      "column": 1,
+      "message": "Async function 'run' has a complexity of 14. Maximum allowed is 10.",
+      "anchor": "bdd8dd311fd5f56403f6521df5bc89856a5b09e97d8cfe158f050fe54b1ee6b5",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/animations/cardSpriteReadiness.ts",
+      "rule": "complexity",
+      "line": 42,
+      "column": 67,
+      "message": "Arrow function has a complexity of 40. Maximum allowed is 10.",
+      "anchor": "55821e14b241893c86e318c5fbce53eb9bcad7b78ae03277cbadefa5badff19f",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 29,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 30,
+      "column": 67,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "382a1e6a0cb0006f36eb6f8280a6310deda3f7ae2de50387ed60fc49b5c930de",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 50,
+      "column": 15,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "81d80e2ba685b176920f9ea0ca67d5a381365167cda4ec8543668c122a39bd86",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 56,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d4d828e013ec2ca50c7f466b973ba15fa25892abf5fb628188691af684adfa74",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 59,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "020b14c0456145954b4e8a83fe5c9f3dbc6939973f8bdf14dc071e808fdc1848",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 73,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 75,
+      "column": 34,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "76bc73f671060b1dcc56a650a9cd2adac8fe5ab318f22a17aad8d42f27e42260",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 76,
+      "column": 58,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "05d7b60dbdc4ca74ef9188e38ede2fabf8fd67270afc4700736bbefe68893c17",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 78,
+      "column": 37,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "f5dc65689a16ec7b959575cd14443061166bd1de9ab3a278293d807d3a2c7539",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 79,
+      "column": 41,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d90d36e4ca8fd87d2e6a9e256d996e0c27efda679000d9194391041da214471d",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/leaderboardReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 80,
+      "column": 16,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "9b599b70a98c8a4b4eb7a6612897dc1af03ece83d2cfef2d122ba91ea6be480e",
+      "kind": "migration",
+      "reason": "既有排行榜就绪辅助函数离线浏览器测试：合成页面验证响应顺序与错误，不读取真实账号。"
+    },
+    {
+      "file": "visual/animations/playerAnimationAsset.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 18,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "2d870b690f75b5aee40a39f897c0957a44e9d5554270902dd277e419a915dfb7",
+      "kind": "migration",
+      "reason": "既有动画资源加载离线单测：注入有效/损坏图片，不作为应用视觉业务夹具。"
+    },
+    {
+      "file": "visual/animations/playerAnimationAsset.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 19,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "9c2bfeeebad9ed902a79adba9a039e24c530d419e6c2b86e7d22e28fadf1e9c0",
+      "kind": "migration",
+      "reason": "既有动画资源加载离线单测：注入有效/损坏图片，不作为应用视觉业务夹具。"
+    },
+    {
+      "file": "visual/animations/playerAnimationAsset.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 19,
+      "column": 52,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "9c2bfeeebad9ed902a79adba9a039e24c530d419e6c2b86e7d22e28fadf1e9c0",
+      "kind": "migration",
+      "reason": "既有动画资源加载离线单测：注入有效/损坏图片，不作为应用视觉业务夹具。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 30,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 32,
+      "column": 32,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "76bc73f671060b1dcc56a650a9cd2adac8fe5ab318f22a17aad8d42f27e42260",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 50,
+      "column": 15,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "81d80e2ba685b176920f9ea0ca67d5a381365167cda4ec8543668c122a39bd86",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 57,
+      "column": 15,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "53f1fe573c7224d280fdde758dbcce08fede46e46072ab86c9be3ad422363923",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 73,
+      "column": 15,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 75,
+      "column": 36,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "76bc73f671060b1dcc56a650a9cd2adac8fe5ab318f22a17aad8d42f27e42260",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 76,
+      "column": 45,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "92d193526e3d2ab448c167e6148d92db98132385e7108e810c0f4369355ef344",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 77,
+      "column": 39,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "f5dc65689a16ec7b959575cd14443061166bd1de9ab3a278293d807d3a2c7539",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 78,
+      "column": 43,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d90d36e4ca8fd87d2e6a9e256d996e0c27efda679000d9194391041da214471d",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/playerProfileReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 79,
+      "column": 18,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "9b599b70a98c8a4b4eb7a6612897dc1af03ece83d2cfef2d122ba91ea6be480e",
+      "kind": "migration",
+      "reason": "既有资料就绪辅助函数离线浏览器测试：验证响应顺序、HTTP/业务/解析错误，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 27,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 28,
+      "column": 67,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "382a1e6a0cb0006f36eb6f8280a6310deda3f7ae2de50387ed60fc49b5c930de",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 48,
+      "column": 15,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "81d80e2ba685b176920f9ea0ca67d5a381365167cda4ec8543668c122a39bd86",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 54,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d4d828e013ec2ca50c7f466b973ba15fa25892abf5fb628188691af684adfa74",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 57,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "020b14c0456145954b4e8a83fe5c9f3dbc6939973f8bdf14dc071e808fdc1848",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 71,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 73,
+      "column": 34,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "76bc73f671060b1dcc56a650a9cd2adac8fe5ab318f22a17aad8d42f27e42260",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 74,
+      "column": 46,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "a67c206c6ab795a1a9badcbb51d297fd6a289c29bf0821d2f1386dfaeb8b4e0c",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 76,
+      "column": 37,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "f5dc65689a16ec7b959575cd14443061166bd1de9ab3a278293d807d3a2c7539",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 77,
+      "column": 41,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d90d36e4ca8fd87d2e6a9e256d996e0c27efda679000d9194391041da214471d",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 78,
+      "column": 16,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "9b599b70a98c8a4b4eb7a6612897dc1af03ece83d2cfef2d122ba91ea6be480e",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/timeline.browser.ts",
+      "rule": "complexity",
+      "line": 33,
+      "column": 50,
+      "message": "Async arrow function has a complexity of 12. Maximum allowed is 10.",
+      "anchor": "ff67df8bd2bd1412fa3c72770c15891890d74c71fdba3c6861ce0e3236e6843a",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "complexity",
+      "line": 22,
+      "column": 1,
+      "message": "Async function 'unmaskedPixelCount' has a complexity of 13. Maximum allowed is 10.",
+      "anchor": "c64648bbedb59448bcb03ffa7f522d054efd26c46908febd28c63c8caf6ba2d3",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "complexity",
+      "line": 196,
+      "column": 8,
+      "message": "Async function 'captureTimeline' has a complexity of 51. Maximum allowed is 10.",
+      "anchor": "70f72557268e8bad00888430a296b803cea68650647d2e9e88866035625e721d",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "max-depth",
+      "line": 255,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "33b81dff0e34c4dcc52e23f3f74fd65206fae55505140ea59a3562db9fdc7d27",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "max-depth",
+      "line": 271,
+      "column": 11,
+      "message": "Blocks are nested too deeply (5). Maximum allowed is 3.",
+      "anchor": "25dc6c364acb6c0e962459966f3117fc310b3e1f809aa06ff8da63a9fb6de5aa",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "max-depth",
+      "line": 276,
+      "column": 11,
+      "message": "Blocks are nested too deeply (5). Maximum allowed is 3.",
+      "anchor": "e522f8204e7736012fc65682d83b496de898d3f0be9e6cc966dd18d9ad03e374",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "max-depth",
+      "line": 278,
+      "column": 13,
+      "message": "Blocks are nested too deeply (6). Maximum allowed is 3.",
+      "anchor": "cac20ce1b30479e3c143db64744d857e37a21537ff94805d063980ff8fba9dd5",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "max-depth",
+      "line": 298,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "33b81dff0e34c4dcc52e23f3f74fd65206fae55505140ea59a3562db9fdc7d27",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "max-depth",
+      "line": 305,
+      "column": 11,
+      "message": "Blocks are nested too deeply (5). Maximum allowed is 3.",
+      "anchor": "f6fdb2b05e854fdd9d4199c04ece64e53f5650c0e39f056af77c2f80801a28be",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "max-depth",
+      "line": 312,
+      "column": 13,
+      "message": "Blocks are nested too deeply (6). Maximum allowed is 3.",
+      "anchor": "0223a9339bbde5d53bd2c03cf36b4b197ff66be6e3f467e5cd8ba271453c836b",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/animations/timeline.ts",
+      "rule": "max-depth",
+      "line": 322,
+      "column": 13,
+      "message": "Blocks are nested too deeply (6). Maximum allowed is 3.",
+      "anchor": "ab33d74ce7427df46191d924059f83ea80602446d75bd78f78ea29db3d9829e7",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/cases/_shared/room.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 10,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "6eb64313baf6bf17424dc2505dc4250a1c3a6a3d2b7b8e21c9075c1f51a41fe8",
+      "kind": "adapter-unit",
+      "reason": "房间清理请求适配器单测：Node mock 注入失败并验证错误传播，不连接真实房间。"
+    },
+    {
+      "file": "visual/cases/_shared/room.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 27,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "e05b5798f352cbeb6692796c4c7f86e5a06cd032956c651169e11c5763ec3d94",
+      "kind": "adapter-unit",
+      "reason": "房间清理请求适配器单测：Node mock 注入失败并验证错误传播，不连接真实房间。"
+    },
+    {
+      "file": "visual/cases/_shared/room.ts",
+      "rule": "complexity",
+      "line": 18,
+      "column": 1,
+      "message": "Async function 'visualAccount' has a complexity of 11. Maximum allowed is 10.",
+      "anchor": "b0342535b6137714e03b00a2159c339fcf96dc1682195ddee66f304dfd4e4b48",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/_shared/room.ts",
+      "rule": "complexity",
+      "line": 63,
+      "column": 8,
+      "message": "Async function 'ensureRoomBalance' has a complexity of 11. Maximum allowed is 10.",
+      "anchor": "4616960966d424ce18da05c7bdf26928cc39a4c76e5dba7a85b1dee0295e119c",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/game-record/game-record.spec.ts",
+      "rule": "complexity",
+      "line": 164,
+      "column": 57,
+      "message": "Async arrow function has a complexity of 13. Maximum allowed is 10.",
+      "anchor": "26458cdb283a643f3324ecc23af0775d7ecb59c30942d07dc9fc423f51e1f312",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/texas-holdem/roomCleanup.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 2,
+      "column": 1,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "ae322597c0425871acadf16d29c44f304a237678dca48a969002b6a573635172",
+      "kind": "adapter-unit",
+      "reason": "房间清理适配器单测：本机回源及 fetch 替换验证请求路径、状态和释放。"
+    },
+    {
+      "file": "visual/cases/texas-holdem/roomCleanup.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 12,
+      "column": 18,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "a179948d4d869125162b37946ce30fe60d58804a1e226dc375831801e06a4ea3",
+      "kind": "adapter-unit",
+      "reason": "房间清理适配器单测：本机回源及 fetch 替换验证请求路径、状态和释放。"
+    },
+    {
+      "file": "visual/cases/texas-holdem/roomCleanup.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 24,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "40c632cb362ca705d26addb9c84e77351bdfed3b5bc42e09d60bae8c4b0adce9",
+      "kind": "adapter-unit",
+      "reason": "房间清理适配器单测：本机回源及 fetch 替换验证请求路径、状态和释放。"
+    },
+    {
+      "file": "visual/cases/texas-holdem/texas-holdem.spec.ts",
+      "rule": "complexity",
+      "line": 210,
+      "column": 55,
+      "message": "Async arrow function has a complexity of 18. Maximum allowed is 10.",
+      "anchor": "6cecd1c7550cb79d4d4c6088de4f2d16acaace5ae71a21b898216d0bbaa7751f",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/texas-holdem/texas-holdem.spec.ts",
+      "rule": "max-depth",
+      "line": 300,
+      "column": 11,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "10b28023ecc4f370d422fd0b653bd13e91bb11c489ec6606c6137feed167085e",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/cases/zhajinhua/zhajinhua.spec.ts",
+      "rule": "max-depth",
+      "line": 69,
+      "column": 15,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "f44c6284e02b36fdea89c73994d760544139e5c4ded46e151fd06988f5b723d6",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/run-visual-config.ts",
+      "rule": "complexity",
+      "line": 48,
+      "column": 8,
+      "message": "Function 'getVisualShardConfig' has a complexity of 14. Maximum allowed is 10.",
+      "anchor": "3444cd4c008b35e81dde664ce51daf3591f8a710ef088f2fb310f30646edf0f9",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/run-visual.ts",
+      "rule": "complexity",
+      "line": 146,
+      "column": 1,
+      "message": "Async function 'main' has a complexity of 23. Maximum allowed is 10.",
+      "anchor": "5a1db74d0b54afffee1012430db358909e8f596982b49bcfc71673e847bea3e8",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/run-visual.ts",
+      "rule": "max-depth",
+      "line": 222,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "a7f57ee7166e457b11af2ce596f947662cbffb9590af6a49712bc6529c1b425d",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/scenarios.ts",
+      "rule": "complexity",
+      "line": 209,
+      "column": 1,
+      "message": "Function 'buildLocaleViewportScenarios' has a complexity of 13. Maximum allowed is 10.",
+      "anchor": "282695cc3c3475682ca8a7658c74c0dcec8fb795c3e82eb71defc5a37d2d4fbc",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/screenshotComparisonConfiguration.ts",
+      "rule": "max-depth",
+      "line": 30,
+      "column": 9,
+      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
+      "anchor": "dfaf799eb467cf89f7721af7c8508e786262e7cbb4717ab2223d1f6c87731e5b",
+      "kind": "migration",
+      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
+    },
+    {
+      "file": "visual/src/support/authValidation.ts",
+      "rule": "complexity",
+      "line": 36,
+      "column": 36,
+      "message": "Arrow function has a complexity of 14. Maximum allowed is 10.",
+      "anchor": "50b0a614eac9f99a033024d147dd75a02a5573165c4cfd8efa648e4358150a29",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/src/support/authValidation.ts",
+      "rule": "complexity",
+      "line": 124,
+      "column": 8,
+      "message": "Async function 'waitForSignInState' has a complexity of 16. Maximum allowed is 10.",
+      "anchor": "c49813d9686c5d7be33ce3782919ba2489196e8a8564b8138a32e47fdcd941ef",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/src/support/pageSetup.ts",
+      "rule": "complexity",
+      "line": 160,
+      "column": 8,
+      "message": "Async function 'setupContextForScenario' has a complexity of 12. Maximum allowed is 10.",
+      "anchor": "7c7529c806e29b2b9cd25f1e0183205bfe9fb2a02ffb45026807d585fb4d793d",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/src/support/preparePage.ts",
+      "rule": "complexity",
+      "line": 243,
+      "column": 8,
+      "message": "Async function 'preparePage' has a complexity of 22. Maximum allowed is 10.",
+      "anchor": "d8ebe90bd927b9abfa03d1d92263834291c1f4d966e8685b85684652e0776359",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/src/support/requestError.test.ts",
+      "rule": "quality/no-network-response",
+      "line": 59,
+      "column": 5,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "4c9a03aceb07ac8f544128970bbb9803711c3cbad67d8f646bed2c2ea8d151c9",
+      "kind": "adapter-unit",
+      "reason": "请求错误适配器单测：替换 fetch 验证失败退出与诊断脱敏，不运行真实业务。"
+    },
+    {
+      "file": "visual/tests/accountPresentation.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 7,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "11cec95f4ab62afc5f6bbf1c95b3421c475c0d86b6d09b69e04efd5060ffc531",
+      "kind": "migration",
+      "reason": "既有展示工具离线单测：空白 HTML 壳验证 DOM 展示；未模拟业务接口，后续整理单测入口。"
+    },
+    {
+      "file": "visual/tests/accountPresentation.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 7,
+      "column": 70,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "11cec95f4ab62afc5f6bbf1c95b3421c475c0d86b6d09b69e04efd5060ffc531",
+      "kind": "migration",
+      "reason": "既有展示工具离线单测：空白 HTML 壳验证 DOM 展示；未模拟业务接口，后续整理单测入口。"
+    },
+    {
+      "file": "visual/tests/authValidation.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 1,
+      "column": 1,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "78904ff3f995449187aff995ac525ac98c5e89b42bf196a4c9096749ee45ffea",
+      "kind": "migration",
+      "reason": "既有认证校验辅助函数离线单测：本机 HTTP 服务覆盖状态码、无效响应及脱敏。"
+    },
+    {
+      "file": "visual/tests/authValidation.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 41,
+      "column": 18,
+      "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "84e7bfa3cf209e020004fc932d90bfc1eb9cc97b0b1b444af511ba9aa7ed6549",
+      "kind": "migration",
+      "reason": "既有认证校验辅助函数离线单测：本机 HTTP 服务覆盖状态码、无效响应及脱敏。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 7,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "1995fad5d8b6efc31c7de6e8bbfae2ce2e78742a8a8120ba47657bc814cd8ee0",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 9,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d716e63641e3c4a1f8775615eb4465bab72ecdc5b4226c7796ce0f91a28b348a",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 14,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "b70d836dbcf90a88e60d51bf230ce670d50b04a8beb81a5924df9c0ae8058429",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 33,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "1995fad5d8b6efc31c7de6e8bbfae2ce2e78742a8a8120ba47657bc814cd8ee0",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 35,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d716e63641e3c4a1f8775615eb4465bab72ecdc5b4226c7796ce0f91a28b348a",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 40,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "17d672c799dee41ee84a6d92f3e6f098c739cb5de3bbcfac1d6b46600e5509f8",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 59,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "1995fad5d8b6efc31c7de6e8bbfae2ce2e78742a8a8120ba47657bc814cd8ee0",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 61,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d716e63641e3c4a1f8775615eb4465bab72ecdc5b4226c7796ce0f91a28b348a",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 65,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "20ae24e48cf2bcc6288129baee291f7b6924b8c0aa5e10b8a4dd63f03e931274",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 75,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "1995fad5d8b6efc31c7de6e8bbfae2ce2e78742a8a8120ba47657bc814cd8ee0",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 77,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d716e63641e3c4a1f8775615eb4465bab72ecdc5b4226c7796ce0f91a28b348a",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/localImages.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 84,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "20ae24e48cf2bcc6288129baee291f7b6924b8c0aa5e10b8a4dd63f03e931274",
+      "kind": "migration",
+      "reason": "既有本地图片就绪离线单测：合成 HTML 和图片加载/404，不作为应用业务接口实现。"
+    },
+    {
+      "file": "visual/tests/preparePage.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 324,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "1dae4ac30bf5ee7a4544506ac8f7fa8db4547b145437f23e4788748a952988d1",
+      "kind": "migration",
+      "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
+    },
+    {
+      "file": "visual/tests/preparePage.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 327,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "14a0c2bd83b5200129ea5a5832c99cb1f9380e41819bf28398324e9f8c03ca3a",
+      "kind": "migration",
+      "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
+    },
+    {
+      "file": "visual/tests/preparePage.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 333,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "17d672c799dee41ee84a6d92f3e6f098c739cb5de3bbcfac1d6b46600e5509f8",
+      "kind": "migration",
+      "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
+    },
+    {
+      "file": "visual/tests/preparePage.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 347,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "1dae4ac30bf5ee7a4544506ac8f7fa8db4547b145437f23e4788748a952988d1",
+      "kind": "migration",
+      "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
+    },
+    {
+      "file": "visual/tests/preparePage.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 349,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "59706d59ed11220b4577d3d012ebb70d49771271be902e2d999e97cfbb8a34f4",
+      "kind": "migration",
+      "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
+    },
+    {
+      "file": "visual/tests/preparePage.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 354,
+      "column": 16,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "9037d65e4d95198cc59ca7a6760f924f13ff1d014513ada9b0c94eba2a682515",
+      "kind": "migration",
+      "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
+    },
+    {
+      "file": "visual/tests/preparePage.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 369,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "1dae4ac30bf5ee7a4544506ac8f7fa8db4547b145437f23e4788748a952988d1",
+      "kind": "migration",
+      "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
+    },
+    {
+      "file": "visual/tests/preparePage.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 372,
+      "column": 15,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "14a0c2bd83b5200129ea5a5832c99cb1f9380e41819bf28398324e9f8c03ca3a",
+      "kind": "migration",
+      "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
+    },
+    {
+      "file": "visual/tests/preparePage.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 378,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "c253bea0e0065212def7f0e038b25709fe51da0bdcaeffa4446af2fa84881ba3",
+      "kind": "migration",
+      "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "rule": "C901",
+      "line": 20,
+      "column": 5,
+      "message": "`table` is too complex (19 > 10)",
+      "anchor": "c5e11bd297c20c7f3d2cb58cb9d69f60b0c35d4c2a5616688d369a9744a14bfc",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "rule": "C901",
+      "line": 108,
+      "column": 5,
+      "message": "`replay_scene` is too complex (17 > 10)",
+      "anchor": "4a083deb0e62aa50b45254c08a7292fe2a9d569b3a15d949c8db13885ac2e9d5",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "rule": "C901",
+      "line": 79,
+      "column": 9,
+      "message": "`control` is too complex (17 > 10)",
+      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "rule": "C901",
+      "line": 143,
+      "column": 15,
+      "message": "`request` is too complex (32 > 10)",
+      "anchor": "5495d068f027d1ec83e09f501f1be125b14aae8391f9ee0df71ac0fd3835da87",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "rule": "C901",
+      "line": 239,
+      "column": 9,
+      "message": "`response` is too complex (13 > 10)",
+      "anchor": "0b36d16cf8f925acd7a2b362e677c7c28d83808393d2e568f2ebefc6f734a0b0",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "rule": "C901",
+      "line": 276,
+      "column": 9,
+      "message": "`websocket_message` is too complex (12 > 10)",
+      "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "rule": "C901",
+      "line": 139,
+      "column": 9,
+      "message": "`joined_clubs_fixture` is too complex (11 > 10)",
+      "anchor": "c7780985da79e73f84a6039eec771da8baad6c61a18e900129d7ebb1dad184d4",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "rule": "C901",
+      "line": 52,
+      "column": 9,
+      "message": "`control` is too complex (12 > 10)",
+      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "rule": "C901",
+      "line": 91,
+      "column": 9,
+      "message": "`fixture` is too complex (29 > 10)",
+      "anchor": "7de657de29b3eaf426a39d572478423df92353b81965ce44ec896cdeb93fe75b",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "rule": "C901",
+      "line": 49,
+      "column": 9,
+      "message": "`control` is too complex (13 > 10)",
+      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "rule": "C901",
+      "line": 120,
+      "column": 9,
+      "message": "`request` is too complex (20 > 10)",
+      "anchor": "6a95f92a15255350bac09c0d5983160713ae49736e8f3bd8409c44d03276f631",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "rule": "C901",
+      "line": 61,
+      "column": 9,
+      "message": "`websocket_message` is too complex (20 > 10)",
+      "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "rule": "C901",
+      "line": 74,
+      "column": 9,
+      "message": "`control` is too complex (11 > 10)",
+      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "rule": "C901",
+      "line": 142,
+      "column": 9,
+      "message": "`request` is too complex (12 > 10)",
+      "anchor": "6a95f92a15255350bac09c0d5983160713ae49736e8f3bd8409c44d03276f631",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "rule": "C901",
+      "line": 60,
+      "column": 9,
+      "message": "`websocket_message` is too complex (20 > 10)",
+      "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
+      "kind": "migration",
+      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
+    }
+  ]
+}

@@ -16,6 +16,70 @@ import { useNormalCardSpriteClock, type CardSpriteClock } from './cardSpriteCloc
 export type TableSession = { page: Page; roomId: string; self: string; clip: CaptureArea };
 
 /**
+ * 仅重试提交建房前的读取超时，已登记的房间禁止重复创建。
+ * @param page - 建房页面。
+ * @param game - 游戏类型。
+ * @param registerRoom - 立即登记成功响应。
+ * @param registeredRoom - 读取已登记房间。
+ */
+async function createRoomWithRetry(page: Page, game: 'texas' | 'zhajinhua',
+  registerRoom: (created: RoomSession) => void, registeredRoom: () => RoomSession | undefined): Promise<RoomSession> {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await createPrivateGameRoom(page, registerRoom, game === 'texas' ? 'texas_react_native' : 'zhajinhua');
+    } catch (error) {
+      await recoverRoomForm(page, error, attempt, registeredRoom());
+    }
+  }
+  throw new Error('建房未返回本轮房间');
+}
+
+/**
+ * 已知的表单读取超时允许返回入口，其他错误保留原始失败。
+ * @param page - 建房页面。
+ * @param error - 原始建房错误。
+ * @param attempt - 当前尝试序号。
+ * @param room - 已创建房间。
+ */
+async function recoverRoomForm(page: Page, error: unknown, attempt: number, room?: RoomSession) {
+  const alert = visible(page, 'common-alert-container').filter({ hasText: 'timeout of 10000ms exceeded' });
+  if (attempt > 0 || room || !(error instanceof Error)
+    || !error.message.includes('base-create-room-screen') || !await alert.isVisible()) throw error;
+  recordDiagnostic(page, '建房表单读取超时，返回后重试', { attempt: attempt + 1 });
+  await alert.locator('[data-testid^="common-alert-button-"]').click();
+  await visible(page, 'navigation-bar-back-image').last().click();
+  await expect(visible(page, 'create-game-button').last()).toBeVisible({ timeout: 90_000 });
+}
+
+/**
+ * 等待牌桌连接，保留重试上限及应用错误诊断。
+ * @param page - 牌桌页面。
+ * @param game - 游戏类型。
+ * @param prefix - 牌桌控件前缀。
+ */
+async function waitForTableConnection(page: Page, game: string, prefix: string) {
+  const connection = { state: 'loading' };
+  let retries = 0;
+  await expect.poll(async () => {
+    if (await visible(page, 'common-alert-button-retry').isVisible()) {
+      if (retries >= 3) connection.state = 'alert';
+      else {
+        retries += 1;
+        recordDiagnostic(page, '重试牌桌连接', { attempt: retries });
+        await visible(page, 'common-alert-button-retry').click();
+      }
+    } else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
+    return connection.state;
+  }, { timeout: 90_000, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
+  if (connection.state === 'alert') {
+    const message = (await page.locator('[data-testid="common-alert-container"]:visible')
+      .locator('[data-testid="common-alert-title"], [data-testid="common-alert-message"], [data-testid="common-alert-sub-message"]')
+      .allTextContents()).join('；') || '应用显示重试弹窗';
+    throw new Error(`${game} 牌桌未就绪，应用提示：${diagnosticText(message)}；详见 connection-summary`);
+  }
+}
+
+/**
  * 使用真实登录和创建入口建立隔离回放房间，无论断言结果如何都精确清理本轮房间。
  * @param browser - Playwright 浏览器。
  * @param info - 当前用例报告。
@@ -57,45 +121,12 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
       recordDiagnostic(page, '建房成功', { roomId: created.roomId, node: diagnosticNode(created.apiOrigin) });
       writeFileSync(info.outputPath('created-room.json'), JSON.stringify({ roomId: created.roomId, apiNode: diagnosticNode(created.apiOrigin) }));
     };
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      try {
-        room = await createPrivateGameRoom(page, registerRoom, game === 'texas' ? 'texas_react_native' : 'zhajinhua');
-        break;
-      } catch (error) {
-        const alert = visible(page, 'common-alert-container').filter({ hasText: 'timeout of 10000ms exceeded' });
-        // 只重试表单加载阶段的已知读取超时；提交建房后的失败绝不能再次建房。
-        if (attempt > 0 || room || !(error instanceof Error)
-          || !error.message.includes('base-create-room-screen') || !await alert.isVisible()) throw error;
-        recordDiagnostic(page, '建房表单读取超时，返回后重试', { attempt: attempt + 1 });
-        await alert.locator('[data-testid^="common-alert-button-"]').click();
-        await visible(page, 'navigation-bar-back-image').last().click();
-        await expect(visible(page, 'create-game-button').last()).toBeVisible({ timeout: 90_000 });
-      }
-    }
-    if (!room) throw new Error('建房未返回本轮房间');
+    room = await createRoomWithRetry(page, game, registerRoom, () => room);
     recordDiagnostic(page, '等待牌桌连接及订阅就绪');
     const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
     if (hall) await enterTexasRoom(page, room);
     else {
-      const connection = { state: 'loading' };
-      let retries = 0;
-      await expect.poll(async () => {
-        if (await visible(page, 'common-alert-button-retry').isVisible()) {
-          if (retries >= 3) connection.state = 'alert';
-          else {
-            retries += 1;
-            recordDiagnostic(page, '重试牌桌连接', { attempt: retries });
-            await visible(page, 'common-alert-button-retry').click();
-          }
-        } else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
-        return connection.state;
-      }, { timeout: 90_000, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
-      if (connection.state === 'alert') {
-        const message = (await page.locator('[data-testid="common-alert-container"]:visible')
-          .locator('[data-testid="common-alert-title"], [data-testid="common-alert-message"], [data-testid="common-alert-sub-message"]')
-          .allTextContents()).join('；') || '应用显示重试弹窗';
-        throw new Error(`${game} 牌桌未就绪，应用提示：${diagnosticText(message)}；详见 connection-summary`);
-      }
+      await waitForTableConnection(page, game, prefix);
     }
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
     if (clock === 'frozen') {
@@ -103,11 +134,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
       await freeze(page);
     }
     console.log('TABLE > 牌桌已就绪，开始动画采样');
-    const self = await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
-    const width = info.project.name === 'mobile' ? 375 : 450;
-    recordDiagnostic(page, '牌桌就绪，开始动画采样');
-    await task({ page, roomId: room.roomId, self,
-      clip: { x: Math.floor((viewport.width - width) / 2), y: 0, width, height: viewport.height } });
+    await sampleTable(page, info, room, viewport, task);
     await diagnostics.save();
     await saveCardSpriteDiagnostics(page, info);
   } catch (error) {
@@ -122,10 +149,43 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     await saveCardSpriteDiagnostics(page, info, 'frozen').catch(failure => console.log(`牌面诊断保存失败：${diagnosticText(failure)}`));
     await observeCardSpriteClockControl(page).catch(failure => console.log(`牌面时钟对照失败：${diagnosticText(failure)}`));
     await saveCardSpriteDiagnostics(page, info).catch(failure => console.log(`牌面对照保存失败：${diagnosticText(failure)}`));
-    if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
+    sanitizeTableError(error);
     throw error;
   } finally {
-    try { if (room) await deletePrivateGameRoom(room); }
+    try { await deleteRegisteredRoom(room); }
     finally { await context.close(); }
   }
+}
+
+/**
+ * 使用原有视口和登录用户采样牌桌。
+ * @param page - 牌桌页面。
+ * @param info - 用例报告。
+ * @param room - 本轮房间。
+ * @param viewport - 当前视口。
+ * @param task - 动画流程。
+ */
+async function sampleTable(page: Page, info: TestInfo, room: RoomSession,
+  viewport: { width: number; height: number }, task: (session: TableSession) => Promise<void>) {
+  const self = await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
+  const width = info.project.name === 'mobile' ? 375 : 450;
+  recordDiagnostic(page, '牌桌就绪，开始动画采样');
+  await task({ page, roomId: room.roomId, self,
+    clip: { x: Math.floor((viewport.width - width) / 2), y: 0, width, height: viewport.height } });
+}
+
+/**
+ * 保留原始错误对象并清理诊断中的敏感字段。
+ * @param error - 采样失败。
+ */
+function sanitizeTableError(error: unknown) {
+  if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
+}
+
+/**
+ * 只清理本轮已登记的房间。
+ * @param room - 建房响应登记的房间。
+ */
+async function deleteRegisteredRoom(room?: RoomSession) {
+  if (room) await deletePrivateGameRoom(room);
 }

@@ -53,11 +53,7 @@ test('双视口全部入退场与奖励帧忽略余额变化，布局、动画�
     const updated = await readFile(desktopFrame);
     assert.ok(!updated.equals(unmasked), '显式更新必须替换小于整图 0.5% 的桌面余额区');
     const bitmap = PNG.sync.read(updated);
-    let magenta = 0;
-    for (let offset = 0; offset < bitmap.data.length; offset += 4) {
-      if (bitmap.data[offset] === 255 && bitmap.data[offset + 1] === 0 && bitmap.data[offset + 2] === 255) magenta++;
-    }
-    assert.ok(magenta > 0 && magenta < bitmap.width * bitmap.height * 0.005, '使用低于整图阈值的真实遮罩面积');
+    assertSmallMask(bitmap);
     const before = new Map(await Promise.all((await readdir(snapshots)).map(async name =>
       [name, await readFile(path.join(snapshots, name))] as const)));
     const comparison = run(true);
@@ -65,22 +61,7 @@ test('双视口全部入退场与奖励帧忽略余额变化，布局、动画�
     const report: JSONReport = JSON.parse(await readFile(reportPath, 'utf8'));
     const entries = results(report.suites);
     assert.equal(entries.length, 10);
-    for (const { title, result } of entries) {
-      assert.equal(result.status, title === 'wallet mask balance' ? 'passed' : 'failed',
-        `${title}: ${result.errors.map(error => error.message).join('\n')}`);
-      if (title === 'wallet mask balance') {
-        assert.ok(result.attachments.some(item => item.name === 'wallet-complete'));
-        const originals = result.attachments.filter(item => item.name.endsWith('-unmasked'));
-        assert.equal(originals.length, 16, '全部入场、退场与奖励帧保留未遮罩证据');
-      }
-      if (title === 'wallet mask layout' || title === 'wallet mask animation') {
-        assert.ok(result.attachments.some(item => item.name.includes('-diff')), '真实变化须报告像素差异');
-        assert.ok(result.attachments.some(item => item.name === 'wallet-complete'), '像素差异仍采集完整时间线');
-      }
-      if (title === 'wallet mask missing' || title === 'wallet mask data') {
-        assert.ok(!result.attachments.some(item => item.name === 'wallet-complete'), '控件和数据断言仍立即中止');
-      }
-    }
+    assertComparisonResults(entries);
     for (const [name, contents] of before) assert.deepEqual(await readFile(path.join(snapshots, name)), contents);
     assert.equal((await readdir(snapshots)).length, before.size, '普通比较不创建基准');
   } finally { await rm(directory, { recursive: true, force: true }); }
@@ -114,17 +95,8 @@ test('数字遮罩保留图标像素，支持裁切和缩放，透明、移出�
         const actual = PNG.sync.read(masked.png);
         const before = PNG.sync.read(original);
         const boxes = await panel.locator('.number').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().toJSON()));
-        for (let y = 0; y < actual.height; y++) {
-          for (let x = 0; x < actual.width; x++) {
-            if (boxes.some(box => x >= Math.floor(box.x - 4 * scale - clip.x)
-              && x < Math.ceil(box.right + 4 * scale - clip.x) && y >= Math.floor(box.y - 4 * scale - clip.y)
-              && y < Math.ceil(box.bottom + 4 * scale - clip.y))) continue;
-            const offset = (y * actual.width + x) * 4;
-            assert.ok(actual.data.subarray(offset, offset + 4).equals(before.data.subarray(offset, offset + 4)),
-              '数字区域外的图标、边缘及背景像素必须原样保留');
-          }
-        }
-        if (first) assert.deepEqual(actual.data, first, '不同位数的余额必须得到完全相同的遮罩图');
+        assertOutsideMaskUnchanged(actual, before, boxes, scale, clip);
+        assert.deepEqual(actual.data, first ?? actual.data, '不同位数的余额必须得到完全相同的遮罩图');
         first = actual.data;
       }
     }
@@ -141,3 +113,60 @@ test('数字遮罩保留图标像素，支持裁切和缩放，透明、移出�
     assert.deepEqual(PNG.sync.read((await maskNumericFields(original, masks, clip)).png).data, PNG.sync.read(original).data);
   } finally { await browser.close(); }
 });
+
+/**
+ * 数字区域外的图标、边缘及背景像素必须原样保留。
+ * @param actual - 遮罩后的像素。
+ * @param before - 原始像素。
+ * @param boxes - 数字区域。
+ * @param scale - 当前缩放。
+ * @param clip - 截图裁切。
+ */
+function assertOutsideMaskUnchanged(actual: PNG, before: PNG,
+  boxes: { x: number; y: number; right: number; bottom: number }[], scale: number, clip: { x: number; y: number }) {
+  for (let y = 0; y < actual.height; y++) {
+    for (let x = 0; x < actual.width; x++) {
+      if (boxes.some(box => x >= Math.floor(box.x - 4 * scale - clip.x)
+        && x < Math.ceil(box.right + 4 * scale - clip.x) && y >= Math.floor(box.y - 4 * scale - clip.y)
+        && y < Math.ceil(box.bottom + 4 * scale - clip.y))) continue;
+      const offset = (y * actual.width + x) * 4;
+      assert.ok(actual.data.subarray(offset, offset + 4).equals(before.data.subarray(offset, offset + 4)),
+        '数字区域外的图标、边缘及背景像素必须原样保留');
+    }
+  }
+}
+
+/**
+ * 检查余额变化被忽略，同时保留布局、运动、节点和数据失败。
+ * @param entries - 展开的真实测试结果。
+ */
+function assertComparisonResults(entries: ReturnType<typeof results>) {
+  for (const { title, result } of entries) {
+    assert.equal(result.status, title === 'wallet mask balance' ? 'passed' : 'failed',
+      `${title}: ${result.errors.map(error => error.message).join('\n')}`);
+    if (title === 'wallet mask balance') {
+      assert.ok(result.attachments.some(item => item.name === 'wallet-complete'));
+      const originals = result.attachments.filter(item => item.name.endsWith('-unmasked'));
+      assert.equal(originals.length, 16, '全部入场、退场与奖励帧保留未遮罩证据');
+    }
+    if (title === 'wallet mask layout' || title === 'wallet mask animation') {
+      assert.ok(result.attachments.some(item => item.name.includes('-diff')), '真实变化须报告像素差异');
+      assert.ok(result.attachments.some(item => item.name === 'wallet-complete'), '像素差异仍采集完整时间线');
+    }
+    if (title === 'wallet mask missing' || title === 'wallet mask data') {
+      assert.ok(!result.attachments.some(item => item.name === 'wallet-complete'), '控件和数据断言仍立即中止');
+    }
+  }
+}
+
+/**
+ * 检查小于整图容差的数字区仍已写入遮罩。
+ * @param bitmap - 更新后的基准像素。
+ */
+function assertSmallMask(bitmap: PNG) {
+  let magenta = 0;
+  for (let offset = 0; offset < bitmap.data.length; offset += 4) {
+    if (bitmap.data[offset] === 255 && bitmap.data[offset + 1] === 0 && bitmap.data[offset + 2] === 255) magenta++;
+  }
+  assert.ok(magenta > 0 && magenta < bitmap.width * bitmap.height * 0.005, '使用低于整图阈值的真实遮罩面积');
+}

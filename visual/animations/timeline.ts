@@ -6,12 +6,13 @@ import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import { areScreenshotsEquivalent } from './screenshotComparison';
 import { settleLayout } from './renderReadiness';
+import type { CaptureArea } from './captureTypes';
 import { maskNumericFields, type NumericTextMask } from './numericMask';
 export type { NumericTextMask } from './numericMask';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
 export const FRAME_TIMES = [0, 80, 160, 320, 640, 1200] as const;
-export type CaptureArea = { x: number; y: number; width: number; height: number };
+export type { CaptureArea } from './captureTypes';
 const pausedPages = new WeakSet<Page>();
 
 /**
@@ -139,6 +140,16 @@ export async function freeze(page: Page): Promise<void> {
 }
 
 /**
+ * 显式更新必须替换旧数字区域，即使差异小于普通比较容差。
+ * @param update - 是否显式更新快照。
+ * @param comparison - 正常比较参数。
+ */
+function numericComparisonOptions(update: boolean, comparison: ReturnType<typeof imageComparisonOptions>) {
+  if (update) return { ...comparison, maxDiffPixels: 0 };
+  return comparison;
+}
+
+/**
  * 汇总固定时刻的截图差异；像素不符继续采样，资源、状态与运动断言失败立即中止。
  * @param page - 虚拟时钟已暂停的页面。
  * @param info - 用例附件与基准命名上下文。
@@ -195,8 +206,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         // 桌面全屏中两个数字区可能小于 0.5%；显式更新仍须替换带真实余额的旧图。
         const update = info.config.updateSnapshots;
         const comparison = imageComparisonOptions(0.1, comparedPixels);
-        expect.soft(frame).toMatchSnapshot(snapshot, update === 'all' || update === 'changed'
-          ? { ...comparison, maxDiffPixels: 0 } : comparison);
+        expect.soft(frame).toMatchSnapshot(snapshot, numericComparisonOptions(update === 'all' || update === 'changed', comparison));
       } else if (foregroundBelow) {
         // 弹层缩放期间保留其每帧实际覆盖的像素，排除下方未被遮住的牌桌操作区。
         // 暂停时钟后按共用比例确认稳定，再将相关区域交给 Playwright 原有像素比较器。
