@@ -36,9 +36,11 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
     afterEntrance: async () => {
       await expect.poll(async () => {
         await page.clock.runFor(16);
-        return walletNumbers.allTextContents();
+        return { balances: await walletNumbers.allTextContents(), visible: await Promise.all([
+          walletNumbers.nth(0).isVisible(), walletNumbers.nth(1).isVisible(),
+        ]) };
       }, { timeout: 30_000, intervals: [50], message: '老虎机钱包应显示真实的金币和钻石余额' })
-        .toEqual(expectedWalletBalances);
+        .toEqual({ balances: expectedWalletBalances, visible: [true, true] });
     },
     open: /** 从背景横幅的同一循环起点打开真实老虎机。 */ async () => {
       await page.clock.fastForward(12_000);

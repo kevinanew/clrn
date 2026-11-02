@@ -53,7 +53,7 @@ for (const change of ['balance', 'layout', 'animation', 'missing', 'data'] as co
       };
     }, { comparison, change });
     const panel = page.getByTestId('slot-machine-view');
-    const numericMask = slotWalletMask(panel);
+    const numericMask = process.env.WALLET_MASK_UNMASKED === 'true' ? undefined : slotWalletMask(panel);
     const clip = { x: 0, y: 0, ...page.viewportSize()! };
     await exercisePopup(page, info, { name: `wallet-${change}`, target: panel, clip, numericMask,
       open: /** 通过夹具的按钮触发 CSS 入场。 */ () => page.locator('#open').dispatchEvent('click'),

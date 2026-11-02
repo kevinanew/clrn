@@ -37,12 +37,27 @@ test('双视口全部入退场与奖励帧忽略余额变化，布局、动画�
     /**
      * 首轮生成临时基准，第二轮改变余额及指定故障，保留真实退出码。
      * @param compare - 是否运行不同余额和故障注入。
+     * @param unmasked - 先种入一张桌面真实数字旧基准，验证小区域也能被显式更新。
      */
-    const run = (compare: boolean) => spawnSync(process.execPath,
-      [cli, 'test', '--config', config, ...(compare ? [] : ['--update-snapshots'])],
-      { encoding: 'utf8', timeout: 240_000, env: { ...process.env, WALLET_MASK_COMPARISON: String(compare) } });
+    const run = (compare: boolean, unmasked = false) => spawnSync(process.execPath,
+      [cli, 'test', '--config', config, ...(compare ? [] : ['--update-snapshots']),
+        ...(unmasked ? ['--project=desktop', '--grep=wallet mask balance$'] : [])],
+      { encoding: 'utf8', timeout: 240_000,
+        env: { ...process.env, WALLET_MASK_COMPARISON: String(compare), WALLET_MASK_UNMASKED: String(unmasked) } });
+    const oldBaseline = run(false, true);
+    assert.equal(oldBaseline.status, 0, oldBaseline.error?.message || oldBaseline.stdout + oldBaseline.stderr);
+    const desktopFrame = path.join(snapshots, 'en-desktop-wallet-balance-exit-0ms.png');
+    const unmasked = await readFile(desktopFrame);
     const baseline = run(false);
     assert.equal(baseline.status, 0, baseline.error?.message || baseline.stdout + baseline.stderr);
+    const updated = await readFile(desktopFrame);
+    assert.ok(!updated.equals(unmasked), '显式更新必须替换小于整图 0.5% 的桌面余额区');
+    const bitmap = PNG.sync.read(updated);
+    let magenta = 0;
+    for (let offset = 0; offset < bitmap.data.length; offset += 4) {
+      if (bitmap.data[offset] === 255 && bitmap.data[offset + 1] === 0 && bitmap.data[offset + 2] === 255) magenta++;
+    }
+    assert.ok(magenta > 0 && magenta < bitmap.width * bitmap.height * 0.005, '使用低于整图阈值的真实遮罩面积');
     const before = new Map(await Promise.all((await readdir(snapshots)).map(async name =>
       [name, await readFile(path.join(snapshots, name))] as const)));
     const comparison = run(true);
