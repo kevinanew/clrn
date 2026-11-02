@@ -156,7 +156,7 @@ jobs:
         run: npm run typecheck
       - name: 验证老虎机横幅旋转起点
         if: matrix.suite == 'app' && matrix.part == 'ui'
-        run: node --import tsx --test visual/animations/slotBannerPreparation.browser.ts
+        run: node --import tsx --test visual/animations/slotBannerPreparation.browser.ts visual/animations/walletMask.browser.ts
       - name: 验证关键帧差异汇总、牌面就绪、素材定位与续时准备
         if: matrix.suite == 'texas' && matrix.part == 'gameplay'
         run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/cardSpriteReadiness.browser.ts visual/animations/cardSpriteDiagnostics.browser.ts visual/animations/cardSpriteClock.browser.ts visual/animations/playerAnimationAsset.browser.ts visual/animations/renewReadiness.browser.ts visual/animations/leaderboardReadiness.browser.ts visual/animations/playerProfileReadiness.browser.ts

@@ -6,11 +6,12 @@ import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import { areScreenshotsEquivalent } from './screenshotComparison';
 import { settleLayout } from './renderReadiness';
+import { maskNumericFields, type NumericTextMask } from './numericMask';
+export type { NumericTextMask } from './numericMask';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
 export const FRAME_TIMES = [0, 80, 160, 320, 640, 1200] as const;
 export type CaptureArea = { x: number; y: number; width: number; height: number };
-export type NumericTextMask = { locator: Locator; maximumTexts: readonly string[] };
 const pausedPages = new WeakSet<Page>();
 
 /**
@@ -34,54 +35,6 @@ async function unmaskedPixelCount(frame: Buffer, masks?: Locator[], clip?: Captu
     });
   }
   return remainingPixelCount(bitmap.width, bitmap.height, excluded);
-}
-
-/**
- * 仅遮住数字字形及其抗锯齿阴影；React Native 的文本节点本身比字形宽得多。
- * @param frame - 保留供报告审查的原始截图。
- * @param masks - 数字节点和本轮夹具可能显示的最大文本。
- * @param clip - 截图在页面中的裁切区域。
- */
-async function maskNumericGlyphs(frame: Buffer, masks: NumericTextMask[], clip?: CaptureArea) {
-  const bitmap = PNG.sync.read(frame);
-  const excluded: ExcludedPixelRectangle[] = [];
-  for (const mask of masks) {
-    const boxes = await mask.locator.evaluateAll((nodes, maximumTexts) => {
-      if (nodes.length !== maximumTexts.length) throw new Error('数字遮罩节点数与预期余额数不符');
-      return nodes.map((node, index) => {
-        const style = getComputedStyle(node);
-        const rect = node.getBoundingClientRect();
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (!context) throw new Error('无法测量钱包数字字形');
-        context.font = style.font;
-        const width = Math.min(rect.width, Math.ceil(context.measureText(maximumTexts[index]).width + 12));
-        const height = Math.min(rect.height, Math.ceil(parseFloat(style.fontSize) + 8));
-        return { x: rect.x + (rect.width - width) / 2, y: rect.y + (rect.height - height) / 2,
-          width, height, containerWidth: rect.width };
-      });
-    }, mask.maximumTexts);
-    for (const box of boxes) {
-      expect(box.width, '数字遮罩必须窄于文本容器，不能盖住工具栏').toBeLessThan(box.containerWidth * 0.8);
-      const left = Math.max(0, Math.floor(box.x - (clip?.x || 0)));
-      const right = Math.min(bitmap.width, Math.ceil(box.x + box.width - (clip?.x || 0)));
-      const top = Math.max(0, Math.floor(box.y - (clip?.y || 0)));
-      const bottom = Math.min(bitmap.height, Math.ceil(box.y + box.height - (clip?.y || 0)));
-      expect(right - left, '数字字形遮罩必须处于截图内').toBeGreaterThan(0);
-      expect(bottom - top, '数字字形遮罩必须处于截图内').toBeGreaterThan(0);
-      excluded.push({ left, right, top, bottom });
-      for (let row = top; row < bottom; row++) {
-        for (let column = left; column < right; column++) {
-          const pixel = (row * bitmap.width + column) * 4;
-          bitmap.data[pixel] = 255;
-          bitmap.data[pixel + 1] = 0;
-          bitmap.data[pixel + 2] = 255;
-          bitmap.data[pixel + 3] = 255;
-        }
-      }
-    }
-  }
-  return { png: PNG.sync.write(bitmap), comparedPixels: remainingPixelCount(bitmap.width, bitmap.height, excluded) };
 }
 
 /**
@@ -195,7 +148,7 @@ export async function freeze(page: Page): Promise<void> {
  */
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
   options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
-    mask?: Locator[]; finalFrameNumericMask?: NumericTextMask[]; requireMotion?: boolean;
+    mask?: Locator[]; numericMask?: NumericTextMask[]; requireMotion?: boolean;
     foregroundBelow?: { y: number; locator: Locator }; excludedBackground?: Locator[];
     waitForCardSprites?: string } = {}): Promise<void> {
   const times = options.times || FRAME_TIMES;
@@ -220,24 +173,23 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       const elements = await appearance(target);
       samples.push({ milliseconds: sampledTime, elements });
       const snapshot = `en-${info.project.name}-${name}-${sampledTime}ms.png`;
-      const finalFrame = milliseconds === times[times.length - 1];
       const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
         caret: 'hide' as const, scale: 'css' as const };
       const foregroundBelow = options.foregroundBelow;
       let frame: Buffer;
-      if (finalFrame && options.finalFrameNumericMask) {
+      if (options.numericMask) {
         let original: Buffer = Buffer.alloc(0);
         let masked: Buffer = Buffer.alloc(0);
         let comparedPixels = 0;
         await expect.poll(async () => {
           const previousFrame = await page.screenshot(screenshotOptions);
           original = await page.screenshot(screenshotOptions);
-          const previousMasked = await maskNumericGlyphs(previousFrame, options.finalFrameNumericMask!, options.clip);
-          const current = await maskNumericGlyphs(original, options.finalFrameNumericMask!, options.clip);
+          const previousMasked = await maskNumericFields(previousFrame, options.numericMask!, options.clip);
+          const current = await maskNumericFields(original, options.numericMask!, options.clip);
           masked = current.png;
           comparedPixels = current.comparedPixels;
           return areScreenshotsEquivalent(masked, previousMasked.png, Math.min(comparedPixels, previousMasked.comparedPixels));
-        }, { message: `${name} 数字以外的终帧画面应稳定` }).toBe(true);
+        }, { message: `${name} 数字以外的画面应稳定` }).toBe(true);
         await info.attach(`${snapshot}-unmasked`, { body: original, contentType: 'image/png' });
         frame = masked;
         expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparedPixels));
