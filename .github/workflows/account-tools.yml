@@ -18,13 +18,20 @@ jobs:
       - name: 配置 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '24.14.0'
           cache: npm
       - name: 配置 uv
         uses: astral-sh/setup-uv@v7
+        with:
+          version: '0.11.32'
       - name: 安装依赖
-        run: npm ci
+        run: |
+          npm ci
+          uv venv --python 3.12.12 .venv
+          uv pip install --python .venv/bin/python -r requirements-dev.txt
       - name: 运行提交检查
-        run: uvx --from pre-commit==4.6.0 pre-commit run --all-files
+        run: .venv/bin/pre-commit run --all-files
+      - name: 验证实际提交拦截与部分暂存
+        run: .venv/bin/python scripts/verify-pre-commit.py
       - name: 运行本机单元测试
         run: npm test
