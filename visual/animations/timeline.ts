@@ -194,8 +194,9 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
         frame = masked;
         // 桌面全屏中两个数字区可能小于 0.5%；显式更新仍须替换带真实余额的旧图。
         const update = info.config.updateSnapshots;
+        const comparison = imageComparisonOptions(0.1, comparedPixels);
         expect.soft(frame).toMatchSnapshot(snapshot, update === 'all' || update === 'changed'
-          ? { threshold: 0.1, maxDiffPixels: 0 } : imageComparisonOptions(0.1, comparedPixels));
+          ? { ...comparison, maxDiffPixels: 0 } : comparison);
       } else if (foregroundBelow) {
         // 弹层缩放期间保留其每帧实际覆盖的像素，排除下方未被遮住的牌桌操作区。
         // 暂停时钟后按共用比例确认稳定，再将相关区域交给 Playwright 原有像素比较器。
