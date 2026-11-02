@@ -21,11 +21,12 @@ for (const [locale, skip, finish] of [['zh-Hans', '跳过', '完成'], ['zh-Hant
       const label = index === 1 ? finish : skip;
       expect(await page.evaluate(key => localStorage.getItem(key), key)).toBeNull();
       // 同构于 react-native-copilot 3.3.3：说明与按钮位于 tooltip 的两个子容器。
-      await page.evaluate(({ label, key }) => {
+      await page.evaluate(({ label, key, finish }) => {
         const guide = document.getElementById('guide')!;
-        guide.innerHTML = '<div><span data-testid="stepDescription">引导</span></div><div><button></button></div>';
-        const button = guide.querySelector('button')!;
-        button.textContent = label;
+        guide.innerHTML = '<div><span data-testid="stepDescription">引导</span></div><div><div tabindex="0"><span style="pointer-events:none"></span></div></div>';
+        const button = guide.querySelector<HTMLElement>('[tabindex]')!;
+        button.dataset.testid = label === finish ? 'tooltip-finish-button' : 'tooltip-skip-button';
+        button.querySelector('span')!.textContent = label;
         button.onclick = /**
          * 只有可信输入才能触发应用的完成状态保存。
          * @param event - 浏览器实际分发的点击事件。
@@ -34,7 +35,7 @@ for (const [locale, skip, finish] of [['zh-Hans', '跳过', '完成'], ['zh-Hant
           localStorage.setItem(key, 'true');
           guide.replaceChildren();
         };
-      }, { label, key });
+      }, { label, key, finish });
       // 静态大厅可能直接断言后截图，不能依赖业务点击才处理引导。
       await expect(page.locator('#business')).toBeVisible();
       await expect(page.getByTestId('stepDescription')).toHaveCount(0);
