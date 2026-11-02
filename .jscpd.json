@@ -1,0 +1,10 @@
+{
+  "format": ["javascript", "typescript", "jsx", "tsx", "python"],
+  "minLines": 5,
+  "minTokens": 70,
+  "mode": "mild",
+  "ignore": ["**/node_modules/**", "**/.venv/**", "**/__pycache__/**", "**/test-results/**", "**/playwright-report/**", "**/blob-report/**", "**/snapshots/**", "**/.ttyctl/**", "**/.git/**"],
+  "reporters": ["json"],
+  "baseline": "quality/jscpd-baseline.json",
+  "failOnNewClones": 0
+}
