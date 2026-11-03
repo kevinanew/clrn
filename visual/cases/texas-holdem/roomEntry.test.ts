@@ -4,7 +4,7 @@ import type { APIResponse, Page } from '@playwright/test';
 import { enterTexasRoom } from './room';
 
 const room = { roomId: '11111111-2222-4333-8444-555555555555',
-  apiOrigin: 'https://room-entry.invalid', authorization: 'Bearer test-only' };
+  apiOrigin: 'https://unavailable-regional-proxy.invalid', authorization: 'Bearer test-only' };
 
 /**
  * 记录真实连接的请求约定，用内存响应验证解析失败和资源释放，无需账号或网络。
@@ -21,7 +21,7 @@ function fixture(response: Response) {
      */
     async put(url: string, options: unknown) {
       requests++;
-      assert.equal(url, `${room.apiOrigin}/v10/texas_holdem/room/${room.roomId}/enter`);
+      assert.equal(url, `https://api.shafayouxi.org/v10/texas_holdem/room/${room.roomId}/enter`);
       assert.deepEqual(options, { headers: { Authorization: room.authorization },
         data: { client_support: ['time_based_rules'] }, timeout: 15_000 });
       return {
