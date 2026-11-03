@@ -1043,16 +1043,6 @@
       "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
     },
     {
-      "file": "visual/animations/tableSession.ts",
-      "rule": "complexity",
-      "line": 29,
-      "column": 8,
-      "message": "Async function 'withTable' has a complexity of 16. Maximum allowed is 10.",
-      "anchor": "421c8c2d993489d9cdac9c4e6c349ea7c2dcaa204e5710e11c8edc765f8d4df1",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "visual/animations/timeline.browser.ts",
       "rule": "complexity",
       "line": 33,
@@ -1071,26 +1061,6 @@
       "anchor": "c64648bbedb59448bcb03ffa7f522d054efd26c46908febd28c63c8caf6ba2d3",
       "kind": "migration",
       "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "complexity",
-      "line": 45,
-      "column": 1,
-      "message": "Async function 'maskNumericGlyphs' has a complexity of 13. Maximum allowed is 10.",
-      "anchor": "d5817bb118713710ec418211d69f786d47d8fad13d00d2b66490f2ba2478e304",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "max-depth",
-      "line": 74,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "32f224bce825b1bc0012a634fd8173823aa140d3b697fedef7bbe8b2a3d7ff9b",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
     },
     {
       "file": "visual/animations/timeline.ts",
