@@ -5,13 +5,13 @@ import os
 import sys
 from pathlib import Path
 from urllib.parse import urlsplit
-from mitmproxy import http
 from texas_replay import PLAYER_IDS, TABLE_PLAYER_IDS, TexasReplay
 from room_view import RoomView
 from game_log import fixture as log_fixture
 from records_v2 import RecordsV2
 from ui_states import UIStates
 from virtual_player_preflight import respond_virtual_player_preflight
+from room_profile import RoomProfile
 
 # mitmdump 将 addon 目录加入 sys.path；三个独立代理共用字段覆盖工具。
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
@@ -19,20 +19,9 @@ from response_overrides import is_staging, prepare_profiles, patch_profiles, pat
 
 from replay_scenes import publish_scene  # noqa: E402
 from connection_diagnostics import ConnectionDiagnostics  # noqa: E402
+from visual_control import control, respond, route_request  # noqa: E402
 
 diagnostics = ConnectionDiagnostics()
-
-CONTROL_HOST = 'test-mitmproxy.invalid'
-
-
-def respond(flow, data, status=200):
-    flow.response = http.Response.make(status, json.dumps(data).encode(), {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': flow.request.headers.get('Origin', '*'),
-        'Access-Control-Allow-Credentials': 'true', 'Vary': 'Origin',
-        'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': flow.request.headers.get('Access-Control-Request-Headers', ''),
-    })
 
 
 class TexasVisualProxy:
@@ -45,51 +34,47 @@ class TexasVisualProxy:
         self.view = RoomView()
         self.records = RecordsV2()
         self.ui = UIStates()
+        self.room_profile = RoomProfile()
 
     def control(self, flow):
-        if flow.request.headers.get('X-E2E-Control-Token') != self.token:
-            respond(flow, {'error': 'Forbidden'}, 403)
-            return
-        path = urlsplit(flow.request.path).path
-        try:
-            if flow.request.method == 'POST':
-                body = json.loads(flow.request.content)
-                if path == '/scenario' and body.get('scenario') in (None, 'visual-stable'):
-                    self.scenario = body['scenario']
-                    self.texas.release()
-                    self.view.configure(None)
-                    self.records.release()
-                    self.ui.release()
-                elif self.scenario == 'visual-stable' and path == '/texas/view':
-                    self.view.configure(body.get('mode'))
-                elif self.scenario == 'visual-stable' and path == '/texas/replay':
-                    if set(body) != {'roomId', 'scene'}:
-                        raise ValueError('Only named scenes are accepted')
-                    publish_scene(self.texas, body.get('roomId'), body.get('scene'), 'texas')
-                elif self.scenario == 'visual-stable' and path == '/texas/records':
-                    self.records.configure(body.get('empty'))
-                    if self.view.mode != 'record-v2':
-                        self.view.configure('record-v2')
-                elif self.scenario == 'visual-stable' and path == '/texas/ui' and self.texas.room_id:
-                    self.ui.configure(body)
-                    self.texas.ui_states = self.ui
-                elif path == '/texas/release':
-                    self.texas.release()
-                    self.view.configure(None)
-                    self.records.release()
-                    self.ui.release()
-                else:
-                    raise ValueError('Unknown command')
-            elif flow.request.method != 'GET' or path != '/status':
-                raise ValueError('Unknown command')
-        except (ValueError, KeyError, TypeError, AttributeError):
-            respond(flow, {'error': 'Invalid replay command'}, 400)
-            return
-        respond(flow, {
+        control(self, flow, respond, self.command, self.status)
+
+    def command(self, path, body):
+        if path == '/scenario' and body.get('scenario') in (None, 'visual-stable'):
+            self.scenario = body['scenario']
+            self.texas.release()
+            self.view.configure(None)
+            self.records.release()
+            self.ui.release()
+            self.room_profile.release()
+        elif self.scenario == 'visual-stable' and path == '/texas/view':
+            self.view.configure(body.get('mode'))
+        elif self.scenario == 'visual-stable' and path == '/texas/replay':
+            if set(body) != {'roomId', 'scene'}:
+                raise ValueError('Only named scenes are accepted')
+            publish_scene(self.texas, body.get('roomId'), body.get('scene'), 'texas')
+        elif self.scenario == 'visual-stable' and path == '/texas/records':
+            self.records.configure(body.get('empty'))
+            if self.view.mode != 'record-v2':
+                self.view.configure('record-v2')
+        elif self.scenario == 'visual-stable' and path == '/texas/ui' and self.texas.room_id:
+            self.ui.configure(body)
+            self.texas.ui_states = self.ui
+        elif path == '/texas/release':
+            self.texas.release()
+            self.room_profile.release()
+            self.view.configure(None)
+            self.records.release()
+            self.ui.release()
+        else:
+            raise ValueError('Unknown command')
+
+    def status(self):
+        return {
             'scenario': self.scenario, 'interceptedRequests': 0,
             'proxiedRequests': self.proxied_requests, 'stabilizedRequests': self.stabilized_requests,
             'replayedMessages': self.texas.replayed_messages,
-        })
+        }
 
     def websocket_message(self, flow):
         if self.scenario == 'visual-stable' and is_staging(flow.request.host):
@@ -100,6 +85,7 @@ class TexasVisualProxy:
 
     def response(self, flow):
         if self.scenario == 'visual-stable' and is_staging(flow.request.host):
+            self.room_profile.observe(flow, self.texas.room_id, self.texas.self_id)
             path = urlsplit(flow.request.path).path
             if self.texas.room_id and path == '/v10/profile/users':
                 self.stabilized_requests += patch_profiles(flow, self.texas.self_id,
@@ -117,22 +103,21 @@ class TexasVisualProxy:
             if self.view.self_id and not self.texas.self_id:
                 self.texas.self_id = self.view.self_id
 
+    def prepare_read(self, flow):
+        profile = self.room_profile.read(flow, self.texas.room_id, self.texas.self_id)
+        if profile is not None:
+            respond(flow, profile)
+            self.stabilized_requests += 1
+            return True
+        return self.texas.room_id and prepare_profiles(flow, self.texas.self_id, TABLE_PLAYER_IDS)
+
     def request(self, flow):
-        if flow.response:
-            return
-        if flow.request.host == CONTROL_HOST:
-            if flow.request.method == 'GET' and urlsplit(flow.request.path).path == '/diagnostics':
-                diagnostics.control(flow)
-                return
-            self.control(flow)
-            return
-        self.proxied_requests += 1
-        if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
+        if not route_request(self, flow, diagnostics, is_staging):
             return
         if respond_virtual_player_preflight(flow, self.texas.room_id):
             self.stabilized_requests += 1
             return
-        if self.texas.room_id and prepare_profiles(flow, self.texas.self_id, TABLE_PLAYER_IDS):
+        if self.prepare_read(flow):
             return
         path = urlsplit(flow.request.path).path
         try:
@@ -150,18 +135,18 @@ class TexasVisualProxy:
             return
         try:
             fixture = self.view.fixture(path, flow.request.method, self.texas.self_id, flow.request.content)
-        except (ValueError, TypeError, AttributeError):
-            return
-        if fixture is None:
-            try:
+            if fixture is None:
                 fixture = log_fixture(path, flow.request.method, flow.request.content,
                                       self.texas.room_id, self.texas.self_id)
-            except (ValueError, TypeError, AttributeError):
-                return
+        except (ValueError, TypeError, AttributeError):
+            return
         if fixture is not None:
             respond(flow, {'ok': True, 'result': fixture})
             self.stabilized_requests += 1
             return
+        self.respond_replay(flow, path)
+
+    def respond_replay(self, flow, path):
         if self.texas.room_id and path == '/v1/hall_matching/blacklist' and flow.request.method in ('POST', 'DELETE'):
             try:
                 player_id = json.loads(flow.request.content).get('black_user_id')

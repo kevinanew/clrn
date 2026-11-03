@@ -61,6 +61,7 @@ E2E 和视觉 fixture 分别使用各自子项目的 Playwright 版本，复用�
 | 德州 `texas_replay.py`：目标房间游戏 RPC、聊天 RPC、两个确切 `pay_action` 动作 | 隔离带入、下注、查看公共牌和购买操作；真实订阅确认后注入有序消息，真实建房／删除仍执行 |
 | 德州 `addon.py`／`texas_replay.py`：虚拟玩家资料、coin 钱包、100/1000 手统计、黑名单 | 只匹配虚拟 ID；本人资料、余额和统计透传；混合资料批次只查询真实本人再补虚拟玩家 |
 | 德州 `room_view.py`：`GET /v1/room/room`、`PUT …/user_settings`、`GET …/hand_prediction/rule` | 把本轮私人房展示为大厅／游客视角，不改变服务端房间；保留自动补码和猜牌只读规则 |
+| 德州 `room_profile.py`：`GET /v10/texas_holdem/room/room/profile` | 回放房间的周期盲注规则读取复用本轮真实 HTTP 200、业务成功且含 `all_time_based_rule` 列表的完整响应；仅内存保存，绑定房间、本人、认证和来源，切换或释放即清空。首次、其他认证／来源／方法／查询及未配置主机透传，不补造成功响应 |
 | 德州 `ui_states.py`：`…/user_settings/{enable,disable}_auto_rebuy`、`…/hand_prediction`、`GET /v11/buy_in/room/applications`、RPC 错误 | 本房间开关／猜牌写隔离、申请空／待处理／已处理／分页、错误反馈；共用 auto-rebuy 暂缓优先 |
 | 德州 `game_log.py`：本房间结算、局数、单局牌谱与用户 games | 旧版牌谱完整展示；仅本房间与虚拟局 ID |
 | 德州 `records_v2.py`：`GET /v11/game_log/user/play_session_record/session`、`…/round/round` | 真实成功进入响应确认 session 后展示新版空／非空牌谱；版本覆盖仍保留上游失败 |

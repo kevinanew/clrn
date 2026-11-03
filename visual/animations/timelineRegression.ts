@@ -84,3 +84,59 @@ for (const mode of ['tolerated', 'unstable'] as const) {
     });
   }
 }
+
+for (const kind of ['foreground', 'background'] as const) {
+  for (const mode of ['boundary', 'over-boundary', 'excluded-only'] as const) {
+    test(`局部稳定性有效面积：${mode}/${kind}`, async ({ page }, information) => {
+      await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+      await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
+      await page.setContent(`<style>body { margin: 0; background: white; }
+        #subject { position: absolute; ${kind === 'foreground'
+          ? 'top: 40px; left: 50px; width: 100px; height: 20px;'
+          : 'top: 5px; left: 5px; width: 10px; height: 10px;'} background: red; }
+        #background { position: absolute; top: 50px; width: 200px; height: 70px; }</style>
+        <div id="subject"></div><div id="background"></div>`);
+      if (comparison) {
+        const takeScreenshot = page.screenshot.bind(page);
+        let alternate = false;
+        /**
+         * 一万有效像素中的五十／五十一个差异，或仅发生在排除区域中的变化。
+         * @param options - 实际采样器的截图设置。
+         */
+        page.screenshot = async options => {
+          const bitmap = PNG.sync.read(await takeScreenshot(options));
+          alternate = !alternate;
+          const color = alternate ? 0 : 255;
+          const changedPixels = mode === 'excluded-only' ? 200 : mode === 'boundary' ? 50 : 51;
+          for (let pixel = 0; pixel < changedPixels; pixel++) {
+            const row = (mode === 'excluded-only' ? 80 : 20) + Math.floor(pixel / 20);
+            const offset = (row * bitmap.width + 20 + pixel % 20) * 4;
+            bitmap.data.set([color, color, color, 255], offset);
+          }
+          return PNG.sync.write(bitmap);
+        };
+      }
+      await captureTimeline(page, information, `${mode}-${kind}`, page.locator('#subject'), {
+        times: [0, 80], requireChange: false,
+        ...(kind === 'foreground' ? { foregroundBelow: { y: 40, locator: page.locator('#subject') } }
+          : { excludedBackground: [page.locator('#background')] }),
+      });
+      await information.attach('局部稳定性检查之后', { body: '已完成', contentType: 'text/plain' });
+    });
+  }
+}
+
+for (const kind of ['missing-background', 'overlapping-background', 'missing-foreground'] as const) {
+  test(`局部几何错误仍失败：${kind}`, async ({ page }, information) => {
+    if (comparison) {
+      await page.setContent('<div id="subject" style="width:30px;height:30px;background:red"></div>');
+      const subject = page.locator('#subject');
+      await captureTimeline(page, information, 'geometry-enter', subject, {
+        times: [0], requireChange: false,
+        ...(kind === 'missing-foreground' ? { foregroundBelow: { y: 80, locator: page.locator('#missing') } }
+          : { excludedBackground: [kind === 'missing-background' ? page.locator('#missing') : subject] }),
+      });
+    }
+    await information.attach('几何断言之后', { body: '不应继续', contentType: 'text/plain' });
+  });
+}

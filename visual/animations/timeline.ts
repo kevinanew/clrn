@@ -5,14 +5,19 @@ import { PNG } from 'pngjs';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import { areScreenshotsEquivalent } from './screenshotComparison';
+import { preparePartialComparison, timelineExcludedRegions } from './timelineComparison';
 import { settleLayout } from './renderReadiness';
 import type { CaptureArea } from './captureTypes';
 import { maskNumericFields, type NumericTextMask } from './numericMask';
+export type { CaptureArea } from './captureTypes';
 export type { NumericTextMask } from './numericMask';
 
 export const CLOCK_START = new Date('2026-01-01T00:00:00Z');
 export const FRAME_TIMES = [0, 80, 160, 320, 640, 1200] as const;
-export type { CaptureArea } from './captureTypes';
+type TimelineOptions = { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
+  mask?: Locator[]; numericMask?: NumericTextMask[]; requireMotion?: boolean;
+  foregroundBelow?: { y: number; locator: Locator }; excludedBackground?: Locator[];
+  waitForCardSprites?: string };
 const pausedPages = new WeakSet<Page>();
 
 /**
@@ -140,13 +145,79 @@ export async function freeze(page: Page): Promise<void> {
 }
 
 /**
- * 显式更新必须替换旧数字区域，即使差异小于普通比较容差。
- * @param update - 是否显式更新快照。
- * @param comparison - 正常比较参数。
+ * 采集一个固定时刻的画面，各比较分支保留相同的稳定性、缺图及尺寸断言。
+ * @param page - 虚拟时钟已暂停的页面。
+ * @param info - 当前测试的基准路径和附件上下文。
+ * @param name - 动画名称。
+ * @param options - 原有截图、遮罩与局部区域设置。
+ * @param snapshot - 此时刻对应的基准名称。
+ * @param elements - 当前记录的动画主体位置。
  */
-function numericComparisonOptions(update: boolean, comparison: ReturnType<typeof imageComparisonOptions>) {
-  if (update) return { ...comparison, maxDiffPixels: 0 };
-  return comparison;
+async function captureFrame(page: Page, info: TestInfo, name: string, options: TimelineOptions,
+  snapshot: string, elements: Awaited<ReturnType<typeof appearance>>): Promise<Buffer> {
+  const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
+    caret: 'hide' as const, scale: 'css' as const };
+  const foregroundBelow = options.foregroundBelow;
+  let frame: Buffer;
+  if (options.numericMask) {
+    let original: Buffer = Buffer.alloc(0);
+    let masked: Buffer = Buffer.alloc(0);
+    let comparedPixels = 0;
+    await expect.poll(async () => {
+      const previousFrame = await page.screenshot(screenshotOptions);
+      original = await page.screenshot(screenshotOptions);
+      const previousMasked = await maskNumericFields(previousFrame, options.numericMask!, options.clip);
+      const current = await maskNumericFields(original, options.numericMask!, options.clip);
+      masked = current.png;
+      comparedPixels = current.comparedPixels;
+      return areScreenshotsEquivalent(masked, previousMasked.png, Math.min(comparedPixels, previousMasked.comparedPixels));
+    }, { message: `${name} 数字以外的画面应稳定` }).toBe(true);
+    await info.attach(`${snapshot}-unmasked`, { body: original, contentType: 'image/png' });
+    frame = masked;
+    const update = info.config.updateSnapshots;
+    const comparison = imageComparisonOptions(0.1, comparedPixels);
+    expect.soft(frame).toMatchSnapshot(snapshot, update === 'all' || update === 'changed'
+      ? { ...comparison, maxDiffPixels: 0 } : comparison);
+  } else if (foregroundBelow || options.excludedBackground?.length) {
+    // 稳定性与最终断言共用原有排除区域及有效面积；报告仍保存完整截图。
+    frame = Buffer.alloc(0);
+    let excluded: ExcludedPixelRectangle[] = [];
+    await expect.poll(async () => {
+      const previousFrame = await page.screenshot(screenshotOptions);
+      frame = await page.screenshot(screenshotOptions);
+      excluded = await timelineExcludedRegions(frame, options, elements, name);
+      const comparison = preparePartialComparison(frame, previousFrame, excluded);
+      return areScreenshotsEquivalent(comparison.png, previousFrame, comparison.comparedPixels);
+    }, { message: `${name} 首帧画面应稳定` }).toBe(true);
+    const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
+    const update = info.config.updateSnapshots;
+    if (update === 'all' || update === 'changed' || !existsSync(snapshotPath)) {
+      // 显式生成候选基准时保存完整画面，不能依赖旧图或写入拼接后的比较图。
+      // 普通比较缺少基准时由软断言报告，不能先读文件中止后续采样。
+      expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1));
+    } else {
+      const reference = readFileSync(snapshotPath);
+      const actual = PNG.sync.read(frame);
+      const expected = PNG.sync.read(reference);
+      expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
+      const comparison = preparePartialComparison(frame, reference, excluded);
+      expect.soft(comparison.png).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparison.comparedPixels));
+    }
+  } else {
+    // 采集失败或画面持续变化仍立即中止，避免后续帧建立在无效状态上。
+    // 稳定性沿用 Playwright 的像素比较容差，不能要求 PNG 字节完全相同。
+    frame = Buffer.alloc(0);
+    let comparedPixels: number | undefined;
+    await expect.poll(async () => {
+      const previousFrame = await page.screenshot(screenshotOptions);
+      frame = await page.screenshot(screenshotOptions);
+      comparedPixels = await unmaskedPixelCount(frame, options.mask, options.clip);
+      return areScreenshotsEquivalent(frame, previousFrame, comparedPixels);
+    }, { message: `${snapshot} 同一虚拟时刻的画面应稳定` }).toBe(true);
+    // soft 只延后像素差异的失败：继续采集后续帧及后续牌局阶段，整个测试仍失败。
+    expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparedPixels));
+  }
+  return frame;
 }
 
 /**
@@ -158,10 +229,7 @@ function numericComparisonOptions(update: boolean, comparison: ReturnType<typeof
  * @param options - 固定裁切区域、绝对采样时间及是否要求画面发生变化。
  */
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
-  options: { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
-    mask?: Locator[]; numericMask?: NumericTextMask[]; requireMotion?: boolean;
-    foregroundBelow?: { y: number; locator: Locator }; excludedBackground?: Locator[];
-    waitForCardSprites?: string } = {}): Promise<void> {
+  options: TimelineOptions = {}): Promise<void> {
   const times = options.times || FRAME_TIMES;
   const samples = [];
   const frames: Buffer[] = [];
@@ -184,130 +252,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       const elements = await appearance(target);
       samples.push({ milliseconds: sampledTime, elements });
       const snapshot = `en-${info.project.name}-${name}-${sampledTime}ms.png`;
-      const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
-        caret: 'hide' as const, scale: 'css' as const };
-      const foregroundBelow = options.foregroundBelow;
-      let frame: Buffer;
-      if (options.numericMask) {
-        let original: Buffer = Buffer.alloc(0);
-        let masked: Buffer = Buffer.alloc(0);
-        let comparedPixels = 0;
-        await expect.poll(async () => {
-          const previousFrame = await page.screenshot(screenshotOptions);
-          original = await page.screenshot(screenshotOptions);
-          const previousMasked = await maskNumericFields(previousFrame, options.numericMask!, options.clip);
-          const current = await maskNumericFields(original, options.numericMask!, options.clip);
-          masked = current.png;
-          comparedPixels = current.comparedPixels;
-          return areScreenshotsEquivalent(masked, previousMasked.png, Math.min(comparedPixels, previousMasked.comparedPixels));
-        }, { message: `${name} 数字以外的画面应稳定` }).toBe(true);
-        await info.attach(`${snapshot}-unmasked`, { body: original, contentType: 'image/png' });
-        frame = masked;
-        // 桌面全屏中两个数字区可能小于 0.5%；显式更新仍须替换带真实余额的旧图。
-        const update = info.config.updateSnapshots;
-        const comparison = imageComparisonOptions(0.1, comparedPixels);
-        expect.soft(frame).toMatchSnapshot(snapshot, numericComparisonOptions(update === 'all' || update === 'changed', comparison));
-      } else if (foregroundBelow) {
-        // 弹层缩放期间保留其每帧实际覆盖的像素，排除下方未被遮住的牌桌操作区。
-        // 暂停时钟后按共用比例确认稳定，再将相关区域交给 Playwright 原有像素比较器。
-        frame = Buffer.alloc(0);
-        await expect.poll(async () => {
-          const previousFrame = await page.screenshot(screenshotOptions);
-          frame = await page.screenshot(screenshotOptions);
-          return areScreenshotsEquivalent(frame, previousFrame);
-        }, { message: `${name} 首帧画面应稳定` }).toBe(true);
-        const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
-        const update = info.config.updateSnapshots;
-        if (update === 'all' || update === 'changed' || !existsSync(snapshotPath)) {
-          // 显式生成候选基准时保存完整画面，不能依赖旧图或写入拼接后的比较图。
-          // 普通比较缺少基准时由软断言报告，不能先读文件中止后续采样。
-          expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1));
-        } else {
-          const actual = PNG.sync.read(frame);
-          const expected = PNG.sync.read(readFileSync(snapshotPath));
-          expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
-          expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeGreaterThan(0);
-          expect(foregroundBelow.y, `${snapshot} 比较区域高度`).toBeLessThanOrEqual(actual.height);
-          // 退场末帧弹层可能已卸载；此时只比较指定高度以上的画面。
-          const box = await foregroundBelow.locator.evaluateAll(nodes => {
-            if (!nodes[0]) return null;
-            const rect = nodes[0].getBoundingClientRect();
-            return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-          });
-          if (name.endsWith('-enter')) expect(box, `${snapshot} 弹层必须保留在画面中`).not.toBeNull();
-          const x = box ? Math.max(0, Math.floor(box.x - (options.clip?.x || 0))) : 0;
-          const right = box ? Math.min(actual.width, Math.ceil(box.x + box.width - (options.clip?.x || 0))) : 0;
-          const top = box ? Math.max(foregroundBelow.y, Math.floor(box.y - (options.clip?.y || 0))) : foregroundBelow.y;
-          const bottom = box ? Math.min(actual.height, Math.ceil(box.y + box.height - (options.clip?.y || 0))) : foregroundBelow.y;
-          for (let row = foregroundBelow.y; row < actual.height; row++) {
-            const start = row * actual.width * 4;
-            if (row < top || row >= bottom) {
-              actual.data.set(expected.data.subarray(start, start + actual.width * 4), start);
-            } else {
-              actual.data.set(expected.data.subarray(start, start + x * 4), start);
-              actual.data.set(expected.data.subarray(start + right * 4, start + actual.width * 4), start + right * 4);
-            }
-          }
-          const comparedPixels = actual.width * foregroundBelow.y + Math.max(0, bottom - top) * Math.max(0, right - x);
-          expect.soft(PNG.sync.write(actual)).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparedPixels));
-        }
-      } else if (options.excludedBackground?.length) {
-        // 比较仍保存完整原图；只在比对弹层时排除独立用例已覆盖的背景动画。
-        frame = Buffer.alloc(0);
-        await expect.poll(async () => {
-          const previousFrame = await page.screenshot(screenshotOptions);
-          frame = await page.screenshot(screenshotOptions);
-          return areScreenshotsEquivalent(frame, previousFrame);
-        }, { message: `${name} 首帧画面应稳定` }).toBe(true);
-        const snapshotPath = info.snapshotPath(snapshot, { kind: 'screenshot' });
-        const update = info.config.updateSnapshots;
-        if (update === 'all' || update === 'changed' || !existsSync(snapshotPath)) {
-          expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1));
-        } else {
-          const actual = PNG.sync.read(frame);
-          const expected = PNG.sync.read(readFileSync(snapshotPath));
-          expect([actual.width, actual.height], `${snapshot} 基准尺寸`).toEqual([expected.width, expected.height]);
-          const excluded: ExcludedPixelRectangle[] = [];
-          for (const background of options.excludedBackground) {
-            const box = await background.evaluateAll(nodes => {
-              if (!nodes[0]) return null;
-              const rect = nodes[0].getBoundingClientRect();
-              return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-            });
-            expect(box, `${snapshot} 背景排除区域必须存在`).not.toBeNull();
-            for (const subject of elements) {
-              expect(box!.x + box!.width <= subject.x || subject.x + subject.width <= box!.x
-                || box!.y + box!.height <= subject.y || subject.y + subject.height <= box!.y,
-              `${snapshot} 背景排除区域不能遮住弹层`).toBe(true);
-            }
-            const left = Math.max(0, Math.floor(box!.x - (options.clip?.x || 0)));
-            const right = Math.min(actual.width, Math.ceil(box!.x + box!.width - (options.clip?.x || 0)));
-            const top = Math.max(0, Math.floor(box!.y - (options.clip?.y || 0)));
-            const bottom = Math.min(actual.height, Math.ceil(box!.y + box!.height - (options.clip?.y || 0)));
-            excluded.push({ left, right, top, bottom });
-            for (let row = top; row < bottom; row++) {
-              const start = (row * actual.width + left) * 4;
-              const end = (row * actual.width + right) * 4;
-              actual.data.set(expected.data.subarray(start, end), start);
-            }
-          }
-          expect.soft(PNG.sync.write(actual)).toMatchSnapshot(snapshot,
-            imageComparisonOptions(0.1, remainingPixelCount(actual.width, actual.height, excluded)));
-        }
-      } else {
-        // 采集失败或画面持续变化仍立即中止，避免后续帧建立在无效状态上。
-        // 稳定性沿用 Playwright 的像素比较容差，不能要求 PNG 字节完全相同。
-        frame = Buffer.alloc(0);
-        let comparedPixels: number | undefined;
-        await expect.poll(async () => {
-          const previousFrame = await page.screenshot(screenshotOptions);
-          frame = await page.screenshot(screenshotOptions);
-          comparedPixels = await unmaskedPixelCount(frame, options.mask, options.clip);
-          return areScreenshotsEquivalent(frame, previousFrame, comparedPixels);
-        }, { message: `${snapshot} 同一虚拟时刻的画面应稳定` }).toBe(true);
-        // soft 只延后像素差异的失败：继续采集后续帧及后续牌局阶段，整个测试仍失败。
-        expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparedPixels));
-      }
+      const frame = await captureFrame(page, info, name, options, snapshot, elements);
       frames.push(frame);
       previous = milliseconds;
     }

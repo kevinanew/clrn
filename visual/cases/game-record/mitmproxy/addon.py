@@ -7,12 +7,12 @@ import re
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
-from mitmproxy import http
 from data import CLUB, HOUSE, PLAYER, all_records, detail, records, replay, rooms, round_data, settlements
 
 # mitmdump 将 addon 目录加入 sys.path；三个独立代理共用字段覆盖工具。
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
 from response_overrides import is_staging, prepare_profiles, patch_profiles, patch_version  # noqa: E402
+from visual_control import respond as respond_json  # noqa: E402
 
 CONTROL_HOST = 'test-mitmproxy.invalid'
 MODES = ('empty', 'list', 'no-hands', 'paged', 'list-error', 'detail-error', 'delete-error')
@@ -20,13 +20,7 @@ MODES = ('empty', 'list', 'no-hands', 'paged', 'list-error', 'detail-error', 'de
 
 def respond(flow, result, status=200, wrapped=True):
     data = {'ok': True, 'result': result} if wrapped else result
-    flow.response = http.Response.make(status, json.dumps(data).encode(), {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': flow.request.headers.get('Origin', '*'),
-        'Access-Control-Allow-Credentials': 'true', 'Vary': 'Origin',
-        'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': flow.request.headers.get('Access-Control-Request-Headers', ''),
-    })
+    respond_json(flow, data, status)
 
 
 class GameRecordProxy:

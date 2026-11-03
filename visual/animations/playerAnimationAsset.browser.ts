@@ -1,20 +1,48 @@
 /** 在真实浏览器验证素材定位及失败边界，不调用真实账号或业务接口。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { chromium } from '@playwright/test';
+import { setTimeout as delay } from 'node:timers/promises';
+import { chromium, type Browser } from '@playwright/test';
 import { PNG } from 'pngjs';
 import { waitForPlayerAnimationAsset } from './playerAnimationAsset';
+
+/**
+ * 为两种资源就绪回归准备同一暂停时钟与真实 PNG 字节。
+ * @param browser - 由调用方负责关闭的浏览器。
+ */
+async function frozenAssetPage(browser: Browser) {
+  const page = await browser.newPage();
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
+  const bitmap = new PNG({ width: 12, height: 12 });
+  bitmap.data.fill(255);
+  return { page, bytes: PNG.sync.write(bitmap) };
+}
+
+test('慢速素材超过动画断言时限后仍等待真实图片，且不推进动画', async () => {
+  const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
+    ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
+  try {
+    const { page, bytes } = await frozenAssetPage(browser);
+    await page.setContent(`<div data-testid="texas-holdem-player-container-self">
+      <img src="data:image/png;base64,#/frames/image/stickers/smirk.current.webp" width="40" height="40">
+    </div>`, { waitUntil: 'domcontentloaded' });
+    const before = await page.evaluate(() => Date.now());
+    const source = `data:image/png;base64,${bytes.toString('base64')}#/frames/image/stickers/smirk.current.webp`;
+    const [image] = await Promise.all([
+      waitForPlayerAnimationAsset(page, 'self', 'stickers', 'smirk'),
+      delay(16_000).then(() => page.locator('img').evaluate((node: HTMLImageElement, value) => { node.src = value; }, source)),
+    ]);
+    assert.equal(await image.evaluate((node: HTMLImageElement) => node.naturalWidth), 12);
+    assert.equal(await page.evaluate(() => Date.now()), before);
+  } finally { await browser.close(); }
+});
 
 test('素材必须属于目标玩家和当前效果，预加载、旧效果及损坏图片不能代替', async () => {
   const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
     ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
   try {
-    const page = await browser.newPage();
-    await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-    await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
-    const bitmap = new PNG({ width: 12, height: 12 });
-    bitmap.data.fill(255);
-    const bytes = PNG.sync.write(bitmap);
+    const { page, bytes } = await frozenAssetPage(browser);
     await page.route('https://animation.invalid/**', route => route.request().url().includes('broken')
       ? route.fulfill({ status: 404, body: '' }) : route.fulfill({ contentType: 'image/png', body: bytes }));
     for (const [category, name, playerId, suffix] of [

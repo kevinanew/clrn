@@ -40,6 +40,19 @@ def message(result, frames, from_client=True, injected=False):
 
 
 class TexasReplayTests(unittest.TestCase):
+    def test_未订阅连接的房间资料读取透传且不得补空成功响应(self):
+        self.replay.room_id = ROOM
+        rpc_socket = socket_flow()
+        request = {'id': 71, 'method': 9, 'params': {'data': {
+            'method': 'GET', 'path': f'/v10/texas_holdem/room/{ROOM}/profile'}}}
+        msg = message(rpc_socket, [request])
+        original = msg.content
+        with patch('texas_replay.ctx.master', create=True) as master:
+            self.replay.websocket_message(rpc_socket)
+            self.assertFalse(msg.dropped)
+            self.assertEqual(msg.content, original)
+            master.commands.call.assert_not_called()
+
     def setUp(self):
         self.replay = TexasReplay()
         self.socket = socket_flow()

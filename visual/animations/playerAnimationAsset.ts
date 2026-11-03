@@ -14,6 +14,6 @@ export async function waitForPlayerAnimationAsset(page: Page, playerId: string,
   const image = player.locator(`img[src*="/frames/image/${category}/${name}."][src$=".webp"]`);
   await expect(image, `${category}/${name} 应在目标玩家位置显示`).toBeVisible();
   await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0),
-    { message: `${category}/${name} 的实际展示图片应完成加载` }).toBe(true);
+    { timeout: 60_000, message: `${category}/${name} 的实际展示图片应完成加载` }).toBe(true);
   return image;
 }

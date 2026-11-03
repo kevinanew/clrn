@@ -15,9 +15,17 @@ export async function lockBottomSheetDocumentScroll(page: Page, entrance?: Locat
     document.body.scrollTop = 0;
     document.body.scrollLeft = 0;
     document.body.style.overflow = 'clip';
+    // 固定底部导航的隐藏溢出祖先，同时保留列表的独立滚动。
+    const navigation = document.querySelector('[data-testid="private-room-tab"]');
+    for (let node = navigation?.parentElement; node && node !== document.body; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (style.overflowX !== 'hidden' || style.overflowY !== 'hidden') continue;
+      node.scrollTop = 0;
+      node.scrollLeft = 0;
+      node.style.overflow = 'clip';
+    }
   });
-  // RN Web 导航容器的 overflow:hidden 也能被焦点恢复滚动，独立于 html/body。
-  // 只处理入口的祖先，保留列表及弹层内部 overflow:auto/scroll 的正常滚动。
+  // 入口也可能位于独立的隐藏溢出容器中。
   await entrance?.evaluate(node => {
     for (let parent = node.parentElement; parent; parent = parent.parentElement) {
       const style = getComputedStyle(parent);

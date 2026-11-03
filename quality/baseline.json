@@ -1013,16 +1013,6 @@
       "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
     },
     {
-      "file": "visual/animations/timeline.browser.ts",
-      "rule": "complexity",
-      "line": 33,
-      "column": 50,
-      "message": "Async arrow function has a complexity of 12. Maximum allowed is 10.",
-      "anchor": "ff67df8bd2bd1412fa3c72770c15891890d74c71fdba3c6861ce0e3236e6843a",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "visual/animations/timeline.ts",
       "rule": "complexity",
       "line": 22,
@@ -1031,96 +1021,6 @@
       "anchor": "c64648bbedb59448bcb03ffa7f522d054efd26c46908febd28c63c8caf6ba2d3",
       "kind": "migration",
       "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "complexity",
-      "line": 196,
-      "column": 8,
-      "message": "Async function 'captureTimeline' has a complexity of 51. Maximum allowed is 10.",
-      "anchor": "70f72557268e8bad00888430a296b803cea68650647d2e9e88866035625e721d",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "max-depth",
-      "line": 255,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "33b81dff0e34c4dcc52e23f3f74fd65206fae55505140ea59a3562db9fdc7d27",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "max-depth",
-      "line": 271,
-      "column": 11,
-      "message": "Blocks are nested too deeply (5). Maximum allowed is 3.",
-      "anchor": "25dc6c364acb6c0e962459966f3117fc310b3e1f809aa06ff8da63a9fb6de5aa",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "max-depth",
-      "line": 276,
-      "column": 11,
-      "message": "Blocks are nested too deeply (5). Maximum allowed is 3.",
-      "anchor": "e522f8204e7736012fc65682d83b496de898d3f0be9e6cc966dd18d9ad03e374",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "max-depth",
-      "line": 278,
-      "column": 13,
-      "message": "Blocks are nested too deeply (6). Maximum allowed is 3.",
-      "anchor": "cac20ce1b30479e3c143db64744d857e37a21537ff94805d063980ff8fba9dd5",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "max-depth",
-      "line": 298,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "33b81dff0e34c4dcc52e23f3f74fd65206fae55505140ea59a3562db9fdc7d27",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "max-depth",
-      "line": 305,
-      "column": 11,
-      "message": "Blocks are nested too deeply (5). Maximum allowed is 3.",
-      "anchor": "f6fdb2b05e854fdd9d4199c04ece64e53f5650c0e39f056af77c2f80801a28be",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "max-depth",
-      "line": 312,
-      "column": 13,
-      "message": "Blocks are nested too deeply (6). Maximum allowed is 3.",
-      "anchor": "0223a9339bbde5d53bd2c03cf36b4b197ff66be6e3f467e5cd8ba271453c836b",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "visual/animations/timeline.ts",
-      "rule": "max-depth",
-      "line": 322,
-      "column": 13,
-      "message": "Blocks are nested too deeply (6). Maximum allowed is 3.",
-      "anchor": "ab33d74ce7427df46191d924059f83ea80602446d75bd78f78ea29db3d9829e7",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
     },
     {
       "file": "visual/cases/_shared/room.test.ts",
@@ -1653,52 +1553,12 @@
       "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
     },
     {
-      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 49,
-      "column": 9,
-      "message": "`control` is too complex (13 > 10)",
-      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 120,
-      "column": 9,
-      "message": "`request` is too complex (20 > 10)",
-      "anchor": "6a95f92a15255350bac09c0d5983160713ae49736e8f3bd8409c44d03276f631",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
       "rule": "C901",
       "line": 61,
       "column": 9,
       "message": "`websocket_message` is too complex (20 > 10)",
       "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 74,
-      "column": 9,
-      "message": "`control` is too complex (11 > 10)",
-      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 142,
-      "column": 9,
-      "message": "`request` is too complex (12 > 10)",
-      "anchor": "6a95f92a15255350bac09c0d5983160713ae49736e8f3bd8409c44d03276f631",
       "kind": "migration",
       "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
     },

@@ -30,6 +30,44 @@ function collectResults(suites: ReportSuite[]): { title: string; result: ReportR
   ]);
 }
 
+/**
+ * 验证单个真实子用例的预期失败、后续步骤及差异附件，不改变被测断言。
+ * @param title - 子用例标题。
+ * @param result - Playwright 返回的实际结果。
+ */
+async function assertCaptureResult(title: string, result: ReportResult) {
+  if (title.startsWith('局部稳定性有效面积：')) {
+    const unstable = title.includes('over-boundary/');
+    assert.equal(result.status, unstable ? 'failed' : 'passed', title);
+    assert.equal(result.attachments.some(attachment => attachment.name === '局部稳定性检查之后'), !unstable, title);
+    if (unstable) assert.ok(result.errors.some(error => error.message?.includes('首帧画面应稳定')),
+      '五十一个有效差异像素必须在稳定性检查时失败，不能依赖后续基准比较');
+    return;
+  }
+  if (title.startsWith('相邻截图稳定性：tolerated/')) {
+    assert.equal(result.status, 'passed', '阈值内的相邻截图微差不得阻止后续采样');
+    assert.ok(result.attachments.some(attachment => attachment.name === '稳定性检查之后'));
+    return;
+  }
+  assert.equal(result.status, 'failed', title);
+  if (!title.startsWith('截图差异')) {
+    assert.ok(!result.attachments.some(attachment => attachment.name.endsWith('之后')),
+      `${title}不得执行错误后的步骤`);
+    return;
+  }
+  assert.equal(result.errors.length, 4, `${title}必须报告两个阶段各两帧的全部差异`);
+  assert.ok(result.attachments.some(attachment => attachment.name === '全部阶段已完成'), title);
+  const timelines = result.attachments.filter(attachment => attachment.name.endsWith('-timeline'));
+  assert.equal(timelines.length, 2, title);
+  for (const attachment of timelines) {
+    const contents = attachment.path ? await readFile(attachment.path, 'utf8')
+      : Buffer.from(attachment.body!, 'base64').toString();
+    const timeline: { samples: { milliseconds: number }[] } = JSON.parse(contents);
+    assert.deepEqual(timeline.samples.map(sample => sample.milliseconds), [0, 80]);
+  }
+  assert.ok(result.attachments.some(attachment => attachment.name.includes('-diff')), `${title}应保留差异图`);
+}
+
 test('完整记录普通、局部比较和数字遮罩的差异，保留失败退出码与硬断言', async () => {
   const temporaryDirectory = await mkdtemp(path.join(tmpdir(), 'clrn-animation-capture-'));
   try {
@@ -64,31 +102,8 @@ test('完整记录普通、局部比较和数字遮罩的差异，保留失败�
     assert.equal(comparison.status, 1, comparison.error?.message || comparison.stdout + comparison.stderr);
     const report: { suites: ReportSuite[] } = JSON.parse(await readFile(reportPath, 'utf8'));
     const results = collectResults(report.suites);
-    assert.equal(results.length, 16);
-    for (const { title, result } of results) {
-      if (title.startsWith('相邻截图稳定性：tolerated/')) {
-        assert.equal(result.status, 'passed', '阈值内的相邻截图微差不得阻止后续采样');
-        assert.ok(result.attachments.some(attachment => attachment.name === '稳定性检查之后'));
-        continue;
-      }
-      assert.equal(result.status, 'failed', title);
-      if (!title.startsWith('截图差异')) {
-        assert.ok(!result.attachments.some(attachment => attachment.name.endsWith('之后')),
-          `${title}不得执行错误后的步骤`);
-        continue;
-      }
-      assert.equal(result.errors.length, 4, `${title}必须报告两个阶段各两帧的全部差异`);
-      assert.ok(result.attachments.some(attachment => attachment.name === '全部阶段已完成'), title);
-      const timelines = result.attachments.filter(attachment => attachment.name.endsWith('-timeline'));
-      assert.equal(timelines.length, 2, title);
-      for (const attachment of timelines) {
-        const contents = attachment.path ? await readFile(attachment.path, 'utf8')
-          : Buffer.from(attachment.body!, 'base64').toString();
-        const timeline: { samples: { milliseconds: number }[] } = JSON.parse(contents);
-        assert.deepEqual(timeline.samples.map(sample => sample.milliseconds), [0, 80]);
-      }
-      assert.ok(result.attachments.some(attachment => attachment.name.includes('-diff')), `${title}应保留差异图`);
-    }
+    assert.equal(results.length, 25);
+    for (const { title, result } of results) await assertCaptureResult(title, result);
     assert.deepEqual((await readdir(snapshotsDirectory)).sort(), [...before.keys()].sort(), '比较不得创建缺失基准');
     for (const [filename, contents] of before) {
       assert.deepEqual(await readFile(path.join(snapshotsDirectory, filename)), contents, '比较不得修改旧基准');
