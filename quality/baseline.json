@@ -1573,52 +1573,12 @@
       "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
     },
     {
-      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 49,
-      "column": 9,
-      "message": "`control` is too complex (13 > 10)",
-      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 120,
-      "column": 9,
-      "message": "`request` is too complex (20 > 10)",
-      "anchor": "6a95f92a15255350bac09c0d5983160713ae49736e8f3bd8409c44d03276f631",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
       "rule": "C901",
       "line": 61,
       "column": 9,
       "message": "`websocket_message` is too complex (20 > 10)",
       "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 74,
-      "column": 9,
-      "message": "`control` is too complex (11 > 10)",
-      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 142,
-      "column": 9,
-      "message": "`request` is too complex (12 > 10)",
-      "anchor": "6a95f92a15255350bac09c0d5983160713ae49736e8f3bd8409c44d03276f631",
       "kind": "migration",
       "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
     },

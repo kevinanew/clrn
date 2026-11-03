@@ -15,20 +15,9 @@ from response_overrides import is_staging, prepare_profiles, patch_profiles  # n
 
 from replay_scenes import publish_scene  # noqa: E402
 from connection_diagnostics import ConnectionDiagnostics  # noqa: E402
+from visual_control import control, respond, route_request  # noqa: E402
 
 diagnostics = ConnectionDiagnostics()
-
-CONTROL_HOST = 'test-mitmproxy.invalid'
-
-
-def respond(flow, data, status=200):
-    flow.response = http.Response.make(status, json.dumps(data).encode(), {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': flow.request.headers.get('Origin', '*'),
-        'Access-Control-Allow-Credentials': 'true', 'Vary': 'Origin',
-        'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': flow.request.headers.get('Access-Control-Request-Headers', ''),
-    })
 
 
 def respond_settlement_preflight(flow):
@@ -72,40 +61,33 @@ class ZhajinhuaVisualProxy:
         self.replay = ZhajinhuaReplay()
 
     def control(self, flow):
-        if flow.request.headers.get('X-E2E-Control-Token') != self.token:
-            respond(flow, {'error': 'Forbidden'}, 403)
-            return
-        path = urlsplit(flow.request.path).path
-        try:
-            if flow.request.method == 'POST':
-                body = json.loads(flow.request.content)
-                if path == '/scenario' and body.get('scenario') in (None, 'visual-stable'):
-                    self.scenario = body['scenario']
-                    self.replay.release()
-                    self.created_room_id = None
-                elif self.scenario == 'visual-stable' and path == '/zhajinhua/replay':
-                    if set(body) != {'roomId', 'scene'}:
-                        raise ValueError('Only named scenes are accepted')
-                    if not self.created_room_id or body.get('roomId') != self.created_room_id:
-                        raise ValueError('Replay requires this test room')
-                    publish_scene(self.replay, body.get('roomId'), body.get('scene'), 'zhajinhua')
-                elif self.scenario == 'visual-stable' and path == '/zhajinhua/operation-reward':
-                    self.replay.set_operation_reward(body.get('roomId'), body.get('enabled'))
-                elif path == '/zhajinhua/release':
-                    self.replay.release()
-                    self.created_room_id = None
-                else:
-                    raise ValueError('Unknown command')
-            elif flow.request.method != 'GET' or path != '/status':
-                raise ValueError('Unknown command')
-        except (ValueError, KeyError, TypeError, AttributeError):
-            respond(flow, {'error': 'Invalid replay command'}, 400)
-            return
-        respond(flow, {
+        control(self, flow, respond, self.command, self.status)
+
+    def command(self, path, body):
+        if path == '/scenario' and body.get('scenario') in (None, 'visual-stable'):
+            self.scenario = body['scenario']
+            self.replay.release()
+            self.created_room_id = None
+        elif self.scenario == 'visual-stable' and path == '/zhajinhua/replay':
+            if set(body) != {'roomId', 'scene'}:
+                raise ValueError('Only named scenes are accepted')
+            if not self.created_room_id or body.get('roomId') != self.created_room_id:
+                raise ValueError('Replay requires this test room')
+            publish_scene(self.replay, body.get('roomId'), body.get('scene'), 'zhajinhua')
+        elif self.scenario == 'visual-stable' and path == '/zhajinhua/operation-reward':
+            self.replay.set_operation_reward(body.get('roomId'), body.get('enabled'))
+        elif path == '/zhajinhua/release':
+            self.replay.release()
+            self.created_room_id = None
+        else:
+            raise ValueError('Unknown command')
+
+    def status(self):
+        return {
             'scenario': self.scenario, 'interceptedRequests': 0,
             'proxiedRequests': self.proxied_requests, 'stabilizedRequests': self.stabilized_requests,
             'replayedMessages': self.replay.replayed_messages, 'blockedRpcs': self.replay.blocked_rpcs,
-        })
+        }
 
     def response(self, flow):
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
@@ -140,16 +122,7 @@ class ZhajinhuaVisualProxy:
         self.replay.websocket_end(flow)
 
     def request(self, flow):
-        if flow.response:
-            return
-        if flow.request.host == CONTROL_HOST:
-            if flow.request.method == 'GET' and urlsplit(flow.request.path).path == '/diagnostics':
-                diagnostics.control(flow)
-                return
-            self.control(flow)
-            return
-        self.proxied_requests += 1
-        if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
+        if not route_request(self, flow, diagnostics, is_staging):
             return
         path = urlsplit(flow.request.path).path
         # 仅当前真实创建的房间使用固定空榜；其他房间和节点健康请求继续透传。
