@@ -1,3 +1,4 @@
+import { advanceCardSpriteClock, hasNormalCardSpriteClock } from './cardSpriteClock';
 import { imageComparisonOptions, remainingPixelCount, type ExcludedPixelRectangle } from '../screenshotComparisonConfiguration';
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 import { existsSync, readFileSync } from 'node:fs';
@@ -17,7 +18,7 @@ export const FRAME_TIMES = [0, 80, 160, 320, 640, 1200] as const;
 type TimelineOptions = { clip?: CaptureArea; times?: readonly number[]; requireChange?: boolean; startOffset?: number;
   mask?: Locator[]; numericMask?: NumericTextMask[]; requireMotion?: boolean;
   foregroundBelow?: { y: number; locator: Locator }; excludedBackground?: Locator[];
-  waitForCardSprites?: string };
+  waitForCardSprites?: string; observeFrames?: boolean };
 const pausedPages = new WeakSet<Page>();
 
 /**
@@ -69,6 +70,7 @@ export async function appearance(target: Locator) {
  * @param reset - 是否开始新的采样区间。
  */
 async function seekCssAnimations(page: Page, elapsed: number, reset = false): Promise<void> {
+  if (hasNormalCardSpriteClock(page)) return;
   await page.evaluate(({ elapsed, reset }) => {
     const state = window as typeof window & { animationSamples?: Map<Animation, number> };
     if (reset || !state.animationSamples) state.animationSamples = new Map();
@@ -87,6 +89,10 @@ async function seekCssAnimations(page: Page, elapsed: number, reset = false): Pr
  * @param fast - 牌桌的定时动画预热可跳过中间帧，正式采样始终逐帧推进。
  */
 export async function settleAnimations(page: Page, duration: number, fast = false): Promise<void> {
+  if (hasNormalCardSpriteClock(page)) {
+    await advanceCardSpriteClock(page, 16 + duration + 32);
+    return;
+  }
   await page.clock.runFor(16);
   await seekCssAnimations(page, 0, true);
   if (fast) await page.clock.fastForward(duration);
@@ -108,6 +114,7 @@ export async function settleAnimations(page: Page, duration: number, fast = fals
 export async function freeze(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await ensureLocalImagesLoaded(page);
+  if (hasNormalCardSpriteClock(page)) return;
   const now = await page.evaluate(() => Date.now());
   // 首次暂停时浏览器还在走真实时间，为较慢 Linux 的协议往返留出余量。
   // 后续已暂停的页面保持原有预热间隔，避免每次打开面板都跳过大量业务定时器。
@@ -206,18 +213,62 @@ async function captureFrame(page: Page, info: TestInfo, name: string, options: T
   } else {
     // 采集失败或画面持续变化仍立即中止，避免后续帧建立在无效状态上。
     // 稳定性沿用 Playwright 的像素比较容差，不能要求 PNG 字节完全相同。
-    frame = Buffer.alloc(0);
-    let comparedPixels: number | undefined;
-    await expect.poll(async () => {
-      const previousFrame = await page.screenshot(screenshotOptions);
-      frame = await page.screenshot(screenshotOptions);
-      comparedPixels = await unmaskedPixelCount(frame, options.mask, options.clip);
-      return areScreenshotsEquivalent(frame, previousFrame, comparedPixels);
-    }, { message: `${snapshot} 同一虚拟时刻的画面应稳定` }).toBe(true);
-    // soft 只延后像素差异的失败：继续采集后续帧及后续牌局阶段，整个测试仍失败。
-    expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparedPixels));
+    const captured = await captureOrdinaryFrame(page, options, snapshot);
+    frame = captured.frame;
+    await saveOrCompareFrame(frame, info, snapshot, options, captured.comparedPixels);
   }
   return frame;
+}
+
+/**
+ * 相同时刻检查普通画面稳定；正常时间对照只取证，不能要求运动画面停住。
+ * @param page - 当前页面。
+ * @param options - 原截图及定位器遮罩参数。
+ * @param snapshot - 证据或基准名。
+ */
+async function captureOrdinaryFrame(page: Page, options: TimelineOptions, snapshot: string) {
+  const screenshotOptions = { clip: options.clip, mask: options.mask, animations: 'allow' as const,
+    caret: 'hide' as const, scale: 'css' as const };
+  if (options.observeFrames && hasNormalCardSpriteClock(page)) {
+    return { frame: await page.screenshot(screenshotOptions), comparedPixels: undefined };
+  }
+  let frame: Buffer = Buffer.alloc(0);
+  let comparedPixels: number | undefined;
+  await expect.poll(async () => {
+    const previousFrame = await page.screenshot(screenshotOptions);
+    frame = await page.screenshot(screenshotOptions);
+    comparedPixels = await unmaskedPixelCount(frame, options.mask, options.clip);
+    return areScreenshotsEquivalent(frame, previousFrame, comparedPixels);
+  }, { message: `${snapshot} 同一虚拟时刻的画面应稳定` }).toBe(true);
+  return { frame, comparedPixels };
+}
+
+/**
+ * 独立取证保存帧；普通比较保持原门槛及软失败，不创建替代基准。
+ * @param frame - 实际画面。
+ * @param info - 报告上下文。
+ * @param snapshot - 原基准名称。
+ * @param options - 是否为显式独立取证。
+ * @param comparedPixels - 原有遮罩后的比较面积。
+ */
+async function saveOrCompareFrame(frame: Buffer, info: TestInfo, snapshot: string,
+  options: TimelineOptions, comparedPixels?: number) {
+  if (options.observeFrames) await info.attach(snapshot, { body: frame, contentType: 'image/png' });
+  else expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparedPixels));
+}
+
+/**
+ * 冻结模式保持原 16ms 分步；正常模式按宿主截止时间等待，不额外累加截图耗时。
+ * @param page - 牌桌页面。
+ * @param duration - 原虚拟时钟推进间隔。
+ * @param deadline - 正常时间目标的宿主时间。
+ */
+async function advanceTimelineTime(page: Page, duration: number, deadline: number) {
+  if (hasNormalCardSpriteClock(page)) { await advanceCardSpriteClock(page, Math.max(0, deadline - Date.now())); return; }
+  if (duration === 0) await page.clock.runFor(0);
+  for (let elapsed = 0; elapsed < duration; elapsed += 16) {
+    await page.clock.runFor(Math.min(16, duration - elapsed));
+  }
 }
 
 /**
@@ -230,19 +281,18 @@ async function captureFrame(page: Page, info: TestInfo, name: string, options: T
  */
 export async function captureTimeline(page: Page, info: TestInfo, name: string, target: Locator,
   options: TimelineOptions = {}): Promise<void> {
+  expect(!hasNormalCardSpriteClock(page) || options.observeFrames, '原生时间仅用于独立取证，不可比较固定相位基准').toBe(true);
   const times = options.times || FRAME_TIMES;
   const samples = [];
   const frames: Buffer[] = [];
   let previous = 0;
+  const started = Date.now();
   await seekCssAnimations(page, 0, true);
   try {
     for (const milliseconds of times) {
       const duration = milliseconds - previous;
       // React 的 MessageChannel 副作用也需要在帧间提交；一次快跑数秒会把倒计时更新合并到末帧。
-      if (duration === 0) await page.clock.runFor(0);
-      for (let elapsed = 0; elapsed < duration; elapsed += 16) {
-        await page.clock.runFor(Math.min(16, duration - elapsed));
-      }
+      await advanceTimelineTime(page, duration, started + milliseconds);
       await seekCssAnimations(page, milliseconds);
       // 新挂载的边框、牌面或道具可能仍在加载。时钟保持暂停，资源就绪后再比较同一关键帧。
       await ensureLocalImagesLoaded(page);
@@ -250,7 +300,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       if (options.waitForCardSprites) await waitForTexasCardSprites(page, options.waitForCardSprites);
       const sampledTime = milliseconds + (options.startOffset || 0);
       const elements = await appearance(target);
-      samples.push({ milliseconds: sampledTime, elements });
+      samples.push({ milliseconds: sampledTime, realElapsed: Date.now() - started, elements });
       const snapshot = `en-${info.project.name}-${name}-${sampledTime}ms.png`;
       const frame = await captureFrame(page, info, name, options, snapshot, elements);
       frames.push(frame);
@@ -268,7 +318,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
     await info.attach(`${name}-timeline`, { contentType: 'application/json',
       body: JSON.stringify({ clip: options.clip, samples }, null, 2) });
     // 归还 CSS 动画的播放控制，后续真实开关不能继承上一段的暂停状态。
-    await page.evaluate(() => {
+    if (!hasNormalCardSpriteClock(page)) await page.evaluate(() => {
       for (const animation of document.getAnimations()) {
         const end = animation.effect?.getComputedTiming().endTime;
         // 对已结束的 CSS 动画调用 play() 会从头重放，导致退场遮罩再次拦截点击。

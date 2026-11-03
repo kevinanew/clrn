@@ -1,3 +1,4 @@
+import { advanceCardSpriteClock } from './cardSpriteClock';
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 import { appearance, captureTimeline, fixedArea, freeze, settleAnimations,
@@ -8,7 +9,7 @@ export type PopupFlow = { name: string; target: Locator; open: () => Promise<unk
   foregroundBelow?: { y: number; locator: Locator }; requirePresentation?: boolean;
   excludedBackground?: Locator[]; waitForUnmountBeforeReopen?: boolean;
   beforeEntrance?: () => Promise<void>; afterEntrance?: () => Promise<void>;
-  numericMask?: NumericTextMask[] };
+  numericMask?: NumericTextMask[]; capture?: typeof captureTimeline };
 
 /**
  * 判断弹层是否已经进入视口且实际绘制，不能把尚未卸载的透明旧节点算作新弹层。
@@ -32,7 +33,7 @@ async function waitForMount(target: Locator, requirePresentation = false): Promi
   const mounted = async () => requirePresentation ? isPresented(target) : (await target.count()) > 0;
   await expect.poll(async () => {
     if (await mounted()) return true;
-    await target.page().clock.runFor(16);
+    await advanceCardSpriteClock(target.page(), 16);
     return mounted();
   }, { intervals: [20], timeout: 30_000,
     message: `弹层应从真实入口${requirePresentation ? '进入画面' : '挂载'}：${target}` }).toBe(true);
@@ -58,7 +59,7 @@ async function expectDismissed(target: Locator): Promise<void> {
 async function waitForUnmount(target: Locator): Promise<void> {
   await expect.poll(async () => {
     if (await target.count() === 0) return true;
-    await target.page().clock.runFor(16);
+    await advanceCardSpriteClock(target.page(), 16);
     return await target.count() === 0;
   }, { intervals: [20], timeout: 30_000, message: `重开前旧弹层应卸载：${target}` }).toBe(true);
 }
@@ -73,7 +74,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   console.log(`ANIMATION > ${flow.name}`);
   await freeze(page);
   await flow.open();
-  await page.clock.runFor(16);
+  await advanceCardSpriteClock(page, 16);
   await waitForMount(flow.target, flow.requirePresentation);
   await settleAnimations(page, 1600, flow.fastPreparation);
   await expect(flow.target).toBeVisible();
@@ -86,16 +87,16 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await freeze(page);
   await flow.open();
   // BottomSheet 在下一次 requestAnimationFrame 挂载内容；时间线保留这 16ms。
-  await page.clock.runFor(16);
+  await advanceCardSpriteClock(page, 16);
   await waitForMount(flow.target, flow.requirePresentation);
   await flow.beforeEntrance?.();
-  await captureTimeline(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
+  await (flow.capture ?? captureTimeline)(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
     requireMotion: true, foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground,
     numericMask: flow.numericMask });
   await expect(flow.target).toBeVisible();
   await flow.afterEntrance?.();
   await flow.close();
-  await captureTimeline(page, info, `${flow.name}-exit`, flow.target,
+  await (flow.capture ?? captureTimeline)(page, info, `${flow.name}-exit`, flow.target,
     { clip, requireChange: flow.exitAnimated !== false, requireMotion: flow.exitAnimated !== false,
       foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground, numericMask: flow.numericMask });
   await settleAnimations(page, 32);

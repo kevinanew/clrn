@@ -6,7 +6,7 @@ import test from 'node:test';
 import type { JSONReport, JSONReportSuite } from '@playwright/test/reporter';
 
 const repository = path.resolve(__dirname, '../..');
-const resolve = createRequire(path.join(repository, 'package.json')).resolve;
+const resolve = createRequire(path.join(repository, 'visual/package.json')).resolve;
 const cli = resolve('@playwright/test/cli');
 type Collected = { file: string; title: string; project: string };
 
@@ -66,12 +66,12 @@ test('普通动画实际收集保留全部原用例及桌面搜索排除，双�
   assert.deepEqual(actual.map(item => JSON.stringify(item)).sort(), expected.map(item => JSON.stringify(item)).sort());
 });
 
-test('独立配置实际收集双视口的两项对照及三遍重复，不继承普通项目的对照排除', () => {
+test('独立配置实际收集双视口的时钟及观察器开关对照及三遍重复，不继承普通项目的对照排除', () => {
   for (const repeats of [1, 3]) {
     const actual = collect('cardSpriteControl.config.ts', repeats);
     const expected = ['mobile', 'desktop'].flatMap(project => Array.from({ length: repeats }, () =>
-      [0, 1].map(position => ({ file: 'cardSpriteControl.spec.ts',
-        title: `independent card sprite clock ${position}`, project })))).flat();
+      [false, true].flatMap(callbacks => [0, 1].map(position => ({ file: 'cardSpriteControl.spec.ts',
+        title: `independent card sprite clock ${position} callbacks ${callbacks}`, project }))))).flat();
     assert.deepEqual(actual.map(item => JSON.stringify(item)).sort(), expected.map(item => JSON.stringify(item)).sort());
   }
 });

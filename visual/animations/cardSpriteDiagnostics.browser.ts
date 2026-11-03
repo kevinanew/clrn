@@ -22,7 +22,17 @@ for (const recovers of [true, false]) {
       ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
     try {
       const page = await browser.newPage();
-      await installCardSpriteDiagnostics(page);
+      const info = {
+        project: { name: 'offline' }, repeatEachIndex: 0, retry: 0,
+        /**
+         * 本用例附件写入临时目录。
+         * @param name - 附件文件名。
+         */
+        outputPath: (name: string) => path.join(directory, name),
+        /** 本回归直接读取附件文件。 */
+        attach: async () => {},
+      } as unknown as TestInfo;
+      await installCardSpriteDiagnostics(page, false, info);
       await page.goto('about:blank');
       await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
       await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
@@ -61,16 +71,6 @@ for (const recovers of [true, false]) {
       await assert.rejects(waitForTexasCardSprites(page, '[data-testid="community_card"]'),
         /德州可见牌面应显示完整图集/);
       assert.equal(await page.evaluate(() => Date.now()), time, '原始等待不得推进动画');
-      const info = {
-        project: { name: 'offline' }, repeatEachIndex: 0, retry: 0,
-        /**
-         * 本用例附件写入临时目录。
-         * @param name - 附件文件名。
-         */
-        outputPath: (name: string) => path.join(directory, name),
-        /** 本回归直接读取附件文件。 */
-        attach: async () => {},
-      } as unknown as TestInfo;
       await saveCardSpriteDiagnostics(page, info, 'frozen');
       const frozenContents = await readFile(path.join(directory, 'card-sprite-diagnostics-frozen.json'), 'utf8');
       const frozen: Report = JSON.parse(frozenContents);
@@ -109,6 +109,13 @@ for (const recovers of [true, false]) {
       assert.equal(bounded.entries.length, 1000);
       assert.ok(bounded.dropped > 0, '历史被截断必须明确计数');
       assert.equal(bounded.entries.at(-1)!.event, 'save', '容量满时仍须保留最新现场');
+      const journalContents = await readFile(path.join(directory, 'card-sprite-events.jsonl'), 'utf8');
+      const journal = journalContents.trim().split('\n').map(line => JSON.parse(line));
+      assert.ok(journal.length > 1000, '完整事件文件不得采用内存截断策略');
+      assert.ok(journal.some(entry => entry.event === 'fixture-mounted'), '保留从挂载开始的早期证据');
+      assert.ok(journal.some(entry => entry.event === 'wait-failed'), '保留原始失败');
+      assert.deepEqual(journal.map(entry => entry.sequence), journal.map((_entry, index) => index + 1));
+      assert.doesNotMatch(journalContents, /probe\.example|192\.0\.2\.7|2001:db8|fixture-secret|private-player-id|base64/);
     } finally {
       await browser.close();
       await rm(directory, { recursive: true, force: true });

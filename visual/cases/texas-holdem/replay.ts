@@ -1,3 +1,4 @@
+import { advanceCardSpriteClock } from '../../animations/cardSpriteClock';
 import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import type { TexasProxy } from './proxy';
@@ -13,7 +14,7 @@ export const visible = (page: Page, id: string) => page.locator(`[data-testid="$
  * 推进虚拟时钟，让回放队列和页面动效完成。
  * @param page - 执行操作的 Playwright 页面。
  */
-export const advance = (page: Page) => page.clock.runFor(1200);
+export const advance = (page: Page) => advanceCardSpriteClock(page, 1200);
 
 /**
  * 冻结游戏时钟，预留 CDP 排队时间避免暂停命令落后于当前时间。
@@ -62,23 +63,23 @@ export async function closeMask(page: Page, marker?: string): Promise<void> {
 export async function restore(page: Page, proxy: TexasProxy, roomId: string, self: string,
   street: Street, opponent = false): Promise<void> {
   await expect.poll(async () => {
-    await page.clock.runFor(250);
+    await advanceCardSpriteClock(page, 250);
     return proxy.replayTexas(roomId, restoreTable(self, street, opponent))
       .then(() => true, () => false);
   }, { timeout: 30_000, message: '德州房间应完成 WebSocket 订阅并接受回放' }).toBe(true);
   // 恢复消息经过队列、翻牌与数字动效；先推进固定时间再断言完成状态。
-  await page.clock.runFor(3000);
+  await advanceCardSpriteClock(page, 3000);
   const expectedCards = ['ah', 'kd', '7c', '2s', 'qs'].map((card, position) =>
     position < { preflop: 0, flop: 3, turn: 4, river: 5 }[street] ? card : 'back');
   await expect.poll(async () => {
-    await page.clock.runFor(250);
+    await advanceCardSpriteClock(page, 250);
     return page.locator('[data-testid="community_card_name_text"]').allTextContents();
   }, { timeout: 30_000, intervals: [100, 250, 500] }).toEqual(expectedCards);
   await expect(page.locator('[data-testid^="texas-holdem-player-container-"]:visible')).toHaveCount(5);
   await expect(visible(page, 'texas-holdem-self-seated-marker')).toBeVisible();
   if (!opponent) {
     await expect.poll(async () => {
-      await page.clock.runFor(250);
+      await advanceCardSpriteClock(page, 250);
       return visible(page, 'texas-holdem-operation-button-raise').isVisible();
     }, { timeout: 30_000, intervals: [100, 250, 500] }).toBe(true);
   }
