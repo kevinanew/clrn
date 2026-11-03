@@ -48,11 +48,11 @@ describe('visual run shard config', () => {
     );
   });
 
-  test('filter, core scope and approve defaults keep each renewable-auth batch at three scenarios', () => {
+  test('filter, core scope and reference defaults keep each renewable-auth batch at three scenarios', () => {
     const publicRuns = [
       getVisualShardConfig('test', 67, {}),
       getVisualShardConfig('test', 22, { VISUAL_SCOPE: 'core' }),
-      getVisualShardConfig('approve', 84, {}),
+      getVisualShardConfig('reference', 84, {}),
     ];
 
     assert.deepEqual(

@@ -1,4 +1,5 @@
-export type VisualRunAction = 'test' | 'reference' | 'approve';
+export const VISUAL_SNAPSHOT_UPDATES = { test: 'none', reference: 'all' } as const;
+export type VisualRunAction = keyof typeof VISUAL_SNAPSHOT_UPDATES;
 
 export type VisualShardConfig = {
   countEnv: 'VISUAL_TEST_SHARDS' | 'VISUAL_REFERENCE_SHARDS';
@@ -41,7 +42,7 @@ export function exactScenarioGrep(labels: string[]): string {
 /**
  * 所有视觉场景都按小分片执行，调用方可在分片边界更新短时登录态。
  * 默认每批最多三个场景；显式分片数仍用于诊断或 reference 断点续跑。
- * @param action - 当前操作：测试、生成基准或批准截图。
+ * @param action - 当前操作：比较或生成候选基准。
  * @param scenarioCount - 筛选后待运行的场景数量。
  * @param env - 环境配置，默认读取当前进程。
  */

@@ -60,6 +60,8 @@ async function recoverRoomForm(page: Page, error: unknown, attempt: number, room
 async function waitForTableConnection(page: Page, game: string, prefix: string) {
   const connection = { state: 'loading' };
   let retries = 0;
+  // 德州选线失败后会避让节点 120 秒，需留出避让结束后重新探测及订阅的时间。
+  const timeout = game === 'texas' ? 180_000 : 90_000;
   await expect.poll(async () => {
     if (await visible(page, 'common-alert-button-retry').isVisible()) {
       if (retries >= 3) connection.state = 'alert';
@@ -70,7 +72,7 @@ async function waitForTableConnection(page: Page, game: string, prefix: string) 
       }
     } else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
     return connection.state;
-  }, { timeout: 90_000, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
+  }, { timeout, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
   if (connection.state === 'alert') {
     const message = (await page.locator('[data-testid="common-alert-container"]:visible')
       .locator('[data-testid="common-alert-title"], [data-testid="common-alert-message"], [data-testid="common-alert-sub-message"]')

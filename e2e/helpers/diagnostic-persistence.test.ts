@@ -9,6 +9,8 @@ import type { BrowserContext, Page, Request, TestInfo } from '@playwright/test';
 import { installConnectionDiagnostics } from '../../visual/src/support/connectionDiagnostics';
 
 test('请求、应用和代理的路径经过附件与失败终端输出仍保持脱敏', async t => {
+  // 时间戳同时包含端口数字，确保脱敏断言只拒绝实际端口形式。
+  t.mock.method(Date, 'now', () => 1844394430000);
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-diagnostic-privacy-'));
   const page = new EventEmitter();
   let binding: ((_source: unknown, fields: unknown) => void) | undefined;
@@ -59,7 +61,7 @@ test('请求、应用和代理的路径经过附件与失败终端输出仍保�
     const summary = await readFile(path.join(directory, 'connection-summary.md'), 'utf8');
     for (const output of [saved, summary, JSON.stringify(terminal)]) {
       for (const forbidden of ['api.fixture.invalid', '192.0.2.10', '2001:db8::10',
-        '8443', '9443', 'synthetic-secret', '%2561pi']) assert.ok(!output.includes(forbidden));
+        ':8443', ':9443', 'synthetic-secret', '%2561pi']) assert.ok(!output.includes(forbidden), forbidden);
     }
     const events = JSON.parse(saved).events;
     assert.ok(events.some((event: { status: number; source: string }) => event.status === 503 && event.source === 'upstream'));

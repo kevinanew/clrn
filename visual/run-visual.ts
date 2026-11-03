@@ -4,7 +4,8 @@ import { spawnSync } from 'child_process';
 import { visualBaseUrl } from './target';
 import fs from 'fs';
 import path from 'path';
-import { exactScenarioGrep, getVisualShardConfig, selectScenariosByLabel } from './run-visual-config';
+import { exactScenarioGrep, getVisualShardConfig, selectScenariosByLabel,
+  VISUAL_SNAPSHOT_UPDATES, type VisualRunAction } from './run-visual-config';
 import { getVisualSuite } from './visual-suite';
 import {
   buildScenarios,
@@ -15,10 +16,11 @@ import {
 } from './scenarios';
 
 const VISUAL_DIR = path.resolve(__dirname);
-const VALID_ACTIONS = ['test', 'reference', 'approve'] as const;
-type Action = (typeof VALID_ACTIONS)[number];
+const VALID_ACTIONS = Object.keys(VISUAL_SNAPSHOT_UPDATES);
 
-const action = (process.argv[2] || 'test') as Action;
+const requestedAction = process.argv[2] || 'test';
+// 保留旧命令作为 reference 的别名，不维护另一套批准/更新规则。
+const action = (requestedAction === 'approve' ? 'reference' : requestedAction) as VisualRunAction;
 
 if (!VALID_ACTIONS.includes(action)) {
   console.error(`未知操作: ${action}`);
@@ -61,7 +63,7 @@ function ensureDockerOrCi(): void {
 
 /** 确保基准更新使用 Linux 渲染环境，避免不同平台字体污染截图。 */
 function ensureLinuxForBaselineUpdate(): void {
-  if (action !== 'reference' && action !== 'approve') {
+  if (action !== 'reference') {
     return;
   }
 
@@ -142,6 +144,59 @@ function getSelectedScenarios(): ReturnType<typeof buildScenarios> {
   return selectScenariosByLabel(buildScenarios(), process.env.VISUAL_FILTER);
 }
 
+/** 各套件使用独立进程与登录态，过滤为空的套件不启动代理。 */
+function runAllSuites(): void {
+  let ranSuite = false;
+  for (const suite of ['app', 'texas', 'zhajinhua'] as const) {
+    const selected = selectScenariosByLabel(
+      buildScenarios({ ...process.env, VISUAL_SUITE: suite }), process.env.VISUAL_FILTER,
+    );
+    if (selected.length === 0) continue;
+    ranSuite = true;
+    const result = spawnSync('pnpm', ['exec', 'tsx', 'run-visual.ts', action], {
+      stdio: 'inherit', cwd: VISUAL_DIR,
+      env: { ...process.env, VISUAL_SUITE: suite, VISUAL_SKIP_VISUAL_INSTALL: 'true',
+        VISUAL_SKIP_SUPPORT_TESTS: suite !== 'app' ? 'true' : process.env.VISUAL_SKIP_SUPPORT_TESTS },
+    });
+    if (result.status !== 0) throw new Error(`${suite} 视觉测试失败（退出码 ${result.status ?? 1}）`);
+  }
+  if (!ranSuite) throw new Error('VISUAL_FILTER 没有匹配任何场景');
+}
+
+/**
+ * 运行一种语言的所选场景，每批重新采集短期认证。
+ * @param locale - 当前场景语言。
+ * @param playwrightArgs - 所有套件共用的比较或采集参数。
+ */
+function runScenarioBatches(locale: string, playwrightArgs: string[]): boolean {
+  const batchLabel = action.toUpperCase();
+  const selectedScenarios = getSelectedScenarios();
+  if (selectedScenarios.length === 0) {
+    console.log(`${batchLabel} SKIP > VISUAL_LOCALES=${locale} 没有匹配场景`);
+    return false;
+  }
+
+  const scenarioArgs = process.env.VISUAL_FILTER
+    ? [...playwrightArgs, `--grep=${exactScenarioGrep(selectedScenarios.map(scenario => scenario.label))}`]
+    : playwrightArgs;
+  const needsAuthState = selectedScenarios.some((scenario) => scenario.signIn);
+  const { count: shardCount, start: startShard } = getVisualShardConfig(
+    action,
+    selectedScenarios.length,
+  );
+
+  for (let shard = startShard; shard <= shardCount; shard += 1) {
+    console.log(`${batchLabel} BATCH > VISUAL_LOCALES=${locale}, SHARD=${shard}/${shardCount}`);
+    if (needsAuthState) {
+      // 上一个 Playwright 进程已同步退出，此时换 token 不会作废仍在运行的场景。
+      // 紧邻 shard 启动采集，确保每批都获得完整有效期。
+      captureAuthState();
+    }
+    runPnpm([...scenarioArgs, 'cases', `--shard=${shard}/${shardCount}`]);
+  }
+  return true;
+}
+
 /** 按套件和分片启动视觉任务，为每批场景采集登录态并传递失败结果。 */
 async function main(): Promise<void> {
   console.log(`VISUAL_LOCALES=${process.env.VISUAL_LOCALES}`);
@@ -151,42 +206,14 @@ async function main(): Promise<void> {
     runPnpm(['install', '--frozen-lockfile']);
   }
 
-  // 三套测试各自采集账号登录态；all 也不能让 App 的登录流量经过德州代理。
-  if (getVisualSuite() === 'all') {
-    let ranSuite = false;
-    for (const suite of ['app', 'texas', 'zhajinhua'] as const) {
-      const selected = selectScenariosByLabel(
-        buildScenarios({ ...process.env, VISUAL_SUITE: suite }), process.env.VISUAL_FILTER,
-      );
-      if (selected.length === 0) continue;
-      ranSuite = true;
-      const result = spawnSync('pnpm', ['exec', 'tsx', 'run-visual.ts', action], {
-        stdio: 'inherit', cwd: VISUAL_DIR,
-        env: { ...process.env, VISUAL_SUITE: suite, VISUAL_SKIP_VISUAL_INSTALL: 'true',
-          VISUAL_SKIP_SUPPORT_TESTS: suite !== 'app' ? 'true' : process.env.VISUAL_SKIP_SUPPORT_TESTS },
-      });
-      if (result.status !== 0) throw new Error(`${suite} 视觉测试失败（退出码 ${result.status ?? 1}）`);
-    }
-    if (!ranSuite) throw new Error('VISUAL_FILTER 没有匹配任何场景');
-    return;
-  }
+  if (getVisualSuite() === 'all') return runAllSuites();
 
   try {
     console.log(`线上视觉测试地址: ${visualBaseUrl}`);
-    const playwrightArgs = ['exec', 'playwright', 'test'];
-    if (action === 'reference') {
-      // 牌桌和独立战绩重写所选基准，避免容差保留旧倒计时或错误的滚动位置。
-      // 显式刷新时也保存容差内的文案变化；默认仍只更新有显著差异的截图。
-      const selected = selectScenariosByLabel(buildScenarios(), process.env.VISUAL_FILTER);
-      const recordsOnly = selected.length > 0 && selected.every(scenario => scenario.group === 'game-record');
-      playwrightArgs.push(getVisualSuite() !== 'app' || recordsOnly || isEnvTrue('VISUAL_REFERENCE_UPDATE_ALL')
-        ? '--update-snapshots=all' : '--update-snapshots=changed');
-    } else if (action === 'approve') {
-      // approve：只接受上次 test 里真正 diff/失败的场景为新基准，未变化的不动
-      playwrightArgs.push('--update-snapshots');
-    }
+    // 所有套件使用同一规则：普通比较只读；显式采集保存所选场景的当前画面。
+    const playwrightArgs = ['exec', 'playwright', 'test', `--update-snapshots=${VISUAL_SNAPSHOT_UPDATES[action]}`];
 
-    // test/reference/approve 以及 filter/core scope 都可能包含超过 token 生命周期的登录场景。
+    // 比较、采集及 filter/core scope 都可能包含超过 token 生命周期的登录场景。
     // 统一逐语言切成短 shard；每批启动新的 worker/browser，且最多包含三个场景。
     const batchLabel = action.toUpperCase();
     if (!isEnvTrue('VISUAL_SKIP_SUPPORT_TESTS')) {
@@ -201,31 +228,7 @@ async function main(): Promise<void> {
 
     for (const locale of selectedLocales) {
       process.env.VISUAL_LOCALES = locale;
-      const selectedScenarios = getSelectedScenarios();
-      if (selectedScenarios.length === 0) {
-        console.log(`${batchLabel} SKIP > VISUAL_LOCALES=${locale} 没有匹配场景`);
-        continue;
-      }
-
-      ranVisualScenario = true;
-      const scenarioArgs = process.env.VISUAL_FILTER
-        ? [...playwrightArgs, `--grep=${exactScenarioGrep(selectedScenarios.map(scenario => scenario.label))}`]
-        : playwrightArgs;
-      const needsAuthState = selectedScenarios.some((scenario) => scenario.signIn);
-      const { count: shardCount, start: startShard } = getVisualShardConfig(
-        action,
-        selectedScenarios.length,
-      );
-
-      for (let shard = startShard; shard <= shardCount; shard += 1) {
-        console.log(`${batchLabel} BATCH > VISUAL_LOCALES=${locale}, SHARD=${shard}/${shardCount}`);
-        if (needsAuthState) {
-          // 上一个 Playwright 进程已同步退出，此时换 token 不会作废仍在运行的场景。
-          // 紧邻 shard 启动采集，确保 filter/core scope/approve 的每批都获得完整有效期。
-          captureAuthState();
-        }
-        runPnpm([...scenarioArgs, 'cases', `--shard=${shard}/${shardCount}`]);
-      }
+      if (runScenarioBatches(locale, playwrightArgs)) ranVisualScenario = true;
     }
 
     if (requestedLocales === undefined) {

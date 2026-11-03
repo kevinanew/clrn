@@ -35,10 +35,6 @@ on:
         description: '可选场景标签正则（生成新基准时可只选新增场景）'
         type: string
         default: ''
-      refresh_all:
-        description: 'reference 时重采所选基准，包括容差内的小幅文案变化'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -90,7 +86,6 @@ jobs:
       VISUAL_SKIP_SUPPORT_TESTS: ${{ matrix.locale != 'zh-Hans' || matrix.suite != 'app' }}
       VISUAL_WORKERS: '1'
       VISUAL_FILTER: ${{ inputs.filter || '' }}
-      VISUAL_REFERENCE_UPDATE_ALL: ${{ inputs.refresh_all && 'true' || 'false' }}
     steps:
       - name: 检出画面测试代码
         uses: actions/checkout@v4
@@ -131,6 +126,7 @@ jobs:
         working-directory: visual
         run: |
           pnpm run typecheck
+          pnpm exec tsx --test snapshotPolicy.browser.ts
           if [ '${{ inputs.mode }}' != reference ]; then pnpm run test:scenarios; fi
       - name: 准备本轮 Release 构建包
         uses: ./.github/actions/prepare-release-web
