@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { test as base, expect, type BrowserContext } from '@playwright/test';
 import { environment } from '../../helpers/environment';
-import { accountStatus, signIn, type Session } from './auth';
+import { signIn, type Session } from './auth';
+import { accountPreparationError, verifyAccountSession } from './account-diagnostics';
 import { openHall, prepareContext } from './page';
 import { readDiamondBalance } from './provision';
 import { clickAfterSignInNotices } from './sign-in-notices';
@@ -26,11 +27,11 @@ export const test = base.extend<{ newAccount: CreationAccount }>({
     }
     let session: Session;
     let username: string;
-    let stage = '初始化浏览器';
+    let operation = 'creation-account-setup';
     try {
       await prepareContext(context);
       if (stateFile) {
-        stage = '读取创建账号状态';
+        operation = 'creation-account-state';
         const state = JSON.parse(await readFile(stateFile, 'utf8')) as Awaited<ReturnType<BrowserContext['storageState']>>;
         const origin = new URL(environment.stagingUrl).origin;
         const local = state.origins.find(entry => entry.origin === origin);
@@ -51,7 +52,7 @@ export const test = base.extend<{ newAccount: CreationAccount }>({
           return url.protocol === 'https:' && url.hostname.endsWith('.api.staging.laiwan.shafayouxi.com')
             && url.pathname === `/v11/user/${encodeURIComponent(auth.user_id)}/account`;
         }, { timeout: 60_000 });
-        stage = '打开大厅';
+        operation = 'creation-account-setup';
         await openHall(page);
         const response = await accountResponse;
         session = {
@@ -61,19 +62,19 @@ export const test = base.extend<{ newAccount: CreationAccount }>({
       } else {
         if (!configuredUsername || !password) throw new Error('缺少创建专用账号环境变量');
         username = configuredUsername;
-        stage = '打开大厅';
+        operation = 'creation-account-setup';
         await openHall(page);
-        stage = '登录创建账号';
+        operation = 'existing-account-login-ui';
         session = await signIn(page, { username, password });
       }
-      stage = '校验账号会话';
-      expect(await accountStatus(page, session)).toBe(200);
+      operation = 'creation-account-session-check';
+      await verifyAccountSession(page, session);
       await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible();
-      stage = '处理登录后提示';
+      operation = 'creation-account-notices';
       await clickAfterSignInNotices(page, 'hall-tab');
-    } catch {
+    } catch (error) {
       await page.close().catch(() => undefined);
-      throw new Error(`创建专用账号准备失败（${stage}）；请检查环境凭据及 staging 会话`);
+      throw accountPreparationError(error, operation);
     }
     await setCreationDiamondBalance(session, walletToken);
     await expect.poll(() => readDiamondBalance(page, session), {

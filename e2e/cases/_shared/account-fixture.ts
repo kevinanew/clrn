@@ -1,10 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { test as base, expect, type BrowserContext, type Page } from '@playwright/test';
+import { test as base, expect, type BrowserContext } from '@playwright/test';
 import { environment } from '../../helpers/environment';
-import { accountStatus } from './auth';
+import { parseAccountUrl, verifyAccountSession } from './account-diagnostics';
 import { openHall } from './page';
-import { readDiamondBalance, registerAccount, RegistrationRejectedError, type ProvisionedAccount } from './provision';
+import { readDiamondBalance, registerAccount, type ProvisionedAccount } from './provision';
 
 type StorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
 type SavedAccount = {
@@ -20,34 +20,18 @@ type SavedAccount = {
  * @param origin - 允许使用的页面来源。
  */
 function validate(saved: SavedAccount, origin: string): void {
-  const api = new URL(saved.account.accountUrl);
+  const api = parseAccountUrl(saved.account.accountUrl);
   if (saved.origin !== origin || saved.apiOrigin !== api.origin) {
     throw new Error('本轮账号缓存的 H5/API 来源发生变化');
   }
   if (api.protocol !== 'https:' || api.username || api.password || api.search || api.hash
     || !api.hostname.endsWith('.api.staging.laiwan.shafayouxi.com')
     || api.pathname !== `/v11/user/${encodeURIComponent(saved.account.userId)}/account`) {
-    throw new Error(`本轮账号缓存的 staging API 不合法（host=${api.hostname}）`);
+    throw new Error('本轮账号缓存的 staging API 不合法');
   }
   if (saved.storageState.origins.length !== 1 || saved.storageState.origins[0].origin !== origin) {
     throw new Error('本轮账号缓存必须仅包含目标 H5 的 localStorage');
   }
-}
-
-/**
- * 读取受保护的账号接口确认会话有效，失效时直接失败，避免重复登录。
- * @param page - 执行操作的 Playwright 页面。
- * @param account - 包含用户 ID、账号接口与认证信息的会话。
- */
-async function verify(page: Page, account: ProvisionedAccount): Promise<void> {
-  // 网络库错误可能带 Authorization 请求头；只抛固定信息，避免写入报告。
-  let status: number;
-  try {
-    status = await accountStatus(page, account);
-  } catch {
-    throw new Error('本轮测试账号会话检查请求失败');
-  }
-  expect(status, '本轮测试账号会话必须有效，禁止重复登录或重新注册').toBe(200);
 }
 
 export const test = base.extend<{ newAccount: ProvisionedAccount }>({
@@ -76,7 +60,7 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
 
     if (saved) {
       validate(saved, origin);
-      await verify(page, saved.account);
+      await verifyAccountSession(page, saved.account);
       try {
         // 只在新上下文恢复一次。addInitScript 会在每次刷新时重写登录缓存，
         // 掩盖应用丢失持久化状态的问题，使注册后的刷新测试产生假阳性。
@@ -92,14 +76,7 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
       } catch {
         throw new Error('本轮已尝试注册，未得到可复用账号；不会再次注册');
       }
-      let account: ProvisionedAccount;
-      try {
-        account = await registerAccount(page);
-      } catch (error) {
-        if (error instanceof RegistrationRejectedError) throw error;
-        // eslint-disable-next-line preserve-caught-error -- 登录错误可能包含密码或 Authorization，不附加到 cause。
-        throw new Error('本轮新账号注册失败；请检查 staging 测试接口、token 及登录流程，不会自动重试注册');
-      }
+      const account = await registerAccount(page);
       const browserState = await context.storageState();
       const host = new URL(origin).hostname;
       saved = {
@@ -114,7 +91,7 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
         },
       };
       validate(saved, origin);
-      await verify(page, account);
+      await verifyAccountSession(page, account);
       await writeFile(accountFile, JSON.stringify(saved), { mode: 0o600, flag: 'wx' });
     }
     expect(new URL(page.url()).origin, '恢复后必须仍为相同 staging').toBe(origin);
@@ -128,12 +105,7 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
       }
     }, saved.account.userId);
     expect(sameUser, '恢复的浏览器会话应属于本轮账号').toBe(true);
-    let diamondBalance: number;
-    try {
-      diamondBalance = await readDiamondBalance(page, saved.account);
-    } catch {
-      throw new Error('本轮测试账号实时钻石余额读取失败');
-    }
+    const diamondBalance = await readDiamondBalance(page, saved.account);
     await use({ ...saved.account, diamondBalance });
   },
 });

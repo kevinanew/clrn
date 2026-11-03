@@ -8,7 +8,7 @@ export type PopupFlow = { name: string; target: Locator; open: () => Promise<unk
   foregroundBelow?: { y: number; locator: Locator }; requirePresentation?: boolean;
   excludedBackground?: Locator[]; waitForUnmountBeforeReopen?: boolean;
   beforeEntrance?: () => Promise<void>; afterEntrance?: () => Promise<void>;
-  entranceFinalFrameNumericMask?: NumericTextMask[] };
+  numericMask?: NumericTextMask[] };
 
 /**
  * 判断弹层是否已经进入视口且实际绘制，不能把尚未卸载的透明旧节点算作新弹层。
@@ -91,13 +91,13 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await flow.beforeEntrance?.();
   await captureTimeline(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
     requireMotion: true, foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground,
-    finalFrameNumericMask: flow.entranceFinalFrameNumericMask });
+    numericMask: flow.numericMask });
   await expect(flow.target).toBeVisible();
   await flow.afterEntrance?.();
   await flow.close();
   await captureTimeline(page, info, `${flow.name}-exit`, flow.target,
     { clip, requireChange: flow.exitAnimated !== false, requireMotion: flow.exitAnimated !== false,
-      foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground });
+      foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground, numericMask: flow.numericMask });
   await settleAnimations(page, 32);
   await expectDismissed(flow.target);
   if (flow.waitForUnmountBeforeReopen) await waitForUnmount(flow.target);

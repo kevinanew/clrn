@@ -1,3 +1,6 @@
+import { requestFailure } from '../../../scripts/request-failure.cjs';
+import { fetchRequestJson } from '../../../visual/src/support/requestJson';
+
 const stagingUserOrigin = 'https://api.shafayouxi.org';
 
 /**
@@ -10,29 +13,17 @@ export async function createTestingAccount(
   token: string,
 ): Promise<{ userId: string; username: string }> {
   if (!token.trim()) throw new Error('缺少 TESTING_API_TOKEN');
-  let response: Response;
-  try {
-    response = await fetch(`${stagingUserOrigin}/public/v10/user/register/username_password/testing`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Testing-Api-Token': token },
-      body: JSON.stringify(credentials),
-      redirect: 'error',
-      signal: AbortSignal.timeout(15_000),
-    });
-  } catch {
-    throw new Error('创建 staging 测试账号请求失败；不会自动重试');
-  }
-  if (!response.ok) throw new Error(`创建 staging 测试账号失败（HTTP ${response.status}）`);
-  let body;
-  try {
-    body = await response.json();
-  } catch {
-    throw new Error('创建 staging 测试账号返回无效 JSON');
-  }
-  if (body?.ok !== true || body.result?.username !== credentials.username
+  const { body, status } = await fetchRequestJson(`${stagingUserOrigin}/public/v10/user/register/username_password/testing`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Testing-Api-Token': token },
+    body: JSON.stringify(credentials),
+    redirect: 'error',
+    signal: AbortSignal.timeout(15_000),
+  }, 'create-test-account');
+  if (body.result?.username !== credentials.username
     || typeof body.result?.user_id !== 'string'
     || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.result.user_id)) {
-    throw new Error('创建 staging 测试账号的业务响应不符合预期；不会自动重试');
+    throw requestFailure('create-test-account', 'invalid-response', status);
   }
   return { userId: body.result.user_id, username: body.result.username };
 }
