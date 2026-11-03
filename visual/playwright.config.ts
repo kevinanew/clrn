@@ -1,4 +1,5 @@
 import { MAXIMUM_DIFFERENT_PIXEL_RATIO } from './screenshotComparisonConfiguration';
+import { VISUAL_SNAPSHOT_UPDATES } from './run-visual-config';
 import { defineConfig } from '@playwright/test';
 
 import { visualBaseUrl } from './target';
@@ -13,8 +14,9 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/{testFileDir}/snapshots/{arg}{ext}',
   fullyParallel: true,
   workers: 1,
-  // 截图类偶发失败（staging 波动）自动重试一次
-  retries: Number(process.env.VISUAL_RETRIES ?? 1),
+  retries: 0,
+  // 普通比较不能创建缺失基准，只有显式 reference 才保存候选图。
+  updateSnapshots: VISUAL_SNAPSHOT_UPDATES.test,
   // 单场景上限：staging 慢时登录/加载等待较长
   timeout: 300000,
   reporter: [['list'], ['html', { open: 'never' }]],

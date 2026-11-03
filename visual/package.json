@@ -12,7 +12,7 @@
     "test:ci": "tsx run-visual.ts test",
     "reference": "./reference-host.sh",
     "reference:zh": "docker compose run --rm -e VISUAL_LOCALES=zh-Hans -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_SUITE -e TESTING_API_TOKEN visual reference",
-    "approve": "docker compose run --rm -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_SUITE -e VISUAL_TEST_SHARDS -e TESTING_API_TOKEN visual approve",
+    "approve": "docker compose run --rm -e VISUAL_FILTER -e VISUAL_SCOPE -e VISUAL_SUITE -e VISUAL_REFERENCE_SHARDS -e VISUAL_REFERENCE_START_SHARD -e TESTING_API_TOKEN visual reference",
     "report": "tsx open-report.ts",
     "test:scenarios": "node --import tsx --test target.test.ts scenarios.test.ts scenarioPages.test.ts snapshotLocations.test.ts run-visual-config.test.ts run-visual-isolation.test.ts docker-env.test.ts src/support/runWithContext.test.ts src/support/pageSetup.test.ts cases/texas-holdem/viewportAlignment.test.ts cases/texas-holdem/roomCleanup.test.ts visual-suite.test.ts cases/game-record/matrix.test.ts",
     "lint": "node ../lint-lines.mjs",

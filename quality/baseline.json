@@ -1143,26 +1143,6 @@
       "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
     },
     {
-      "file": "visual/run-visual.ts",
-      "rule": "complexity",
-      "line": 146,
-      "column": 1,
-      "message": "Async function 'main' has a complexity of 23. Maximum allowed is 10.",
-      "anchor": "5a1db74d0b54afffee1012430db358909e8f596982b49bcfc71673e847bea3e8",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/run-visual.ts",
-      "rule": "max-depth",
-      "line": 222,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "a7f57ee7166e457b11af2ce596f947662cbffb9590af6a49712bc6529c1b425d",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
       "file": "visual/scenarios.ts",
       "rule": "complexity",
       "line": 209,

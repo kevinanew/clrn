@@ -20,7 +20,7 @@ const room = { roomId: account.userId, apiOrigin: 'https://diagnostic.invalid', 
  * @param output - 终端、附件或文件内容。
  */
 function privateOutput(output: string) {
-  for (const value of ['diagnostic.invalid', '192.0.2.40', '2001:db8::40', '9443', '/private', 'synthetic-']) {
+  for (const value of ['diagnostic.invalid', '192.0.2.40', '2001:db8::40', ':9443', '/private', 'synthetic-']) {
     assert.ok(!output.includes(value), value);
   }
 }
@@ -68,6 +68,8 @@ test('清理仍拒绝 HTTP500、业务失败、非 JSON 和无响应，不能误
 });
 
 test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告附件仍保留安全请求定位', async context => {
+  // 时间戳含端口数字时仍应通过；只拒绝实际端口形式，避免时钟导致偶发误报。
+  context.mock.method(Date, 'now', () => 1793649443000);
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-error-report-'));
   context.after(() => rm(directory, { force: true, recursive: true }));
   const events = new EventEmitter();

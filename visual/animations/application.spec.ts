@@ -32,7 +32,7 @@ test('private room invitation bottom sheet enter and exit', async ({ context, pa
   await selectScenario(context, 'invitation');
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'copy-house-number-button')).toBeVisible();
-  await lockBottomSheetDocumentScroll(page);
+  await lockBottomSheetDocumentScroll(page, visible(page, 'invite-friends-button'));
   await exercisePopup(page, info, { name: 'invite-friends', beforeEntrance: /** 恢复固定裁切的页面原点。 */ () => resetViewportScroll(page), target: page.getByTestId('invite-friend-popup-cancel-button'),
     clip: { x: 0, y: page.viewportSize()!.height - 300, width: page.viewportSize()!.width, height: 300 },
     open: /** 点击真实入口。 */ () => press(page, 'invite-friends-button'),
@@ -44,7 +44,7 @@ test('create room game picker enter and exit', async ({ context, page }, info) =
   await openApplication(context, page, info);
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'create-game-button')).toBeVisible();
-  await lockBottomSheetDocumentScroll(page);
+  await lockBottomSheetDocumentScroll(page, visible(page, 'create-game-button'));
   await exercisePopup(page, info, { name: 'game-picker', beforeEntrance: /** 恢复固定裁切的页面原点。 */ () => resetViewportScroll(page), target: page.getByTestId('select-game-category-text'),
     clip: { x: 0, y: page.viewportSize()!.height - 400, width: page.viewportSize()!.width, height: 400 },
     // 手机底部导航有 1px 布局舍入差；仍比较 BottomSheetBody 覆盖的全部区域（含拖动条）。

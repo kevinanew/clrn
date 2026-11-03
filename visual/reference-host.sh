@@ -44,7 +44,6 @@ for locale in zh-Hans zh-Hant en; do
     -e TESTING_API_TOKEN \
     -e VISUAL_REFERENCE_SHARDS \
     -e VISUAL_REFERENCE_START_SHARD \
-    -e VISUAL_RETRIES=0 \
     -e VISUAL_WORKERS=1 \
     visual reference
 done
