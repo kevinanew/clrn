@@ -57,16 +57,20 @@ async function recoverRoomForm(page: Page, error: unknown, attempt: number, room
  * @param game - 游戏类型。
  * @param prefix - 牌桌控件前缀。
  */
-async function waitForTableConnection(page: Page, game: string, prefix: string) {
+export async function waitForTableConnection(page: Page, game: string, prefix: string) {
   const connection = { state: 'loading' };
   let retries = 0;
+  // 连接超时也会使用自定义 Alert，其按钮没有 common-alert 的业务 ID。
+  const retry = visible(page, 'common-alert-button-retry').or(
+    page.locator('[data-testid="alert-custom-button"]:visible').filter({ hasText: /^Retry$/ }),
+  ).last();
   await expect.poll(async () => {
-    if (await visible(page, 'common-alert-button-retry').isVisible()) {
+    if (await retry.isVisible()) {
       if (retries >= 3) connection.state = 'alert';
       else {
         retries += 1;
         recordDiagnostic(page, '重试牌桌连接', { attempt: retries });
-        await visible(page, 'common-alert-button-retry').click();
+        await retry.click();
       }
     } else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
     return connection.state;
