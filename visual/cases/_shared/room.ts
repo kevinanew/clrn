@@ -87,12 +87,14 @@ export async function ensureRoomBalance(request: APIRequestContext, account: Acc
  * @param onCreated - 创建成功后立即登记房间的回调，用于失败时清理。
  * @param gameType - 待创建的私人房游戏类型。
  * @param optionalFeatures - 是否启用可选建房功能。
+ * @param onSubmitting - 提交前保存代理边界，供调用方判断预检失败是否可以恢复。
  */
 export async function createPrivateGameRoom(
   page: Page,
   onCreated: (room: RoomSession) => void,
   gameType: 'texas_react_native' | 'zhajinhua',
   optionalFeatures = false,
+  onSubmitting?: () => Promise<void>,
 ): Promise<RoomSession> {
   recordDiagnostic(page, '检查建房账号及余额');
   const account = await visualAccount(page);
@@ -108,6 +110,7 @@ export async function createPrivateGameRoom(
     await page.locator('[data-testid="advanced-options-button"]:visible').last().click();
     await page.locator('[data-testid="BlindsEnableFlipSwitch"]:visible').last().click();
   }
+  await onSubmitting?.();
   recordDiagnostic(page, '提交建房并等待响应', { method: 'POST', path: '/v3/pay_action/do', timeoutMs: 60_000 });
   const responsePromise = page.waitForResponse(response =>
     response.request().method() === 'POST'

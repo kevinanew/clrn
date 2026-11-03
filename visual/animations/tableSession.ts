@@ -12,23 +12,31 @@ import { installConnectionDiagnostics, recordDiagnostic } from '../src/support/c
 import { diagnosticNode, diagnosticText } from '../../e2e/helpers/diagnostic-privacy';
 import { installCardSpriteDiagnostics, observeCardSpriteClockControl, saveCardSpriteDiagnostics } from './cardSpriteDiagnostics';
 import { useNormalCardSpriteClock, type CardSpriteClock } from './cardSpriteClock';
+import { completedRoomPreflight, type ProxySnapshot } from './roomPreflight';
+import { requestFailure } from '../src/support/requestError';
 
 export type TableSession = { page: Page; roomId: string; self: string; clip: CaptureArea };
 
 /**
- * 仅重试提交建房前的读取超时，已登记的房间禁止重复创建。
+ * 仅重试表单读取或确认未发出写入的预检超时，已登记的房间禁止重复创建。
  * @param page - 建房页面。
  * @param game - 游戏类型。
  * @param registerRoom - 立即登记成功响应。
  * @param registeredRoom - 读取已登记房间。
+ * @param snapshot - 获取完整代理记录以核对写入边界。
  */
 async function createRoomWithRetry(page: Page, game: 'texas' | 'zhajinhua',
-  registerRoom: (created: RoomSession) => void, registeredRoom: () => RoomSession | undefined): Promise<RoomSession> {
+  registerRoom: (created: RoomSession) => void, registeredRoom: () => RoomSession | undefined,
+  snapshot?: () => Promise<ProxySnapshot>): Promise<RoomSession> {
   for (let attempt = 0; attempt < 2; attempt += 1) {
+    let before: ProxySnapshot | undefined;
     try {
-      return await createPrivateGameRoom(page, registerRoom, game === 'texas' ? 'texas_react_native' : 'zhajinhua');
+      return await createPrivateGameRoom(page, registerRoom, game === 'texas' ? 'texas_react_native' : 'zhajinhua', false,
+        async () => { before = await snapshot?.().catch(() => undefined); });
     } catch (error) {
-      await recoverRoomForm(page, error, attempt, registeredRoom());
+      const after = await snapshot?.().catch(() => undefined);
+      await recoverRoomForm(page, error, attempt, registeredRoom(),
+        Boolean(before && after && completedRoomPreflight(before, after)));
     }
   }
   throw new Error('建房未返回本轮房间');
@@ -40,12 +48,15 @@ async function createRoomWithRetry(page: Page, game: 'texas' | 'zhajinhua',
  * @param error - 原始建房错误。
  * @param attempt - 当前尝试序号。
  * @param room - 已创建房间。
+ * @param preflightOnly - 完整代理记录证明只有成功预检，没有建房写入。
  */
-async function recoverRoomForm(page: Page, error: unknown, attempt: number, room?: RoomSession) {
+async function recoverRoomForm(page: Page, error: unknown, attempt: number, room?: RoomSession, preflightOnly = false) {
   const alert = visible(page, 'common-alert-container').filter({ hasText: 'timeout of 10000ms exceeded' });
   if (attempt > 0 || room || !(error instanceof Error)
-    || !error.message.includes('base-create-room-screen') || !await alert.isVisible()) throw error;
-  recordDiagnostic(page, '建房表单读取超时，返回后重试', { attempt: attempt + 1 });
+    || !(error.message.includes('base-create-room-screen')
+      || preflightOnly && error.message === requestFailure('room-create', 'timeout').message)
+    || !await alert.isVisible()) throw error;
+  recordDiagnostic(page, preflightOnly ? '建房预检超时且未发送写入，返回后重试' : '建房表单读取超时，返回后重试', { attempt: attempt + 1 });
   await alert.locator('[data-testid^="common-alert-button-"]').click();
   await visible(page, 'navigation-bar-back-image').last().click();
   await expect(visible(page, 'create-game-button').last()).toBeVisible({ timeout: 90_000 });
@@ -127,7 +138,8 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
       recordDiagnostic(page, '建房成功', { roomId: created.roomId, node: diagnosticNode(created.apiOrigin) });
       writeFileSync(info.outputPath('created-room.json'), JSON.stringify({ roomId: created.roomId, apiNode: diagnosticNode(created.apiOrigin) }));
     };
-    room = await createRoomWithRetry(page, game, registerRoom, () => room);
+    room = await createRoomWithRetry(page, game, registerRoom, () => room,
+      async () => await proxy.diagnostics?.() ?? { events: [], dropped: 1 });
     recordDiagnostic(page, '等待牌桌连接及订阅就绪');
     const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
     if (hall) await enterTexasRoom(page, room);
