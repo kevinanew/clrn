@@ -13,16 +13,6 @@
       "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
     },
     {
-      "file": "e2e/cases/_shared/account-fixture.ts",
-      "rule": "complexity",
-      "line": 59,
-      "column": 3,
-      "message": "Async method 'newAccount' has a complexity of 12. Maximum allowed is 10.",
-      "anchor": "81c4d35fa13f59d66c8597529f4ccd473e8ef5d4c0a7adc718939a362af03fbf",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "e2e/cases/_shared/auth.test.ts",
       "rule": "quality/no-network-response",
       "line": 2,
@@ -131,26 +121,6 @@
       "anchor": "ddf219a454dba5f52864e1498614e3e12ffdf9c7e8edf137ce7d62becbc34c5f",
       "kind": "migration",
       "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "e2e/cases/_shared/test-user.ts",
-      "rule": "complexity",
-      "line": 8,
-      "column": 8,
-      "message": "Async function 'createTestingAccount' has a complexity of 12. Maximum allowed is 10.",
-      "anchor": "f34bc9f568a1288b018b185ba276b313244d0c7e4435aaf8daa6d3a51e6f2d4c",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/cases/_shared/test-wallet.ts",
-      "rule": "complexity",
-      "line": 34,
-      "column": 8,
-      "message": "Async function 'setCreationDiamondBalance' has a complexity of 20. Maximum allowed is 10.",
-      "anchor": "f4aca2547b2dbe7858e1d51236eb98ac62be0f6b40b004362989af2e852d4ae8",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
     },
     {
       "file": "e2e/cases/club-005-join-approval-invite/test.spec.ts",

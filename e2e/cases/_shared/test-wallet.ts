@@ -1,6 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Session } from './auth';
+import { requestFailure } from '../../../scripts/request-failure.cjs';
+import { fetchRequestJson } from '../../../visual/src/support/requestJson';
+import { parseAccountUrl } from './account-diagnostics';
 
 const stagingWalletOrigin = 'https://api.shafayouxi.org';
 
@@ -27,39 +30,38 @@ export async function readTestApiToken(): Promise<string> {
 }
 
 /**
- * 仅为已验证登录的 staging 创建专用账号设置钻石，不通过浏览器发送管理 token。
+ * 在发送任何管理请求前核对创建专用账号的钱包归属。
  * @param account - 包含用户 ID、账号接口与认证信息的会话。
- * @param token - 仅用于测试接口或代理控制接口的认证凭据。
  */
-export async function setCreationDiamondBalance(account: Session, token: string): Promise<void> {
-  const url = new URL(account.accountUrl);
+function validateCreationWallet(account: Session): void {
+  const url = parseAccountUrl(account.accountUrl);
   if (url.protocol !== 'https:' || url.port || url.username || url.password
     || !(url.origin === stagingWalletOrigin || url.hostname.endsWith('.api.staging.laiwan.shafayouxi.com'))
     || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(account.userId)
     || url.pathname !== `/v11/user/${account.userId}/account`) {
     throw new Error('设置测试余额仅允许 staging 创建账号的钱包');
   }
-  let response: Response;
-  try {
-    response = await fetch(`${stagingWalletOrigin}/public/v1/wallet/${account.userId}/set_balance/testing`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Testing-Api-Token': token },
-      body: JSON.stringify({ currency_name: 'diamond', balance: '60' }),
-      redirect: 'error',
-      signal: AbortSignal.timeout(15_000),
-    });
-  } catch {
-    throw new Error('设置 staging 测试余额请求失败，请检查网络及服务部署');
-  }
-  if (!response.ok) throw new Error(`设置 staging 测试余额失败（HTTP ${response.status}）`);
-  let body;
-  try {
-    body = await response.json();
-  } catch {
-    throw new Error('设置 staging 测试余额返回无效 JSON');
-  }
-  if (body?.ok !== true || body.result?.wallet_id !== account.userId
-    || body.result?.currency_name !== 'diamond' || Number(body.result?.balance) !== 60) {
-    throw new Error('设置 staging 测试余额的业务响应不符合预期');
+}
+
+/**
+ * 仅为已验证登录的 staging 创建专用账号设置钻石，不通过浏览器发送管理 token。
+ * @param account - 包含用户 ID、账号接口与认证信息的会话。
+ * @param token - 仅用于测试接口或代理控制接口的认证凭据。
+ */
+export async function setCreationDiamondBalance(account: Session, token: string): Promise<void> {
+  validateCreationWallet(account);
+  const { body, status } = await fetchRequestJson(`${stagingWalletOrigin}/public/v1/wallet/${account.userId}/set_balance/testing`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Testing-Api-Token': token },
+    body: JSON.stringify({ currency_name: 'diamond', balance: '60' }),
+    redirect: 'error',
+    signal: AbortSignal.timeout(15_000),
+  }, 'set-creation-diamonds');
+  let balance: number;
+  try { balance = Number(body.result?.balance); }
+  catch { throw requestFailure('set-creation-diamonds', 'invalid-response', status); }
+  if (body.result?.wallet_id !== account.userId
+    || body.result?.currency_name !== 'diamond' || balance !== 60) {
+    throw requestFailure('set-creation-diamonds', 'invalid-response', status);
   }
 }
