@@ -101,6 +101,8 @@ export async function createPrivateGameRoom(
   await page.locator('[data-testid="create-game-button"]:visible').last().click();
   await page.locator(`[data-testid="game-type-button-${gameType}"]:visible`).last().click();
   await expect(page.locator('[data-testid="base-create-room-screen"]:visible')).toBeVisible();
+  // 表单可能先于玩法弹层的关闭动画出现；等弹层退出后再操作，避免点击落在遮罩上。
+  await expect(page.locator('[data-testid^="game-type-button-"]:visible')).toHaveCount(0);
   await page.locator('[data-testid="room-name-input"]:visible').last().fill('TestRoom');
   if (optionalFeatures) {
     await page.locator('[data-testid="advanced-options-button"]:visible').last().click();
