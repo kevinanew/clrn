@@ -20,3 +20,7 @@ visual/.visual-reference.lock/
 node_modules/
 .venv/
 .ruff_cache/
+
+# 本机诊断、固定构建及浏览器回归产物
+.cache/
+/test-results/

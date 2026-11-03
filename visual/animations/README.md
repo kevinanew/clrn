@@ -138,7 +138,9 @@ node --import tsx --test visual/animations/walletMask.browser.ts
 ## 牌面图集超时诊断（#68）
 
 德州在导航前安装只读 DOM 观察器，`card-sprite-diagnostics.json` 保留最近 1000 条变化，
-超出计入 `dropped`。记录匿名牌槽、图集容器和图片编号，挂载／移除、布局、资源指纹、
+超出计入 `dropped`；有报告上下文时，全部脱敏事件另追加到 `card-sprite-events.jsonl`，
+使用连续 sequence 核对，不采用内存截断策略。total 是 JSON 快照的截点，
+JSONL 可能包含随后保存附件前收到的新事件；JSON 快照应与该截点前的对应记录一致。记录匿名牌槽、图集容器和图片编号，挂载／移除、布局、资源指纹、
 图片原始尺寸与 DOM 解码结果、翻转侧、回退层 display、内容 opacity 和裁切 transform。
 记录不包含玩家 ID、牌桌正文、图片数据 URI 或 URL 查询参数。宿主收到事件的真实时间
 与页面虚拟时间分别保存；应用版本、Release、CI 测试提交、运行编号、视口及重复序号随附件保存。
@@ -170,13 +172,19 @@ VISUAL_SUITE=texas ANIMATION_PART=card-sprite-control node scripts/with-test-acc
   node scripts/with-release-web-server.mjs npm --prefix visual run test:animations:ci -- --repeat-each=3
 ```
 
-两种模式各用新的 context、页面和真实房间，从相同翻牌前状态经公共牌到全押、摊牌。
-每遍交替顺序，手机和桌面各三遍、每遍两种模式，零失败重试。
-`normal` 不安装 Playwright 时钟、不暂停 CSS；推进动作只等待对应真实时间，布局等待
-不调用 `runFor(0)`。`frozen` 沿用现有暂停、CSS 与真实网络配速策略。
-两者都使用原有图集 10 秒硬断言，不生成或比较候选基准，也不替代原动画用例。
-这是聚焦图集的独立牌局对照：没有复现原玩法用例的完整倒计时、动作和弹层历史，
-即使全部成功也不能宣称原失败已经排除或完成根因归属。
+两种时钟及 React／加载器观察的开关各用新的 context、页面和真实房间。
+对照直接调用原 `texasGameplay`，复用翻牌、转牌、河牌、倒计时切换、call/raise/check/fold、
+河牌恢复、两种加注弹层的预热／开关／重开、全押和摊牌，摊牌后停止。
+独立采样保留原时刻、牌面就绪和主体运动硬断言，将每帧保存为证据，不生成或比较基准。
+普通动画仍执行原来的全部阶段与像素比较；独立证据不替代它。
+
+每遍交替时钟顺序，手机和桌面各覆盖两种时钟与观察器开关，零失败重试。
+`normal` 不安装 Playwright 时钟、不暂停或定位 CSS；准备过程等待真实时间，采样按
+宿主截止时间调度，附件同时保留计划时刻与实际 realElapsed，不把截图耗时额外累计成推进间隔。
+布局等待不调用 `runFor(0)`。`frozen` 保留原暂停、CSS 与真实网络配速策略。
+两者均使用原图集 10 秒硬断言。正常时间画面持续运动，不执行“冻结同一时刻”的稳定性判断；
+普通冻结比较和独立冻结采样继续检查相邻截图稳定。虚拟暂停的跳时与自然流逝不同，
+共享动作历史不证明两者实际调度一致；未复现时仍须保留根因未知。
 
 独立报告保存到 `visual/test-results/card-sprite-control/` 与
 `visual/playwright-report/card-sprite-control/`，不会清空原动画失败工件。
@@ -186,15 +194,24 @@ VISUAL_SUITE=texas ANIMATION_PART=card-sprite-control node scripts/with-test-acc
 普通动画配置的手机、桌面项目均排除独立对照，桌面继续排除旧搜索提示用例。
 独立配置显式清除继承的项目级排除，仅收集两种视口的对照。
 `collection.test.ts` 用真实 Playwright CLI 的 `--list` 核对全部原普通用例和独立入口，
-随 `npm test` 执行；当前普通配置 41 项、9 个文件，独立配置 4 项、三遍重复 12 项。
+随 `npm test` 执行；当前普通配置 41 项、9 个文件，独立配置 8 项、三遍重复 24 项。
 这些数字仅表示收集结果，不代表浏览器、真实牌局或原生设备运行通过。
 
-独立页还通过 React DevTools 提交协议观察组件匿名身份、提交和移除，以及符合已知
-SpriteImage 结构的三个状态值（visible、scaleX、scaleY）。只读取，不调用组件回调或 setter；
-不保存 props、牌名、玩家或任意 hook 值。已有开发工具 hook 不覆盖；未知 renderer、
-未识别组件和截断明确标记，独立用例不会把这些情况当作生命周期取证完成。
-这是额外的观察环境，需核对固定构建是否支持及观察器是否影响复现；它没有直接观测
-RN Web 独立 ImageLoader 回调的进入／返回，组件 visible 的提交也不能单独解释根因。
+`callbacks=false` 不安装 React DevTools hook 或加载器回调包装，DOM 诊断仍保留。
+`callbacks=true` 通过 React 提交协议读取组件匿名身份、提交、移除以及受支持的
+SpriteImage visible／scaleX／scaleY；未知结构、已有 hook 和截断仍明确失败。
+另外仅对原 `69f9251d` 固定构建启用 CDP 条件断点：完整匹配已实读的压缩 ImageLoader
+方法形状，条件恒为 false，不暂停页面、不改写包文件。未知构建／不唯一匹配／无实际调用
+均不能视为取证完成。
+
+加载器成功回调参数由透明包装记录 registered、enter、return、throw；另只读记录
+内部图片 native-load 及 abort。包装保留原 this、参数、返回值和异常，不提前调用回调、
+不设置组件状态。`card-sprite-loader.jsonl` 包含脚本 SHA-256、匿名请求编号、资源指纹及双时钟，
+按连续 sequence 追加、不截断；flush 后保存附件。DOM 与加载器以同一资源指纹关联，
+多个牌面使用同一图集时，资源相同不能证明它们对应某个唯一 DOM 或组件。
+这是实际 ImageLoader 成功回调的同步边界，仍不等于单独捕获 SpriteImage onLoad、
+也不等于 React 状态已经提交。回调包装、调试协议和 React hook 可能改变调度，
+必须结合关闭观察器的独立对照解释，不能仅凭开启观察器后的成功判定根因。
 
 图集图片路径在宿主持久化前统一变为 `asset-<指纹>`；包括路径内嵌地址、编码、凭据
 和 data URI。仅按稳定逻辑标识关联，私有资料来源仍仅标为 `laiwan_prd`。
@@ -211,6 +228,7 @@ node --import tsx --test e2e/helpers/connection-diagnostics.browser.ts
 node --import tsx --test visual/animations/timeline.browser.ts
 node --import tsx --test visual/animations/cardSpriteDiagnostics.browser.ts
 node --import tsx --test visual/animations/cardSpriteClock.browser.ts
+node --import tsx --test visual/animations/cardSpriteLoader.browser.ts visual/animations/cardSpriteHistory.browser.ts
 node --import tsx --test visual/animations/cardSpritePrivacy.test.ts visual/animations/cardSpriteLifecycle.test.ts
 # 使用系统 Chrome 时设置 DIAGNOSTIC_CHROME_PATH 为浏览器可执行文件路径。
 e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v

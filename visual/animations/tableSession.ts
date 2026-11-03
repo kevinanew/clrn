@@ -105,11 +105,11 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
  * @param task - 在真实牌桌执行的动画流程。
  * @param hall - 是否使用大厅显示夹具和本房间观察者连接。
  * @param clock - 独立图集取证时可选择原生时间，默认仍为原动画冻结策略。
- * @param lifecycle - 是否为独立取证页安装 React 提交观察器。
+ * @param lifecycle - 是否安装独立 React 提交观察；callbacks 同时取证原构建的实际加载回调。
  */
 export async function withTable(browser: Browser, info: TestInfo, game: 'texas' | 'zhajinhua',
   proxy: { server: string; network: Mitmproxy; diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> }, task: (session: TableSession) => Promise<void>, hall = false,
-  clock: CardSpriteClock = 'frozen', lifecycle = false): Promise<void> {
+  clock: CardSpriteClock = 'frozen', lifecycle: boolean | 'callbacks' = false): Promise<void> {
   const viewport = info.project.use.viewport!;
   const context = await browser.newContext({ viewport, locale: 'en-US', deviceScaleFactor: 1,
     proxy: { server: proxy.server, bypass: '<-loopback>' }, ignoreHTTPSErrors: true,
@@ -120,7 +120,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
   let room: RoomSession | undefined;
   const diagnostics = await installConnectionDiagnostics(context, page, info, proxy);
   try {
-    if (game === 'texas') await installCardSpriteDiagnostics(page, lifecycle);
+    if (game === 'texas') await installCardSpriteDiagnostics(page, lifecycle, info);
     recordDiagnostic(page, '初始化大厅');
     console.log(`TABLE > ${game}/${info.project.name} 初始化大厅`);
     await openApplication(context, page, info, `signed_in_${game}_pre_game`);

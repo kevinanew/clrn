@@ -19,7 +19,8 @@ export function createTexasRoom(page: Page, onCreated: (room: RoomSession) => vo
  * @param room - 本轮创建并负责清理的房间信息或 ID。
  */
 export async function enterTexasRoom(page: Pick<Page, 'request'>, room: RoomSession): Promise<void> {
-  const response = await page.request.put(`${room.apiOrigin}/v10/texas_holdem/room/${room.roomId}/enter`, {
+  // 与余额查询、房间清理一致使用固定 staging 入口，避免依赖建房时选中的地区节点。
+  const response = await page.request.put(`https://api.shafayouxi.org/v10/texas_holdem/room/${room.roomId}/enter`, {
     headers: { Authorization: room.authorization }, data: { client_support: ['time_based_rules'] },
     timeout: 15_000,
   }).catch(error => {
