@@ -14,6 +14,14 @@ export async function lockBottomSheetDocumentScroll(page: Page): Promise<void> {
     document.body.scrollTop = 0;
     document.body.scrollLeft = 0;
     document.body.style.overflow = 'clip';
+    // RN Web 的应用壳也可能因底部导航溢出 1px 而独立滚动。
+    // 只固定导航的祖先，保留页面列表及弹层内部的滚动容器。
+    const navigation = document.querySelector('[data-testid="private-room-tab"]');
+    for (let node = navigation?.parentElement; node && node !== document.body; node = node.parentElement) {
+      node.scrollTop = 0;
+      node.scrollLeft = 0;
+      node.style.overflow = 'clip';
+    }
   });
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   await expect.poll(() => page.evaluate(() => document.body.scrollTop)).toBe(0);
