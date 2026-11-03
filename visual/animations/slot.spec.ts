@@ -1,3 +1,4 @@
+import { slotWalletMask } from './slotWallet';
 import { expect, test } from '../src/support/networkFixture';
 import { openApplication, navigate, press } from './appSession';
 import { captureTimeline, fixedArea, freeze } from './timeline';
@@ -18,6 +19,10 @@ test('老虎机滚轮和三种奖励动画', async ({ context, page }, info) => 
       await page.clock.runFor(16);
       return (await scenarioStatus(context)).energyReads;
     }, { message: '本次打开老虎机必须完成所属账号的能量读取' }).toBeGreaterThan(previousEnergyReads);
+    const wallet = panel.getByTestId('top-toolbar');
+    const walletNumbers = wallet.getByText(/^\d[\d,]*$/);
+    await expect(walletNumbers, '金币和钻石数字控件必须都存在').toHaveCount(2);
+    const numericMask = slotWalletMask(panel);
     const clip = await fixedArea(page, panel, 0);
     await freeze(page);
     for (const [index, currency] of ['coin', 'currency_diamond', 'energy'].entries()) {
@@ -30,7 +35,7 @@ test('老虎机滚轮和三种奖励动画', async ({ context, page }, info) => 
       }, { message: '老虎机旋转请求必须由本轮夹具处理' }).toBe(index + 1);
       await page.clock.runFor(16);
       await captureTimeline(page, info, `slot-${currency}`, panel,
-        { clip, times: [0, 160, 500, 1000, 1080, 1160, 1400, 2400] });
+        { clip, numericMask, times: [0, 160, 500, 1000, 1080, 1160, 1400, 2400] });
       const reward = currency === 'currency_diamond' ? 'diamond' : currency;
       await expect(panel.getByTestId(`prize_${reward}_text_animation_text`)).toHaveText(
         { coin: '100', diamond: '5', energy: '10' }[reward]!);

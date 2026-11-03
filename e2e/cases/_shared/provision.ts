@@ -8,6 +8,7 @@ import { readTestApiToken } from './test-wallet';
 import { openHall, prepareContext } from './page';
 import { requestFailure, requestFailureReason } from '../../../scripts/request-failure.cjs';
 import { readRequestJson } from '../../../visual/src/support/requestJson';
+import { accountPreparationError } from './account-diagnostics';
 
 export type ProvisionedAccount = Session & {
   username: string;
@@ -56,7 +57,8 @@ export async function registerAccount(page: Page): Promise<ProvisionedAccount> {
   } catch (error) {
     // 连初始化失败也不能让报告保存用户名/密码输入框的 DOM 快照。
     await page.close().catch(() => undefined);
-    throw error;
+    const failure = accountPreparationError(error, 'register-account-setup');
+    throw error instanceof RegistrationRejectedError ? new RegistrationRejectedError(failure.message) : failure;
   }
 }
 
@@ -76,7 +78,7 @@ async function registerOnStaging(page: Page): Promise<ProvisionedAccount> {
     const token = await readTestApiToken();
     created = await createTestingAccount({ username, password }, token);
   } catch (error) {
-    throw new RegistrationRejectedError(error instanceof Error ? error.message : '测试账号创建失败');
+    throw new RegistrationRejectedError(accountPreparationError(error, 'register-account-setup').message);
   }
   const account = await signIn(page, { username, password });
   expect(account.userId === created.userId, '登录账号必须与测试接口创建的账号一致').toBe(true);

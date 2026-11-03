@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readTestApiToken, setCreationDiamondBalance } from './cases/_shared/test-wallet';
+import { requestFailure } from '../scripts/request-failure.cjs';
 
 const userId = '11111111-2222-4333-8444-555555555555';
 const account = {
@@ -64,29 +65,29 @@ for (const status of [401, 404, 500]) {
     /** 返回预设 HTTP 或业务响应，验证失败场景不重试且不泄露正文。 */
     globalThis.fetch = async () => new Response('sensitive-response', { status });
     await expect(setCreationDiamondBalance(account, 'test-only-token'))
-      .rejects.toThrow(`设置 staging 测试余额失败（HTTP ${status}）`);
+      .rejects.toThrow(requestFailure('set-creation-diamonds', 'http-error', status).message);
   });
 }
 
 test('业务失败、错误钱包、币种、余额和非法 JSON 都失败', async () => {
-  for (const body of [
-    { ok: false },
-    { ok: true, result: { wallet_id: 'other', currency_name: 'diamond', balance: '60' } },
-    { ok: true, result: { wallet_id: userId, currency_name: 'coin', balance: '60' } },
-    { ok: true, result: { wallet_id: userId, currency_name: 'diamond', balance: '0' } },
-  ]) {
+  for (const [body, reason] of [
+    [{ ok: false }, 'business-rejected'],
+    [{ ok: true, result: { wallet_id: 'other', currency_name: 'diamond', balance: '60' } }, 'invalid-response'],
+    [{ ok: true, result: { wallet_id: userId, currency_name: 'coin', balance: '60' } }, 'invalid-response'],
+    [{ ok: true, result: { wallet_id: userId, currency_name: 'diamond', balance: '0' } }, 'invalid-response'],
+  ] as const) {
     /** 返回预设 HTTP 或业务响应，验证失败场景不重试且不泄露正文。 */
     globalThis.fetch = async () => Response.json(body);
-    await expect(setCreationDiamondBalance(account, 'test-only-token')).rejects.toThrow('业务响应不符合预期');
+    await expect(setCreationDiamondBalance(account, 'test-only-token')).rejects.toThrow(requestFailure('set-creation-diamonds', reason, 200).message);
   }
   /** 返回无法解析的 JSON，验证接口格式错误会明确失败。 */
   globalThis.fetch = async () => new Response('invalid-json');
-  await expect(setCreationDiamondBalance(account, 'test-only-token')).rejects.toThrow('无效 JSON');
+  await expect(setCreationDiamondBalance(account, 'test-only-token')).rejects.toThrow(requestFailure('set-creation-diamonds', 'invalid-json', 200).message);
 });
 
 test('网络错误不泄露底层错误里的 token', async () => {
   /** 模拟携带敏感信息的请求异常，验证对外错误不会泄露凭据。 */
   globalThis.fetch = async () => { throw new Error('sensitive-token'); };
   await expect(setCreationDiamondBalance(account, 'test-only-token'))
-    .rejects.toThrow('设置 staging 测试余额请求失败，请检查网络及服务部署');
+    .rejects.toThrow(requestFailure('set-creation-diamonds', 'request-failed').message);
 });

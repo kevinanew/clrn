@@ -2,6 +2,7 @@ import { test, expect } from '../src/support/networkFixture';
 import { navigate, openApplication, visible, press, pressTarget } from './appSession';
 import { exercisePopup } from './popups';
 import { captureTimeline, freeze } from './timeline';
+import { resetViewportScroll } from './renderReadiness';
 import { selectScenario } from '../../e2e/helpers/scenario-proxy';
 import { lockBottomSheetDocumentScroll } from './bottomSheetScroll';
 
@@ -32,7 +33,7 @@ test('private room invitation bottom sheet enter and exit', async ({ context, pa
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'copy-house-number-button')).toBeVisible();
   await lockBottomSheetDocumentScroll(page, visible(page, 'invite-friends-button'));
-  await exercisePopup(page, info, { name: 'invite-friends', target: page.getByTestId('invite-friend-popup-cancel-button'),
+  await exercisePopup(page, info, { name: 'invite-friends', beforeEntrance: /** 恢复固定裁切的页面原点。 */ () => resetViewportScroll(page), target: page.getByTestId('invite-friend-popup-cancel-button'),
     clip: { x: 0, y: page.viewportSize()!.height - 300, width: page.viewportSize()!.width, height: 300 },
     open: /** 点击真实入口。 */ () => press(page, 'invite-friends-button'),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'invite-friend-popup-cancel-button'),
@@ -44,7 +45,7 @@ test('create room game picker enter and exit', async ({ context, page }, info) =
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'create-game-button')).toBeVisible();
   await lockBottomSheetDocumentScroll(page, visible(page, 'create-game-button'));
-  await exercisePopup(page, info, { name: 'game-picker', target: page.getByTestId('select-game-category-text'),
+  await exercisePopup(page, info, { name: 'game-picker', beforeEntrance: /** 恢复固定裁切的页面原点。 */ () => resetViewportScroll(page), target: page.getByTestId('select-game-category-text'),
     clip: { x: 0, y: page.viewportSize()!.height - 400, width: page.viewportSize()!.width, height: 400 },
     open: /** 点击真实入口。 */ () => press(page, 'create-game-button'),
     close: /** 通过实际按钮或遮罩关闭。 */ () => pressTarget(page.getByRole('button', { name: /Bottom sheet backdrop/i })),

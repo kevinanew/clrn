@@ -1,3 +1,4 @@
+import { slotWalletMask } from './slotWallet';
 import { expect, test } from '../src/support/networkFixture';
 import { openApplication, press, pressTarget } from './appSession';
 import { selectScenario, scenarioStatus } from '../../e2e/helpers/scenario-proxy';
@@ -30,18 +31,16 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
       await expect(wallet).toBeVisible();
       await expect(walletNumbers, '金币和钻石数字控件必须都存在').toHaveCount(2);
     },
-    entranceFinalFrameNumericMask: [{ locator: walletNumbers,
-      maximumTexts: expectedWalletBalances }],
+    numericMask: slotWalletMask(panel),
     /** 完成入场截图后验证异步余额最终来自真实业务状态。 */
     afterEntrance: async () => {
       await expect.poll(async () => {
         await page.clock.runFor(16);
-        return Promise.all([
-          wallet.getByText(expectedWalletBalances[0], { exact: true }).isVisible(),
-          wallet.getByText(expectedWalletBalances[1], { exact: true }).isVisible(),
-        ]);
+        return { balances: await walletNumbers.allTextContents(), visible: await Promise.all([
+          walletNumbers.nth(0).isVisible(), walletNumbers.nth(1).isVisible(),
+        ]) };
       }, { timeout: 30_000, intervals: [50], message: '老虎机钱包应显示真实的金币和钻石余额' })
-        .toEqual([true, true]);
+        .toEqual({ balances: expectedWalletBalances, visible: [true, true] });
     },
     open: /** 从背景横幅的同一循环起点打开真实老虎机。 */ async () => {
       await page.clock.fastForward(12_000);

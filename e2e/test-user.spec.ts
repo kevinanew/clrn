@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createTestingAccount } from './cases/_shared/test-user';
+import { requestFailure } from '../scripts/request-failure.cjs';
 
 const originalFetch = globalThis.fetch;
 const credentials = { username: 'testuser123', password: 'password123' };
@@ -37,25 +38,25 @@ for (const status of [401, 404, 500]) {
     let calls = 0;
     /** 返回预设 HTTP 或业务响应，验证失败场景不重试且不泄露正文。 */
     globalThis.fetch = async () => { calls++; return new Response('sensitive', { status }); };
-    await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow(`创建 staging 测试账号失败（HTTP ${status}）`);
+    await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow(requestFailure('create-test-account', 'http-error', status).message);
     expect(calls).toBe(1);
   });
 }
 
 test('拒绝业务失败、错误账号及非法 JSON，错误不包含凭据', async () => {
-  for (const body of [
-    { ok: false, error_type: 'username_already_register' },
-    { ok: true, result: { user_id: userId, username: 'another' } },
-    { ok: true, result: { user_id: 'invalid', username: credentials.username } },
-  ]) {
+  for (const [body, reason] of [
+    [{ ok: false, error_type: 'username_already_register' }, 'business-rejected'],
+    [{ ok: true, result: { user_id: userId, username: 'another' } }, 'invalid-response'],
+    [{ ok: true, result: { user_id: 'invalid', username: credentials.username } }, 'invalid-response'],
+  ] as const) {
     /** 返回预设 HTTP 或业务响应，验证失败场景不重试且不泄露正文。 */
     globalThis.fetch = async () => Response.json(body);
-    await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow('业务响应不符合预期');
+    await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow(requestFailure('create-test-account', reason, 200).message);
   }
   /** 返回无法解析的 JSON，验证接口格式错误会明确失败。 */
   globalThis.fetch = async () => new Response('invalid-json');
-  await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow('无效 JSON');
+  await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow(requestFailure('create-test-account', 'invalid-json', 200).message);
   /** 模拟携带敏感信息的请求异常，验证对外错误不会泄露凭据。 */
   globalThis.fetch = async () => { throw new Error('sensitive-token'); };
-  await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow('创建 staging 测试账号请求失败；不会自动重试');
+  await expect(createTestingAccount(credentials, 'test-token')).rejects.toThrow(requestFailure('create-test-account', 'request-failed').message);
 });

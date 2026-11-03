@@ -25,7 +25,7 @@ for (const mode of ['ordinary', 'foreground', 'background', 'numeric'] as const)
       times: [0, 80], requireMotion: true,
       ...(mode === 'foreground' ? { foregroundBelow: { y: 80, locator: subject } } : {}),
       ...(mode === 'background' ? { excludedBackground: [page.locator('#background')] } : {}),
-      ...(mode === 'numeric' ? { finalFrameNumericMask: [{ locator: page.locator('#number'), maximumTexts: ['60'] }] } : {}),
+      ...(mode === 'numeric' ? { numericMask: [{ container: page.locator('body'), locator: page.locator('#number'), expectedCount: 1 }] } : {}),
     };
     await captureTimeline(page, information, `${mode}-first`, subject, options);
     await captureTimeline(page, information, `${mode}-second`, subject, options);
@@ -77,7 +77,7 @@ for (const mode of ['tolerated', 'unstable'] as const) {
         times: [0, 80], requireChange: false,
         ...(kind === 'foreground' ? { foregroundBelow: { y: 80, locator: page.locator('#subject') } } : {}),
         ...(kind === 'background' ? { excludedBackground: [page.locator('#background')] } : {}),
-        ...(kind === 'numeric' ? { finalFrameNumericMask: [{ locator: page.locator('#number'), maximumTexts: ['60'] }] } : {}),
+        ...(kind === 'numeric' ? { numericMask: [{ container: page.locator('body'), locator: page.locator('#number'), expectedCount: 1 }] } : {}),
         ...(kind === 'mask' ? { mask: [page.locator('#background')] } : {}),
       });
       await information.attach('稳定性检查之后', { body: '已完成', contentType: 'text/plain' });

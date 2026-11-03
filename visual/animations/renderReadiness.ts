@@ -15,3 +15,12 @@ export async function settleLayout(page: Page): Promise<void> {
     await advanceCardSpriteClock(page, 0);
   }
 }
+
+/**
+ * 底部弹层挂载后恢复固定裁切使用的页面原点，避免根滚动将背景和导航整体移位。
+ * @param page - 时钟已暂停且弹层已挂载的页面。
+ */
+export async function resetViewportScroll(page: Page): Promise<void> {
+  await page.evaluate(() => window.scrollTo({ left: 0, top: 0, behavior: 'instant' }));
+  await settleLayout(page);
+}
