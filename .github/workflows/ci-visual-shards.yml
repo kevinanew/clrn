@@ -1,0 +1,129 @@
+# 两阶段共用原有测试实现，只有调度矩阵由调用方决定。
+name: H5 visual 分片执行
+on:
+  workflow_call:
+    inputs:
+      matrix:
+        required: true
+        type: string
+      release_record:
+        required: true
+        type: string
+      expected_application_commit:
+        required: true
+        type: string
+      suite:
+        type: string
+        default: all
+      mode:
+        type: string
+        default: compare
+      filter:
+        type: string
+        default: ""
+permissions:
+  contents: read
+jobs:
+  visual:
+    name: ${{ matrix.suite == 'texas' && '德州' || matrix.suite == 'zhajinhua' && '拼三张' || '应用' }}画面（${{ matrix.locale == 'zh-Hans' && '简体中文' || matrix.locale == 'zh-Hant' && '繁体中文' || '英语' }}） [ci:visual/${{ matrix.suite }}/${{ matrix.locale }}]
+    # Python 工具缓存需与 Jammy 容器使用相同的 glibc 基线。
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.matrix) }}
+    # 每个套件和语言独占一个账号；跨工作流选中同一账号时由 GitHub 排队。
+    concurrency:
+      group: h5-staging-account-${{ matrix.account }}
+      cancel-in-progress: false
+      queue: max
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.1-jammy
+    env:
+      CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
+      CI: 'true'
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      VISUAL_SKIP_VISUAL_INSTALL: 'true'
+      VISUAL_LOCALES: ${{ matrix.locale }}
+      VISUAL_SCOPE: full
+      VISUAL_SKIP_SUPPORT_TESTS: ${{ matrix.locale != 'zh-Hans' || matrix.suite != 'app' }}
+      VISUAL_WORKERS: '1'
+      VISUAL_FILTER: ${{ inputs.filter || '' }}
+    steps:
+      - name: 检出画面测试代码
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: 准备本任务独占账号及金币余额
+        env:
+          CLRN_CI_ACCOUNT: ${{ matrix.account }}
+          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V3 }}
+          TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
+        run: node scripts/configure-ci-account.mjs
+      - name: 安装包管理器
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.13.0 --activate
+      - name: 安装画面测试依赖
+        working-directory: visual
+        run: pnpm install --frozen-lockfile
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装 mitmproxy
+        run: |
+          python -m venv e2e/.venv
+          e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
+      - name: 检查共用网络场景与真实选线透传
+        if: matrix.suite == 'app' && matrix.locale == 'zh-Hans'
+        run: e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
+      - name: 检查牌局代理隔离与回放
+        if: matrix.suite != 'app' && matrix.locale == 'zh-Hans'
+        run: e2e/.venv/bin/python -m unittest discover -s visual/cases/${{ matrix.suite == 'texas' && 'texas-holdem' || 'zhajinhua' }}/mitmproxy -v
+      - name: 检查牌局记录代理隔离与测试数据
+        if: matrix.suite == 'app' && matrix.locale == 'zh-Hans'
+        run: e2e/.venv/bin/python -m unittest discover -s visual/cases/game-record/mitmproxy -v
+      - name: 检查画面测试套件
+        if: matrix.locale == 'zh-Hans' && (matrix.suite == 'app' || inputs.suite == 'texas' || inputs.suite == 'zhajinhua')
+        working-directory: visual
+        run: |
+          pnpm run typecheck
+          pnpm exec tsx --test snapshotPolicy.browser.ts
+          if [ '${{ inputs.mode }}' != reference ]; then pnpm run test:scenarios; fi
+      - name: 准备本轮 Release 构建包
+        uses: ./.github/actions/prepare-release-web
+        with:
+          release-record: ${{ inputs.release_record || '' }}
+          expected-application-commit: ${{ inputs.expected_application_commit || '' }}
+          github-token: ${{ github.token }}
+      - name: 运行画面测试套件
+        working-directory: visual
+        env:
+          VISUAL_SUITE: ${{ matrix.suite }}
+          TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
+        run: |
+          if [ '${{ inputs.mode }}' = reference ]; then
+            node ../scripts/with-release-web-server.mjs pnpm exec tsx run-visual.ts reference
+          else
+            node ../scripts/with-release-web-server.mjs pnpm run test:ci
+          fi
+      - name: 展示连接诊断摘要
+        if: always()
+        run: node scripts/connection-diagnostic-summary.mjs
+      - name: 上传基准截图供审查
+        if: always() && !cancelled() && inputs.mode == 'reference'
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-${{ matrix.suite }}-${{ matrix.locale }}-reference
+          path: visual/cases/*/snapshots/*.png
+          if-no-files-found: error
+      - name: 上传失败报告
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-${{ matrix.suite }}-${{ matrix.locale }}-failure-report
+          path: |
+            visual/playwright-report/
+            visual/test-results/
+          if-no-files-found: ignore

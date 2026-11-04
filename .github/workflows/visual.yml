@@ -4,7 +4,7 @@ name: H5 画面回归测试
 # 使用 100 个 Web 专用账号的新凭据，保留账号并发锁并兼容旧分支继续运行。
 on:
   pull_request:
-    paths: ['scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/*proxy*.ts', 'e2e/helpers/*diagnostic*', 'scripts/connection-diagnostic-summary.mjs', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml']
+    paths: ['scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/*proxy*.ts', 'e2e/helpers/*diagnostic*', 'scripts/connection-diagnostic-summary.mjs', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml', '.github/workflows/ci-visual-shards.yml']
   push:
     branches: [master]
     # 单独的部署记录由 staging-deployment.yml 调用本工作流，避免重复运行全量画面。
@@ -21,6 +21,10 @@ on:
         type: string
   workflow_dispatch:
     inputs:
+      full_run:
+        description: 忽略失败历史并执行当前选择的完整测试计划
+        type: boolean
+        default: false
       suite:
         description: 'all：全部；app：应用；texas：德州；zhajinhua：拼三张'
         type: choice
@@ -38,6 +42,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   accounts:
@@ -45,6 +50,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
+      priority: ${{ steps.plan.outputs.priority }}
+      remaining: ${{ steps.plan.outputs.remaining }}
+      priority_count: ${{ steps.plan.outputs.priority_count }}
+      remaining_count: ${{ steps.plan.outputs.remaining_count }}
+      release_record: ${{ steps.plan.outputs.release_record }}
+      application_commit: ${{ steps.plan.outputs.application_commit }}
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -54,113 +65,66 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: 规划画面测试账号
+      - name: 固定构建并规划本轮全部分片
         id: plan
         env:
-          CI_VISUAL_SUITE: ${{ inputs.suite || 'all' }}
-          CI_VISUAL_FULL: 'true'
-        run: node scripts/plan-ci-accounts.mjs visual
-  visual:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_SCHEDULE_OPTIONS: ${{ toJSON(inputs) }}
+        run: node scripts/ci-schedule.mjs plan visual
+      - name: 保存完整计划供连续修复轮次读取
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-plan-visual-${{ github.run_attempt }}
+          path: ci-plan.json
+          retention-days: 30
+          if-no-files-found: error
+  priority:
+    name: 优先验证历史失败
     needs: accounts
+    if: needs.accounts.outputs.priority_count != '0'
+    uses: ./.github/workflows/ci-visual-shards.yml
+    with:
+      matrix: ${{ needs.accounts.outputs.priority }}
+      release_record: ${{ needs.accounts.outputs.release_record }}
+      expected_application_commit: ${{ needs.accounts.outputs.application_commit }}
+      suite: ${{ inputs.suite || 'all' }}
+      mode: ${{ inputs.mode || 'compare' }}
+      filter: ${{ inputs.filter || '' }}
+    secrets: inherit
+  remaining:
+    name: 执行剩余完整回归
+    needs: [accounts, priority]
+    if: >-
+      always() && !cancelled() && needs.accounts.result == 'success' &&
+      needs.accounts.outputs.remaining_count != '0' &&
+      (needs.priority.result == 'success' ||
+       (needs.accounts.outputs.priority_count == '0' && needs.priority.result == 'skipped'))
+    uses: ./.github/workflows/ci-visual-shards.yml
+    with:
+      matrix: ${{ needs.accounts.outputs.remaining }}
+      release_record: ${{ needs.accounts.outputs.release_record }}
+      expected_application_commit: ${{ needs.accounts.outputs.application_commit }}
+      suite: ${{ inputs.suite || 'all' }}
+      mode: ${{ inputs.mode || 'compare' }}
+      filter: ${{ inputs.filter || '' }}
+    secrets: inherit
+  visual:
     name: ${{ matrix.suite == 'texas' && '德州' || matrix.suite == 'zhajinhua' && '拼三张' || '应用' }}画面（${{ matrix.locale == 'zh-Hans' && '简体中文' || matrix.locale == 'zh-Hant' && '繁体中文' || '英语' }}）
-    # Python 工具缓存需与 Jammy 容器使用相同的 glibc 基线。
-    runs-on: ubuntu-22.04
-    timeout-minutes: 360
+    needs: [accounts, priority, remaining]
+    if: always()
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.accounts.outputs.matrix) }}
-    # 每个套件和语言独占一个账号；跨工作流选中同一账号时由 GitHub 排队。
-    concurrency:
-      group: h5-staging-account-${{ matrix.account }}
-      cancel-in-progress: false
-      queue: max
-    container:
-      image: mcr.microsoft.com/playwright:v1.61.1-jammy
-    env:
-      CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
-      CI: 'true'
-      PUPPETEER_SKIP_DOWNLOAD: 'true'
-      VISUAL_SKIP_VISUAL_INSTALL: 'true'
-      VISUAL_LOCALES: ${{ matrix.locale }}
-      VISUAL_SCOPE: full
-      VISUAL_SKIP_SUPPORT_TESTS: ${{ matrix.locale != 'zh-Hans' || matrix.suite != 'app' }}
-      VISUAL_WORKERS: '1'
-      VISUAL_FILTER: ${{ inputs.filter || '' }}
+      # 规划失败时仍创建失败门禁，不能让空矩阵或 skipped 放行。
+      matrix: ${{ fromJSON(needs.accounts.outputs.matrix || '{"include":[{"suite":"app","locale":"zh-Hans","part":"application"}]}') }}
     steps:
-      - name: 检出画面测试代码
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
-      - name: 准备本任务独占账号及金币余额
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: 核对当前提交全量结果并生成摘要
         env:
-          CLRN_CI_ACCOUNT: ${{ matrix.account }}
-          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V3 }}
-          TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
-        run: node scripts/configure-ci-account.mjs
-      - name: 安装包管理器
-        run: |
-          corepack enable
-          corepack prepare pnpm@11.13.0 --activate
-      - name: 安装画面测试依赖
-        working-directory: visual
-        run: pnpm install --frozen-lockfile
-      - name: 配置 Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: 安装 mitmproxy
-        run: |
-          python -m venv e2e/.venv
-          e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
-      - name: 检查共用网络场景与真实选线透传
-        if: matrix.suite == 'app' && matrix.locale == 'zh-Hans'
-        run: e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
-      - name: 检查牌局代理隔离与回放
-        if: matrix.suite != 'app' && matrix.locale == 'zh-Hans'
-        run: e2e/.venv/bin/python -m unittest discover -s visual/cases/${{ matrix.suite == 'texas' && 'texas-holdem' || 'zhajinhua' }}/mitmproxy -v
-      - name: 检查牌局记录代理隔离与测试数据
-        if: matrix.suite == 'app' && matrix.locale == 'zh-Hans'
-        run: e2e/.venv/bin/python -m unittest discover -s visual/cases/game-record/mitmproxy -v
-      - name: 检查画面测试套件
-        if: matrix.locale == 'zh-Hans' && (matrix.suite == 'app' || inputs.suite == 'texas' || inputs.suite == 'zhajinhua')
-        working-directory: visual
-        run: |
-          pnpm run typecheck
-          pnpm exec tsx --test snapshotPolicy.browser.ts
-          if [ '${{ inputs.mode }}' != reference ]; then pnpm run test:scenarios; fi
-      - name: 准备本轮 Release 构建包
-        uses: ./.github/actions/prepare-release-web
-        with:
-          release-record: ${{ inputs.release_record || '' }}
-          expected-application-commit: ${{ inputs.expected_application_commit || '' }}
-          github-token: ${{ github.token }}
-      - name: 运行画面测试套件
-        working-directory: visual
-        env:
-          VISUAL_SUITE: ${{ matrix.suite }}
-          TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
-        run: |
-          if [ '${{ inputs.mode }}' = reference ]; then
-            node ../scripts/with-release-web-server.mjs pnpm exec tsx run-visual.ts reference
-          else
-            node ../scripts/with-release-web-server.mjs pnpm run test:ci
-          fi
-      - name: 展示连接诊断摘要
-        if: always()
-        run: node scripts/connection-diagnostic-summary.mjs
-      - name: 上传基准截图供审查
-        if: always() && !cancelled() && inputs.mode == 'reference'
-        uses: actions/upload-artifact@v4
-        with:
-          name: visual-${{ matrix.suite }}-${{ matrix.locale }}-reference
-          path: visual/cases/*/snapshots/*.png
-          if-no-files-found: error
-      - name: 上传失败报告
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: visual-${{ matrix.suite }}-${{ matrix.locale }}-failure-report
-          path: |
-            visual/playwright-report/
-            visual/test-results/
-          if-no-files-found: ignore
+          CI_SCHEDULE_NEEDS: ${{ toJSON(needs) }}
+        run: node scripts/ci-schedule.mjs gate visual

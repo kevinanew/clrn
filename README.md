@@ -1,5 +1,8 @@
 # 来玩 H5 E2E
 
+Web 矩阵 CI 使用[历史失败优先调度](docs/ci-failure-first.md)：先验证失败分片，
+通过后再执行当前提交剩余回归；历史不可用时自动全量。
+
 Release 构建及正式站可用性的 Playwright 端到端测试位于 [e2e/](e2e/README.md)，弱网故障由 mitmproxy 注入。GitHub Actions 在 E2E 代码或工作流 push 变更和手动触发时运行完整测试，结果见仓库的 Actions 页面。
 
 ## 应用部署联动

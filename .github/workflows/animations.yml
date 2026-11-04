@@ -14,12 +14,14 @@ on:
       - 'e2e/helpers/*proxy*.ts'
       - 'scripts/connection-diagnostic-summary.mjs'
       - 'scripts/*accounts*'
+      - 'scripts/*ci*'
       - 'scripts/configure-ci-account.mjs'
       - 'scripts/staging-deployment.mjs'
       - 'e2e/helpers/staging-notice.ts'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/animations.yml'
+      - '.github/workflows/ci-animations-shards.yml'
   push:
     branches: [master]
     paths:
@@ -32,12 +34,14 @@ on:
       - 'e2e/helpers/*proxy*.ts'
       - 'scripts/connection-diagnostic-summary.mjs'
       - 'scripts/*accounts*'
+      - 'scripts/*ci*'
       - 'scripts/configure-ci-account.mjs'
       - 'scripts/staging-deployment.mjs'
       - 'e2e/helpers/staging-notice.ts'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/animations.yml'
+      - '.github/workflows/ci-animations-shards.yml'
   workflow_call:
     inputs:
       release_record:
@@ -54,6 +58,10 @@ on:
         default: false
   workflow_dispatch:
     inputs:
+      full_run:
+        description: 忽略失败历史并执行当前选择的完整测试计划
+        type: boolean
+        default: false
       suite:
         description: 需要验证的动画套件
         type: choice
@@ -78,6 +86,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   accounts:
@@ -85,6 +94,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
+      priority: ${{ steps.plan.outputs.priority }}
+      remaining: ${{ steps.plan.outputs.remaining }}
+      priority_count: ${{ steps.plan.outputs.priority_count }}
+      remaining_count: ${{ steps.plan.outputs.remaining_count }}
+      release_record: ${{ steps.plan.outputs.release_record }}
+      application_commit: ${{ steps.plan.outputs.application_commit }}
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -94,176 +109,66 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: 规划动画测试账号
+      - name: 固定构建并规划本轮全部分片
         id: plan
         env:
-          CI_ANIMATION_SUITE: ${{ inputs.suite || 'all' }}
-        run: node scripts/plan-ci-accounts.mjs animations
-  animations:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_SCHEDULE_OPTIONS: ${{ toJSON(inputs) }}
+        run: node scripts/ci-schedule.mjs plan animations
+      - name: 保存完整计划供连续修复轮次读取
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-plan-animations-${{ github.run_attempt }}
+          path: ci-plan.json
+          retention-days: 30
+          if-no-files-found: error
+  priority:
+    name: 优先验证历史失败
     needs: accounts
+    if: needs.accounts.outputs.priority_count != '0'
+    uses: ./.github/workflows/ci-animations-shards.yml
+    with:
+      matrix: ${{ needs.accounts.outputs.priority }}
+      release_record: ${{ needs.accounts.outputs.release_record }}
+      expected_application_commit: ${{ needs.accounts.outputs.application_commit }}
+      suite: ${{ inputs.suite || 'all' }}
+      update_snapshots: ${{ inputs.update_snapshots == true }}
+      card_sprite_control: ${{ inputs.card_sprite_control == true }}
+    secrets: inherit
+  remaining:
+    name: 执行剩余完整回归
+    needs: [accounts, priority]
+    if: >-
+      always() && !cancelled() && needs.accounts.result == 'success' &&
+      needs.accounts.outputs.remaining_count != '0' &&
+      (needs.priority.result == 'success' ||
+       (needs.accounts.outputs.priority_count == '0' && needs.priority.result == 'skipped'))
+    uses: ./.github/workflows/ci-animations-shards.yml
+    with:
+      matrix: ${{ needs.accounts.outputs.remaining }}
+      release_record: ${{ needs.accounts.outputs.release_record }}
+      expected_application_commit: ${{ needs.accounts.outputs.application_commit }}
+      suite: ${{ inputs.suite || 'all' }}
+      update_snapshots: ${{ inputs.update_snapshots == true }}
+      card_sprite_control: ${{ inputs.card_sprite_control == true }}
+    secrets: inherit
+  animations:
     name: 动画关键帧 (${{ matrix.suite }}/${{ matrix.part }})
-    runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    needs: [accounts, priority, remaining]
+    if: always()
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.accounts.outputs.matrix) }}
-    concurrency:
-      group: h5-staging-account-${{ matrix.account }}
-      cancel-in-progress: false
-      queue: max
-    container:
-      image: mcr.microsoft.com/playwright:v1.61.1-jammy
-    env:
-      CI: 'true'
-      VISUAL_SUITE: ${{ matrix.suite }}
-      ANIMATION_PART: ${{ matrix.part }}
-      CLRN_EXPECTED_APPLICATION_COMMIT: ${{ inputs.expected_application_commit || '' }}
-      TESTING_API_TOKEN: ${{ secrets.TESTING_API_TOKEN }}
+      # 规划失败时仍创建失败门禁，不能让空矩阵或 skipped 放行。
+      matrix: ${{ fromJSON(needs.accounts.outputs.matrix || '{"include":[{"suite":"app","locale":"zh-Hans","part":"application"}]}') }}
     steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
-      - name: 配置 Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: npm
-      - name: 注入本任务独占的测试账号
+      - name: 核对当前提交全量结果并生成摘要
         env:
-          CLRN_CI_ACCOUNT: ${{ matrix.account }}
-          CLRN_CI_TEST_ACCOUNTS: ${{ secrets.CLRN_CI_TEST_ACCOUNTS_V3 }}
-        run: node scripts/configure-ci-account.mjs
-      - name: 安装锁定的测试依赖
-        run: |
-          npm ci
-          corepack enable
-          corepack prepare pnpm@11.13.0 --activate
-          cd visual
-          pnpm install --frozen-lockfile
-      - name: 配置 Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: 安装网络场景代理
-        run: |
-          python -m venv e2e/.venv
-          e2e/.venv/bin/python -m pip install -r e2e/mitmproxy/requirements.txt
-      - name: 检查应用场景与消息夹具
-        if: matrix.suite == 'app' && matrix.part == 'application'
-        run: e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
-      - name: 检查 TypeScript
-        run: npm run typecheck
-      - name: 检查德州房间规则读取边界
-        if: matrix.suite == 'texas' && matrix.part == 'social'
-        run: e2e/.venv/bin/python -m unittest discover -s visual/cases/texas-holdem/mitmproxy -v
-      - name: 验证底部弹层的文档和应用壳滚动锁定
-        if: matrix.suite == 'app' && matrix.part == 'application'
-        run: node --import tsx --test visual/animations/bottomSheetScroll.browser.ts visual/animations/renderReadiness.browser.ts
-      - name: 验证老虎机横幅起点与余额遮罩
-        if: matrix.suite == 'app' && matrix.part == 'ui'
-        run: node --import tsx --test visual/animations/slotBannerPreparation.browser.ts visual/animations/walletMask.browser.ts
-      - name: 验证关键帧差异汇总、牌面就绪、素材定位与续时准备
-        if: matrix.suite == 'texas' && matrix.part == 'gameplay'
-        run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/cardSpriteReadiness.browser.ts visual/animations/cardSpriteDiagnostics.browser.ts visual/animations/cardSpriteClock.browser.ts visual/animations/cardSpriteLoader.browser.ts visual/animations/cardSpriteHistory.browser.ts visual/animations/playerAnimationAsset.browser.ts visual/animations/renewReadiness.browser.ts visual/animations/leaderboardReadiness.browser.ts visual/animations/playerProfileReadiness.browser.ts visual/animations/tableConnection.browser.ts
-      - name: 准备本轮 Release 构建包
-        id: release
-        uses: ./.github/actions/prepare-release-web
-        with:
-          release-record: ${{ inputs.release_record || '' }}
-          expected-application-commit: ${{ inputs.expected_application_commit || '' }}
-          github-token: ${{ github.token }}
-      - name: 生成本轮候选基准
-        if: inputs.update_snapshots == true
-        working-directory: visual
-        run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --update-snapshots
-      - name: 打包本套件改动的候选图
-        if: always() && !cancelled() && inputs.update_snapshots == true
-        shell: bash
-        run: |
-          mkdir -p visual/test-results/animation-candidates
-          git -c safe.directory="$GITHUB_WORKSPACE" ls-files -z --modified --others --exclude-standard -- visual/animations/snapshots \
-            > visual/test-results/animation-candidates/files.list
-          tar --null -T visual/test-results/animation-candidates/files.list \
-            -czf visual/test-results/animation-candidates/${{ matrix.suite }}-${{ matrix.part }}.tar.gz
-      - name: 提前保存候选图供检查
-        if: always() && !cancelled() && inputs.update_snapshots == true
-        uses: actions/upload-artifact@v4
-        with:
-          name: animation-${{ matrix.suite }}-${{ matrix.part }}-candidates-${{ github.run_id }}-${{ github.run_attempt }}
-          retention-days: 14
-          if-no-files-found: error
-          path: visual/test-results/animation-candidates/${{ matrix.suite }}-${{ matrix.part }}.tar.gz
-      - name: 连续三次比较手机和桌面动画关键帧
-        working-directory: visual
-        run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --repeat-each=3
-      - name: 独立新牌局图集时钟对照（不替代动画比较）
-        if: ${{ !cancelled() && steps.release.outcome == 'success' && inputs.card_sprite_control == true && matrix.suite == 'texas' && matrix.part == 'gameplay' }}
-        working-directory: visual
-        env:
-          ANIMATION_PART: card-sprite-control
-        run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --repeat-each=3
-      - name: 展示连接诊断摘要
-        if: always()
-        run: node scripts/connection-diagnostic-summary.mjs
-      - name: 准备首张失败截图供网页预览
-        if: always()
-        id: preview
-        shell: bash
-        run: |
-          if [ -d visual/test-results/animations ]; then
-            screenshot=$(find visual/test-results/animations -type f \( -name 'failure.png' -o -name 'test-failed-*.png' \) -print -quit)
-          fi
-          if [ -n "${screenshot:-}" ]; then
-            cp -- "$screenshot" visual/test-results/animations/failure-preview.png
-            echo 'available=true' >> "$GITHUB_OUTPUT"
-          fi
-      - name: 保存关键帧对比和时间采样报告
-        if: always()
-        id: report
-        uses: actions/upload-artifact@v4
-        with:
-          name: animation-${{ matrix.suite }}-${{ matrix.part }}-report-${{ github.run_id }}-${{ github.run_attempt }}
-          retention-days: 14
-          path: |
-            visual/playwright-report/animations/
-            visual/test-results/animations/
-            visual/playwright-report/card-sprite-control/
-            visual/test-results/card-sprite-control/
-            visual/test-results/animation-candidates/
-      - name: 单独保存失败截图
-        if: always()
-        id: screenshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: animation-${{ matrix.suite }}-${{ matrix.part }}-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
-          retention-days: 14
-          if-no-files-found: ignore
-          path: |
-            visual/test-results/animations/**/failure.png
-            visual/test-results/animations/**/test-failed-*.png
-      - name: 上传可直接预览的失败截图
-        if: always() && steps.preview.outputs.available == 'true'
-        id: preview_image
-        uses: actions/upload-artifact@v7
-        with:
-          path: visual/test-results/animations/failure-preview.png
-          archive: false
-          retention-days: 14
-      - name: 在运行摘要中给出截图入口
-        if: always()
-        env:
-          PREVIEW_URL: ${{ steps.preview_image.outputs.artifact-url }}
-          SCREENSHOTS_URL: ${{ steps.screenshots.outputs.artifact-url }}
-          REPORT_URL: ${{ steps.report.outputs.artifact-url }}
-        run: |
-          echo '### 动画测试产物' >> "$GITHUB_STEP_SUMMARY"
-          if [ -n "$PREVIEW_URL" ]; then
-            echo "[直接预览首张失败截图]($PREVIEW_URL)" >> "$GITHUB_STEP_SUMMARY"
-          fi
-          if [ -n "$SCREENSHOTS_URL" ]; then
-            echo "[下载失败截图 PNG]($SCREENSHOTS_URL)" >> "$GITHUB_STEP_SUMMARY"
-          fi
-          if [ -n "$REPORT_URL" ]; then
-            echo "[下载完整 Playwright 报告]($REPORT_URL)" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          CI_SCHEDULE_NEEDS: ${{ toJSON(needs) }}
+        run: node scripts/ci-schedule.mjs gate animations

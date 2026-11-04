@@ -225,7 +225,8 @@ test('所有发布调用固定记录和检出提交，各套件执行前准备 R
   assert.match(parent, /cancel-in-progress: false\n {2}queue: max/);
   assert.equal(parent.split('release_record: ${{ needs.deployment.outputs.release_record }}').length - 1, 5);
   for (const name of ['e2e', 'functional', 'interactions', 'visual', 'animations']) {
-    const workflow = await readFile(new URL(`../.github/workflows/${name}.yml`, import.meta.url), 'utf8');
+    const file = ['visual', 'animations'].includes(name) ? `ci-${name}-shards` : name;
+    const workflow = await readFile(new URL(`../.github/workflows/${file}.yml`, import.meta.url), 'utf8');
     assert.match(workflow, /ref: \$\{\{ github.sha \}\}/);
     assert.match(workflow, /uses: \.\/\.github\/actions\/prepare-release-web/);
     assert.match(workflow, /release-record: \$\{\{ inputs.release_record/);

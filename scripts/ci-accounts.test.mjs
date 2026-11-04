@@ -190,7 +190,8 @@ test('公开清单仅含 100 个 Web 账号，凭据必须完整且不能混入�
 
 test('五组工作流统一引用新版 Web 凭据并保留账号互斥', () => {
   for (const workflow of ['e2e', 'functional', 'interactions', 'visual', 'animations']) {
-    const source = readFileSync(`.github/workflows/${workflow}.yml`, 'utf8');
+    const file = ['visual', 'animations'].includes(workflow) ? `ci-${workflow}-shards` : workflow;
+    const source = readFileSync(`.github/workflows/${file}.yml`, 'utf8');
     assert.match(source, /secrets\.CLRN_CI_TEST_ACCOUNTS_V3/);
     assert.doesNotMatch(source, /secrets\.CLRN_CI_TEST_ACCOUNTS_V2/);
     assert.match(source, /group: h5-staging-account-/);

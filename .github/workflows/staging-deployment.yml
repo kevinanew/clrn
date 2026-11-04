@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 # 保留每次发布的测试，账号并发锁继续由各套件管理。
 concurrency:
