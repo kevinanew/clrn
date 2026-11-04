@@ -13,6 +13,7 @@ export type NativeGamePublication = {
   queue: { event: string; player_id?: string; delay_seconds?: number; [key: string]: unknown }[];
 };
 export type RoomSnapshot = {
+  game: { is_end: boolean };
   player_pool: { players: Record<string, {
     stack: number; buy_in_amount: number; pay_amount: number; is_stand_up: boolean; is_quit: boolean;
   }> };

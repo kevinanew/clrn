@@ -3,6 +3,7 @@ import { chromium, expect, type BrowserContext, type Page, type Browser, type Br
 import type { Mitmproxy } from '../../../helpers/mitmproxy-client';
 import type { NativeStatus, NativeReport, WalletState, WalletHit, NativeGamePublication, RoomSnapshot } from './types';
 import { verifyFaultAndRecovery, verifyTransportAndRecovery } from './recovery.mjs';
+import { nativeFunds as verifyFunds } from './funds';
 import { safeDiagnosticReason } from '../../../../scripts/request-failure.cjs';
 import * as pageModule from '../../../cases/_shared/page';
 const { openHall, prepareContext } = compatibleModule(pageModule);
@@ -48,21 +49,6 @@ async function walletControl<T = unknown>(endpoint: string, body?: Record<string
  */
 function roomSnapshot(room: string): RoomSnapshot {
  return JSON.parse(execFileSync(root+'/sources/redis-7.2.5/src/redis-cli',['-c','-p',String(state.redisPorts[0]),'GET','texas_holdem:v1:room_id:'+room],{encoding:'utf8'}));
-}
-
-/**
- * Check actual wallet, active table and pot funds against the initial two-wallet total.
- * @param room - Snapshot read from real native Redis.
- * @param ledger - Actual local wallet ledger at this observation.
- */
-function verifyFunds(room: RoomSnapshot, ledger: WalletState) {
- const players=room.player_pool.players;
- const walletCoin=Object.values(ledger.balances).reduce((sum,wallet)=>sum+wallet.coin,0);
- const tableCoin=Object.values(players).filter(player=>!player.is_stand_up&&!player.is_quit)
-  .reduce((sum,player)=>sum+player.stack+player.buy_in_amount,0);
- const potCoin=room.pot.players.reduce((sum,user)=>sum+players[user].pay_amount,0);
- const total=walletCoin+tableCoin+potCoin;
- return {walletCoin,tableCoin,potCoin,total,expected:20000,conserved:total===20000};
 }
 
 /**

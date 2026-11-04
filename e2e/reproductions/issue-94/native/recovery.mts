@@ -50,6 +50,7 @@ export async function verifyFaultAndRecovery(targetPage: Page, room: string, hit
  await targetPage.getByTestId('buy-in-text-input').fill('100');
  await targetPage.getByTestId('buy-in-confirm-button').click();
  await expect(targetPage.getByTestId('buy-in-confirm-button')).not.toBeVisible({timeout:15000});
+ await expect(targetPage.getByTestId('texas-holdem-self-seated-marker')).toBeVisible({timeout:15000});
  const after=await walletControl<WalletState>('state');
  assert.equal(before.balances[hit.player].coin-after.balances[hit.player].coin,100,'Recovery must withdraw exactly100');
  assert.equal(Object.keys(after.transactions).length-Object.keys(before.transactions).length,1,'Recovery must create exactly one transaction');
@@ -154,9 +155,10 @@ async function repeatTransportFailure(page: Page, room: string, hit: WalletHit, 
  * @param room - Owned room.
  * @param hit - Original failed wallet attempt.
  * @param proxy - Original native publications.
+ * @param walletPage - Browser whose wallet funds the automatic rebuy.
  * @param tools - Wallet and engine observations.
  */
-async function recoverTransport(page: Page, room: string, hit: WalletHit, proxy: Mitmproxy, tools: RecoveryTools) {
+async function recoverTransport(page: Page, room: string, hit: WalletHit, proxy: Mitmproxy, walletPage: Page, tools: RecoveryTools) {
  const {report,evidence,walletControl,roomSnapshot,verifyFunds,screenshotAfterSettling,waitPublishedOutcome}=tools;
  await walletControl('fault',{mode:'normal'});
  const before=await walletControl<WalletState>('state');
@@ -169,6 +171,8 @@ async function recoverTransport(page: Page, room: string, hit: WalletHit, proxy:
  },{timeout:20000}).toBe(true);
  assert.ok(recoveredHit,'Visible recovery did not execute a real automatic withdrawal');
  await waitPublishedOutcome(proxy,recoveredHit);
+ await expect(walletPage.getByTestId('texas-holdem-self-seated-marker')).toBeVisible({timeout:10000});
+ await expect.poll(async()=>Number(await walletPage.getByTestId('text-holdem-own-balance-text').textContent()),{timeout:10000}).toBeGreaterThanOrEqual(98);
  const after=await walletControl<WalletState>('state');const snapshot=roomSnapshot(room);
  const funds=verifyFunds(snapshot,after);
  report.recovery={before,after,room:snapshot,funds,recoveredHit};
@@ -177,6 +181,7 @@ async function recoverTransport(page: Page, room: string, hit: WalletHit, proxy:
  await screenshotAfterSettling(page,evidence+'/recovered-operation-retry.png');
  report.correctness={readableFailure:report.faultNotices.every(text=>text.trim().length>0&&!/undefined|null|NaN/.test(text)),
   noFalseInsufficientBalance:report.faultNotices.every(text=>!/insufficient|余额不足|筹码不足/.test(text)),fundsConserved:funds.conserved};
+ report.phase='assert-transport-error-readability-and-funds';
  assert.equal(report.correctness.readableFailure,true,'Transport failure must show a readable error');
  assert.equal(report.correctness.noFalseInsufficientBalance,true,'Non-balance transport failure must not claim insufficient balance');
  assert.equal(funds.conserved,true,'Native wallet, table and pot funds must be conserved after visible retry');
@@ -200,5 +205,5 @@ export async function verifyTransportAndRecovery(pages: Page[], owners: string[]
  tools.report.phase='repeat-genuine-transport-failure';
  await repeatTransportFailure(page,room,hit,proxy,tools);
  tools.report.phase='recover-genuine-transport-failure';
- await recoverTransport(page,room,hit,proxy,tools);
+ await recoverTransport(page,room,hit,proxy,pages[owners.indexOf(hit.player)],tools);
 }
