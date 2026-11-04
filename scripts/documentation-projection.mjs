@@ -4,6 +4,9 @@ import { dirname, join } from 'node:path';
 import tseslint from 'typescript-eslint';
 import { repository, sourceFiles } from './source-files.mjs';
 
+// 原生重复基线对应的文档补齐前源码；基线缩减时不得随之更新。
+export const duplicationReference = '434486649908f91a7d8459ea59e7767d471a79a0';
+
 /** 从 AST 中读取真实文档块，字符串和正则中的注释标记不参与转换。
  * @param source - 完整 JS/TS 源码。
  * @param file - 源码路径，用于区分 TS 泛型和 JSX。
@@ -57,9 +60,7 @@ export function projectJavascript(source, reference, file) {
  * @param directory - 专用于本次扫描的临时源码目录。
  * @returns 原始源码文件数。 */
 export function writeDuplicationSources(directory) {
-  const ref = execFileSync('git', ['log', '-1', '--format=%H', '--', 'quality/jscpd-baseline.json'],
-    { cwd: repository, encoding: 'utf8' }).trim();
-  if (!ref) throw new Error('无法定位固定重复基线的源码提交。');
+  const ref = duplicationReference;
   const tracked = new Set(execFileSync('git', ['ls-tree', '-r', '--name-only', ref], { cwd: repository, encoding: 'utf8' }).split('\n'));
   const files = sourceFiles().filter(/** 选择原重复门禁覆盖的全部 JS、TS 与 Python 实现。
    * @param file - 手写源码候选。 */ file => /\.[cm]?[jt]sx?$|\.py$/.test(file));

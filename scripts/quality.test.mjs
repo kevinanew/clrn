@@ -7,6 +7,7 @@ import test from 'node:test';
 import { ESLint } from 'eslint';
 import { assertShrinking, newFindings } from './quality-baseline.mjs';
 import { repository } from './source-files.mjs';
+import { duplicationReference, projectJavascript } from './documentation-projection.mjs';
 
 const eslint = new ESLint({ cwd: repository });
 
@@ -126,6 +127,44 @@ test('真实 jscpd 的原生基线允许旧重复，阻止新内容及第三份�
     rmSync(join(directory, 'c.ts'));
     const other = source.replaceAll('unique-quality-', 'new-quality-');
     for (const file of ['d.ts', 'e.ts']) writeFileSync(join(directory, file), other);
+    assert.equal(invoke('node_modules/jscpd/run-jscpd.js', args, directory).status, 1);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test('缩减重复基线后文档投影仍保持旧指纹并拦截新增重复', /** 使用真实 jscpd 验证基线缩减和后续重复检测。 */ () => {
+  assert.equal(duplicationReference, '434486649908f91a7d8459ea59e7767d471a79a0');
+  const directory = mkdtempSync(join(tmpdir(), 'clrn-projection-baseline-'));
+  try {
+    const makeSource = /** 构造可被 jscpd 识别的重复代码。
+     * @param prefix - 区分两组历史代码的标记。 */ prefix => Array.from({ length: 14 },
+      /** 生成一行测试代码。
+       * @param _ - 未使用的数组元素。
+       * @param index - 当前行号。 */ (_, index) => `console.log('${prefix}-${index}', input + ${index});`).join('\n');
+    const old = makeSource('remaining');
+    const removed = makeSource('removed');
+    const projected = /** 模拟补充文档后的源码投影。
+     * @param source - 原始源码。 */ source => projectJavascript(`/** 执行重复代码。 */\n${source}`, source, 'probe.ts');
+    for (const [file, source] of [['a.ts', old], ['b.ts', old], ['d.ts', removed], ['e.ts', removed]]) {
+      writeFileSync(join(directory, file), projected(source));
+    }
+    const baseline = join(directory, 'baseline.json');
+    const args = ['.', '--config', join(repository, '.jscpd.json'), '--baseline', baseline,
+      '--output', join(directory, 'reports'), '--silent', '--fail-on-empty'];
+    writeFileSync(baseline, '{"version":1,"fingerprints":{}}');
+    assert.equal(invoke('node_modules/jscpd/run-jscpd.js', [...args, '--update-baseline'], directory).status, 0);
+    const before = JSON.parse(readFileSync(baseline, 'utf8')).fingerprints;
+    rmSync(join(directory, 'd.ts'));
+    rmSync(join(directory, 'e.ts'));
+    assert.equal(invoke('node_modules/jscpd/run-jscpd.js', [...args, '--update-baseline'], directory).status, 0);
+    const after = JSON.parse(readFileSync(baseline, 'utf8')).fingerprints;
+    assert.ok(Object.keys(after).length > 0 && Object.keys(after).length < Object.keys(before).length);
+    for (const [key, count] of Object.entries(after)) assert.equal(before[key], count);
+    for (const file of ['a.ts', 'b.ts']) writeFileSync(join(directory, file), projected(old));
+    assert.equal(invoke('node_modules/jscpd/run-jscpd.js', args, directory).status, 0);
+    writeFileSync(join(directory, 'c.ts'), projected(old));
+    assert.equal(invoke('node_modules/jscpd/run-jscpd.js', args, directory).status, 1);
+    rmSync(join(directory, 'c.ts'));
+    for (const file of ['d.ts', 'e.ts']) writeFileSync(join(directory, file), projected(makeSource('new')));
     assert.equal(invoke('node_modules/jscpd/run-jscpd.js', args, directory).status, 1);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
