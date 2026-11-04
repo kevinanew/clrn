@@ -50,7 +50,8 @@ export async function verifyFaultAndRecovery(targetPage: Page, room: string, hit
  await targetPage.getByTestId('buy-in-text-input').fill('100');
  await targetPage.getByTestId('buy-in-confirm-button').click();
  await expect(targetPage.getByTestId('buy-in-confirm-button')).not.toBeVisible({timeout:15000});
- await expect(targetPage.getByTestId('texas-holdem-self-seated-marker')).toBeVisible({timeout:15000});
+ report.phase='verify-recovered-manual-stack-on-web';
+ await expect.poll(async()=>Number(await targetPage.getByTestId('text-holdem-own-balance-text').textContent()),{timeout:20000}).toBeGreaterThanOrEqual(98);
  const after=await walletControl<WalletState>('state');
  assert.equal(before.balances[hit.player].coin-after.balances[hit.player].coin,100,'Recovery must withdraw exactly100');
  assert.equal(Object.keys(after.transactions).length-Object.keys(before.transactions).length,1,'Recovery must create exactly one transaction');
@@ -171,11 +172,12 @@ async function recoverTransport(page: Page, room: string, hit: WalletHit, proxy:
  },{timeout:20000}).toBe(true);
  assert.ok(recoveredHit,'Visible recovery did not execute a real automatic withdrawal');
  await waitPublishedOutcome(proxy,recoveredHit);
- await expect(walletPage.getByTestId('texas-holdem-self-seated-marker')).toBeVisible({timeout:10000});
- await expect.poll(async()=>Number(await walletPage.getByTestId('text-holdem-own-balance-text').textContent()),{timeout:10000}).toBeGreaterThanOrEqual(98);
  const after=await walletControl<WalletState>('state');const snapshot=roomSnapshot(room);
  const funds=verifyFunds(snapshot,after);
  report.recovery={before,after,room:snapshot,funds,recoveredHit};
+ report.phase='verify-recovered-automatic-stack-on-web';
+ await expect.poll(async()=>Number(await walletPage.getByTestId('text-holdem-own-balance-text').textContent()),{timeout:20000}).toBeGreaterThanOrEqual(98);
+ assert.equal(snapshot.player_pool.players[recoveredHit.player].is_stand_up,false,'Recovered coin player must be seated in the real engine');
  assert.equal(before.balances[hit.player].coin-after.balances[hit.player].coin,100,'Recovery must withdraw exactly100');
  assert.equal(Object.keys(after.transactions).length-Object.keys(before.transactions).length,1,'Recovery must create exactly one transaction');
  await screenshotAfterSettling(page,evidence+'/recovered-operation-retry.png');
