@@ -1,0 +1,42 @@
+{
+  "hall_id": "ba41a7da-c063-4b4f-9aa3-e44529de718b",
+  "is_open": true,
+  "check_gps_coordinate": false,
+  "check_ip_address": false,
+  "room_config": {
+    "currency": "coin",
+    "minimum_buy_in": 100,
+    "maximum_buy_in": 200,
+    "seat_quantity": 6,
+    "auto_start_player_quantity": 2,
+    "can_reserve_seat": false,
+    "buy_in_highest_stack": 4000,
+    "variation": "texas_holdem",
+    "ante": 0,
+    "small_blind": 1,
+    "big_blind": 2,
+    "player_operating_seconds": 60,
+    "audit_buy_in": false,
+    "remove_player_ranking_when_quit": true,
+    "duration": 172800,
+    "prediction_currency": "coin",
+    "prediction_amount_options": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20
+    ]
+  },
+  "minimum_chip": 100,
+  "maximum_chip": 20000,
+  "hall_type": "tourists",
+  "game_type": "texas_holdem",
+  "hall_title_language": "en",
+  "hall_title_content": "Issue94 isolated Tourists"
+}

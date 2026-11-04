@@ -49,7 +49,9 @@ async function main() {
     const runId = process.env.ISSUE94_RUN_ID || `${Date.now()}-${process.pid}`;
     await writeManifest(repository, release, runId);
     const coin = process.argv.includes('--coin-baseline');
-    const command = coin ? [launcher, 'reserve-peer', 'coin-table.scenario.ts']
+    const native = process.argv.includes('--coin-native');
+    const command = native ? ['e2e/reproductions/issue-94/native/run.mjs']
+      : coin ? [launcher, 'reserve-peer', 'coin-table.scenario.ts']
       : ['scripts/with-release-web-server.mjs', process.execPath, 'node_modules/playwright/cli.js',
         'test', '--config', 'e2e/reproductions/issue-94/playwright.config.ts',
         ...process.argv.slice(2)];
