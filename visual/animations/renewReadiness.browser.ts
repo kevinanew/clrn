@@ -63,7 +63,7 @@ test('续时等待两项新读取，隔离旧响应，连接中断仅恢复一�
   });
   await expect.poll(() => pending.has('POST')).toBe(true);
   const stale = pending.get('POST')!;
-  for (const mode of ['post-first', 'put-first', 'recover', 'persistent']) {
+  for (const mode of ['post-first', 'put-first', 'failover', 'recover', 'persistent']) {
     const order = mode === 'put-first' ? ['PUT', 'POST'] : ['POST', 'PUT'];
     pending.clear();
     let ready = false;
@@ -76,10 +76,24 @@ test('续时等待两项新读取，隔离旧响应，连接中断仅恢复一�
       await expect(page.locator('#completed')).toHaveText('0');
       assert.equal(ready, false, '本次打开前发出的旧请求即使成功也不能作为就绪依据');
     }
+    if (mode === 'failover') {
+      await Promise.all([...pending.values()].map(route => route.abort('connectionreset')));
+      pending.clear();
+      // 模拟应用选线后的自动重发，仍须等待两项真实读取，不能重开面板。
+      await page.evaluate(() => {
+        for (const [path, method] of [['/v3/pay_action/batch/price', 'POST'], ['/v10/wallet/fixture-user', 'PUT']]) {
+          void fetch(path, { method }).then(() => {
+            const output = document.querySelector('output')!;
+            output.textContent = String(Number(output.textContent) + 1);
+          });
+        }
+      });
+      await expect.poll(() => pending.size).toBe(2);
+    }
     if (mode === 'recover' || mode === 'persistent') {
       await Promise.all([...pending.values()].map(route => route.abort('connectionreset')));
       pending.clear();
-      await expect.poll(() => pending.size).toBe(2);
+      await expect.poll(() => pending.size, { timeout: 20_000 }).toBe(2);
       assert.equal(ready, false, '恢复后的新请求完成前不能采样');
     }
     if (mode === 'persistent') {
@@ -97,6 +111,7 @@ test('续时等待两项新读取，隔离旧响应，连接中断仅恢复一�
     await pending.get(order[1])!.fulfill({ json: { ok: true, result: {} } });
     await expect(page.locator('#completed')).toHaveText('2');
     await opening;
+    if (mode === 'failover') assert.equal(await page.locator('body').getAttribute('data-opens'), '3');
     assert.equal(ready, true, '两项本次读取均成功后才允许采样');
     if (mode !== 'recover') assert.equal(await page.evaluate(() => Date.now()), before, '准备读取不得推进动画相位');
     await press(page, 'renew-popup-close-button');
