@@ -10,7 +10,7 @@ import { assertFullSuccess, configurationHash, schedulePlan, shardId } from './c
  */
 function currentPlan(mode = 'visual') {
   const matrix = mode === 'visual' ? visualAccountMatrix('100', 'all', true) : animationAccountMatrix('100');
-  return { schema: 1, mode, run_id: '100', sha: 'current-sha', fingerprint: configurationHash(mode),
+  return { schema: 1, mode, run_id: '100', sha: 'current-merge-sha', head_sha: 'current-head-sha', fingerprint: configurationHash(mode),
     context: { repository: 'owner/repo', workflow: mode, ref: 'refs/pull/97/merge', event: 'pull_request', pr: 97 },
     ids: matrix.include.map(item => shardId(mode, item)) };
 }
@@ -30,8 +30,37 @@ function job(id, conclusion = 'success') {
  * @param jobs - 历史实测任务。
  */
 function evidence(plan, jobs) {
-  return { plan, jobs, run: { id: plan.run_id, head_sha: plan.sha, html_url: 'https://github.com/owner/repo/actions/runs/1' } };
+  return { plan, jobs, run: { id: plan.run_id, head_sha: plan.head_sha, html_url: 'https://github.com/owner/repo/actions/runs/1' } };
 }
+
+test('PR 的 merge SHA 与分支 head SHA 不同时，两套矩阵只优先执行历史失败分片', () => {
+  for (const mode of ['visual', 'animations']) {
+    const current = currentPlan(mode);
+    const previous = schedulePlan({ ...current, run_id: '99', sha: 'previous-merge-sha', head_sha: 'previous-head-sha' });
+    for (const failed of current.ids) {
+      const history = evidence(previous, previous.ids.map(id => job(id, id === failed ? 'failure' : 'success')));
+      const result = schedulePlan(current, history);
+      assert.deepEqual(result.priority, [failed]);
+      assert.deepEqual(result.remaining, current.ids.filter(id => id !== failed));
+      assert.equal(result.sha, current.sha);
+      assert.equal(result.head_sha, current.head_sha);
+      assert.equal(result.source, history.run.html_url);
+    }
+  }
+});
+
+test('缺失或不匹配的历史 head SHA、run ID 仍拒绝复用并回退全量', () => {
+  const current = currentPlan(), previous = schedulePlan(current);
+  for (const patch of [{ head_sha: undefined }, { head_sha: null }, { head_sha: '' },
+    { head_sha: 'other-head-sha' }, { run_id: 'other-run' }]) {
+    const history = evidence(previous, previous.ids.map(id => job(id, 'failure')));
+    history.plan = { ...previous, ...patch };
+    const result = schedulePlan(current, history);
+    assert.deepEqual(result.priority, []);
+    assert.deepEqual(result.remaining, current.ids);
+    assert.match(result.reason, /回退全量/);
+  }
+});
 
 test('无历史、强制全量、全成功历史均重新执行当前全部 9/7 分片', () => {
   for (const mode of ['visual', 'animations']) {
@@ -50,7 +79,7 @@ test('连续三轮优先失败保留剩余全量；成功后全部分片在新�
   const failures = current.ids.slice(0, 3);
   let jobs = current.ids.map(id => job(id, failures.includes(id) ? 'failure' : 'success'));
   for (let attempt = 0; attempt < 3; attempt++) {
-    prior = schedulePlan({ ...current, run_id: String(101 + attempt), sha: `fix-${attempt}` }, evidence(prior, jobs));
+    prior = schedulePlan({ ...current, run_id: String(101 + attempt), sha: `merge-${attempt}`, head_sha: `fix-${attempt}` }, evidence(prior, jobs));
     assert.deepEqual(prior.priority, failures);
     assert.deepEqual(prior.remaining, current.ids.slice(3));
     // GitHub 可能没有展开被阻止的矩阵，也可能显示为 skipped。

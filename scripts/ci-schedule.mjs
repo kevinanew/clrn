@@ -3,7 +3,7 @@ import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { visualAccountMatrix, animationAccountMatrix } from './ci-accounts.mjs';
 import { readDeploymentRecord, verifyDeploymentArtifact } from './staging-deployment.mjs';
 import { githubReader, loadHistory } from './ci-schedule-api.mjs';
-import { assertFullSuccess, configurationHash, planSummary, schedulePlan, shardId } from './ci-schedule-plan.mjs';
+import { assertFullSuccess, commitIdentity, configurationHash, planSummary, schedulePlan, shardId } from './ci-schedule-plan.mjs';
 
 /**
  * 指纹覆盖分片定义、调度实现、实际执行配置及手动参数，排除只改变顺序的开关。
@@ -72,7 +72,7 @@ async function plan(mode) {
     : animationAccountMatrix(env.GITHUB_RUN_ID, suite);
   const { content, commit } = await fixedBuild(options);
   const event = JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, 'utf8'));
-  const current = { schema: 1, mode, run_id: env.GITHUB_RUN_ID, sha: env.GITHUB_SHA,
+  const current = { schema: 1, mode, run_id: env.GITHUB_RUN_ID, ...commitIdentity(env, event),
     context: { repository: env.GITHUB_REPOSITORY, workflow: env.GITHUB_WORKFLOW,
       ref: env.GITHUB_REF, event: env.GITHUB_EVENT_NAME, pr: event.number || null },
     fingerprint: compatibility(mode, options), ids: matrix.include.map(item => shardId(mode, item)) };

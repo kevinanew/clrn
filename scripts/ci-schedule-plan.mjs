@@ -2,6 +2,16 @@
 import { createHash } from 'node:crypto';
 
 /**
+ * 区分实际测试提交与运行来源；PR 的 merge SHA 不能用于核验 API head_sha。
+ * @param env - 当前 GitHub Actions 环境。
+ * @param event - 当前触发事件。
+ */
+export function commitIdentity(env, event) {
+  return { sha: env.GITHUB_SHA,
+    head_sha: (env.GITHUB_EVENT_NAME === 'pull_request' ? event.pull_request?.head?.sha : env.GITHUB_SHA) || null };
+}
+
+/**
  * 为分片生成与账号轮转、任务显示名称无关的稳定标识。
  * @param mode - 工作流套件。
  * @param item - 当前矩阵条目。
@@ -72,7 +82,8 @@ function validateHistory(current, history) {
   if (previous.schema !== 1 || previous.fingerprint !== current.fingerprint
     || JSON.stringify(previous.context) !== JSON.stringify(current.context)
     || JSON.stringify(previous.ids) !== JSON.stringify(current.ids)
-    || String(previous.run_id) !== String(history.run.id) || previous.sha !== history.run.head_sha) {
+    || String(previous.run_id) !== String(history.run.id)
+    || typeof previous.head_sha !== 'string' || !previous.head_sha || previous.head_sha !== history.run.head_sha) {
     throw new Error('历史来源或测试配置不兼容');
   }
 }
@@ -145,7 +156,8 @@ export function assertFullSuccess(needs) {
  */
 export function planSummary(plan) {
   return `### CI 失败优先调度\n\n${plan.reason}\n\n历史来源：${plan.source || '无'}\n\n`
-    + `当前提交：${plan.sha}\n\n优先（${plan.priority.length}）：${plan.priority.join(', ') || '无'}\n\n`
+    + `当前测试提交：${plan.sha}\n\n来源 head 提交：${plan.head_sha || '未知'}\n\n`
+    + `优先（${plan.priority.length}）：${plan.priority.join(', ') || '无'}\n\n`
     + `剩余（${plan.remaining.length}）：${plan.remaining.join(', ') || '无'}\n\n`
     + '历史通过结果不会替代当前提交的检查。\n';
 }
