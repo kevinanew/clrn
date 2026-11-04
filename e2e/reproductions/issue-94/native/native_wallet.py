@@ -7,6 +7,7 @@ import time
 import re
 import socket
 import subprocess
+import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -77,6 +78,21 @@ def transact(player, operation, body):
                                  'after': after, 'memo': body.get('memo', ''), 'committedAt': time.time()}
     return success({'statement_id': transaction})
 
+
+def move_reserve(player, restore=False):
+    """Use explicit ledger transfers for real insufficiency setup; never overwrite balances."""
+    reserve = 'issue94-reserve:' + player
+    balances.setdefault(reserve, {'coin': 0, 'diamond': 0})
+    source, destination = (reserve, player) if restore else (player, reserve)
+    amount = balances[source]['coin'] if restore else balances[source]['coin'] - 50
+    assert amount >= 0
+    memo = 'issue94 insufficiency setup restore' if restore else 'issue94 insufficiency setup reserve'
+    for owner, operation in [(source, 'withdraw'), (destination, 'deposit')]:
+        result = transact(owner, operation, {'currency_name': 'coin', 'amount': amount,
+                          'memo': memo, 'transaction_id': str(uuid.uuid4())})
+        assert result['ok'] is True
+    return {'player': player, 'reserve': reserve, 'amount': amount, 'restored': restore}
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_):
         pass
@@ -90,12 +106,13 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def matching_fault(self, parts, body):
-        """Match only the two verified players' automatic rebuy withdrawals."""
+        """Match owned automatic withdrawals or the exact owned room's manual retry."""
         with lock:
             mode = fault['mode'] if (self.command == 'POST' and len(parts) == 6
                 and parts[1:4] == ['service', 'v11', 'wallet'] and parts[5] == 'withdraw'
                 and parts[4] in fault['players']
-                and re.fullmatch(r'\[(all_in|call|fold)\]Auto rebuy in:coin', body.get('memo', ''))) else 'normal'
+                and (re.fullmatch(r'\[(all_in|call|fold)\]Auto rebuy in:coin', body.get('memo', ''))
+                     or body.get('memo') == 'Apply buy in coin in room:' + str(fault['roomId']))) else 'normal'
         return mode
 
     def inject_fault(self, mode, parts, body):
@@ -136,15 +153,13 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(failure('forbidden'), 403)
             return
         if path == '/_issue94/seed' and self.command == 'POST':
-            if any(item['player'] in body['balances'] for item in transactions.values()):
-                self.reply(failure('ledger_already_used'), 409)
-                return
-            for player, values in body['balances'].items():
-                balances[player] = {key: int(value) for key, value in values.items()}
-            self.reply(success({'players': len(balances)}))
+            self.seed_control(body)
             return
         if path == '/_issue94/state' and self.command == 'GET':
             self.reply(success({'balances': balances, 'transactions': transactions, 'hits': hits, 'fault': fault}))
+            return
+        if path == '/_issue94/reserve' and self.command == 'POST':
+            self.reserve_control(body)
             return
         if path == '/_issue94/fault' and self.command == 'POST':
             modes = ['normal', 'conflict', 'timeout', 'disconnect', 'http-503', 'http-504', 'invalid-json', 'missing-fields', 'committed-response-lost']
@@ -165,6 +180,26 @@ class Handler(BaseHTTPRequestHandler):
             return
         self.reply(failure('unknown_control'), 404)
         return
+
+    def seed_control(self, body):
+        """Seed unused identities only, preserving prior ledger history."""
+        if any(item['player'] in body['balances'] for item in transactions.values()):
+            self.reply(failure('ledger_already_used'), 409)
+            return
+        for player, values in body['balances'].items():
+            balances[player] = {key: int(value) for key, value in values.items()}
+        self.reply(success({'players': len(balances)}))
+        return
+
+    def reserve_control(self, body):
+        """Validate single-room ownership before transferring real setup funds."""
+        try:
+            verify_exclusive_room(body)
+            transfers = [move_reserve(player, body.get('restore', False)) for player in body['players']]
+        except (AssertionError, KeyError, ValueError):
+            self.reply(failure('isolated_scope_rejected'), 400)
+            return
+        self.reply(success({'transfers': transfers}))
 
     def wallet_request(self, path, body):
         """Serve the normal client and internal SDK ledger contracts."""
@@ -198,6 +233,7 @@ class Handler(BaseHTTPRequestHandler):
             payload = transact(player, parts[5], body)
             hits.append({'player': player, 'operation': parts[5], 'transaction': body['transaction_id'],
                          'amount': int(body['amount']), 'currency': body['currency_name'],
+                         'memo': body.get('memo', ''),
                          'errorType': payload.get('error_type'), 'at': time.time()})
             self.reply(payload)
             return

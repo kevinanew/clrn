@@ -2,6 +2,7 @@
 import { chromium, expect, type BrowserContext, type Page, type Browser, type BrowserContextOptions } from '@playwright/test';
 import type { Mitmproxy } from '../../../helpers/mitmproxy-client';
 import type { NativeStatus, NativeReport, WalletState, WalletHit, NativeGamePublication, RoomSnapshot } from './types';
+import { verifyFaultAndRecovery, verifyTransportAndRecovery } from './recovery.mjs';
 import { safeDiagnosticReason } from '../../../../scripts/request-failure.cjs';
 import * as pageModule from '../../../cases/_shared/page';
 const { openHall, prepareContext } = compatibleModule(pageModule);
@@ -31,7 +32,7 @@ assert.ok(evidence,'Native evidence directory is required');
 const state=JSON.parse(await readFile(root+'/infrastructure.json','utf8'));
 const controlKey=await readFile(root+'/wallet-control-key','utf8');
 const mode=process.env.ISSUE94_NATIVE_MODE||'normal';
-assert.ok(['normal','conflict'].includes(mode),'Native browser cases currently support normal and conflict only');
+assert.ok(['normal','conflict','timeout','http-503','http-504','disconnect','invalid-json','missing-fields','committed-response-lost','insufficient'].includes(mode),'Unsupported native wallet case');
 /**
  * Send authenticated controls only to the owned loopback wallet.
  * @param endpoint - Allowed control path suffix.
@@ -56,12 +57,12 @@ function roomSnapshot(room: string): RoomSnapshot {
  */
 function verifyFunds(room: RoomSnapshot, ledger: WalletState) {
  const players=room.player_pool.players;
- const walletCoin=Object.keys(players).reduce((sum,user)=>sum+ledger.balances[user].coin,0);
+ const walletCoin=Object.values(ledger.balances).reduce((sum,wallet)=>sum+wallet.coin,0);
  const tableCoin=Object.values(players).filter(player=>!player.is_stand_up&&!player.is_quit)
   .reduce((sum,player)=>sum+player.stack+player.buy_in_amount,0);
  const potCoin=room.pot.players.reduce((sum,user)=>sum+players[user].pay_amount,0);
- assert.equal(walletCoin+tableCoin+potCoin,20000,'Native wallet, table and pot funds must be conserved');
- return {walletCoin,tableCoin,potCoin,total:walletCoin+tableCoin+potCoin,expected:20000};
+ const total=walletCoin+tableCoin+potCoin;
+ return {walletCoin,tableCoin,potCoin,total,expected:20000,conserved:total===20000};
 }
 
 /**
@@ -105,7 +106,7 @@ for c in t.body:
     print(ast.literal_eval(a.value),end='')
 `, process.env.ISSUE94_AUTH_SOURCE_ROOT!],{encoding:'utf8'});
 assert.ok(candidate,'No candidate staging JWT signing configuration');
-const report: NativeReport={faultNotices:[],scope:'native coin service path; normal/conflict only; full issue94 matrix incomplete',steps:[],outcome:'running'};
+const report: NativeReport={faultNotices:[],scope:'native coin service path; wallet business and transport faults; broader issue94 matrix tracked separately',steps:[],outcome:'running'};
 await mkdir(evidence,{recursive:true});
 const browser=await chromium.launch();
 const contexts: BrowserContext[]=[];
@@ -170,45 +171,13 @@ async function playAllIn(page: Page, index: number) {
 }
 
 /**
- * Preserve the real fault and resit outcome, then verify a unique recovery transaction.
- * @param targetPage - Browser belonging to the actual failed wallet withdrawal.
- * @param room - Exact owned coin room.
- * @param hit - Actual scoped SDK wallet request.
+ * Separate real low ledger balance from injected business and transport faults.
+ * @param ledger - Actual isolated wallet state.
  */
-async function verifyFaultAndRecovery(targetPage: Page, room: string, hit: WalletHit) {
- await expect(targetPage.getByTestId('buy-in-confirm-button')).toBeVisible({timeout:15000});
- await screenshotAfterSettling(targetPage,evidence+'/fault-automatic-rebuy.png');
- const faultRoom=roomSnapshot(room),faultLedger=await walletControl<WalletState>('state');
- report.roomAtFault=faultRoom;report.ledgerAtFault=faultLedger;report.fundsAtFault=verifyFunds(faultRoom,faultLedger);
- report.faultNotices=await targetPage.getByTestId('common-alert-message').or(targetPage.getByTestId('alert-message-text')).or(targetPage.getByTestId('toastText1')).filter({visible:true}).allTextContents();
- await targetPage.getByTestId('buy-in-close-button').click();
- await targetPage.getByTestId('in-game-container-seat').first().click();
- await expect(targetPage.getByTestId('common-alert-message').filter({visible:true}).or(targetPage.getByTestId('buy-in-confirm-button'))).toBeVisible({timeout:15000});
- await screenshotAfterSettling(targetPage,evidence+'/fault-resit.png');
- report.resitNotices=await targetPage.getByTestId('common-alert-message').filter({visible:true}).allTextContents();
- report.roomAfterResit=roomSnapshot(room);
- await walletControl('fault',{mode:'normal'});
- const before=await walletControl<WalletState>('state');
- for(const id of ['common-alert-button-undefined','common-alert-button-retry','common-alert-button-ok']){
-  const close=targetPage.getByTestId(id);if(await close.isVisible())await close.click();
- }
- if(!await targetPage.getByTestId('buy-in-confirm-button').isVisible()){
-  await targetPage.getByTestId('menu-button').click();await targetPage.getByTestId('drawer-menu-item-buy_in').click();
- }
- await expect(targetPage.getByTestId('buy-in-confirm-button')).toBeVisible();
- await targetPage.getByTestId('buy-in-text-input').fill('100');
- await targetPage.getByTestId('buy-in-confirm-button').click();
- await expect(targetPage.getByTestId('buy-in-confirm-button')).not.toBeVisible({timeout:15000});
- const after=await walletControl<WalletState>('state');
- assert.equal(before.balances[hit.player].coin-after.balances[hit.player].coin,100,'Recovery must withdraw exactly100');
- assert.equal(Object.keys(after.transactions).length-Object.keys(before.transactions).length,1,'Recovery must create exactly one transaction');
- const recoveredRoom=roomSnapshot(room);
- report.recovery={before,after,room:recoveredRoom,funds:verifyFunds(recoveredRoom,after)};
- await screenshotAfterSettling(targetPage,evidence+'/recovered-manual-buyin.png');
- report.correctness={originalWalletReasonReachesBrowser:report.faultNotices.some(text=>/transaction.*conflict|交易.*冲突/i.test(text))};
- report.phase='assert-actual-wallet-reason-on-web';
- assert.equal(report.correctness.originalWalletReasonReachesBrowser,true,'Non-balance wallet failure must reach the browser with its actual reason');
- report.outcome='fault-reason-and-recovery-passed';
+function hasWalletOutcome(ledger: WalletState): boolean {
+ if(mode==='insufficient')return ledger.hits.some(hit=>hit.errorType==='insufficient_balance');
+ if(mode!=='normal')return ledger.hits.some(hit=>hit.mode===mode);
+ return Object.values(ledger.transactions).some(transaction=>/^\[(all_in|call|fold)\]Auto rebuy in:coin$/.test(transaction.memo));
 }
 
 /**
@@ -224,7 +193,7 @@ async function playUntilWalletOutcome(pages: Page[]): Promise<WalletHit> {
   }
   const response=await fetch(`http://127.0.0.1:${state.walletPort}/_issue94/state`,{headers:{'X-Issue94-Control':controlKey}});
   const ledger=await response.json() as { result: WalletState };report.ledger=ledger.result;
-  autoRebuy=mode==='normal'?Object.values(ledger.result.transactions).some(t=>/^\[(all_in|call|fold)\]Auto rebuy in:coin$/.test(t.memo)):ledger.result.hits.some(hit=>hit.mode===mode);
+  autoRebuy=hasWalletOutcome(ledger.result);
   if(autoRebuy)break;
   await new Promise(resolve=>setTimeout(resolve,100));
  }
@@ -232,9 +201,18 @@ async function playUntilWalletOutcome(pages: Page[]): Promise<WalletHit> {
  assert.ok(report.ledger,'No wallet observation recorded');
  const observedLedger=report.ledger;
  const autoTransaction=Object.entries(observedLedger.transactions).find(([,transaction])=>/^\[(all_in|call|fold)\]Auto rebuy in:coin$/.test(transaction.memo));
- const hit=mode==='normal'?observedLedger.hits.find(hit=>hit.transaction===autoTransaction?.[0]):observedLedger.hits.find(hit=>hit.mode===mode);
+ const hit=mode==='normal'?observedLedger.hits.find(hit=>hit.transaction===autoTransaction?.[0]):observedLedger.hits.find(hit=>mode==='insufficient'?hit.errorType==='insufficient_balance':hit.mode===mode);
  assert.ok(hit,'No matching wallet hit recorded');
  return hit;
+}
+
+/**
+ * Restore explicitly reserved setup funds before final owned-room cleanup.
+ * @param room - This run's actual room.
+ * @param owners - The two verified players.
+ */
+async function restoreReserves(room: string, owners: string[]): Promise<void> {
+ if(report.insufficiencySetup)await walletControl('reserve',{roomId:room,players:owners,restore:true});
 }
 
 /**
@@ -316,11 +294,16 @@ try {
    const room=(await proxy.command<NativeStatus>('native/status')).rooms[0];
    report.phase='verify-owned-scope-rejection';
    await verifyScopeRejection(room,actors.map(actor=>actor.session.userId));
-   if(mode!=='normal')report.faultScope=await walletControl('fault',{mode,roomId:room,players:actors.map(a=>a.session.userId)});
+   if(mode==='insufficient')report.insufficiencySetup=await walletControl('reserve',{roomId:room,players:actors.map(a=>a.session.userId)});
+   else if(mode!=='normal')report.faultScope=await walletControl('fault',{mode,roomId:room,players:actors.map(a=>a.session.userId)});
    const hit=await playUntilWalletOutcome(pages);
    const target=actors.findIndex(a=>a.session.userId===hit.player);assert.ok(target>=0);
    const targetPage=pages[target];
    // Publications carry future game animation delays. Wait through that schedule before checking final UI.
+   const recoveryTools={report,evidence,walletControl,roomSnapshot,verifyFunds,screenshotAfterSettling,waitPublishedOutcome};
+   if(!['normal','conflict','insufficient'].includes(mode)){
+    await verifyTransportAndRecovery(pages,actors.map(actor=>actor.session.userId),room,hit,proxy,recoveryTools);
+   }else{
    await waitPublishedOutcome(proxy,hit);
    if(mode==='normal'){
     report.phase='assert-displayed-automatic-rebuy';
@@ -330,9 +313,11 @@ try {
     const displayedRoom=roomSnapshot(room),displayedLedger=await walletControl<WalletState>('state');
     report.roomAfterAutomaticRebuy=displayedRoom;report.ledgerAfterAutomaticRebuy=displayedLedger;
     report.fundsAfterAutomaticRebuy=verifyFunds(displayedRoom,displayedLedger);
+    assert.equal(verifyFunds(displayedRoom,displayedLedger).conserved,true,'Native wallet, table and pot funds must be conserved');
     report.outcome='normal-manual-buyin-and-automatic-rebuy';
    }else{
-    await verifyFaultAndRecovery(targetPage,room,hit);
+    await verifyFaultAndRecovery(targetPage,room,hit,recoveryTools);
+   }
    }
   }finally{for(let i=0;i<pages.length;i++){if(!pages[i].isClosed())await screenshotAfterSettling(pages[i],evidence+`/actor${i}-outcome.png`).catch(()=>{});}report.bridge=await proxy.command<NativeStatus>('native/status');}
  },{addonPath:new URL('./native_bridge.py',import.meta.url).pathname});
@@ -347,6 +332,7 @@ finally{
  for(const room of bridge?.rooms||[]){
   try{
    assert.match(room,/^[a-f0-9-]{36}$/);
+   await restoreReserves(room,owners);
    await quitOwnedPlayers(room,owners);
    const response=await fetch(`http://127.0.0.1:${state.texasPort}/service/v10/texas_holdem/room/${room}/close`,{
     method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({close_reason:'issue94-owned-native-cleanup'})});

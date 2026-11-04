@@ -1,6 +1,6 @@
 /** Sanitized native wire evidence; credentials and request headers are never persisted. */
 export type WalletTransaction = { player: string; memo: string; amount: number; event: string };
-export type WalletHit = { player: string; mode?: string; transaction: string; amount: number; at: number };
+export type WalletHit = { player: string; mode?: string; transaction: string; amount: number; at: number; memo?: string; errorType?: string };
 export type WalletState = {
   balances: Record<string, Record<string, number>>;
   transactions: Record<string, WalletTransaction>;
@@ -23,7 +23,14 @@ export type NativeStatus = {
   owners: number;
   rooms: string[];
   connections: { user: string; subscriptions: string[] }[];
-  records: { event: string; publication?: { data: NativeGamePublication }; [key: string]: unknown }[];
+  records: NativeRecord[];
+};
+/** Unmodified native reply plus safe request correlation metadata. */
+export type NativeRecord = {
+  event: string; at?: number; user?: string; rpcId?: number;
+  publication?: { data: NativeGamePublication };
+  reply?: { error?: unknown; result?: { data?: { ok?: boolean; [key: string]: unknown } | null } | null };
+  [key: string]: unknown;
 };
 export type NativeReport = {
   scope: string;
@@ -32,6 +39,6 @@ export type NativeReport = {
   failure?: string;
   ledger?: WalletState;
   faultNotices: string[];
-  correctness?: { originalWalletReasonReachesBrowser: boolean };
+  correctness?: Record<string, boolean>;
   [key: string]: unknown;
 };

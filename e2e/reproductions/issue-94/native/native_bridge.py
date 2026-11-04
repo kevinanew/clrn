@@ -1,5 +1,6 @@
 """Prototype: route owned coin play to real native gateway, preserve staging initialization."""
 import os
+import time
 import asyncio
 import hashlib
 import json
@@ -78,9 +79,10 @@ class NativeConnection:
         if ident in self.pending:
             self.pending.pop(ident).set_result(frame)
             return
-        result = frame.get('result', {})
-        publication = result.get('data', {})
-        for item in publication.get('data', {}).get('queue', []):
+        result = frame.get('result') or {}
+        publication = result.get('data') or {}
+        game = publication.get('data') or {}
+        for item in game.get('queue', []):
             if item.get('event') == 'player_booking_seat' and item.get('player_id') == self.owner:
                 self.bridge.rooms.add(item['room_id'])
                 self.bridge.record('native-booking', user=self.owner, room=item['room_id'])
@@ -107,7 +109,7 @@ class NativeBridge(NetworkFaults):
         self.records = []
 
     def record(self, event, **data):
-        self.records.append({'event': event, **data})
+        self.records.append({'event': event, 'at': time.time(), **data})
 
     def control(self, flow):
         path = urlsplit(flow.request.path).path

@@ -16,6 +16,7 @@ import tempfile
 import time
 import urllib.request
 from ports import available
+from sdk_diagnostics import summarize
 
 
 SOURCES = {
@@ -184,6 +185,9 @@ class NativeStack:
                 child.wait(timeout=5)
         for output in self.handles:
             output.close()
+        sdk_log = self.root / 'logs/texas.log'
+        (self.evidence / 'native-sdk-diagnostics.json').write_text(json.dumps(
+            summarize(sdk_log.read_text(errors='replace') if sdk_log.exists() else ''), indent=2))
         errors = []
         if harness_fingerprints() != self.provenance["harness"]:
             errors.append("Native harness changed during reproduction")
