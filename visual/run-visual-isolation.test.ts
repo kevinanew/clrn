@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -12,7 +12,16 @@ test('all 入口将 App、德州和拼三张交给独立进程，过滤后不运
   writeFileSync(path.join(directory, 'pnpm'), `#!/usr/bin/env node
 require('node:fs').appendFileSync(process.env.VISUAL_ISOLATION_LOG,
   JSON.stringify({ suite: process.env.VISUAL_SUITE, args: process.argv.slice(2),
+    locale: process.env.VISUAL_LOCALES, username: process.env.VISUAL_USERNAME,
     skipSupport: process.env.VISUAL_SKIP_SUPPORT_TESTS }) + '\\n');
+const args = process.argv.slice(2);
+const behavior = process.env.VISUAL_ISOLATION_BEHAVIOR;
+if (args.includes('src/captureAuthState.ts')) {
+  if (behavior === 'fail-auth') process.exit(11);
+  require('node:fs').writeFileSync('auth-state.json', '{}');
+}
+if (args.includes('cases') && behavior === 'fail-cases') process.exit(12);
+if (args.includes('run-visual.ts') && process.env.VISUAL_SUITE === 'texas' && behavior === 'fail-suite') process.exit(13);
 `, { mode: 0o755 });
   try {
     /**
@@ -20,15 +29,17 @@ require('node:fs').appendFileSync(process.env.VISUAL_ISOLATION_LOG,
      * @param filter - 匹配场景标签的可选正则表达式。
      * @param suite - 本次要启动的套件。
      * @param action - 比较、采集或兼容命令。
+     * @param overrides - 当前用例的环境覆盖及进程故障配置。
      */
-    const run = (filter: string, suite = 'all', action = 'test') => {
+    const run = (filter: string, suite = 'all', action = 'test', overrides?: NodeJS.ProcessEnv) => {
       writeFileSync(log, '');
       const result = spawnSync(process.execPath, ['--import', 'tsx', 'run-visual.ts', action], {
         cwd: __dirname, encoding: 'utf8',
         env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}`,
           VISUAL_ISOLATION_LOG: log, VISUAL_SUITE: suite, VISUAL_LOCALES: 'zh-Hans',
+          VISUAL_USERNAME: '', VISUAL_PASSWORD: '', VISUAL_DEVICE_ID: '', VISUAL_ISOLATION_BEHAVIOR: '',
           VISUAL_SCOPE: 'core', VISUAL_FILTER: filter, VISUAL_ALLOW_HOST: 'true',
-          VISUAL_SKIP_VISUAL_INSTALL: 'true', VISUAL_SKIP_SUPPORT_TESTS: 'false' },
+          VISUAL_SKIP_VISUAL_INSTALL: 'true', VISUAL_SKIP_SUPPORT_TESTS: 'false', ...overrides },
       });
       const children = readFileSync(log, 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
       return { result, children };
@@ -52,6 +63,34 @@ require('node:fs').appendFileSync(process.env.VISUAL_ISOLATION_LOG,
     const scenario = compare.children.find(child => child.args.includes('cases'));
     assert.ok(scenario, '必须实际启动所选场景');
     assert.ok(scenario.args.includes('--update-snapshots=none'), '比较入口必须显式只读');
+    const localized = run('guest_me$', 'app', 'test', { VISUAL_LOCALES: 'zh-Hans,en' });
+    assert.equal(localized.result.status, 0, localized.result.stderr);
+    assert.deepEqual(localized.children.filter(child => child.args.includes('cases')).map(child => child.locale),
+      ['zh-Hans', 'en'], '逐语言执行不能因第一种语言有匹配就短路');
+
+    const authenticated = run('signed_in_me$', 'app');
+    assert.equal(authenticated.result.status, 0, authenticated.result.stderr);
+    assert.deepEqual(authenticated.children.map(child => child.args.at(-1)),
+      ['tests', 'src/captureAuthState.ts', '--shard=1/1']);
+    assert.equal(authenticated.children[1].username, 'laiwanvisual01');
+    assert.equal(existsSync(path.join(__dirname, 'auth-state.json')), false, '成功后必须清理认证文件');
+
+    const failedCases = run('signed_in_me$', 'app', 'test', { VISUAL_ISOLATION_BEHAVIOR: 'fail-cases' });
+    assert.equal(failedCases.result.status, 1);
+    assert.match(failedCases.result.stderr, /退出码 12/);
+    assert.equal(existsSync(path.join(__dirname, 'auth-state.json')), false, '场景失败也必须清理认证文件');
+
+    const failedAuth = run('signed_in_me$', 'app', 'test', { VISUAL_ISOLATION_BEHAVIOR: 'fail-auth' });
+    assert.equal(failedAuth.result.status, 1);
+    assert.equal(failedAuth.children.filter(child => child.args.includes('src/captureAuthState.ts')).length, 2);
+    assert.equal(failedAuth.children.some(child => child.args.includes('cases')), false, '认证失败不得启动场景');
+    assert.equal(existsSync(path.join(__dirname, 'auth-state.json')), false);
+
+    const failedSuite = run('', 'all', 'test', { VISUAL_ISOLATION_BEHAVIOR: 'fail-suite' });
+    assert.equal(failedSuite.result.status, 1);
+    assert.match(failedSuite.result.stderr, /texas 视觉测试失败（退出码 13）/);
+    assert.deepEqual(failedSuite.children.map(child => child.suite), ['app', 'texas']);
+
     const approve = run('guest_me$', 'all', 'approve');
     if (process.platform === 'linux') {
       assert.equal(approve.result.status, 0, approve.result.stderr);

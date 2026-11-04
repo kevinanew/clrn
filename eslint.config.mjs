@@ -4,6 +4,7 @@ import tsdoc from 'eslint-plugin-tsdoc';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import quality from './scripts/quality-rules.mjs';
+import { visualSupportFiles, visualToolFiles, visualCheckFiles } from './scripts/visual-complexity-scope.mjs';
 
 export default [
   { ignores: ['**/node_modules/**', '**/.venv/**', '**/test-results/**', '**/playwright-report/**', '**/blob-report/**', '.ttyctl/**', '**/snapshots/**'] },
@@ -52,5 +53,13 @@ export default [
       'no-empty-pattern': ['error', { allowObjectPatternsAsParameters: true }],
       'quality/no-network-response': 'error',
     },
+  },
+  {
+    files: [...visualToolFiles, ...visualCheckFiles, 'eslint.config.mjs'],
+    rules: { complexity: ['error', { max: 6, variant: 'classic' }] },
+  },
+  {
+    files: [...visualSupportFiles, 'scripts/visual-complexity*.test.mjs'],
+    rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
   },
 ];

@@ -26,6 +26,15 @@ function results(suites: ReportSuite[]): { status: string; retry: number }[] {
   ]);
 }
 
+/**
+ * 保留启动错误优先于进程输出的诊断顺序。
+ * @param child - 当前浏览器进程结果。
+ */
+function childDiagnostic(child: ReturnType<typeof spawnSync>): string {
+  if (child.error?.message) return child.error.message;
+  return String(child.stdout) + String(child.stderr);
+}
+
 test('普通比较不写基准；显式采集也更新容差内变化；真实缺陷、尺寸和业务错误仍失败且零重试', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-snapshot-policy-'));
   try {
@@ -62,7 +71,7 @@ test('current page', async ({ page }) => {
         cwd: directory, encoding: 'utf8', timeout: 60_000,
         env: { ...process.env, SNAPSHOT_POLICY_CASE: kind },
       });
-      const detail = child.error?.message || child.stdout + child.stderr;
+      const detail = childDiagnostic(child);
       const parsed: { suites: ReportSuite[] } = JSON.parse(await readFile(report, 'utf8'));
       const actual = results(parsed.suites);
       assert.equal(actual.length, 1, `每次运行只执行一次：${detail}`);

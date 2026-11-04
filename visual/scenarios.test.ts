@@ -96,7 +96,7 @@ describe('visual scenarios', () => {
   test('新增业务页面有对应导航与就绪定位，签到日期固定且不提交业务', () => {
     process.env.VISUAL_LOCALES = 'all';
     const scenarios = buildScenarios();
-    for (const locale of LOCALES) {
+    LOCALES.forEach(locale => {
       for (const label of ['guest_message', 'guest_me', 'login_language', 'login_phone_password',
         'signed_in_slot', 'signed_in_daily_bonus', 'signed_in_hall_search',
         'signed_in_create_room_advanced_texas', 'signed_in_create_room_advanced_zhajinhua',
@@ -109,7 +109,7 @@ describe('visual scenarios', () => {
         assert.ok(!scenario.navClickTestIds.includes('spin-button'), '截图不能发起抽奖');
         assert.ok(!scenario.navClickTestIds.includes('daily-bonus-check-in'), '截图不能领取奖励');
       }
-    }
+    });
     const bonus = SIGNED_IN_PAGES.find(page => page.label === 'signed_in_daily_bonus');
     assert.deepEqual(bonus?.fixedTexts, [{
       selector: '[data-testid="CheckInDateListItem.checkInDetailDate"]', text: '01/01',
@@ -147,16 +147,17 @@ describe('visual scenarios', () => {
     const zhDesktop = scenarios.filter(
       (scenario) => scenario.locale === 'zh-Hans' && scenario.viewport.label === 'desktop',
     );
-    assert.equal(zhDesktop[0]?.label, 'zh-Hans_desktop_hall');
-    assert.equal(zhDesktop[1]?.label, 'zh-Hans_desktop_guest_game_sign_in_prompt');
-    assert.equal(zhDesktop[2]?.label, 'zh-Hans_desktop_guest_private_room');
-    assert.equal(zhDesktop[3]?.label, 'zh-Hans_desktop_login');
-    assert.equal(zhDesktop[4]?.label, 'zh-Hans_desktop_login_username');
-    assert.equal(zhDesktop[5]?.label, 'zh-Hans_desktop_guest_club');
-    assert.equal(zhDesktop[6]?.label, 'zh-Hans_desktop_search_sign_in_prompt');
+    assert.ok(zhDesktop.length >= 9);
+    assert.equal(zhDesktop[0].label, 'zh-Hans_desktop_hall');
+    assert.equal(zhDesktop[1].label, 'zh-Hans_desktop_guest_game_sign_in_prompt');
+    assert.equal(zhDesktop[2].label, 'zh-Hans_desktop_guest_private_room');
+    assert.equal(zhDesktop[3].label, 'zh-Hans_desktop_login');
+    assert.equal(zhDesktop[4].label, 'zh-Hans_desktop_login_username');
+    assert.equal(zhDesktop[5].label, 'zh-Hans_desktop_guest_club');
+    assert.equal(zhDesktop[6].label, 'zh-Hans_desktop_search_sign_in_prompt');
     // 忘记密码相关页仅 mobile，desktop 随后进入登录后页面
-    assert.equal(zhDesktop[7]?.label, 'zh-Hans_desktop_guest_message');
-    assert.equal(zhDesktop[8]?.label, 'zh-Hans_desktop_guest_me');
+    assert.equal(zhDesktop[7].label, 'zh-Hans_desktop_guest_message');
+    assert.equal(zhDesktop[8].label, 'zh-Hans_desktop_guest_me');
     assert.ok(zhDesktop.some(scenario => scenario.pageLabel === 'signed_in_hall'));
   });
 
@@ -311,16 +312,18 @@ describe('visual scenarios', () => {
     );
 
     assert.equal(emailScenarios.length, 1);
-    assert.equal(emailScenarios[0]?.viewport.label, 'mobile');
+    const [emailScenario] = emailScenarios;
+    assert.ok(emailScenario);
+    assert.equal(emailScenario.viewport.label, 'mobile');
     assert.deepEqual(
-      emailScenarios[0]?.navClickTestIds,
+      emailScenario.navClickTestIds,
       LOGIN_FORGOT_PASSWORD_EMAIL_SCENARIO.navClickTestIds,
     );
     assert.equal(
-      emailScenarios[0]?.visualReadySelector,
+      emailScenario.visualReadySelector,
       LOGIN_FORGOT_PASSWORD_EMAIL_SCENARIO.visualReadySelector,
     );
-    assert.equal(emailScenarios[0]?.signIn, false);
+    assert.equal(emailScenario.signIn, false);
   });
 
 });

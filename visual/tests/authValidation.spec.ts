@@ -25,6 +25,14 @@ async function expectValidationFailure(
   expect(error.message).toBe(`账户接口校验失败：method=GET operation=validate-account source=laiwan_prd status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}`);
   expect(error.cause).toBeUndefined();
   const output = inspect(error, { depth: 20 });
+  assertNoSecrets(output);
+}
+
+/**
+ * 检查错误序列化后仍不泄露请求细节。
+ * @param output - 完整错误诊断。
+ */
+function assertNoSecrets(output: string): void {
   for (const secret of ['fixture.invalid', '127.0.0.1', '192.0.2.40', '9443', '/private',
     'synthetic-', 'Authorization', 'Cookie', 'Call log', COMPLETE_AUTH.api_token.access_token]) {
     expect(output).not.toContain(secret);
@@ -126,8 +134,7 @@ test('account validation waits past three seconds for a 200 response', async ({ 
       response.end('<div id="root"></div>');
       return;
     }
-    requestedPath = request.url || '';
-    authorization = request.headers.authorization || '';
+    ({ requestedPath, authorization } = requestDetails(request));
     setTimeout(() => {
       response.writeHead(200, { 'Content-Type': 'application/json' });
       response.end(JSON.stringify({ ok: true, result: {} }));
@@ -298,10 +305,13 @@ test('a failing optional level request does not affect successful account valida
 for (const failureStatus of [429, 503]) {
   test(`account validation fails explicitly on HTTP ${failureStatus}`, async ({ page }) => {
     const server = await startTestServer((request, response) => {
-      response.writeHead(request.url === '/' ? 200 : failureStatus, {
-        'Content-Type': request.url === '/' ? 'text/html' : 'application/json',
-      });
-      response.end(request.url === '/' ? '<div id="root"></div>' : PRIVATE_DIAGNOSTIC);
+      if (request.url === '/') {
+        response.writeHead(200, { 'Content-Type': 'text/html' });
+        response.end('<div id="root"></div>');
+        return;
+      }
+      response.writeHead(failureStatus, { 'Content-Type': 'application/json' });
+      response.end(PRIVATE_DIAGNOSTIC);
     });
 
     try {
@@ -360,3 +370,11 @@ test('account validation fails explicitly on request timeout', async ({ page }) 
     await server.close();
   }
 });
+
+/**
+ * 记录本机请求定位及认证头，无值时仍使用空字符串。
+ * @param request - 实际收到的请求。
+ */
+function requestDetails(request: IncomingMessage) {
+  return { requestedPath: request.url || '', authorization: request.headers.authorization || '' };
+}

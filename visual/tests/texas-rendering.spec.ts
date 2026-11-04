@@ -11,10 +11,22 @@ const face = '<div data-testid="sprite-image-content" style="width:40px;height:6
  * @param side - 手牌在牌桌中的左右位置。
  */
 function handCard(name: string, content = face, side = 0): string {
+  return renderHandCard(name, content, side);
+}
+
+/**
+ * 展开指定翻牌面，保留默认手牌两面的内容差异。
+ * @param name - 牌名。
+ * @param content - 正面内容。
+ * @param side - 当前翻牌面。
+ */
+function renderHandCard(name: string, content: string, side: number): string {
+  const front = cardSide(side, 0, content, '牌背');
+  const back = cardSide(side, 1, content, '');
   return `<div data-testid="player_card">
     <div data-testid="card-flip" data-side="${side}">
-      <div data-testid="card-flip-side-a" style="opacity:${side === 0 ? 1 : 0}">${side === 0 ? content : '牌背'}</div>
-      <div data-testid="card-flip-side-b" style="opacity:${side === 1 ? 1 : 0}">${side === 1 ? content : ''}</div>
+      <div data-testid="card-flip-side-a" style="opacity:${front.opacity}">${front.content}</div>
+      <div data-testid="card-flip-side-b" style="opacity:${back.opacity}">${back.content}</div>
     </div>
     <span data-testid="player_card_name_text">${name}</span>
   </div>`;
@@ -66,4 +78,15 @@ for (const overlap of [false, true]) {
     if (overlap) await expect(checkMobilePlayerAction(page)).rejects.toThrow('动作提示应位于昵称下方');
     else await checkMobilePlayerAction(page);
   });
+}
+
+/**
+ * 按实际翻牌面选择透明度与内容。
+ * @param side - 当前翻牌面。
+ * @param expected - 该节点对应面。
+ * @param content - 牌面内容。
+ * @param fallback - 未选中时的内容。
+ */
+function cardSide(side: number, expected: number, content: string, fallback: string) {
+  return { opacity: side === expected ? 1 : 0, content: side === expected ? content : fallback };
 }

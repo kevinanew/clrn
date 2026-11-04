@@ -17,9 +17,18 @@ const compare = require('playwright-core/lib/coreBundle').utils.getComparator('i
  * @param width - 实际图片宽度。
  * @param color - 差异像素灰度。
  */
-function screenshot(changed = 0, width = 100, color = 255): Buffer {
-  const bitmap = new PNG({ width, height: 100 });
-  for (let pixel = 0; pixel < width * 100; pixel++) bitmap.data.set([0, 0, 0, 255], pixel * 4);
+function screenshot(changed = 0, width = 100, color?: number): Buffer {
+  return renderScreenshot(changed, width, color);
+}
+
+/**
+ * 写入固定像素并编码 PNG。
+ * @param changed - 差异像素数。
+ * @param width - 图片宽度。
+ * @param color - 差异灰度。
+ */
+function renderScreenshot(changed: number, width: number, color = 255): Buffer {
+  const bitmap = blackBitmap(width);
   for (let pixel = 0; pixel < changed; pixel++) {
     const offset = ((20 + Math.floor(pixel / 20)) * width + 20 + pixel % 20) * 4;
     bitmap.data.set([color, color, color, 255], offset);
@@ -67,3 +76,13 @@ test('静态、动画和素材仍分别保留原单像素颜色容差', () => {
   assert.notEqual(compare(screenshot(1000, 100, 1), baseline, imageComparisonOptions(0)), null,
     '素材帧继续逐像素比较颜色');
 });
+
+/**
+ * 创建不透明黑色背景。
+ * @param width - 图片宽度。
+ */
+function blackBitmap(width: number): PNG {
+  const bitmap = new PNG({ width, height: 100 });
+  for (let pixel = 0; pixel < width * 100; pixel++) bitmap.data.set([0, 0, 0, 255], pixel * 4);
+  return bitmap;
+}

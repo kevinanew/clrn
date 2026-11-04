@@ -5,11 +5,19 @@ export type VisualSuite = 'all' | 'app' | 'texas' | 'zhajinhua';
  * @param env - 环境配置，默认读取当前进程。
  */
 export function getVisualSuite(env: NodeJS.ProcessEnv = process.env): VisualSuite {
-  const suite = env.VISUAL_SUITE || 'all';
-  if (suite !== 'all' && suite !== 'app' && suite !== 'texas' && suite !== 'zhajinhua') {
+  return parseVisualSuite(env.VISUAL_SUITE);
+}
+
+/**
+ * 校验有效套件，空值继续运行全部套件。
+ * @param raw - 原始环境配置。
+ */
+function parseVisualSuite(raw: string | undefined): VisualSuite {
+  const suite = raw || 'all';
+  if (!['all', 'app', 'texas', 'zhajinhua'].includes(suite)) {
     throw new Error(`VISUAL_SUITE 无效: "${suite}"。可用值: all, app, texas, zhajinhua`);
   }
-  return suite;
+  return suite as VisualSuite;
 }
 
 /**
@@ -19,9 +27,6 @@ export function getVisualSuite(env: NodeJS.ProcessEnv = process.env): VisualSuit
  */
 export function selectVisualSuite<T extends { group: string }>(scenarios: T[], suite: VisualSuite): T[] {
   if (suite === 'all') return scenarios;
-  return scenarios.filter(scenario => {
-    if (suite === 'texas') return scenario.group === 'texas-holdem';
-    if (suite === 'zhajinhua') return scenario.group === 'zhajinhua';
-    return scenario.group !== 'texas-holdem' && scenario.group !== 'zhajinhua';
-  });
+  const groups = { texas: ['texas-holdem'], zhajinhua: ['zhajinhua'], app: ['texas-holdem', 'zhajinhua'] }[suite];
+  return scenarios.filter(scenario => groups.includes(scenario.group) !== (suite === 'app'));
 }

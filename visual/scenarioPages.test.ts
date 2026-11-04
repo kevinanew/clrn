@@ -58,10 +58,12 @@ describe('visual scenarios', () => {
         (scenario) => scenario.pageLabel === sideScenario.labelSuffix,
       );
       assert.equal(matched.length, 1, `缺少场景 ${sideScenario.labelSuffix}`);
-      assert.equal(matched[0]?.viewport.label, 'mobile');
-      assert.equal(matched[0]?.signIn, false);
-      assert.deepEqual(matched[0]?.navClickTestIds, sideScenario.navClickTestIds);
-      assert.equal(matched[0]?.visualReadySelector, sideScenario.visualReadySelector);
+      const [scenario] = matched;
+      assert.ok(scenario);
+      assert.equal(scenario.viewport.label, 'mobile');
+      assert.equal(scenario.signIn, false);
+      assert.deepEqual(scenario.navClickTestIds, sideScenario.navClickTestIds);
+      assert.equal(scenario.visualReadySelector, sideScenario.visualReadySelector);
     });
   });
 
@@ -203,11 +205,13 @@ describe('visual scenarios', () => {
     expected.forEach(({ pageLabel, navClickTestIds, visualReadySelector }) => {
       const matched = scenarios.filter((scenario) => scenario.pageLabel === pageLabel);
       assert.equal(matched.length, 1, `缺少场景 ${pageLabel}`);
-      assert.equal(matched[0]?.viewport.label, 'mobile');
-      assert.equal(matched[0]?.signIn, true);
-      assert.equal(matched[0]?.tabTestId, 'settings-tab');
-      assert.deepEqual(matched[0]?.navClickTestIds, navClickTestIds);
-      assert.equal(matched[0]?.visualReadySelector, visualReadySelector);
+      const [scenario] = matched;
+      assert.ok(scenario);
+      assert.equal(scenario.viewport.label, 'mobile');
+      assert.equal(scenario.signIn, true);
+      assert.equal(scenario.tabTestId, 'settings-tab');
+      assert.deepEqual(scenario.navClickTestIds, navClickTestIds);
+      assert.equal(scenario.visualReadySelector, visualReadySelector);
     });
   });
 

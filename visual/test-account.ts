@@ -24,8 +24,17 @@ export function getVisualDeviceId(env: NodeJS.ProcessEnv = process.env): string 
  */
 export function getVisualTestAccount(env: NodeJS.ProcessEnv = process.env) {
   const suite = getVisualSuite(env);
-  const defaultUsername = suite === 'texas' ? TEXAS_TEST_USERNAME
-    : suite === 'zhajinhua' ? ZHAJINHUA_TEST_USERNAME : APP_TEST_USERNAME;
+  const defaultUsername = { all: APP_TEST_USERNAME, app: APP_TEST_USERNAME,
+    texas: TEXAS_TEST_USERNAME, zhajinhua: ZHAJINHUA_TEST_USERNAME }[suite];
+  return accountCredentials(env, defaultUsername);
+}
+
+/**
+ * 将环境凭据覆盖到套件账号，空值继续使用默认值。
+ * @param env - 当前环境。
+ * @param defaultUsername - 套件固定账号。
+ */
+function accountCredentials(env: NodeJS.ProcessEnv, defaultUsername: string) {
   return {
     username: env.VISUAL_USERNAME || defaultUsername,
     password: env.VISUAL_PASSWORD || DEFAULT_TEST_PASSWORD,
@@ -38,9 +47,25 @@ export function getVisualTestAccount(env: NodeJS.ProcessEnv = process.env) {
  * @param env - 环境配置，默认读取当前进程。
  */
 export function canTopUpVisualAccount(username: string, env: NodeJS.ProcessEnv = process.env): boolean {
-  const isFixedTestAccount = username === APP_TEST_USERNAME || username === TEXAS_TEST_USERNAME
-    || username === ZHAJINHUA_TEST_USERNAME;
-  const isCurrentAccount = username === getVisualTestAccount(env).username;
-  const isCiPoolAccount = env.GITHUB_ACTIONS === 'true' && ciManifest.accounts.includes(username);
-  return (isFixedTestAccount || isCiPoolAccount) && isCurrentAccount;
+  if (username !== getVisualTestAccount(env).username) return false;
+  return isEligibleAccount(username, env);
+}
+
+/**
+ * 仅 GitHub Actions 允许使用登记的池账号。
+ * @param username - 当前账号。
+ * @param env - 当前环境。
+ */
+function isCiPoolAccount(username: string, env: NodeJS.ProcessEnv): boolean {
+  return env.GITHUB_ACTIONS === 'true' && ciManifest.accounts.includes(username);
+}
+
+/**
+ * 固定账号或允许的 CI 池账号才可补钻。
+ * @param username - 当前账号。
+ * @param env - 当前环境。
+ */
+function isEligibleAccount(username: string, env: NodeJS.ProcessEnv): boolean {
+  if ([APP_TEST_USERNAME, TEXAS_TEST_USERNAME, ZHAJINHUA_TEST_USERNAME].includes(username)) return true;
+  return isCiPoolAccount(username, env);
 }
