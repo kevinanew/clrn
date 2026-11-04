@@ -346,8 +346,8 @@ finally{
   const ledger=await walletControl<WalletState>('state');report.finalLedger=ledger;
   if(bridge?.rooms.length){
    const coin=owners.reduce((sum,user)=>sum+ledger.balances[user].coin,0);
+   report.finalFunds={walletCoin:coin,expected:20000,conserved:coin===20000};
    assert.equal(coin,20000,'Closing the owned native room must restore the two initial balances in total');
-   report.finalFunds={walletCoin:coin,expected:20000};
   }
  }catch{cleanupErrors.push('Final native wallet conservation check failed');}
  if(cleanupErrors.length){report.cleanupErrors=cleanupErrors;process.exitCode=1;report.outcome='failed';}
