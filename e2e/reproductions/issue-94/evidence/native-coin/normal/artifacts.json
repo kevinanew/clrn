@@ -1,0 +1,74 @@
+{
+  "mode": "normal",
+  "runId": "1793822604420-64672",
+  "implementationCommit": "743211bed1ba2b835a0023947e1b4a8dae903265",
+  "media": "Two original post-login recordings; opaque video filenames retained without guessing actor assignment.",
+  "credentialScan": "No pool passwords, testing token, GitHub token, JWT or Authorization fields found in committed text evidence.",
+  "artifacts": [
+    {
+      "file": "actor0-hall.png",
+      "bytes": 287379,
+      "sha256": "7998d59c0728263f9bc4dfbb04c591c142d46313d0316780c2176149e586ab71"
+    },
+    {
+      "file": "actor0-manual-buyin.png",
+      "bytes": 313991,
+      "sha256": "08da7b2bd04f96da8b78c3051340461d22a5e22c1b38ade9da53f946821f6c06"
+    },
+    {
+      "file": "actor0-outcome.png",
+      "bytes": 347319,
+      "sha256": "90d85572b165346a4bf4824397e8ae55dec94e2005f684602c8bab6ecda2524b"
+    },
+    {
+      "file": "actor1-hall.png",
+      "bytes": 286158,
+      "sha256": "a011f41ea740bb6e89dfc3e2c2798ba61ddcbabdbba964c9f15e40ff830e5d0c"
+    },
+    {
+      "file": "actor1-manual-buyin.png",
+      "bytes": 317681,
+      "sha256": "b2b7e157039d07b7876d82dff6461a4c41a6f614a51fb5090fdc661a66336619"
+    },
+    {
+      "file": "actor1-outcome.png",
+      "bytes": 349812,
+      "sha256": "8cce0046ae5100576a00cec354dea9587e141ea67b55be9c4f9e7d9a4ad85398"
+    },
+    {
+      "file": "native-cleanup.json",
+      "bytes": 156,
+      "sha256": "709b44bcfec83be14fd8464e9a564b04fe618486386b11620fc8b41a0abf6006"
+    },
+    {
+      "file": "native-provenance.json",
+      "bytes": 4158,
+      "sha256": "3a6dc8be877313d0e407bc1ffcabb0d90f7849a48a45e092083a097ca3ad17a4"
+    },
+    {
+      "file": "native-runtime.json",
+      "bytes": 256,
+      "sha256": "013edf8ac089628c35040b862c5f6f8c45871f7d9726a3c29872e64239b212a1"
+    },
+    {
+      "file": "normal-automatic-rebuy-displayed.png",
+      "bytes": 349658,
+      "sha256": "e512c7096f1d3597b289de9f60ceac24654a41a8bd8a38ded27a43e39dd7e972"
+    },
+    {
+      "file": "page@656373811bf899829968dcf4e8f7d391.webm",
+      "bytes": 4832645,
+      "sha256": "47517625f62f748da929b65284e9b61a83f07ae32c4d940226978d9435e0c7bd"
+    },
+    {
+      "file": "page@d782b2308caed70954bd9bf9ad375600.webm",
+      "bytes": 4785215,
+      "sha256": "2b14c6b8f6d3341bc18019a4baa6f0c4b8425eba4785535c9a54adf8a10fc52f"
+    },
+    {
+      "file": "report.json",
+      "bytes": 183900,
+      "sha256": "5e54faf3917e4d35e15e86cd3f153f93169e49d93c35c5ed806e348545e78a6c"
+    }
+  ]
+}

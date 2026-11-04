@@ -1,0 +1,108 @@
+{
+  "services": {
+    "texas": {
+      "repository": "kevinanew/texas_holdem_flask",
+      "commit": "def3a1291c4ef0add64b46cc302d2ea730425675",
+      "trackedSourceMatchesCommit": true,
+      "uvLockSha256": "6bd018ee7f39685b0d8503a08130f61c813a40200ef8b09f7299a3254a13b962"
+    },
+    "gateway": {
+      "repository": "kevinanew/centrifugo_gateway_flask",
+      "commit": "e9be071eff77e1c767e63e36288935830b6dc6d3",
+      "trackedSourceMatchesCommit": true,
+      "uvLockSha256": "0bd96e1a9c8891d0abd46b073df6f0c4b8e4243250e3c3c01ff9c8be54387b82"
+    },
+    "room": {
+      "repository": "kevinanew/room_sanic",
+      "commit": "ff4aec30f80c7f21916be7618e24e7c20f5f81b2",
+      "trackedSourceMatchesCommit": true,
+      "uvLockSha256": "69c14396e3a7e2eabd382450585b552019d2949a7e29b88247af95bcbad4b488"
+    },
+    "buyin": {
+      "repository": "kevinanew/buy_in_flask",
+      "commit": "2e47cc9e0df18b66bb140071c13439ed8a0eea40",
+      "trackedSourceMatchesCommit": true,
+      "uvLockSha256": "5089193ed975ed34a2f06517263a3e3ec69e85279c5b1f96febd43dfa973f0a7"
+    },
+    "matching": {
+      "repository": "kevinanew/hall_matching_flask",
+      "commit": "e0e0b760976fc98bf8958b2d7cfd1cd26789606d",
+      "trackedSourceMatchesCommit": true,
+      "uvLockSha256": "9e0d7dcbeea1ad525551b7a2f1c761cc0ca79f6d14bde130ebb58038bb8ca136"
+    }
+  },
+  "tools": {
+    "redis": {
+      "version": "7.2.5",
+      "binarySha256": "81bde9a3e20204769a7ce1aa206145ba723fcfd6605210da8c338d51d1c7be06"
+    },
+    "redis-cli": {
+      "version": "7.2.5",
+      "binarySha256": "ed6bae5db40871780980bc6cd1003b4493739cde4c1f03ec8945dcb4cc52c0c7"
+    },
+    "centrifugo": {
+      "version": "2.5.1",
+      "binarySha256": "dbf82696dccda685ff669f8108474042adc042c1dc6e1d3ef4ef527a326377fe"
+    }
+  },
+  "harness": {
+    "hall.json": "9b4987209c469e44d3f770a6d84379dfb80f9f991c8d8e9ae66899ea51f99936",
+    "run.mjs": "d7b488f93ecc88525cf4f97b2ee04afb0bbd7c6c5c17c0f08bb985a23407c6ba",
+    "isolated_router.py": "b3307bcd59f83f0cc8f9fdd01290ed7e398eaa79ca9681879c1fb59ee2de841f",
+    "native_bridge.py": "a6e7b59d5969986cdd34d1e6a23b2570fca93796b5c2836c468019815d0d0b37",
+    "infrastructure.py": "bc880be6f36c20fd6ded4b5f700055691b6812d95eab2c1ec441a91ed70d525a",
+    "ports.py": "ba074ca4d0e4cf55a041e3866675353a13cbf07ee42e5f775b4c4cedc2823b82",
+    "runtime.py": "9f9f0b2318c1165b9d23bbab6f991112976bfad5c7b6dbbf460720f7d01e4a29",
+    "README.md": "5e3b32c1ef6d663517bfe2bc0103b2c658aa5cf99cb5d0ff7984b5685dfbd789",
+    "types.ts": "e64369dd9cd74055c24fdb2d26e6be16344eb1a9a18075fb4055185735742b83",
+    "run_flask.py": "f8dccb044d088b6753af50aed2ae1353dd520011130648b8f8aaccfa73669f96",
+    "test_ports.py": "4e4de9de76bc112211e82b4aa61b78d9260a0026b2ed2a2ac881f1e6964ab710",
+    "native_wallet.py": "df89ed8bf557e0f9e9a93871a4f2dd97599f28ce19b788af36b6336317ef78da",
+    "browser.mts": "f3bc43b668412cb3da83cdf599533223bcd24ff3242a9e59883413ef6aa988ea"
+  },
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "python": "3.15.2",
+  "stagingBackendVersions": "not verified; coin operations use the pinned native services",
+  "isolatedHall": {
+    "hall_id": "ba41a7da-c063-4b4f-9aa3-e44529de718b",
+    "is_open": true,
+    "check_gps_coordinate": false,
+    "check_ip_address": false,
+    "room_config": {
+      "currency": "coin",
+      "minimum_buy_in": 100,
+      "maximum_buy_in": 200,
+      "seat_quantity": 6,
+      "auto_start_player_quantity": 2,
+      "can_reserve_seat": false,
+      "buy_in_highest_stack": 4000,
+      "variation": "texas_holdem",
+      "ante": 0,
+      "small_blind": 1,
+      "big_blind": 2,
+      "player_operating_seconds": 60,
+      "audit_buy_in": false,
+      "remove_player_ranking_when_quit": true,
+      "duration": 172800,
+      "prediction_currency": "coin",
+      "prediction_amount_options": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20
+      ]
+    },
+    "minimum_chip": 100,
+    "maximum_chip": 20000,
+    "hall_type": "tourists",
+    "game_type": "texas_holdem",
+    "hall_title_language": "en",
+    "hall_title_content": "Issue94 isolated Tourists"
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "mode": "conflict",
+  "runId": "1793822762790-71439",
+  "implementationCommit": "743211bed1ba2b835a0023947e1b4a8dae903265",
+  "media": "Two original post-login recordings; opaque video filenames retained without guessing actor assignment.",
+  "credentialScan": "No pool passwords, testing token, GitHub token, JWT or Authorization fields found in committed text evidence.",
+  "artifacts": [
+    {
+      "file": "actor0-hall.png",
+      "bytes": 287254,
+      "sha256": "101ff7809199cd3a13d5f8df46a7268548fc61686fc8c0a4723681456d022833"
+    },
+    {
+      "file": "actor0-manual-buyin.png",
+      "bytes": 313533,
+      "sha256": "886df6bcd7cbcf93f7846ac02a52f75ec511ddf885056c5c822beafe1b6f1110"
+    },
+    {
+      "file": "actor0-outcome.png",
+      "bytes": 344316,
+      "sha256": "27a7d7c1d4f6fe5c025a1291e73adb0721adf6b5a0276c9c842a39278f94639a"
+    },
+    {
+      "file": "actor1-hall.png",
+      "bytes": 287399,
+      "sha256": "0e5414ad22668c3999108461a5a237475cb4744ac6fd48e5d27f741146314ba1"
+    },
+    {
+      "file": "actor1-manual-buyin.png",
+      "bytes": 318620,
+      "sha256": "2ae6068d6c5a81126997633c44849ef3d4fb4a03a39eea3846cd9f9216883213"
+    },
+    {
+      "file": "actor1-outcome.png",
+      "bytes": 356218,
+      "sha256": "c7f042ff821a5de2e648c9b5686f876ab1b5fb49b9e89e0185ec6e3f384c83ba"
+    },
+    {
+      "file": "fault-automatic-rebuy.png",
+      "bytes": 300415,
+      "sha256": "9623218cbfc3d40c4d4d865c396d25ad2e8fddda1daf89db583cc4734b7ef356"
+    },
+    {
+      "file": "fault-resit.png",
+      "bytes": 300330,
+      "sha256": "80a3ccbde0e9cd0777cd8f9fe341bd4f0413837c59fd462230fcf3ca1af29187"
+    },
+    {
+      "file": "native-cleanup.json",
+      "bytes": 156,
+      "sha256": "709b44bcfec83be14fd8464e9a564b04fe618486386b11620fc8b41a0abf6006"
+    },
+    {
+      "file": "native-provenance.json",
+      "bytes": 4158,
+      "sha256": "3a6dc8be877313d0e407bc1ffcabb0d90f7849a48a45e092083a097ca3ad17a4"
+    },
+    {
+      "file": "native-runtime.json",
+      "bytes": 256,
+      "sha256": "34fa782045c82f60ccad4168cdc0b9a03c894c0db460e362404ca520e641c846"
+    },
+    {
+      "file": "page@9229dbbe8b64027e1fe6018f7c4629fa.webm",
+      "bytes": 4597618,
+      "sha256": "61c63abf78149e242427d46d5418b1b04f20ee2220898cbda6b14086fd142249"
+    },
+    {
+      "file": "page@e42a39249d29ca293f7f2c3f215c6515.webm",
+      "bytes": 4894866,
+      "sha256": "5bdcc076d79275af9e258cdf46b3ab2195be11001e37b48af2c91eaf5e2e6d05"
+    },
+    {
+      "file": "recovered-manual-buyin.png",
+      "bytes": 348459,
+      "sha256": "2a6966f84a7ed59935000c6234689d1ba15a7cdea1b33c2d712adb7effb637ac"
+    },
+    {
+      "file": "report.json",
+      "bytes": 220929,
+      "sha256": "bfb42ef5fbe5f8758e29f18ba5d5a962ada03517dd119b5eaf64b2a0d752e7d8"
+    }
+  ]
+}

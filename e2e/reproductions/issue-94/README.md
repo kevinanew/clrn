@@ -19,6 +19,23 @@
 
 新增的[本机原生服务入口](native/README.md)将同一真实登录网页接到固定版本的德州、匹配、房间、带入和 RPC 网关服务，以及真实 Redis Cluster 和 Centrifugo；金币交易使用独立本机账本。正常手动带入、all-in、自动补码和退款对照已在开发实验中通过，真实网关下发的交易冲突吞错也已到达网页。该入口目前仅实现 normal/conflict，不代表完整金币故障矩阵已经完成；原反馈的重新入座 `player_not_enough_stack` 仍未出现，实际结果是带入弹窗。
 
+## 原生金币链路实测
+
+在实现提交 `743211bed1ba2b835a0023947e1b4a8dae903265` 的干净工作区连续运行 normal/conflict，两轮都核对了全部原生入口文件 SHA-256，服务源码在运行前后均与固定提交一致。固定客户端仍为 `b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec`，构建摘要及来源见两轮 `run-manifest.json`。真实 staging 负责正常初始化和登录，实际 staging 后端部署版本仍未核实；金币操作使用版本已记录的本机真实服务。
+
+| 场景 | 实际结果与资金核对 | 退出码、耗时和内存 |
+| --- | --- | --- |
+| 正常金币链路 | 两个真实登录账号匹配、各手动带入 100，经真实 all-in 触发补码 100；钱包 19500 + 桌上 497 + 底池 3 = 20000 | 0；含原生环境准备 143.613 秒；最大子进程 RSS 421838848 字节 |
+| 钱包交易冲突 | 故障玩家钱包 9800，补码 100 返回实际 `transaction_conflict`，没有扣款；真实网关下发站起和带入提示，网页没有失败原因。清除故障后手动带入恢复，仅新增一笔 100 的扣款 | 1；失败点为实际原因未显示的正确行为断言；145.452 秒；最大子进程 RSS 400113664 字节 |
+
+正常轮的[补码显示截图](evidence/native-coin/normal/normal-automatic-rebuy-displayed.png)、[完整账本及消息](evidence/native-coin/normal/report.json)、[服务版本](evidence/native-coin/normal/native-provenance.json)和[录像与文件摘要](evidence/native-coin/normal/artifacts.json)保留实际来源。冲突轮的[故障截图](evidence/native-coin/conflict/fault-automatic-rebuy.png)、[再次入座截图](evidence/native-coin/conflict/fault-resit.png)、[恢复截图](evidence/native-coin/conflict/recovered-manual-buyin.png)、[消息、账本和恢复断言](evidence/native-coin/conflict/report.json)及[录像索引](evidence/native-coin/conflict/artifacts.json)分别记录。再次入座实际仍是带入弹窗，没有 `player_not_enough_stack`，不将吞错路径直接认定为原反馈完整根因。
+
+两轮真实退出、关房后的钱包总额都回到 20000；14 个本轮进程组、独占 worktree、私有配置、代理、临时证书及账号锁完成清理。错误房间和错误玩家的故障控制请求均被 HTTP 400 拒绝，未激活故障。本机专用大厅关闭同 IP 检查并使用 60 秒行动时间，为动画结束后的取证留出时间；没有改变共享 staging 规则，也没有改动游戏、SDK、网关或消息转换实现。
+
+内存来自 `resource.getrusage(RUSAGE_CHILDREN)`，是已退出子进程的最大 RSS，不能当作所有并发服务的内存合计。文本证据通过本机账号池密码、测试令牌、GitHub 令牌、JWT 和认证头扫描；没有保存登录状态、trace、原始服务日志或签名配置。
+
+这些新增证据补齐了 normal/conflict 的完整金币网页与真实服务路径。原生钱包传输故障、真实余额不足、提交后丢回复及完整金币客户端矩阵仍未完成；#94/#95 不关闭，PR 继续保持草稿。普通 CI 与独立复现命令分开，交易冲突的非零退出码不会伪装为通过。
+
 ## 浏览器运行
 
 从仓库根目录执行，Node、Playwright 和 Python 依赖沿用仓库锁文件及 `e2e/mitmproxy/requirements.txt`：
