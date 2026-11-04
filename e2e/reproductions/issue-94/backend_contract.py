@@ -11,6 +11,7 @@ import subprocess
 import time
 import unittest
 import uuid
+from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch
 
@@ -28,6 +29,28 @@ from sdk.user_transaction_flask import UserTransactionService
 
 ROOM = uuid.UUID("94000000-0000-4000-8000-000000000001")
 PLAYERS = [uuid.UUID(f"94000000-0000-4000-8000-{index:012}") for index in (2, 3)]
+
+
+def capture_message_exit(queue):
+    """复制真实协议转换后的公共及按接收玩家分组的私有消息，避免后续操作覆盖。"""
+    return deepcopy(
+        {
+            "roomPublic": queue.send_room_public_messages or [],
+            "playersPrivate": {
+                str(player): messages
+                for player, messages in (
+                    queue.send_players_private_messages or {}
+                ).items()
+            },
+        }
+    )
+
+
+def json_uuid(value):
+    """消息协议中的 UUID 按字符串落盘，其他不可序列化值仍应报错。"""
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    raise TypeError(f"Unsupported message value: {type(value).__name__}")
 
 
 class BackendContract(unittest.TestCase):
@@ -101,6 +124,7 @@ class BackendContract(unittest.TestCase):
                 "capturedAtMessageExit": [
                     message["event"] for message in engine.last_queue.delay_messages
                 ],
+                "messageExit": capture_message_exit(engine.last_queue),
                 "messageDelivery": "isolated capture; not delivered by a real gateway",
                 "errorClass": type(error).__name__ if error else None,
                 "errorType": error.error_type
@@ -135,7 +159,7 @@ class BackendContract(unittest.TestCase):
                     sum(before.values()) + 310,
                     "钱包和结算后的桌上筹码总额必须守恒",
                 )
-            self.verify(mode, observation, error, messages)
+            self.verify(mode, observation, error)
 
     def resit(self, engine, wallet, transactions, first_hit):
         """真实站起后再次调用入座，观察钱包充足与桌上筹码不足的区别。"""
@@ -162,6 +186,7 @@ class BackendContract(unittest.TestCase):
             "capturedAtMessageExit": [
                 message["event"] for message in engine.last_queue.delay_messages
             ],
+            "messageExit": capture_message_exit(engine.last_queue),
             "seated": ClassicController(engine.config).table.has_seated_player(
                 ClassicController(engine.config).player_pool.get_or_create(player)
             ),
@@ -222,7 +247,7 @@ class BackendContract(unittest.TestCase):
             engine.config = engine._get_room_config(ROOM)
 
     def save_observation(self, observation):
-        """只保存本机虚构标识、错误类别、实际金额及事件名。"""
+        """保存本机虚构标识、账本及完整协议消息，区分内部生成与实际出口。"""
         directory = Path(
             os.environ.get(
                 "ISSUE94_BACKEND_REPORT", "e2e/test-results/issue-94/backend"
@@ -230,28 +255,46 @@ class BackendContract(unittest.TestCase):
         )
         directory.mkdir(parents=True, exist_ok=True)
         (directory / f"{observation['mode']}.json").write_text(
-            json.dumps(observation, indent=2) + "\n"
+            json.dumps(observation, indent=2, default=json_uuid) + "\n"
         )
 
-    def verify(self, mode, observation, error, messages):
+    def verify_conflict(self, observation, error):
+        """真实 SDK 异常须保留原因；否则出口消息须向每个故障玩家报告冲突。"""
+        self.assertEqual(observation["walletBefore"], observation["walletAfter"])
+        players = {
+            hit["player"]
+            for hit in observation["hits"]
+            if hit.get("errorType") == "transaction_conflict"
+        }
+        self.assertTrue(players, "钱包必须实际返回交易冲突，不能以其他故障代替")
+        if error is not None:
+            self.assertIsInstance(error, SDKException)
+            self.assertEqual(error.error_type, "transaction_conflict")
+            return
+        message_exit = observation["messageExit"]
+        for player in players:
+            messages = message_exit["playersPrivate"].get(player, []) + [
+                message
+                for message in message_exit["roomPublic"]
+                if str(message.get("player_id")) == player
+            ]
+            self.assertTrue(
+                any(
+                    message.get("error_type") == "transaction_conflict"
+                    and str(message.get("player_id", player)) == player
+                    for message in messages
+                ),
+                f"消息出口必须向钱包故障玩家 {player} 保留 transaction_conflict 原因",
+            )
+
+    def verify(self, mode, observation, error):
         """分别断言真实不足、其他业务错误和传输错误，不要求所有故障都留座。"""
         if mode == "normal":
             self.assertIsNone(error)
             self.assertIn("deposit_buy_in", observation["events"])
             self.assertEqual(observation["transactions"], 3)
         elif mode == "conflict":
-            self.assertEqual(observation["walletBefore"], observation["walletAfter"])
-            reported = (
-                isinstance(error, SDKException)
-                and error.error_type == "transaction_conflict"
-            )
-            reported = reported or any(
-                message.get("error_type") == "transaction_conflict"
-                for message in messages
-            )
-            self.assertTrue(
-                reported, "钱包充足时 transaction_conflict 不得被自动补码静默吞掉"
-            )
+            self.verify_conflict(observation, error)
         elif mode == "insufficient":
             self.assertEqual(observation["transactions"], 2)
             self.assertIn("stand_up", observation["events"])

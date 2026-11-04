@@ -2,6 +2,12 @@
 
 关联：[复现任务 #94](https://github.com/kevinanew/clrn/issues/94)、[应用 #5159](https://github.com/kevinanew/laiwan_react_native/issues/5159)、[后续验收 #95](https://github.com/kevinanew/clrn/issues/95)。本目录是定向复现入口，文件使用 `.scenario.ts` 和独立配置，不加入默认 Playwright 套件。正确行为断言失败时命令返回非零；没有预期失败、跳过或自动重试。
 
+## 合入门槛（尚未满足）
+
+**PR #96 必须继续保持草稿，当前不能合入主干。** Issue #94 明确要求“不将未修复的失败用例直接并入主干”；独立配置、如实记录失败及复现工具自测通过均不能豁免该要求。现有客户端错误提示及后端吞错仍有正确行为断言失败，历史证据和这些断言完整保留。
+
+解除阻断需先取得关联客户端、德州服务的修复版本及所需隔离环境，再固定完整提交、构建摘要和实际后端版本，重跑浏览器完整故障矩阵与后端 10 场景，补交全部正确行为断言通过的结果、消息出口、资金账本及恢复证据后，才能申请合入。不得以删除交付物、跳过、永久预期失败或放宽预期消除失败。本仓库的复现断言修复不改变外部产品行为，也不能代替上述通过证据；完整金币链路和 #94/#95 的其余验收项仍须分别完成。
+
 ## 已证实与尚未完成
 
 - 真实 Release 页面初始化及登录成功；私人**记分牌**桌可真实创建、带入 100、入座。该对照不能代替金币桌正常补码。
@@ -74,6 +80,16 @@ PYTHONPATH=/tmp/clrn-94-texas/src /tmp/clrn-94-texas/.venv/bin/python e2e/reprod
 
 隔离边界为 FakeRedis、消息出口、钱包 HTTP 地址和可重复的随机牌堆种子。钱包 SDK、实际带入/入座/准备/双方 all-in、结算、自动补码、异常解析及钱包重试均保留。没有预先构造站起或补码消息。钱包服务仅绑定随机回环端口，采用独立账本，不连接远端；生产 SDK 的两秒超时真实等待，超时故障不使用 sleep mock。提交后丢回复使用同一交易编号的三次真实重试，检查只提交一次；这只证明本地账本与 SDK 单次调用的去重，**不证明线上钱包或跨页面重试幂等性**。
 
+交易冲突的消息分支以 `DummyQueueMessage.send_room_public_messages` 和 `send_players_private_messages` 中实际转换后的协议内容为准，在再次入座、恢复前深复制到报告的 `messageExit`。私有消息按接收玩家分组，公共消息须含对应 `player_id`；每个实际钱包冲突请求的玩家都须在出口收到 `error_type=transaction_conflict`。仅在内部消息添加错误字段、转换时丢字段或只发给其他玩家均不能通过；向调用者抛出真实 `SDKException(transaction_conflict)` 的分支仍合法。该出口仍是隔离捕获，不证明真实网关或网页已收到消息。
+
+断言自身可在同一固定德州环境中独立检查（包含真实 all-in、重新入座和恢复的坏修复负例）：
+
+```sh
+PYTHONPATH=/tmp/clrn-94-texas/src /tmp/clrn-94-texas/.venv/bin/python -m unittest discover -s e2e/reproductions/issue-94 -p test_backend_contract.py -v
+```
+
+这些工具自测中的正确出口内容为边界夹具，不是外部产品已修复的证据；原后端回归仍须对未修改的待测源码单独运行并如实返回失败。
+
 ## 工具检查与待补环境
 
 ```sh
@@ -108,3 +124,9 @@ npm run check
 金币匹配前置检查仍失败，队列现场及真实大厅规则见 [截图](evidence/coin-prerequisite/03-matching-outcome.png) 和 [规则记录](evidence/coin-prerequisite/matching-prerequisites.json)。本轮没有建立成功的金币牌局。实际后端部署版本、完整隔离服务/网关、金币自动补码网页录像及线上钱包交易恢复继续由 #1648 补齐；#94 和 #95 均不能据此关闭。
 
 本轮新建私人房间均由准确 UUID 删除，并等待实际退款到账；本工作区账号锁已释放。代理及临时证书由每例 finally 清理。提交的文本证据已针对本机账号池密码和测试令牌扫描，未包含凭据；没有保存原始网络 trace 或登录状态。
+
+## 消息出口断言修复后的自检
+
+本轮在未修改的固定德州版本上重新运行完整后端 10 场景，9 通过、交易冲突原因未到达故障玩家的断言失败；完整出口与再次入座记录见 [新冲突证据](evidence/backend-message-exit/conflict.json)。钱包余额不变、恢复后只新增一次扣款及 155 筹码的核对仍通过。耗时 10.694 秒，Python 峰值常驻内存 62996480 字节。
+
+断言自测 9 项通过，包括真实 HTTP/SDK 异常分支和三个坏修复负例；将原始 `verify` 方法在内存中换回后，三个负例均能识别其误接受，修复后全部通过。全仓 lint/typecheck、218 项 Node 测试、80 项代理测试及 3 项真实 Chromium 动画子测试通过。当前未提交工作区的源码摘要、运行结果与验证边界见 [自检记录](evidence/backend-message-exit/run.json)；本轮没有重跑需要额外授权的 staging 浏览器矩阵，既有浏览器失败证据完整保留，合入门槛仍未满足。

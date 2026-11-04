@@ -1,0 +1,81 @@
+{
+  "createdAt": "2026-11-04T13:42:20.828952+00:00",
+  "texasSourceCommit": "def3a1291c4ef0add64b46cc302d2ea730425675",
+  "clrnTestCommit": "73b82335720a8fea93492856675f9c250cab84c4",
+  "driverSha256": {
+    "backend_contract.py": "f6fa93a9a3756e960c9aaa4eb1ec45de9970551da0dec865b0172c2bd0835aa4",
+    "isolated_wallet.py": "25e5e8aefc180d578c71ca5fc16e882fd1c8ffeed3b108ed07819656b2857c45"
+  },
+  "environment": "isolated-engine-http-wallet; not deployed staging",
+  "worktreeHasChanges": true,
+  "sourceSha256": {
+    "backend_contract.py": "f6fa93a9a3756e960c9aaa4eb1ec45de9970551da0dec865b0172c2bd0835aa4",
+    "isolated_wallet.py": "25e5e8aefc180d578c71ca5fc16e882fd1c8ffeed3b108ed07819656b2857c45",
+    "test_backend_contract.py": "715d670e27f59a9f69724269ab5ec953c83cc9fc7895ee23c183f063d075c048"
+  },
+  "backend": {
+    "command": "PYTHONPATH=/tmp/clrn-94-texas/src /tmp/clrn-94-texas/.venv/bin/python e2e/reproductions/issue-94/backend_contract.py",
+    "exitCode": 1,
+    "tests": 10,
+    "passed": 9,
+    "failed": 1,
+    "skipped": 0,
+    "failure": "test_business_conflict_preserves_reason",
+    "reason": "No transaction_conflict reason in converted message exit for affected player 94000000-0000-4000-8000-000000000003",
+    "elapsedSeconds": 10.694,
+    "maximumResidentSetSize": 62996480,
+    "memoryUnit": "bytes on macOS; KiB on Linux",
+    "conflictObservation": "conflict.json",
+    "recovery": "real resit and buy-in executed; exactly one new transaction, wallet 9845 -> 9690, stack 0 -> 155"
+  },
+  "validator": {
+    "command": "PYTHONPATH=/tmp/clrn-94-texas/src /tmp/clrn-94-texas/.venv/bin/python -m unittest discover -s e2e/reproductions/issue-94 -p test_backend_contract.py -v",
+    "exitCode": 0,
+    "tests": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "elapsedSeconds": 2.677,
+    "coverage": [
+      "real converter strips internal error",
+      "generated but not delivered",
+      "wrong recipient",
+      "correct private delivery before resit/recovery",
+      "real HTTP SDKException caller branch",
+      "other exceptions rejected",
+      "public player correlation",
+      "every affected player",
+      "complete detached serializable snapshot"
+    ],
+    "boundaryFixtures": "Synthetic exit payloads test only the verifier and are not evidence of a product repair."
+  },
+  "historicalVerifierMutation": {
+    "mutant": "verbatim verify method from HEAD before repair; recorded real all-in internal messages supplied through an adapter",
+    "testsRun": 3,
+    "failedTests": [
+      "test_internal_reason_stripped_by_real_converter_is_rejected",
+      "test_generated_but_not_delivered_reason_is_rejected",
+      "test_reason_delivered_only_to_other_player_is_rejected"
+    ],
+    "errors": 0,
+    "expected": "All three bad-fix regression tests fail against the original verifier because it incorrectly accepts each delivery defect."
+  },
+  "repositoryChecks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "nodeTestsPassed": 218,
+    "proxyTestsPassed": 80,
+    "chromiumAnimationSubtestsPassed": 3
+  },
+  "browserMatrix": {
+    "status": "not-run",
+    "reason": "External staging access requires explicit authorization.",
+    "existingEvidence": "../client/results.json",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "language": "zh"
+  },
+  "mergeGate": "BLOCKED: the correct-behavior backend regression still fails against the unmodified pinned product. Existing browser failure evidence is retained. PR #96 must remain draft until product fixes and passing full reruns are supplied."
+}

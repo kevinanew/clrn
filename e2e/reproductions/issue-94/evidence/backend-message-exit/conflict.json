@@ -1,0 +1,315 @@
+{
+  "mode": "conflict",
+  "walletBefore": {
+    "94000000-0000-4000-8000-000000000002": 9845,
+    "94000000-0000-4000-8000-000000000003": 9845
+  },
+  "walletAfter": {
+    "94000000-0000-4000-8000-000000000002": 9845,
+    "94000000-0000-4000-8000-000000000003": 9845
+  },
+  "initialTransactions": 2,
+  "transactions": 2,
+  "hits": [
+    {
+      "mode": "conflict",
+      "transaction": "8c8c6211-5f81-4964-ab7f-def87571bd3a",
+      "player": "94000000-0000-4000-8000-000000000003",
+      "amount": 155,
+      "at": 1793799346.0338151,
+      "status": 200,
+      "errorType": "transaction_conflict"
+    }
+  ],
+  "events": [
+    "all_in",
+    "pots_updated",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "all_in_show_hole_card",
+    "showdown",
+    "settlement",
+    "end_game",
+    "stand_up",
+    "prompt_buy_in",
+    "reserve_seat",
+    "about_to_start",
+    "hand_analyse",
+    "hand_analyse"
+  ],
+  "capturedAtMessageExit": [
+    "all_in",
+    "pots_updated",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "all_in_show_hole_card",
+    "showdown",
+    "settlement",
+    "end_game",
+    "stand_up",
+    "prompt_buy_in",
+    "reserve_seat",
+    "about_to_start",
+    "hand_analyse",
+    "hand_analyse"
+  ],
+  "messageExit": {
+    "roomPublic": [
+      {
+        "player_id": "94000000-0000-4000-8000-000000000003",
+        "stack": 0,
+        "amount": 155,
+        "event": "all_in"
+      },
+      {
+        "pots": [
+          310
+        ],
+        "event": "pots_updated"
+      },
+      {
+        "street": "flop",
+        "community_card": [
+          "6s",
+          "ks",
+          "5d"
+        ],
+        "event": "start_street"
+      },
+      {
+        "street": "turn",
+        "community_card": [
+          "6s",
+          "ks",
+          "5d",
+          "kd"
+        ],
+        "delay_seconds": 2.6,
+        "event": "start_street"
+      },
+      {
+        "street": "river",
+        "community_card": [
+          "6s",
+          "ks",
+          "5d",
+          "kd",
+          "3c"
+        ],
+        "delay_seconds": 4.6,
+        "event": "start_street"
+      },
+      {
+        "players": [
+          {
+            "player_id": "94000000-0000-4000-8000-000000000003",
+            "hole_card": [
+              "3d",
+              "8h"
+            ]
+          },
+          {
+            "player_id": "94000000-0000-4000-8000-000000000002",
+            "hole_card": [
+              "6h",
+              "ac"
+            ]
+          }
+        ],
+        "event": "all_in_show_hole_card"
+      },
+      {
+        "players": [
+          {
+            "player_id": "94000000-0000-4000-8000-000000000003",
+            "hole_card": [
+              "3d",
+              "8h"
+            ],
+            "best_cards": [
+              "ks",
+              "kd",
+              "3c",
+              "3d",
+              "8h"
+            ],
+            "strength_cards": [
+              "3c",
+              "3d",
+              "ks",
+              "kd"
+            ],
+            "hand_strength": "two_pairs",
+            "is_max_strength": false
+          },
+          {
+            "player_id": "94000000-0000-4000-8000-000000000002",
+            "hole_card": [
+              "6h",
+              "ac"
+            ],
+            "best_cards": [
+              "6s",
+              "ks",
+              "kd",
+              "6h",
+              "ac"
+            ],
+            "strength_cards": [
+              "6h",
+              "6s",
+              "ks",
+              "kd"
+            ],
+            "hand_strength": "two_pairs",
+            "is_max_strength": true
+          }
+        ],
+        "delay_seconds": 6.1,
+        "event": "showdown"
+      },
+      {
+        "players": [
+          {
+            "player_id": "94000000-0000-4000-8000-000000000003",
+            "stack": 0,
+            "prize": null,
+            "net": -155
+          },
+          {
+            "player_id": "94000000-0000-4000-8000-000000000002",
+            "stack": 310,
+            "prize": 310,
+            "net": 155
+          }
+        ],
+        "delay_seconds": 6.6,
+        "event": "settlement"
+      },
+      {
+        "delay_seconds": 11.1,
+        "event": "end_game"
+      },
+      {
+        "player_id": "94000000-0000-4000-8000-000000000003",
+        "delay_seconds": 11.1,
+        "event": "stand_up"
+      },
+      {
+        "player_id": "94000000-0000-4000-8000-000000000003",
+        "remain_reserve_seconds": 179,
+        "seat_number": 2,
+        "delay_seconds": 11.1,
+        "event": "reserve_seat"
+      },
+      {
+        "delay_seconds": 11.799999999999999,
+        "event": "about_to_start"
+      }
+    ],
+    "playersPrivate": {
+      "94000000-0000-4000-8000-000000000003": [
+        {
+          "hand_strength": "two_pairs",
+          "delay_seconds": 1.8,
+          "event": "hand_strength"
+        },
+        {
+          "hand_strength": "two_pairs",
+          "delay_seconds": 3.1,
+          "event": "hand_strength"
+        },
+        {
+          "hand_strength": "two_pairs",
+          "delay_seconds": 5.1,
+          "event": "hand_strength"
+        },
+        {
+          "buy_in": {
+            "minimum": 155,
+            "maximum": 2000
+          },
+          "delay_seconds": 11.1,
+          "event": "prompt_buy_in"
+        },
+        {
+          "hand_power": 57,
+          "event": "hand_analyse"
+        }
+      ],
+      "94000000-0000-4000-8000-000000000002": [
+        {
+          "hand_strength": "two_pairs",
+          "delay_seconds": 1.8,
+          "event": "hand_strength"
+        },
+        {
+          "hand_strength": "two_pairs",
+          "delay_seconds": 3.1,
+          "event": "hand_strength"
+        },
+        {
+          "hand_strength": "two_pairs",
+          "delay_seconds": 5.1,
+          "event": "hand_strength"
+        },
+        {
+          "hand_power": 57,
+          "event": "hand_analyse"
+        }
+      ]
+    }
+  },
+  "messageDelivery": "isolated capture; not delivered by a real gateway",
+  "errorClass": null,
+  "errorType": null,
+  "elapsedSeconds": 0.026,
+  "tableStacks": {
+    "94000000-0000-4000-8000-000000000002": 310,
+    "94000000-0000-4000-8000-000000000003": 0
+  },
+  "resitWithoutBuyIn": {
+    "errorType": null,
+    "walletBalance": 9845,
+    "newWalletRequests": 0,
+    "capturedAtMessageExit": [
+      "prompt_buy_in"
+    ],
+    "messageExit": {
+      "roomPublic": [],
+      "playersPrivate": {
+        "94000000-0000-4000-8000-000000000003": [
+          {
+            "buy_in": {
+              "minimum": 155,
+              "maximum": 2000
+            },
+            "event": "prompt_buy_in"
+          }
+        ]
+      }
+    },
+    "seated": false
+  },
+  "recovery": {
+    "walletBefore": 9845,
+    "walletAfter": 9690,
+    "stack": 155,
+    "newTransactions": 1,
+    "seated": true
+  }
+}
