@@ -19,6 +19,7 @@ EVENTS = {'proxy.request', 'proxy.response', 'proxy.nodes', 'proxy.nodes-filtere
 
 
 def safe_path(value):
+    """按登记的路径模板隐藏实体标识和查询信息，保留接口用途。"""
     if not isinstance(value, str) or not value.startswith('/') or value.startswith('//'):
         return '[未知接口]'
     segments = re.split(r'[?#]', value, maxsplit=1)[0].split('/')
@@ -31,6 +32,7 @@ def safe_path(value):
 
 
 def safe_address(match):
+    """将匹配到的连接地址转换为脱敏节点名。"""
     try:
         address = urlsplit(match.group(0))
         return node_name(address.hostname or '')
@@ -39,6 +41,7 @@ def safe_address(match):
 
 
 def safe_text(value):
+    """隐藏文本中的网络地址、认证头与凭据，只保留安全诊断内容。"""
     text = str(value or '')
     text = re.sub(r'\b(?:https?|wss?)://[^\s<>"\'`)]+',
                   safe_address, text, flags=re.I)
@@ -46,6 +49,7 @@ def safe_text(value):
                   '[地址已隐藏]', text)
     text = re.sub(r'(?:[a-f0-9]{0,4}:){2,}[a-f0-9:.]+', safe_ipv6, text, flags=re.I)
     text = re.sub(r'\b(?:[a-z0-9-]+\.)+[a-z]{2,63}\b(?::\d+)?(?:/[^\s<>"\'`),;]*)?',
+                  # 将文本中匹配的主机替换为稳定的安全节点名。
                   lambda match: node_name(match.group(0)), text, flags=re.I)
     text = re.sub(r'\bBearer\s+[^\s,"\'}]+', 'Bearer [已隐藏]', text, flags=re.I)
     return re.sub(r'((?:access_token|refresh_token|authorization|password|cookie|token)["\']?\s*[:=]\s*["\']?)[^\s,"\';&}]+',
@@ -53,6 +57,7 @@ def safe_text(value):
 
 
 def safe_ipv6(match):
+    """识别并隐藏合法 IPv6 地址，保留非地址文本。"""
     try:
         ipaddress.IPv6Address(match.group(0))
         return '[地址已隐藏]'
@@ -61,6 +66,7 @@ def safe_ipv6(match):
 
 
 def node_name(value):
+    """将主机名映射为稳定的私有来源指纹，避免泄露连接资料。"""
     if re.fullmatch(r'laiwan_prd-[a-f0-9]{12}', value):
         return value
     host = urlsplit(value if '://' in value else 'https://' + value).hostname or 'unknown'
@@ -68,6 +74,7 @@ def node_name(value):
 
 
 def candidates(flow):
+    """从节点元数据响应中提取候选主机并生成安全节点标识。"""
     if urlsplit(flow.request.path).path not in ('/public/v12/metadata/servers', '/public/v13/metadata/servers'):
         return None
     try:
@@ -130,7 +137,9 @@ def error_reason(value):
 
 
 class ConnectionDiagnostics:
+    """采集代理 HTTP、WebSocket 与上游连接的脱敏诊断时间线。"""
     def __init__(self):
+        """初始化events、dropped、pending_commands状态。"""
         self.events = deque(maxlen=5000)
         self.dropped = 0
         self.pending_commands = {}
@@ -155,18 +164,23 @@ class ConnectionDiagnostics:
                             'upstreamMatch': release_peer_match(data.server)})
 
     def server_connect(self, data):
+        """记录代理准备连接上游的事件。"""
         self.server_event('proxy.server-connect', data)
 
     def server_connected(self, data):
+        """记录代理已连接到上游的事件。"""
         self.server_event('proxy.server-connected', data)
 
     def server_connect_error(self, data):
+        """记录代理连接上游失败的事件。"""
         self.server_event('proxy.server-connect-error', data)
 
     def server_disconnected(self, data):
+        """记录代理断开上游连接的事件。"""
         self.server_event('proxy.server-disconnected', data)
 
     def record(self, event, flow, **fields):
+        """限量保存当前流的安全诊断字段，并累计被丢弃的事件数。"""
         if len(self.events) == self.events.maxlen:
             self.dropped += 1
         entry = {'event': event if event in EVENTS else 'application.event', 'observedAt': int(time.time() * 1000),
@@ -187,9 +201,11 @@ class ConnectionDiagnostics:
                            if isinstance(value, str) else value for key, value in entry.items()})
 
     def snapshot(self):
+        """返回已保存的诊断事件及丢弃计数。"""
         return {'events': list(self.events), 'dropped': self.dropped}
 
     def request(self, flow):
+        """记录业务请求的来源与关联信息，排除代理控制流量。"""
         if flow.request.host in CONTROL_HOSTS:
             return
         source = 'fixture' if flow.response is not None else 'upstream'
@@ -198,6 +214,7 @@ class ConnectionDiagnostics:
                     operation='release-static-read' if release_origin_match(flow) == 'matched' else 'proxied-request')
 
     def response(self, flow):
+        """记录真实响应状态及发布资源关联标识，并采集节点发现结果。"""
         if flow.request.host in CONTROL_HOSTS:
             return
         identifier = flow.response.headers.get('X-Clrn-Release-Request', '')
@@ -219,6 +236,7 @@ class ConnectionDiagnostics:
                         after=after or [], reason='代理改写节点列表')
 
     def error(self, flow):
+        """为业务请求记录安全错误原因，避免猜测未收到的响应状态。"""
         if flow.request.host not in CONTROL_HOSTS:
             self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
                         source='release-static' if release_origin_match(flow) == 'matched' else 'laiwan_prd',
@@ -226,14 +244,17 @@ class ConnectionDiagnostics:
                         response='received' if flow.response else 'not-received')
 
     def websocket_start(self, flow):
+        """记录 WebSocket 建立事件及连接标识。"""
         self.record('proxy.websocket-open', flow, connectionId=flow.id)
 
     def websocket_end(self, flow):
+        """记录 WebSocket 关闭信息并清除该连接的待确认命令。"""
         self.record('proxy.websocket-close', flow, connectionId=flow.id,
                     code=flow.websocket.close_code, reason=flow.websocket.close_reason)
         self.pending_commands.pop(flow.id, None)
 
     def websocket_message(self, flow):
+        """仅记录 WebSocket 协议类型与关联编号，避免保存认证及业务正文。"""
         message = flow.websocket.messages[-1]
         if not message.is_text:
             return
@@ -266,6 +287,7 @@ class ConnectionDiagnostics:
             pass
 
     def control(self, flow):
+        """验证控制令牌后返回诊断快照，无效令牌返回拒绝访问。"""
         if flow.request.headers.get('X-E2E-Control-Token') != os.environ['MITMPROXY_CONTROL_TOKEN']:
             status, result = 403, {'error': 'Forbidden'}
         else:

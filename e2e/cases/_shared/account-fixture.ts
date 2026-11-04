@@ -83,8 +83,10 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
         origin, apiOrigin: new URL(account.accountUrl).origin, account,
         // 登录页可能加载第三方 iframe；只复用目标 H5 状态，不保存第三方状态。
         storageState: {
-          origins: browserState.origins.filter(entry => entry.origin === origin),
-          cookies: browserState.cookies.filter(cookie => {
+          origins: browserState.origins.filter(/** 仅保留满足以下条件的条目：`entry.origin === origin`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.origin === origin),
+          cookies: browserState.cookies.filter(/** 选择适用于当前主机及其父域的账号 Cookie。
+ * @param cookie - 当前操作使用的 cookie。 */ cookie => {
             const domain = cookie.domain.replace(/^\./, '');
             return host === domain || host.endsWith(`.${domain}`);
           }),
@@ -96,7 +98,8 @@ export const test = base.extend<{ newAccount: ProvisionedAccount }>({
     }
     expect(new URL(page.url()).origin, '恢复后必须仍为相同 staging').toBe(origin);
     await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible({ timeout: 60_000 });
-    const sameUser = await page.evaluate((userId) => {
+    const sameUser = await page.evaluate(/** 核对浏览器本地缓存中的用户 ID 是否属于本次只读账号。
+ * @param userId - 当前操作使用的 userId。 */ (userId) => {
       const raw = localStorage.getItem('save.user.origin.data.from.server.key');
       try {
         return raw !== null && String(JSON.parse(raw).user_id) === userId;

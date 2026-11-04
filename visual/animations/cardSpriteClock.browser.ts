@@ -5,7 +5,7 @@ import { useNormalCardSpriteClock, advanceCardSpriteClock } from './cardSpriteCl
 import { waitForTexasCardSprites } from './cardSpriteReadiness';
 import { installCardSpriteDiagnostics, observeCardSpriteClockControl } from './cardSpriteDiagnostics';
 
-test('正常时钟图集等待保留原生定时器和 CSS，持续回退仍失败', async () => {
+test('正常时钟图集等待保留原生定时器和 CSS，持续回退仍失败', /** 验证正常时钟图集等待保留原生定时器和 CSS，持续回退仍失败。 */ async () => {
   const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
     ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
   try {
@@ -32,20 +32,23 @@ test('正常时钟图集等待保留原生定时器和 CSS，持续回退仍失�
           </div>
         </div>
       </div><div style="animation:moving 2s infinite"></div>`);
-    await page.evaluate(() => {
-      setTimeout(() => {
+    await page.evaluate(/** 延迟切换牌面精灵内容与后备图，构造图片迟到场景。 */ () => {
+      setTimeout(/** 隐藏后备图并显示精灵图片，模拟图片资源完成加载。 */ () => {
         document.querySelector<HTMLElement>('[data-testid="sprite-image-fallback"]')!.style.display = 'none';
         document.querySelector<HTMLElement>('[data-testid="sprite-image-content"]')!.style.opacity = '1';
       }, 80);
     });
-    const before = await page.evaluate(() => Date.now());
+    const before = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
     await advanceCardSpriteClock(page, 16);
     await waitForTexasCardSprites(page, '[data-testid="community_card"]');
-    assert.ok(await page.evaluate(() => Date.now()) > before);
-    assert.deepEqual(await page.evaluate(() => document.getAnimations().map(animation => animation.playState)), ['running']);
-    await page.locator('[data-testid="sprite-image-fallback"]').evaluate(node => { (node as HTMLElement).style.display = 'flex'; });
+    assert.ok(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()) > before);
+    assert.deepEqual(await page.evaluate(/** 在页面中读取`document.getAnimations().map(animation => animation.playState)`，供测试判断当前界面状态。 */ () => document.getAnimations().map(/** 将当前条目映射为`animation.playState`。
+ * @param animation - 当前操作使用的 animation。 */ animation => animation.playState)), ['running']);
+    await page.locator('[data-testid="sprite-image-fallback"]').evaluate(/** 重新显示牌面后备图，验证就绪检查能识别精灵尚未提交。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => { (node as HTMLElement).style.display = 'flex'; });
     await assert.rejects(waitForTexasCardSprites(page, '[data-testid="community_card"]'), /德州可见牌面应显示完整图集/);
     await observeCardSpriteClockControl(page);
-    assert.equal(await page.locator('[data-testid="sprite-image-fallback"]').evaluate(node => getComputedStyle(node).display), 'flex');
+    assert.equal(await page.locator('[data-testid="sprite-image-fallback"]').evaluate(/** 在页面中读取`getComputedStyle(node).display`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => getComputedStyle(node).display), 'flex');
   } finally { await browser.close(); }
 });

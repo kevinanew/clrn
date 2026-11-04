@@ -22,7 +22,9 @@ async function observeTimeline(page: Parameters<typeof captureTimeline>[0], info
 // 观察器开关独立成例，以新 context/page/真实房间避免回调包装和 React hook 相互污染。
 for (const callbacks of [false, true]) {
   for (const position of [0, 1]) {
-    test(`independent card sprite clock ${position} callbacks ${callbacks}`, async ({ browser, mitmproxy }, info) => {
+    test(`independent card sprite clock ${position} callbacks ${callbacks}`, /** 按牌面位置与回调开关验证独立牌面时钟的准备和动画行为。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ browser, mitmproxy }, info) => {
       test.setTimeout(1_200_000);
       expect(info.config.updateSnapshots, '独立取证禁止生成基准').toBe('none');
       expect(process.env.CLRN_EXPECTED_APPLICATION_COMMIT, '必须重放 #68 的原固定应用提交')
@@ -32,11 +34,13 @@ for (const callbacks of [false, true]) {
       await info.attach('independent-clock', { body: JSON.stringify({ clock, callbacks, history: 'texas-gameplay-through-showdown' }),
         contentType: 'application/json' });
       try {
-        await withTable(browser, info, 'texas', mitmproxy, async session => {
+        await withTable(browser, info, 'texas', mitmproxy, /** 在独立牌面时钟下完成德州摊牌，并按场景核验组件生命周期回调。
+ * @param session - 当前操作使用的 session。 */ async session => {
           await texasGameplay(session, mitmproxy, info, { capture: observeTimeline });
           await sampleCardSprites(session.page, 'independent-showdown-ready');
           if (callbacks) {
-            const lifecycle = await session.page.getByTestId('sprite-image-container').first().evaluate(node => {
+            const lifecycle = await session.page.getByTestId('sprite-image-container').first().evaluate(/** 读取首个牌面精灵的组件提交与生命周期观测结果。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
               const state = window as typeof window & { __clrnCardSpriteLifecycle: (node: Element) => {
                 status: string; commits: number; truncated: boolean; component: { supported: boolean } | null;
               } };

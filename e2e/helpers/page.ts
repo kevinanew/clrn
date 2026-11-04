@@ -29,7 +29,8 @@ export async function gotoDeployedSite(page: Page, url: string): Promise<Respons
 
       // 连续重试会落在同一个刚关闭的代理/TCP 连接窗口中；短暂等待后再试，
       // 仍保持三次上限和原有的持续故障失败语义。
-      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
+      await new Promise(/** 按当前重试次数递增等待，避免立即重复导航。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
     }
   }
 
@@ -41,7 +42,7 @@ export async function gotoDeployedSite(page: Page, url: string): Promise<Respons
  * @param context - 首次导航前配置的浏览器上下文。
  */
 export async function initializePage(context: BrowserContext): Promise<void> {
-  await context.addInitScript(() => {
+  await context.addInitScript(/** 初始化弱网测试使用的固定语言与设备标识。 */ () => {
     window.localStorage.setItem('app.language.code.key', 'zh-Hans');
     window.localStorage.setItem('deviceId', 'e2e-weak-network-device-id');
   });
@@ -95,7 +96,7 @@ export async function signIn(page: Page): Promise<void> {
     .filter({ hasText: '用户隐私策略概要' })
     .getByText('同意', { exact: true })
     .click({ force: true, timeout: 2_000 })
-    .catch(() => undefined);
+    .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
   await dismissAppAlert(page);
 }
 
@@ -108,10 +109,10 @@ async function dismissAppAlert(page: Page): Promise<void> {
     .locator('[data-testid="alert-ok-button"]')
     .first()
     .click({ timeout: 2_000 })
-    .catch(() => undefined);
+    .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
   await page
     .getByRole('dialog')
     .getByText('好的', { exact: true })
     .click({ force: true, timeout: 2_000 })
-    .catch(() => undefined);
+    .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
 }

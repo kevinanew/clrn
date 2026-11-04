@@ -2,10 +2,11 @@ import { test, expect } from '../_shared/read-account-fixture';
 import { unique } from '../_shared/page';
 import { readDiamondBalance } from '../_shared/provision';
 
-test('SLOT-001：抽奖面板显示能量和奖品，关闭重开不消耗钻石', async ({ page, signedInAccount }) => {
+test('SLOT-001：抽奖面板显示能量和奖品，关闭重开不消耗钻石', /** 验证SLOT-001：抽奖面板显示能量和奖品，关闭重开不消耗钻石。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, signedInAccount }) => {
   const before = await readDiamondBalance(page, signedInAccount);
   for (let visit = 0; visit < 2; visit++) {
-    await test.step(`第 ${visit + 1} 次打开和关闭抽奖面板`, async () => {
+    await test.step(`第 ${visit + 1} 次打开和关闭抽奖面板`, /** 执行第 $\{visit + 1\} 次打开和关闭抽奖面板。 */ async () => {
       await (await unique(page, 'slot-banner')).click();
       const panel = await unique(page, 'slot-machine-view');
       await expect(panel.getByTestId('energy-bar-text')).toHaveText(/^\d+\s*\/\s*\d+$/);

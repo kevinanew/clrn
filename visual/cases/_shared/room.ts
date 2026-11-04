@@ -16,8 +16,9 @@ const ROOM_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
  * @param page - 执行操作的 Playwright 页面。
  */
 async function visualAccount(page: Page) {
-  const raw = await page.evaluate(() => localStorage.getItem('save.user.origin.data.from.server.key'))
-    .catch(error => { throw new Error(requestErrorSummary(error, 'room-read-session')); });
+  const raw = await page.evaluate(/** 在页面中读取`localStorage.getItem('save.user.origin.data.from.server.key')`，供测试判断当前界面状态。 */ () => localStorage.getItem('save.user.origin.data.from.server.key'))
+    .catch(/** 将会话缓存读取失败转换为安全的房间准备诊断。
+ * @param error - 当前操作抛出的错误。 */ error => { throw new Error(requestErrorSummary(error, 'room-read-session')); });
   let auth;
   try { auth = raw ? JSON.parse(raw) : null; }
   catch { throw requestFailure('room-read-session', 'invalid-response'); }
@@ -40,18 +41,20 @@ async function readDiamondBalance(request: APIRequestContext, account: Account):
   const response = await request.put(`https://api.shafayouxi.org/v10/wallet/${account.userId}`, {
     headers: { Authorization: account.authorization },
     data: { currencies: ['diamond'] },
-  }).catch(error => {
+  }).catch(/** 将房间测试的钻石余额读取错误转换为安全摘要。
+ * @param error - 当前操作抛出的错误。 */ error => {
     throw new Error(requestErrorSummary(error, 'room-read-diamonds'));
   });
   try {
     const body = await readRequestJson(response, 'room-read-diamonds');
     const currencies = body.result?.currencies;
-    const diamond = Array.isArray(currencies) ? currencies.find((item: { code: string }) => item?.code === 'diamond') : undefined;
+    const diamond = Array.isArray(currencies) ? currencies.find(/** 查找满足以下条件的首个条目：`item?.code === 'diamond'`。
+ * @param item - 当前遍历的条目。 */ (item: { code: string }) => item?.code === 'diamond') : undefined;
     const balance = Number(diamond?.balance);
     if (!Number.isFinite(balance)) throw requestFailure('room-read-diamonds', 'invalid-response', response.status());
     return balance;
   } finally {
-    await response.dispose().catch(() => { throw requestFailure('room-read-diamonds', 'body-read-failed', response.status()); });
+    await response.dispose().catch(/** 将钻石响应释放失败转换为保留实际 HTTP 状态的诊断。 */ () => { throw requestFailure('room-read-diamonds', 'body-read-failed', response.status()); });
   }
 }
 
@@ -78,7 +81,7 @@ export async function ensureRoomBalance(request: APIRequestContext, account: Acc
     || body.result?.currency_name !== 'diamond' || Number(body.result?.balance) !== 60) {
     throw requestFailure('room-top-up-diamonds', 'invalid-response', status);
   }
-  await expect.poll(() => readDiamondBalance(request, account)).toBe(60);
+  await expect.poll(/** 重复读取`readDiamondBalance(request, account)`，直到满足外层等待断言。 */ () => readDiamondBalance(request, account)).toBe(60);
 }
 
 /**
@@ -112,12 +115,16 @@ export async function createPrivateGameRoom(
   }
   await onSubmitting?.();
   recordDiagnostic(page, '提交建房并等待响应', { method: 'POST', path: '/v3/pay_action/do', timeoutMs: 60_000 });
-  const responsePromise = page.waitForResponse(response =>
+  const responsePromise = page.waitForResponse(/** 匹配POST `/v3/pay_action/do` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ response =>
     response.request().method() === 'POST'
     && new URL(response.url()).pathname === '/v3/pay_action/do', { timeout: 60_000 })
-    .then(response => ({ response }), error => ({ error }));
+    .then(/** 将异步结果转换为`{ response }`，供后续步骤使用。
+ * @param response - 当前收到的接口响应。 */ response => ({ response }), /** 将异步结果转换为`{ error }`，供后续步骤使用。
+ * @param error - 当前操作抛出的错误。 */ error => ({ error }));
   const clickError = await page.locator('[data-testid="creat-room-button"]:visible').last()
-    .click().then(() => null, error => error as Error);
+    .click().then(/** 将异步结果转换为`null`，供后续步骤使用。 */ () => null, /** 将异步结果转换为`error as Error`，供后续步骤使用。
+ * @param error - 当前操作抛出的错误。 */ error => error as Error);
   const result = await responsePromise;
   if ('error' in result) throw new Error(requestErrorSummary(result.error, 'room-create'));
   const response = result.response;

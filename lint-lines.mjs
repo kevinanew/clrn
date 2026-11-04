@@ -10,7 +10,8 @@ const files = execFileSync('git', [
   '*.ts', '*.tsx', '*.mts', '*.cts', '*.js', '*.jsx', '*.mjs', '*.cjs',
 ], { cwd: root }).toString().split('\0').filter(Boolean);
 
-const failures = files.flatMap(file => {
+const failures = files.flatMap(/** 读取源码行数，仅为超过现有上限的文件生成诊断。
+ * @param file - 当前源码或资源路径。 */ file => {
   const fullPath = path.join(root, file);
   if (!existsSync(fullPath)) return [];
   const source = readFileSync(fullPath, 'utf8');

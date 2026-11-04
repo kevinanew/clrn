@@ -9,7 +9,9 @@ PLAYER_IDS = [f"00000000-0000-4000-8000-{index:012d}" for index in range(1, 5)]
 
 
 class ZhajinhuaReplay:
+    """为当前炸金花房间管理订阅、回放、操作奖励与虚拟玩家读取。"""
     def __init__(self):
+        """初始化subscriptions、pending_subscriptions、room_id、replayed_messages、blocked_rpcs等状态。"""
         self.subscriptions = {}
         self.pending_subscriptions = {}
         self.room_id = None
@@ -19,6 +21,7 @@ class ZhajinhuaReplay:
         self.operation_reward = False
 
     def publish(self, room_id, data):
+        """校验房间归属与数据后向已确认订阅发布炸金花回放。"""
         if not isinstance(room_id, str) or not re.fullmatch(UUID, room_id, re.I) or not isinstance(data, dict):
             raise ValueError("Invalid replay")
         if self.room_id and room_id != self.room_id:
@@ -40,16 +43,19 @@ class ZhajinhuaReplay:
             self.replayed_messages += 1
 
     def release(self):
+        """清除活动房间、当前玩家及操作奖励状态。"""
         self.room_id = None
         self.self_id = None
         self.operation_reward = False
 
     def set_operation_reward(self, room_id, enabled):
+        """仅为已绑定的回放房间启用或关闭操作奖励。"""
         if not self.room_id or room_id != self.room_id or not isinstance(enabled, bool):
             raise ValueError('Operation reward requires the bound replay room')
         self.operation_reward = enabled
 
     def is_replay_publication(self, frame):
+        """判断推送是否属于当前炸金花回放房间的数据流。"""
         result = frame.get('result')
         if 'id' in frame or not isinstance(result, dict) or result.get('type', 0) != 0:
             return False
@@ -58,6 +64,7 @@ class ZhajinhuaReplay:
             rf'zhajinhua>{self.room_id}#{UUID}', channel, re.I) is not None
 
     def websocket_message(self, flow):
+        """跟踪房间订阅、确认与取消，仅隔离当前回放的限定消息。"""
         message = flow.websocket.messages[-1]
         if not message.is_text or message.injected:
             return
@@ -121,10 +128,12 @@ class ZhajinhuaReplay:
                     message.drop()
 
     def websocket_end(self, flow):
+        """连接关闭时移除已确认和待确认的炸金花订阅。"""
         self.subscriptions.pop(flow.id, None)
         self.pending_subscriptions.pop(flow.id, None)
 
     def is_replay_rpc(self, frame):
+        """判断 RPC 是否属于当前回放房间支持的业务读取。"""
         if frame.get("method") != 9:
             return False
         params = frame.get("params") or {}
@@ -138,6 +147,7 @@ class ZhajinhuaReplay:
         return False
 
     def rpc_result(self, frame):
+        """为当前房间的操作奖励或支持的读取 RPC 构造回放结果。"""
         path = frame['params']['data']['path']
         if self.operation_reward and re.fullmatch(
                 rf'/v\d+/zhajinhua/room/{self.room_id}/game/[^/]+/(call|raise|all_in|challenge)', path):
@@ -150,12 +160,14 @@ class ZhajinhuaReplay:
         return {'ok': True, 'result': {}}
 
     def profile(self, player_id):
+        """为本人或已登记虚拟对手构造稳定展示资料。"""
         return {"user_id": player_id, "nickname": "TestPlayer" if player_id == self.self_id else
                 f"Player{PLAYER_IDS.index(player_id) + 1}", "avatar_path": "", "gender": "male",
                 "bio": "TestPlayer", "user_level": {"App:coin": {"level": 5, "progress": 0.5}},
                 "last_used_nickname": ""}
 
     def http_fixture(self, path, body=b""):
+        """按请求路径与批次只补充已登记虚拟玩家的资料和钱包数据。"""
         if not self.room_id:
             return None
         identifiers = PLAYER_IDS

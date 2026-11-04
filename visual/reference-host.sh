@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
+# 依次生成各语言的视觉参考截图。
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
 lock_dir=".visual-reference.lock"
 
+# 获取截图生成锁并恢复失效锁。
 acquire_lock() {
   if mkdir "$lock_dir" 2>/dev/null; then
     return
@@ -26,6 +28,7 @@ acquire_lock() {
   mkdir "$lock_dir"
 }
 
+# 退出时释放截图生成锁。
 cleanup() {
   rm -f "$lock_dir/pid"
   rmdir "$lock_dir" 2>/dev/null || true

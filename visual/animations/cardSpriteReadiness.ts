@@ -10,17 +10,20 @@ import { markCardSpriteFailure, sampleCardSprites } from './cardSpriteDiagnostic
 export async function waitForTexasCardSprites(page: Page, scope: string): Promise<void> {
   await sampleCardSprites(page, 'wait-start');
   try {
-    await expect.poll(async () => {
+    await expect.poll(/** 重复等待图片解码并采集牌槽状态，直到所有可见牌面真正就绪。 */ async () => {
       // complete 与原始尺寸只表示资源已取得；图集切换还要等待真实解码和界面提交。
-      await page.evaluate(async selector => {
+      await page.evaluate(/** 选取已下载图片并完成解码，将成功或失败告知牌面诊断器。
+ * @param selector - 当前操作使用的 selector。 */ async selector => {
         const images = document.querySelectorAll<HTMLImageElement>(
           `${selector} [data-testid="sprite-image-view"] img`,
         );
         const state = window as typeof window & {
           __clrnCardSpriteDecoded?: (image: HTMLImageElement, outcome: string, source: string) => Promise<void>;
         };
-        await Promise.all(Array.from(images).filter(image => image.complete && image.naturalWidth > 0)
-          .map(async image => {
+        await Promise.all(Array.from(images).filter(/** 仅保留满足以下条件的条目：`image.complete && image.naturalWidth > 0`。
+ * @param image - 当前操作使用的 image。 */ image => image.complete && image.naturalWidth > 0)
+          .map(/** 解码当前图片并记录其来源及解码结果，传播解码失败。
+ * @param image - 当前操作使用的 image。 */ async image => {
             const source = image.currentSrc || image.src;
             try {
               await image.decode();
@@ -34,12 +37,15 @@ export async function waitForTexasCardSprites(page: Page, scope: string): Promis
       await sampleCardSprites(page, 'before-settle-layout');
       await settleLayout(page);
       await sampleCardSprites(page, 'after-settle-layout');
-      return page.evaluate(selector => {
+      return page.evaluate(/** 汇总目标牌槽中未就绪的牌面原因，供外层断言报告。
+ * @param selector - 当前操作使用的 selector。 */ selector => {
         const cardSprites = document.querySelectorAll<HTMLElement>(
           `${selector} [data-testid="sprite-image-container"]`,
         );
         if (cardSprites.length === 0) return ['目标牌面图集尚未挂载'];
-        return Array.from(cardSprites).flatMap((container, index) => {
+        return Array.from(cardSprites).flatMap(/** 检查当前可见牌槽的精灵、后备图和布局，返回未就绪原因。
+ * @param container - 当前操作使用的 container。
+ * @param index - 当前条目在集合中的位置。 */ (container, index) => {
           // 翻转前正面透明，但必须先备好牌面；以牌槽判断是否属于当前画面。
           const card = container.closest<HTMLElement>(selector);
           if (!card?.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return [];
@@ -80,7 +86,7 @@ export async function waitForTexasCardSprites(page: Page, scope: string): Promis
     await sampleCardSprites(page, 'wait-ready');
   } catch (error) {
     markCardSpriteFailure(page);
-    await sampleCardSprites(page, 'wait-failed').catch(() => undefined);
+    await sampleCardSprites(page, 'wait-failed').catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
     throw error;
   }
 }

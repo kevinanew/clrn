@@ -13,7 +13,8 @@ export async function waitForPlayerAnimationAsset(page: Page, playerId: string,
     + `[data-testid="texas-holdem-player-container-${playerId}-operating"]`);
   const image = player.locator(`img[src*="/frames/image/${category}/${name}."][src$=".webp"]`);
   await expect(image, `${category}/${name} 应在目标玩家位置显示`).toBeVisible();
-  await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0),
+  await expect.poll(/** 重复读取`image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)`，直到满足外层等待断言。 */ () => image.evaluate(/** 在页面中读取`node.complete && node.naturalWidth > 0`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ (node: HTMLImageElement) => node.complete && node.naturalWidth > 0),
     { timeout: 60_000, message: `${category}/${name} 的实际展示图片应完成加载` }).toBe(true);
   return image;
 }

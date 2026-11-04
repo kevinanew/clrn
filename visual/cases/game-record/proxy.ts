@@ -58,7 +58,8 @@ export const test = base.extend<{ recordProxy: RecordProxy }>({
    * @param use - 将准备好的 fixture 交给案例使用的回调。
    */
   recordProxy: async ({}, use) => {
-    await withMitmproxy(async proxy => {
+    await withMitmproxy(/** 启用战绩展示夹具并在代理有效期内提供战绩控制器。
+ * @param proxy - 当前隔离的代理控制器。 */ async proxy => {
       await proxy.enableVisualFixtures();
       await use(new RecordProxy(proxy));
     }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });

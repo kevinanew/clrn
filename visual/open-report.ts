@@ -53,7 +53,8 @@ async function waitForServer(url: string, maxAttempts = 20): Promise<void> {
       // 服务尚未就绪
     }
 
-    await new Promise((resolve) => {
+    await new Promise(/** 短暂等待报告服务启动，再探测可访问状态。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
       setTimeout(resolve, 250);
     });
   }
@@ -78,14 +79,15 @@ async function main(): Promise<void> {
     }
   };
 
-  process.on('SIGINT', () => {
+  process.on('SIGINT', /** 收到中断信号时关闭报告服务并使用约定状态退出。 */ () => {
     shutdown();
     process.exit(130);
   });
 
   process.on('SIGTERM', shutdown);
 
-  server.on('exit', (code) => {
+  server.on('exit', /** 报告服务退出时同步其退出状态。
+ * @param code - 当前操作使用的 code。 */ (code) => {
     process.exit(code ?? 0);
   });
 
@@ -94,7 +96,8 @@ async function main(): Promise<void> {
   openBrowser(REPORT_URL);
 }
 
-main().catch((error: Error) => {
+main().catch(/** 输出报告启动错误并以失败状态退出。
+ * @param error - 当前操作抛出的错误。 */ (error: Error) => {
   console.error(error.message);
   process.exit(1);
 });

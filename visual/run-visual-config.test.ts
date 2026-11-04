@@ -2,27 +2,29 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { exactScenarioGrep, getVisualShardConfig, selectScenariosByLabel } from './run-visual-config';
 
-describe('visual run shard config', () => {
-  test('filter and Playwright grep select the same labels despite feature paths', () => {
+describe('visual run shard config', /** 核对视觉运行的场景筛选与分片配置。 */ () => {
+  test('filter and Playwright grep select the same labels despite feature paths', /** 验证场景标签筛选与 Playwright grep 在不同功能路径下仍选择相同案例。 */ () => {
     const scenarios = [
       { label: 'zh-Hans_mobile_signed_in_mall' },
       { label: 'zh-Hans_mobile_signed_in_account_security' },
       { label: 'zh-Hans_mobile_guest_me' },
     ];
     const selected = selectScenariosByLabel(scenarios, 'account');
-    assert.deepEqual(selected.map(scenario => scenario.label), [
+    assert.deepEqual(selected.map(/** 将当前条目映射为`scenario.label`。
+ * @param scenario - 当前测试场景配置。 */ scenario => scenario.label), [
       'zh-Hans_mobile_signed_in_account_security',
     ]);
 
-    const grep = new RegExp(exactScenarioGrep(selected.map(scenario => scenario.label)));
+    const grep = new RegExp(exactScenarioGrep(selected.map(/** 将当前条目映射为`scenario.label`。
+ * @param scenario - 当前测试场景配置。 */ scenario => scenario.label)));
     assert.ok(grep.test('cases/account/account.spec.ts zh-Hans_mobile_signed_in_account_security'));
     assert.ok(!grep.test('cases/account/account.spec.ts zh-Hans_mobile_guest_me'));
     assert.ok(!grep.test('cases/wallet/wallet.spec.ts zh-Hans_mobile_signed_in_mall'));
     assert.ok(!new RegExp(exactScenarioGrep([])).test('cases/account/account.spec.ts zh-Hans_mobile_guest_me'));
-    assert.throws(() => selectScenariosByLabel(scenarios, '['), /VISUAL_FILTER/);
+    assert.throws(/** 使用无效正则筛选场景，验证过滤表达式错误会被报告。 */ () => selectScenariosByLabel(scenarios, '['), /VISUAL_FILTER/);
   });
 
-  test('unfiltered test runs are split into short renewable-auth batches', () => {
+  test('unfiltered test runs are split into short renewable-auth batches', /** 验证未筛选的测试会拆成可续期认证的短批次。 */ () => {
     assert.deepEqual(getVisualShardConfig('test', 84, {}), {
       countEnv: 'VISUAL_TEST_SHARDS',
       count: 28,
@@ -30,7 +32,7 @@ describe('visual run shard config', () => {
     });
   });
 
-  test('test shard count can be configured independently', () => {
+  test('test shard count can be configured independently', /** 验证测试分片数量可以独立配置。 */ () => {
     assert.deepEqual(getVisualShardConfig('test', 84, { VISUAL_TEST_SHARDS: '14' }), {
       countEnv: 'VISUAL_TEST_SHARDS',
       count: 14,
@@ -38,7 +40,7 @@ describe('visual run shard config', () => {
     });
   });
 
-  test('reference keeps its resumable shard setting', () => {
+  test('reference keeps its resumable shard setting', /** 验证参考截图保留可恢复的分片设置。 */ () => {
     assert.deepEqual(
       getVisualShardConfig('reference', 84, {
         VISUAL_REFERENCE_SHARDS: '20',
@@ -48,7 +50,7 @@ describe('visual run shard config', () => {
     );
   });
 
-  test('filter, core scope and reference defaults keep each renewable-auth batch at three scenarios', () => {
+  test('filter, core scope and reference defaults keep each renewable-auth batch at three scenarios', /** 验证筛选、核心范围与参考截图默认每批最多三个场景。 */ () => {
     const publicRuns = [
       getVisualShardConfig('test', 67, {}),
       getVisualShardConfig('test', 22, { VISUAL_SCOPE: 'core' }),
@@ -56,7 +58,8 @@ describe('visual run shard config', () => {
     ];
 
     assert.deepEqual(
-      publicRuns.map(({ count }) => count),
+      publicRuns.map(/** 将当前条目映射为`count`。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ count }) => count),
       [23, 8, 28],
     );
     assert.ok(Math.ceil(67 / publicRuns[0].count) <= 3);
@@ -64,14 +67,14 @@ describe('visual run shard config', () => {
     assert.ok(Math.ceil(84 / publicRuns[2].count) <= 3);
   });
 
-  test('filtered runs do not create empty shards', () => {
+  test('filtered runs do not create empty shards', /** 验证筛选运行不会生成空分片。 */ () => {
     assert.equal(getVisualShardConfig('test', 1, {}).count, 1);
     assert.equal(getVisualShardConfig('test', 2, { VISUAL_TEST_SHARDS: '28' }).count, 2);
   });
 
-  test('invalid shard counts fail before starting Playwright', () => {
+  test('invalid shard counts fail before starting Playwright', /** 验证无效分片数量在 Playwright 启动前就会失败。 */ () => {
     assert.throws(
-      () => getVisualShardConfig('test', 84, { VISUAL_TEST_SHARDS: '0' }),
+      /** 使用零分片数构造分片配置，验证运行前拒绝无效配置。 */ () => getVisualShardConfig('test', 84, { VISUAL_TEST_SHARDS: '0' }),
       /VISUAL_TEST_SHARDS 必须是 1 到 80 的整数/,
     );
   });

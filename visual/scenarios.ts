@@ -88,13 +88,12 @@ export const CORE_PAGE_LABELS = new Set([
   'signed_in_me',
   'signed_in_mall',
 ]);
-/**
- * 为一组页面定义统一添加场景分类。
+/** 为一组页面定义统一添加场景分类。
  * @param group - 该组页面所属的场景分类。
- * @param pages - 待处理的页面定义或截图元数据清单。
- */
+ * @param pages - 待处理的页面定义或截图元数据清单。 */
 function withGroup(group: ScenarioGroup, pages: SignedInPageDef[]): GroupedPageDef[] {
-  return pages.map(page => ({ ...page, group }));
+  return pages.map(/** 将当前条目映射为`{ ...page, group }`。
+ * @param page - 当前 Playwright 页面。 */ page => ({ ...page, group }));
 }
 
 type GroupedPageDef = SignedInPageDef & { group: ScenarioGroup };
@@ -113,51 +112,49 @@ export const SIGNED_IN_PAGES: GroupedPageDef[] = [
   ...withGroup('help', helpPages),
 ];
 
-/**
- * 解析语言筛选配置，拒绝不支持的语言代码。
- * @param raw - 原始语言筛选配置。
- */
+/** 解析语言筛选配置，拒绝不支持的语言代码。
+ * @param raw - 原始语言筛选配置。 */
 function parseLocaleFilter(raw: string | undefined): LocaleCode[] | 'all' {
   const value = (raw || 'zh-Hans').trim();
   if (!value || value === 'all') {
     return 'all';
   }
 
-  const allowed = new Set(LOCALES.map((locale) => locale.code));
+  const allowed = new Set(LOCALES.map(/** 将当前条目映射为`locale.code`。
+ * @param locale - 当前测试使用的语言。 */ (locale) => locale.code));
   const selected = value
     .split(',')
-    .map((item) => item.trim())
-    .filter((item): item is LocaleCode => allowed.has(item as LocaleCode));
+    .map(/** 将当前条目映射为`item.trim()`。
+ * @param item - 当前遍历的条目。 */ (item) => item.trim())
+    .filter(/** 仅保留满足以下条件的条目：`allowed.has(item as LocaleCode)`。
+ * @param item - 当前遍历的条目。 */ (item): item is LocaleCode => allowed.has(item as LocaleCode));
 
   if (selected.length === 0) {
     throw new Error(
-      `VISUAL_LOCALES 无效: "${raw}"。可用值: ${LOCALES.map((l) => l.code).join(', ')}, all`,
+      `VISUAL_LOCALES 无效: "${raw}"。可用值: ${LOCALES.map(/** 将当前条目映射为`l.code`。
+ * @param l - 当前操作使用的 l。 */ (l) => l.code).join(', ')}, all`,
     );
   }
 
   return selected;
 }
 
-/**
- * 根据环境配置选出本轮使用的语言，支持全量语言模式。
- * @param env - 环境配置，默认读取当前进程。
- */
+/** 根据环境配置选出本轮使用的语言，支持全量语言模式。
+ * @param env - 环境配置，默认读取当前进程。 */
 export function getActiveLocales(env: NodeJS.ProcessEnv = process.env): LocaleDef[] {
   const filter = parseLocaleFilter(env.VISUAL_LOCALES);
   if (filter === 'all') {
     return LOCALES;
   }
-  return LOCALES.filter((locale) => filter.includes(locale.code));
+  return LOCALES.filter(/** 仅保留满足以下条件的条目：`filter.includes(locale.code)`。
+ * @param locale - 当前测试使用的语言。 */ (locale) => filter.includes(locale.code));
 }
 
-/**
- * 场景 label：`{locale}_{viewport}_{page}`，便于在目录与 HTML 报告中按「语言 → 视口」分组。
- * 例：`zh-Hans_desktop_hall`、`zh-Hans_mobile_signed_in_me`
+/** 场景 label：`{locale}_{viewport}_{page}`，便于在目录与 HTML 报告中按「语言 → 视口」分组。 例：`zh-Hans_desktop_hall`、`zh-Hans_mobile_signed_in_me`
  * @param locale - 本场景的语言配置。
  * @param viewport - 本场景的浏览器视口配置。
  * @param pageLabel - 页面定义中的场景标签。
- * @param suffix - 需要追加到场景标签的可选后缀。
- */
+ * @param suffix - 需要追加到场景标签的可选后缀。 */
 export function scenarioLabel(
   locale: LocaleDef,
   viewport: ViewportDef,
@@ -168,13 +165,11 @@ export function scenarioLabel(
   return suffix ? `${base}_${suffix}` : base;
 }
 
-/**
- * 合并页面、语言、视口与覆盖选项，生成一个完整视觉场景。
+/** 合并页面、语言、视口与覆盖选项，生成一个完整视觉场景。
  * @param page - 待展开的页面定义。
  * @param locale - 本场景的语言配置。
  * @param viewport - 本场景的浏览器视口配置。
- * @param overrides - 覆盖页面默认设置的场景选项。
- */
+ * @param overrides - 覆盖页面默认设置的场景选项。 */
 function buildScenario(
   page: PageDef,
   locale: LocaleDef,
@@ -201,13 +196,12 @@ function buildScenario(
   };
 }
 
-/**
- * 单个「语言 × 视口」下的全部页面场景（大厅 → 登录页 → 登录后 tabs）
+/** 单个「语言 × 视口」下的全部页面场景（大厅 → 登录页 → 登录后 tabs）
  * @param locale - 本场景的语言配置。
- * @param viewport - 本场景的浏览器视口配置。
- */
+ * @param viewport - 本场景的浏览器视口配置。 */
 function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef): VisualScenario[] {
-  const hallPage = PAGES.find((item) => item.label === 'hall');
+  const hallPage = PAGES.find(/** 查找满足以下条件的首个条目：`item.label === 'hall'`。
+ * @param item - 当前遍历的条目。 */ (item) => item.label === 'hall');
   if (!hallPage) {
     throw new Error('缺少 hall 页面配置');
   }
@@ -360,40 +354,38 @@ function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef):
   return scenarios;
 }
 
-/**
- * 根据语言、范围和套件环境配置构建本轮视觉场景清单。
- * @param env - 环境配置，默认读取当前进程。
- */
+/** 根据语言、范围和套件环境配置构建本轮视觉场景清单。
+ * @param env - 环境配置，默认读取当前进程。 */
 export function buildScenarios(env: NodeJS.ProcessEnv = process.env): VisualScenario[] {
   const suite = getVisualSuite(env);
   const locales = getActiveLocales(env);
-  const scenarios = locales.flatMap((locale) =>
-    VIEWPORTS.flatMap((viewport) => buildLocaleViewportScenarios(locale, viewport)),
+  const scenarios = locales.flatMap(/** 展开当前条目对应的`VIEWPORTS.flatMap((viewport) => buildLocaleViewportScenarios(locale, viewport))`。
+ * @param locale - 当前测试使用的语言。 */ (locale) =>
+    VIEWPORTS.flatMap(/** 展开当前条目对应的`buildLocaleViewportScenarios(locale, viewport)`。
+ * @param viewport - 当前操作使用的 viewport。 */ (viewport) => buildLocaleViewportScenarios(locale, viewport)),
   );
 
   const scopedScenarios = env.VISUAL_SCOPE === 'core'
-    ? scenarios.filter(scenario => CORE_PAGE_LABELS.has(scenario.pageLabel))
+    ? scenarios.filter(/** 仅保留满足以下条件的条目：`CORE_PAGE_LABELS.has(scenario.pageLabel)`。
+ * @param scenario - 当前测试场景配置。 */ scenario => CORE_PAGE_LABELS.has(scenario.pageLabel))
     : scenarios;
   return selectVisualSuite(scopedScenarios, suite);
 }
 
-/**
- * 指定视口下的页面数（登录支线与部分静态子页仅 mobile）
- * @param viewportLabel - 要统计的视口名称。
- */
+/** 指定视口下的页面数（登录支线与部分静态子页仅 mobile）
+ * @param viewportLabel - 要统计的视口名称。 */
 export function pageCountForViewport(viewportLabel: ViewportLabel): number {
   // 游客主页面 9 页及启动页 2 页；登录支线 9 页仅 mobile。
   const unauthenticated = viewportLabel === 'mobile' ? 20 : 11;
   const signedIn = SIGNED_IN_PAGES.filter(
-    (page) => !page.viewports || page.viewports.includes(viewportLabel),
+    /** 仅保留满足以下条件的条目：`!page.viewports || page.viewports.includes(viewportLabel)`。
+ * @param page - 当前 Playwright 页面。 */ (page) => !page.viewports || page.viewports.includes(viewportLabel),
   ).length;
   return unauthenticated + signedIn;
 }
 
-/**
- * 计算当前语言和范围配置应产生的视觉场景总数。
- * @param env - 环境配置，默认读取当前进程。
- */
+/** 计算当前语言和范围配置应产生的视觉场景总数。
+ * @param env - 环境配置，默认读取当前进程。 */
 export function expectedScenarioCount(env: NodeJS.ProcessEnv = process.env): number {
   return buildScenarios(env).length;
 }

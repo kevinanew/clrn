@@ -40,7 +40,9 @@ def patch_result(flow, change):
 
 
 def patch_version(flow, version):
+    """校验真实响应结构后替换可用战绩版本字段。"""
     def change(result):
+        """要求版本字段为字符串后写入目标版本。"""
         if not isinstance(result.get('available_url_version'), str):
             raise ValueError('Expected version string')
         result['available_url_version'] = version
@@ -84,6 +86,7 @@ def patch_profiles(flow, self_id, profiles):
 
     def change(result):
         # 本人资料缺失也不伪造；让客户端看到真实接口变化。
+        """保留本人真实资料，仅补充选定虚拟对手的资料。"""
         if not isinstance(result.get(self_id), dict):
             raise ValueError('Missing current user profile')
         for user, profile in selected.items():

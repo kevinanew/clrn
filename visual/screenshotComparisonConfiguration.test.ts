@@ -36,7 +36,7 @@ const entries = [
 ] as const;
 
 for (const [name, options] of entries) {
-  test(`${name}使用真实比较器时，五十个差异像素通过，五十一个失败`, () => {
+  test(`${name}使用真实比较器时，五十个差异像素通过，五十一个失败`, /** 验证$\{name\}使用真实比较器时，五十个差异像素通过，五十一个失败。 */ () => {
     const baseline = screenshot();
     assert.equal(compare(screenshot(50), baseline, options), null, '有效面积一万像素，恰好百分之零点五应通过');
     assert.notEqual(compare(screenshot(51), baseline, options), null, '超过百分之零点五必须失败');
@@ -44,7 +44,7 @@ for (const [name, options] of entries) {
   });
 }
 
-test('局部比较不把排除区域计入分母，重叠遮罩只排除一次', () => {
+test('局部比较不把排除区域计入分母，重叠遮罩只排除一次', /** 验证局部比较不把排除区域计入分母，重叠遮罩只排除一次。 */ () => {
   const compared = remainingPixelCount(200, 100, [
     { left: 100, right: 200, top: 0, bottom: 100 },
     { left: 150, right: 200, top: 0, bottom: 100 },
@@ -54,10 +54,10 @@ test('局部比较不把排除区域计入分母，重叠遮罩只排除一次',
   assert.equal(compare(screenshot(50, 200), baseline, imageComparisonOptions(0.1, compared)), null);
   assert.notEqual(compare(screenshot(51, 200), baseline, imageComparisonOptions(0.1, compared)), null,
     '不得按完整的两万像素允许一百个差异');
-  assert.throws(() => imageComparisonOptions(0.1, 0), /有效比较面积必须是正整数/);
+  assert.throws(/** 构造有效比较面积为零的配置，验证比较器拒绝无效面积。 */ () => imageComparisonOptions(0.1, 0), /有效比较面积必须是正整数/);
 });
 
-test('静态、动画和素材仍分别保留原单像素颜色容差', () => {
+test('静态、动画和素材仍分别保留原单像素颜色容差', /** 验证静态、动画和素材仍分别保留原单像素颜色容差。 */ () => {
   const baseline = screenshot();
   const subtle = screenshot(1000, 100, 30);
   assert.equal(compare(subtle, baseline, visualConfiguration.expect!.toHaveScreenshot!), null,

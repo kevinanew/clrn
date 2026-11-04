@@ -14,10 +14,12 @@ LAYOUTS = {'standard', 'observer', 'full', 'full-pots', 'check', 'all-in-only',
 
 
 def load(game, name):
+    """读取指定玩法的 JSON 重放模板。"""
     return json.loads((DATA / f'{game}-{name}.json').read_text())
 
 
 def table(game, self_id, parameters):
+    """根据玩法、当前玩家与参数构造运行中的牌桌重放状态。"""
     status = load(game, 'table')
     room_status = {**copy.deepcopy(status), 'state': 'running'}
     operating = {'player_id': '@self', 'remain_operating_seconds': 120}
@@ -98,6 +100,7 @@ def table(game, self_id, parameters):
 
 
 def replace(value, values):
+    """递归替换嵌套模板中的占位值，保留字典与列表结构。"""
     if isinstance(value, dict):
         return {key: replace(item, values) for key, item in value.items()}
     if isinstance(value, list):
@@ -106,6 +109,7 @@ def replace(value, values):
 
 
 def replay_scene(game, command, self_id):
+    """校验重放指令并生成绑定当前玩家的指定玩法场景。"""
     if game not in ('texas', 'zhajinhua') or not isinstance(self_id, str) or not self_id:
         raise ValueError('Unknown game or owner')
     if not isinstance(command, dict) or not set(command) <= {'scene', 'parameters'}:

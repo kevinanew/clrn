@@ -10,18 +10,22 @@ from test_settlement_preflight import BROWSER, browser_failure_diagnostic, brows
 
 
 class SettlementBrowserLauncherTests(unittest.TestCase):
+    """验证结算预检测试在不同依赖安装位置都能启动浏览器。"""
     def install_marker(self, directory):
+        """创建最小 Playwright 包标记，模拟项目的依赖安装位置。"""
         manifest = directory / 'node_modules/@playwright/test/package.json'
         manifest.parent.mkdir(parents=True)
         manifest.write_text('{}')
 
     def test_仅画面依赖可用时不能固定到端到端目录(self):
+        """验证仅画面依赖可用时不能固定到端到端目录。"""
         with tempfile.TemporaryDirectory() as temporary:
             repository = Path(temporary)
             self.install_marker(repository / 'visual')
             self.assertEqual(browser_working_directory(repository, repository), repository / 'visual')
 
     def test_多项目已安装时优先使用调用方依赖而不串用版本(self):
+        """验证多项目已安装时优先使用调用方依赖而不串用版本。"""
         with tempfile.TemporaryDirectory() as temporary:
             repository = Path(temporary)
             for project in (repository, repository / 'visual', repository / 'e2e'):
@@ -30,12 +34,14 @@ class SettlementBrowserLauncherTests(unittest.TestCase):
                 self.assertEqual(browser_working_directory(repository, project), project)
 
     def test_没有已安装依赖时明确失败而不跳过浏览器回归(self):
+        """验证没有已安装依赖时明确失败而不跳过浏览器回归。"""
         with tempfile.TemporaryDirectory() as temporary:
             repository = Path(temporary)
             with self.assertRaisesRegex(AssertionError, '依赖未安装.*reason=module-not-found'):
                 browser_working_directory(repository, repository)
 
     def test_子项目缺少自身依赖时不能借用根目录其他版本(self):
+        """验证子项目缺少自身依赖时不能借用根目录其他版本。"""
         with tempfile.TemporaryDirectory() as temporary:
             repository = Path(temporary)
             self.install_marker(repository)
@@ -44,6 +50,7 @@ class SettlementBrowserLauncherTests(unittest.TestCase):
                 browser_working_directory(repository, repository / 'e2e')
 
     def test_真实模块缺失保留阶段和原因但不输出任意启动参数(self):
+        """验证真实模块缺失保留阶段和原因但不输出任意启动参数。"""
         with tempfile.TemporaryDirectory() as temporary:
             completed = subprocess.run(['node', '--input-type=module', '-e', BROWSER,
                                         json.dumps({'token': 'offline-private-token'})],
@@ -55,6 +62,7 @@ class SettlementBrowserLauncherTests(unittest.TestCase):
         self.assertNotIn(temporary, completed.stderr + completed.stdout, '启动诊断不输出实际目录')
 
     def test_真实浏览器启动失败不能输出执行路径或凭据(self):
+        """验证真实浏览器启动失败不能输出执行路径或凭据。"""
         with tempfile.TemporaryDirectory() as temporary:
             executable = str(Path(temporary) / 'offline-private-token')
             completed = subprocess.run(['node', '--input-type=module', '-e', BROWSER,
@@ -68,6 +76,7 @@ class SettlementBrowserLauncherTests(unittest.TestCase):
         self.assertNotIn('offline-private-token', completed.stderr + completed.stdout)
 
     def test_未知异常正文和伪造诊断字段不能进入断言说明(self):
+        """验证未知异常正文和伪造诊断字段不能进入断言说明。"""
         secret = 'https://private.service.invalid/?token=offline-secret'
         for stderr in (secret, json.dumps({'event': 'settlement-browser-failure',
                        'stage': secret, 'reason': 'module-not-found'}),

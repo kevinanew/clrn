@@ -4,7 +4,8 @@ import { createHash } from 'node:crypto';
 import { isIP } from 'node:net';
 import diagnosticPaths from '../mitmproxy/data/diagnostic-paths.json';
 
-const pathTemplates = diagnosticPaths.map(path => ({ path, segments: path.split('/') }));
+const pathTemplates = diagnosticPaths.map(/** 将当前条目映射为`{ path, segments: path.split('/') }`。
+ * @param path - 当前操作使用的 path。 */ path => ({ path, segments: path.split('/') }));
 
 /**
  * 只输出已登记的操作模板，实体段、未知入口和查询参数都不进入日志。
@@ -13,8 +14,11 @@ const pathTemplates = diagnosticPaths.map(path => ({ path, segments: path.split(
 export function diagnosticPath(value: unknown): string {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return '[未知接口]';
   const segments = value.split(/[?#]/)[0].split('/');
-  const match = pathTemplates.find(template => template.segments.length === segments.length
-    && template.segments.every((segment, index) => segment.startsWith('{')
+  const match = pathTemplates.find(/** 按路径分段结构查找匹配的脱敏模板。
+ * @param template - 当前操作使用的 template。 */ template => template.segments.length === segments.length
+    && template.segments.every(/** 校验固定路径段与占位段，拒绝空值及相对路径段。
+ * @param segment - 当前操作使用的 segment。
+ * @param index - 当前条目在集合中的位置。 */ (segment, index) => segment.startsWith('{')
       ? Boolean(segments[index]) && !['.', '..'].includes(segments[index])
       : segment === segments[index]));
   return match?.path ?? '[未知接口]';
@@ -42,7 +46,8 @@ export function diagnosticText(value: unknown): string {
     .replace(/((?:access_token|refresh_token|authorization|password|cookie|token)["']?\s*[:=]\s*["']?)[^\s,"';&}]+/gi, '$1[已隐藏]')
     .replace(/\b(?:https?|wss?):\/\/[^\s<>"'`)]+/gi, diagnosticNode)
     .replace(/\[[0-9a-f:.]+\](?::\d+)?|\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?/gi, '[地址已隐藏]')
-    .replace(/(?:[a-f0-9]{0,4}:){2,}[a-f0-9:.]+/gi, match => isIP(match) ? '[地址已隐藏]' : match)
+    .replace(/(?:[a-f0-9]{0,4}:){2,}[a-f0-9:.]+/gi, /** 隐藏真实 IP 地址，保留不构成地址的匹配文本。
+ * @param match - 当前操作使用的 match。 */ match => isIP(match) ? '[地址已隐藏]' : match)
     .replace(/\b(?:[a-z0-9-]+\.)+[a-z]{2,63}\b(?::\d+)?(?:\/[^\s<>"'`),;]*)?/gi, diagnosticNode)
     .slice(0, 2000);
 }
@@ -83,7 +88,8 @@ export function diagnosticFields(value: unknown): Record<string, string | number
     const sanitize = nodeFields.has(key) ? diagnosticNode : diagnosticText;
     if (typeof item === 'number' && Number.isFinite(item) || typeof item === 'boolean') result[key] = item;
     else if (typeof item === 'string') result[key] = sanitize(item);
-    else if (Array.isArray(item)) result[key] = item.slice(0, 100).filter(entry => typeof entry === 'string').map(sanitize);
+    else if (Array.isArray(item)) result[key] = item.slice(0, 100).filter(/** 仅保留满足以下条件的条目：`typeof entry === 'string'`。
+ * @param entry - 当前处理的记录条目。 */ entry => typeof entry === 'string').map(sanitize);
   }
   return result;
 }

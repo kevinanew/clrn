@@ -6,17 +6,21 @@ from texas_replay import UUID
 
 
 class RoomView:
+    """管理大厅、游客及新战绩入口的房间展示模式。"""
     def __init__(self):
+        """初始化mode、room_id、self_id状态。"""
         self.mode = None
         self.room_id = None
         self.self_id = None
 
     def configure(self, mode):
+        """校验房间展示模式并清除先前绑定的房间与用户。"""
         if mode not in (None, 'hall', 'record-v2', 'guest'):
             raise ValueError('Unknown room view')
         self.mode, self.room_id, self.self_id = mode, None, None
 
     def response(self, flow, path):
+        """观察真实响应，绑定当前展示房间并稳定对应字段。"""
         if not self.mode or not flow.response or flow.response.status_code != 200:
             return
         try:
@@ -52,6 +56,7 @@ class RoomView:
             return
 
     def fixture(self, path, method, self_id, content=b''):
+        """仅为当前大厅房间的限定读取与设置入口提供展示结果。"""
         if self.mode != 'hall' or not self.room_id:
             return None
         if method == 'PUT' and path == f'/v10/texas_holdem/room/{self.room_id}/user_settings':

@@ -5,7 +5,7 @@ import { chromium, devices, type TestInfo } from '@playwright/test';
 import { observePaginationGesture } from './pagination-diagnostics';
 import { drag } from './gestures';
 
-test('分页诊断记录真实触摸结束与取消，保持页面和业务监听不变并排除敏感字段', async () => {
+test('分页诊断记录真实触摸结束与取消，保持页面和业务监听不变并排除敏感字段', /** 验证分页诊断记录真实触摸结束与取消，保持页面和业务监听不变并排除敏感字段。 */ async () => {
   const browser = await chromium.launch();
   try {
     for (const touch of [false, true]) {
@@ -67,18 +67,23 @@ test('分页诊断记录真实触摸结束与取消，保持页面和业务监�
       assert.equal(result.records.length, 300, '诊断记录应有固定上限');
       assert.ok(result.dropped > 0, '超过上限必须报告丢弃数量');
       assert.equal(result.records.at(-1).phase, '选中断言结束', '超过上限仍应保留最后状态');
-      const events = result.records.filter((record: { kind: string }) => record.kind === 'input');
-      assert.ok(events.some((event: { type: string; trusted: boolean }) =>
+      const events = result.records.filter(/** 仅保留满足以下条件的条目：`record.kind === 'input'`。
+ * @param record - 当前操作使用的 record。 */ (record: { kind: string }) => record.kind === 'input');
+      assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.type === (touch ? 'touchend' : 'mouseup') && event.trusted`。
+ * @param event - 当前触发的事件。 */ (event: { type: string; trusted: boolean }) =>
         event.type === (touch ? 'touchend' : 'mouseup') && event.trusted), '应记录浏览器真实分发的结束事件');
-      if (touch) assert.ok(events.some((event: { type: string }) => event.type === 'touchcancel'), '应保留取消事件以区分中断');
+      if (touch) assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.type === 'touchcancel'`。
+ * @param event - 当前触发的事件。 */ (event: { type: string }) => event.type === 'touchcancel'), '应保留取消事件以区分中断');
       else {
-        const start = events.find((event: { type: string }) => event.type === 'mousedown');
+        const start = events.find(/** 查找满足以下条件的首个条目：`event.type === 'mousedown'`。
+ * @param event - 当前触发的事件。 */ (event: { type: string }) => event.type === 'mousedown');
         assert.equal(start.defaultPreventedAtCapture, false, '捕获阶段还未经过业务处理');
         assert.equal(start.defaultPreventedAtBubble, true, '冒泡阶段应保留业务阻止默认行为的证据');
       }
       assert.deepEqual(result.records[0].tabs, ['true'], '应保留选中状态而不记录标签文字');
       assert.equal(result.records[0].viewport.width, touch ? devices['Pixel 7'].viewport.width : devices['Desktop Chrome'].viewport.width);
-      assert.ok(result.records[0].layers.some((layer: { transform: string }) =>
+      assert.ok(result.records[0].layers.some(/** 判断是否存在满足以下条件的条目：`layer.transform === 'matrix(1, 0, 0, 1, -12, 0)'`。
+ * @param layer - 当前操作使用的 layer。 */ (layer: { transform: string }) =>
         layer.transform === 'matrix(1, 0, 0, 1, -12, 0)'), '应保留组件实际位移');
       assert.equal(await page.getByTestId('game-buy-in-application-list-screen').evaluate(
         /** 诊断完成后复查原页面。
@@ -93,7 +98,7 @@ test('分页诊断记录真实触摸结束与取消，保持页面和业务监�
   } finally { await browser.close(); }
 });
 
-test('触摸目标卸载后仍保留失联证据，完整输入命令不等于文档收到结束事件', async () => {
+test('触摸目标卸载后仍保留失联证据，完整输入命令不等于文档收到结束事件', /** 验证触摸目标卸载后仍保留失联证据，完整输入命令不等于文档收到结束事件。 */ async () => {
   const browser = await chromium.launch();
   try {
     const context = await browser.newContext(devices['Pixel 7']);
@@ -127,10 +132,13 @@ test('触摸目标卸载后仍保留失联证据，完整输入命令不等于�
        */ async (_name: string, attachment: { body: string }) => { saved = attachment.body; },
     } as unknown as TestInfo);
     const result = JSON.parse(saved);
-    const inputs = result.records.filter((record: { kind: string }) => record.kind === 'input');
-    assert.equal(inputs.filter((event: { type: string }) => event.type === 'touchmove').length, 3,
+    const inputs = result.records.filter(/** 仅保留满足以下条件的条目：`record.kind === 'input'`。
+ * @param record - 当前操作使用的 record。 */ (record: { kind: string }) => record.kind === 'input');
+    assert.equal(inputs.filter(/** 仅保留满足以下条件的条目：`event.type === 'touchmove'`。
+ * @param event - 当前触发的事件。 */ (event: { type: string }) => event.type === 'touchmove').length, 3,
       '目标卸载后，后续移动不再经过文档监听');
-    assert.ok(!inputs.some((event: { type: string }) => event.type === 'touchend'),
+    assert.ok(!inputs.some(/** 判断是否存在满足以下条件的条目：`event.type === 'touchend'`。
+ * @param event - 当前触发的事件。 */ (event: { type: string }) => event.type === 'touchend'),
       '不能把输入命令成功返回当作文档收到触摸结束');
     assert.equal(result.records.at(-1).touchTarget.connected, false, '目标卸载后仍应保存断开的节点身份');
     assert.equal(result.records.at(-1).touchTarget.marker, 'game-buy-in-application-list');

@@ -5,14 +5,18 @@ from texas_replay import PLAYER_IDS
 
 
 class UIStates:
+    """管理德州申请列表、用户设置与 RPC 错误展示状态。"""
     def __init__(self):
+        """初始化界面或缓存状态，确保首次使用从默认配置开始。"""
         self.release()
 
     def release(self):
+        """清除带入申请和 RPC 错误配置，恢复默认透传。"""
         self.applications = None
         self.rpc_error = None
 
     def configure(self, options):
+        """校验并设置带入申请阶段和 RPC 错误模式。"""
         if not isinstance(options, dict) or set(options) - {'applications', 'rpcError'}:
             raise ValueError('Invalid UI options')
         if options.get('applications') not in (None, 'pending', 'resolved', 'more') or (
@@ -22,6 +26,7 @@ class UIStates:
         self.rpc_error = options.get('rpcError')
 
     def rpc_result(self, frame):
+        """为限定的牌局操作或支付 RPC 返回已配置的业务错误。"""
         path = frame['params']['data']['path']
         if not self.rpc_error or not (path.endswith('/call') or path == '/v3/pay_action/do'):
             return None
@@ -32,6 +37,7 @@ class UIStates:
                 'error_description': 'Insufficient balance' if self.rpc_error == 'balance' else 'Please retry'}
 
     def fixture(self, url, method, content, room_id):
+        """仅为当前房间的设置与申请列表接口提供界面状态夹具。"""
         if not room_id:
             return None
         parsed = urlsplit(url)

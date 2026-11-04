@@ -177,9 +177,11 @@ function runScenarioBatches(locale: string, playwrightArgs: string[]): boolean {
   }
 
   const scenarioArgs = process.env.VISUAL_FILTER
-    ? [...playwrightArgs, `--grep=${exactScenarioGrep(selectedScenarios.map(scenario => scenario.label))}`]
+    ? [...playwrightArgs, `--grep=${exactScenarioGrep(selectedScenarios.map(/** 将当前条目映射为`scenario.label`。
+ * @param scenario - 当前测试场景配置。 */ scenario => scenario.label))}`]
     : playwrightArgs;
-  const needsAuthState = selectedScenarios.some((scenario) => scenario.signIn);
+  const needsAuthState = selectedScenarios.some(/** 判断是否存在满足以下条件的条目：`scenario.signIn`。
+ * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.signIn);
   const { count: shardCount, start: startShard } = getVisualShardConfig(
     action,
     selectedScenarios.length,
@@ -223,7 +225,8 @@ async function main(): Promise<void> {
     }
 
     const requestedLocales = process.env.VISUAL_LOCALES;
-    const selectedLocales = getActiveLocales().map((locale) => locale.code);
+    const selectedLocales = getActiveLocales().map(/** 将当前条目映射为`locale.code`。
+ * @param locale - 当前测试使用的语言。 */ (locale) => locale.code);
     let ranVisualScenario = false;
 
     for (const locale of selectedLocales) {
@@ -246,7 +249,8 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((error: Error) => {
+main().catch(/** 输出视觉运行器错误并以失败状态退出。
+ * @param error - 当前操作抛出的错误。 */ (error: Error) => {
   console.error(error.message);
   process.exit(1);
 });

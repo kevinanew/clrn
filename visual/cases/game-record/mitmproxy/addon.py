@@ -19,12 +19,15 @@ MODES = ('empty', 'list', 'no-hands', 'paged', 'list-error', 'detail-error', 'de
 
 
 def respond(flow, result, status=200, wrapped=True):
+    """可选包装成功业务结构后发送战绩 JSON 响应。"""
     data = {'ok': True, 'result': result} if wrapped else result
     respond_json(flow, data, status)
 
 
 class GameRecordProxy:
+    """提供战绩新旧版本的分页、编辑、删除与重放展示夹具。"""
     def __init__(self):
+        """初始化token、scenario、user_id、version、mode等状态。"""
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
         self.user_id = None
@@ -39,11 +42,13 @@ class GameRecordProxy:
         self.stabilized = 0
 
     def status(self):
+        """返回战绩场景、请求计数及删除状态等观测数据。"""
         return {'scenario': self.scenario, 'interceptedRequests': sum(self.counts.values()),
                 'proxiedRequests': self.proxied, 'stabilizedRequests': self.stabilized,
                 'recordRequests': self.counts, 'faultRequests': self.faults, 'deleted': self.deleted}
 
     def control(self, flow):
+        """验证令牌并执行战绩场景切换、模式设置和状态读取。"""
         if flow.request.headers.get('X-E2E-Control-Token') != self.token:
             respond(flow, {'error': 'Forbidden'}, 403, False)
             return
@@ -83,6 +88,7 @@ class GameRecordProxy:
         respond(flow, self.status(), wrapped=False)
 
     def fixture(self, path, method, body, query):
+        """根据战绩版本、分页游标与已删除记录构造当前接口结果。"""
         user = self.user_id
         source = all_records() if self.mode == 'paged' else records()
         data = [record for record in source if record['play_session_id'] not in self.deleted
@@ -163,6 +169,7 @@ class GameRecordProxy:
         return None
 
     def response(self, flow):
+        """在限定真实响应中稳定战绩展示字段并统计命中次数。"""
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
             return
         if not self.user_id:
@@ -176,6 +183,7 @@ class GameRecordProxy:
             self.stabilized += patch_version(flow, 'v11' if self.version == 'v2' else 'v1')
 
     async def request(self, flow):
+        """处理战绩控制流量与限定业务请求，按模式挂起或返回夹具。"""
         if flow.response:
             return
         if flow.request.host == CONTROL_HOST:

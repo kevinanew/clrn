@@ -53,7 +53,8 @@ export default {
           ImportDeclaration(node) {
             const name = node.source.value;
             const server = /^(?:node:)?https?2?$/.test(name)
-              && node.specifiers.some(specifier => specifier.imported?.name === 'createServer');
+              && node.specifiers.some(/** 判断是否存在满足以下条件的条目：`specifier.imported?.name === 'createServer'`。
+ * @param specifier - 当前操作使用的 specifier。 */ specifier => specifier.imported?.name === 'createServer');
             if (server) {
               for (const specifier of node.specifiers) {
                 if (specifier.imported?.name === 'createServer') serverFactories.add(specifier.local.name);

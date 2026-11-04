@@ -20,7 +20,8 @@ async function request(session, path, method, body, operation) {
     });
   } catch (error) { throw requestFailure(operation, requestFailureReason(error)); }
   if (!response.ok) throw requestFailure(operation, 'http-error', response.status);
-  const result = await response.json().catch(error => {
+  const result = await response.json().catch(/** 将 JSON 解析或正文读取错误转换为保留真实状态的安全诊断。
+ * @param error - 当前操作抛出的错误。 */ error => {
     throw requestFailure(operation, error instanceof SyntaxError ? 'invalid-json' : 'body-read-failed', response.status);
   });
   if (result?.ok !== true) throw requestFailure(operation, 'business-rejected', response.status);

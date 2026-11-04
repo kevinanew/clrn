@@ -18,16 +18,16 @@ function pageResponse(commit) {
   return new Response(`<html><head><meta name="build-version" content="${commit} - 2026-10-14T00:00:00.000Z" /></head></html>`);
 }
 
-test('部署记录只接受 staging、完整提交和有效时间', () => {
+test('部署记录只接受 staging、完整提交和有效时间', /** 验证部署记录只接受 staging、完整提交和有效时间。 */ () => {
   const record = { environment: 'staging', sha: expectedCommit, deployed_at: '2026-10-14T00:00:00Z' };
   assert.equal(readDeploymentRecord(JSON.stringify(record)), expectedCommit);
   for (const value of [null, {}, { ...record, environment: 'production' }, { ...record, sha: 'abc1234' },
     { ...record, deployed_at: '' }, { ...record, deployed_at: 1 }]) {
-    assert.throws(() => readDeploymentRecord(JSON.stringify(value)));
+    assert.throws(/** 解析当前无效部署记录，验证字段及版本契约被严格检查。 */ () => readDeploymentRecord(JSON.stringify(value)));
   }
 });
 
-test('部署记录必须指向已公开且摘要匹配的 CLRN H5 构建包', async () => {
+test('部署记录必须指向已公开且摘要匹配的 CLRN H5 构建包', /** 验证部署记录必须指向已公开且摘要匹配的 CLRN H5 构建包。 */ async () => {
   const releaseTag = `web-staging-42-${expectedCommit.slice(0, 12)}`;
   const artifact = { release_tag: releaseTag,
     release_url: `https://github.com/kevinanew/clrn/releases/tag/${releaseTag}`,
@@ -68,7 +68,7 @@ test('部署记录必须指向已公开且摘要匹配的 CLRN H5 构建包', as
   /不一致/);
 });
 
-test('先读到旧版本时等待，实际提供目标提交后才放行', async () => {
+test('先读到旧版本时等待，实际提供目标提交后才放行', /** 验证先读到旧版本时等待，实际提供目标提交后才放行。 */ async () => {
   let elapsed = 0;
   const requests = [];
   const result = await waitForDeployment({ expectedCommit, now: /** 返回模拟时钟。 */ () => elapsed,
@@ -92,7 +92,7 @@ test('先读到旧版本时等待，实际提供目标提交后才放行', async
   assert.equal(elapsed, 10000);
 });
 
-test('测试结束后的单次校验拒绝其他部署，无等待或成功回退', async () => {
+test('测试结束后的单次校验拒绝其他部署，无等待或成功回退', /** 验证测试结束后的单次校验拒绝其他部署，无等待或成功回退。 */ async () => {
   let requested = 0;
   await assert.rejects(waitForDeployment({ expectedCommit, maximumWaitMilliseconds: 0,
     fetcher: /** 返回当前网络边界响应。 */ async () => { requested += 1; return pageResponse(previousCommit); },
@@ -100,7 +100,7 @@ test('测试结束后的单次校验拒绝其他部署，无等待或成功回�
   assert.equal(requested, 1);
 });
 
-test('站点成功返回目标版本前，错误状态、无效 HTML 和网络失败不能放行', async () => {
+test('站点成功返回目标版本前，错误状态、无效 HTML 和网络失败不能放行', /** 验证站点成功返回目标版本前，错误状态、无效 HTML 和网络失败不能放行。 */ async () => {
   let elapsed = 0;
   let attempts = 0;
   const result = await waitForDeployment({ expectedCommit, now: /** 返回模拟时钟。 */ () => elapsed,
@@ -119,7 +119,7 @@ test('站点成功返回目标版本前，错误状态、无效 HTML 和网络�
   assert.equal(attempts, 4);
 });
 
-test('站点一直没有目标版本时有界超时', async () => {
+test('站点一直没有目标版本时有界超时', /** 验证站点一直没有目标版本时有界超时。 */ async () => {
   let elapsed = 0;
   await assert.rejects(waitForDeployment({ expectedCommit, maximumWaitMilliseconds: 25000,
     now: /** 返回模拟时钟。 */ () => elapsed, wait: /**
@@ -130,7 +130,7 @@ test('站点一直没有目标版本时有界超时', async () => {
   assert.equal(elapsed, 25000);
 });
 
-test('拒绝正式站、任意主机、非 HTTPS 和无效版本，且不访问网络', async () => {
+test('拒绝正式站、任意主机、非 HTTPS 和无效版本，且不访问网络', /** 验证拒绝正式站、任意主机、非 HTTPS 和无效版本，且不访问网络。 */ async () => {
   for (const baseUrl of ['https://h5.laiwan.life/', 'http://h5.page.shafayouxi.org/',
     'https://example.com/', 'https://user:password@h5.page.shafayouxi.org/']) {
     await assert.rejects(waitForDeployment({ expectedCommit, baseUrl,

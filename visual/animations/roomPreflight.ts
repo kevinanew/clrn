@@ -10,11 +10,15 @@ export function completedRoomPreflight(before: ProxySnapshot, after: ProxySnapsh
   if (before.dropped !== 0 || after.dropped !== 0 || after.events.length <= before.events.length
     || JSON.stringify(after.events.slice(0, before.events.length)) !== JSON.stringify(before.events)) return false;
   const events = after.events.slice(before.events.length) as Record<string, unknown>[];
-  if (events.some(event => event.event === 'proxy.websocket-command' && event.messageType === 'rpc'
+  if (events.some(/** 判断房间预检是否意外触发 WebSocket RPC 或实际支付请求。
+ * @param event - 当前触发的事件。 */ event => event.event === 'proxy.websocket-command' && event.messageType === 'rpc'
     || event.path === '/v3/pay_action/do' && event.method !== 'OPTIONS')) return false;
-  const requests = events.filter(event => event.event === 'proxy.request'
+  const requests = events.filter(/** 选取真实上游处理的支付接口 OPTIONS 预检请求。
+ * @param event - 当前触发的事件。 */ event => event.event === 'proxy.request'
     && event.path === '/v3/pay_action/do' && event.method === 'OPTIONS' && event.source === 'upstream');
-  return requests.length > 0 && requests.every(request => events.some(event =>
+  return requests.length > 0 && requests.every(/** 确认每个支付预检请求都具有对应的上游 204 响应。
+ * @param request - 当前发出的接口请求。 */ request => events.some(/** 按请求 ID 查找该预检请求的上游成功响应。
+ * @param event - 当前触发的事件。 */ event =>
     event.event === 'proxy.response' && event.requestId === request.requestId
     && event.source === 'upstream' && event.status === 204));
 }

@@ -32,7 +32,9 @@ async function unmaskedPixelCount(frame: Buffer, masks?: Locator[], clip?: Captu
   const bitmap = PNG.sync.read(frame);
   const excluded: ExcludedPixelRectangle[] = [];
   for (const mask of masks) {
-    const boxes = await mask.evaluateAll(nodes => nodes.map(node => {
+    const boxes = await mask.evaluateAll(/** 读取遮罩节点的布局边界，供时间线截图排除区域使用。
+ * @param nodes - 当前匹配的页面节点集合。 */ nodes => nodes.map(/** 将当前遮罩的 DOM 边界转换为普通坐标对象。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
       const rect = node.getBoundingClientRect();
       return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
     }));
@@ -49,7 +51,9 @@ async function unmaskedPixelCount(frame: Buffer, masks?: Locator[], clip?: Captu
  * @param target - 动画主体或内容标记。
  */
 export async function appearance(target: Locator) {
-  return target.evaluateAll(nodes => nodes.map(node => {
+  return target.evaluateAll(/** 读取目标节点及祖先的透明度、变换和布局，生成动画呈现采样。
+ * @param nodes - 当前匹配的页面节点集合。 */ nodes => nodes.map(/** 汇总当前节点的边界及祖先样式，反映实际画面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
     const rect = node.getBoundingClientRect();
     let opacity = 1;
     const transforms: string[] = [];
@@ -59,7 +63,8 @@ export async function appearance(target: Locator) {
       if (style.transform !== 'none') transforms.push(style.transform);
     }
     return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, opacity, transforms,
-      images: Array.from(node.querySelectorAll('img')).map(img => new URL(img.src).pathname) };
+      images: Array.from(node.querySelectorAll('img')).map(/** 将当前条目映射为`new URL(img.src).pathname`。
+ * @param img - 当前操作使用的 img。 */ img => new URL(img.src).pathname) };
   }));
 }
 
@@ -71,7 +76,8 @@ export async function appearance(target: Locator) {
  */
 async function seekCssAnimations(page: Page, elapsed: number, reset = false): Promise<void> {
   if (hasNormalCardSpriteClock(page)) return;
-  await page.evaluate(({ elapsed, reset }) => {
+  await page.evaluate(/** 初始化或更新页面动画采样表，按采样进度推进动画时间。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ elapsed, reset }) => {
     const state = window as typeof window & { animationSamples?: Map<Animation, number> };
     if (reset || !state.animationSamples) state.animationSamples = new Map();
     for (const animation of document.getAnimations()) {
@@ -98,7 +104,7 @@ export async function settleAnimations(page: Page, duration: number, fast = fals
   if (fast) await page.clock.fastForward(duration);
   else await page.clock.runFor(duration);
   await seekCssAnimations(page, duration);
-  await page.evaluate(() => {
+  await page.evaluate(/** 完成已经到达终点的有限 CSS 动画，触发正常结束语义。 */ () => {
     for (const animation of document.getAnimations()) {
       const end = animation.effect?.getComputedTiming().endTime;
       if (typeof end === 'number' && end !== Infinity && Number(animation.currentTime) >= end) animation.finish();
@@ -112,16 +118,16 @@ export async function settleAnimations(page: Page, duration: number, fast = fals
  * @param page - 待冻结页面。
  */
 export async function freeze(page: Page): Promise<void> {
-  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  await page.evaluate(/** 在页面中读取`document.fonts.ready.then(() => undefined)`，供测试判断当前界面状态。 */ () => document.fonts.ready.then(/** 将异步结果转换为`undefined`，供后续步骤使用。 */ () => undefined));
   await ensureLocalImagesLoaded(page);
   if (hasNormalCardSpriteClock(page)) return;
-  const now = await page.evaluate(() => Date.now());
+  const now = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
   // 首次暂停时浏览器还在走真实时间，为较慢 Linux 的协议往返留出余量。
   // 后续已暂停的页面保持原有预热间隔，避免每次打开面板都跳过大量业务定时器。
   await page.clock.pauseAt(Math.ceil((now + (pausedPages.has(page) ? 1000 : 5000)) / 16) * 16);
   pausedPages.add(page);
   // CSS 使用浏览器真实时钟。挂载时立即暂停，避免协议往返较慢时淡入在第一帧前已结束。
-  await page.evaluate(() => {
+  await page.evaluate(/** 安装 CSS 动画观察器，暂停新动画并交由时间线采样器推进。 */ () => {
     const state = window as typeof window & { animationCssObserver?: MutationObserver };
     if (state.animationCssObserver) return;
     const seen = new WeakSet<Animation>();
@@ -134,9 +140,11 @@ export async function freeze(page: Page): Promise<void> {
         animation.currentTime = 0;
       }
     };
-    state.animationCssObserver = new MutationObserver(records => {
+    state.animationCssObserver = new MutationObserver(/** 仅在可能新增 CSS 动画的 DOM 变化后更新暂停状态。
+ * @param records - 当前操作使用的 records。 */ records => {
       // JS 动画每帧修改 transform/opacity；这些更新不会创建 CSS 动画，不必强制重新布局。
-      if (records.some(record => record.type === 'childList' || record.attributeName === 'class'
+      if (records.some(/** 判断变更是否涉及节点、class 或显式动画名称。
+ * @param record - 当前操作使用的 record。 */ record => record.type === 'childList' || record.attributeName === 'class'
         || (record.target instanceof HTMLElement && Boolean(record.target.style.animationName)))) {
         pauseNewAnimations();
       }
@@ -145,7 +153,7 @@ export async function freeze(page: Page): Promise<void> {
       { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style'] });
     pauseNewAnimations();
   });
-  expect(await page.evaluate(() => Boolean(
+  expect(await page.evaluate(/** 检查页面是否启用会干扰真实动画的视觉回归模式。 */ () => Boolean(
     (globalThis as typeof globalThis & { __VISUAL_REGRESSION__?: boolean }).__VISUAL_REGRESSION__
       || document.getElementById('visual-disable-animations'),
   )), '动画套件不得使用静态截图的禁动画开关').toBe(false);
@@ -170,7 +178,7 @@ async function captureFrame(page: Page, info: TestInfo, name: string, options: T
     let original: Buffer = Buffer.alloc(0);
     let masked: Buffer = Buffer.alloc(0);
     let comparedPixels = 0;
-    await expect.poll(async () => {
+    await expect.poll(/** 连续截取并遮罩数字区域，等待其余画面达到稳定。 */ async () => {
       const previousFrame = await page.screenshot(screenshotOptions);
       original = await page.screenshot(screenshotOptions);
       const previousMasked = await maskNumericFields(previousFrame, options.numericMask!, options.clip);
@@ -189,7 +197,7 @@ async function captureFrame(page: Page, info: TestInfo, name: string, options: T
     // 稳定性与最终断言共用原有排除区域及有效面积；报告仍保存完整截图。
     frame = Buffer.alloc(0);
     let excluded: ExcludedPixelRectangle[] = [];
-    await expect.poll(async () => {
+    await expect.poll(/** 连续采集部分截图并计算排除区域，等待有效比较画面稳定。 */ async () => {
       const previousFrame = await page.screenshot(screenshotOptions);
       frame = await page.screenshot(screenshotOptions);
       excluded = await timelineExcludedRegions(frame, options, elements, name);
@@ -234,7 +242,7 @@ async function captureOrdinaryFrame(page: Page, options: TimelineOptions, snapsh
   }
   let frame: Buffer = Buffer.alloc(0);
   let comparedPixels: number | undefined;
-  await expect.poll(async () => {
+  await expect.poll(/** 连续比较未遮罩像素，等待时间线采样画面收敛。 */ async () => {
     const previousFrame = await page.screenshot(screenshotOptions);
     frame = await page.screenshot(screenshotOptions);
     comparedPixels = await unmaskedPixelCount(frame, options.mask, options.clip);
@@ -307,18 +315,22 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       previous = milliseconds;
     }
     if (options.requireMotion) {
-      const states = samples.filter(sample => sample.elements.length > 0).map(sample => JSON.stringify(sample.elements.map(({ x, y, width, height, opacity, transforms }) =>
+      const states = samples.filter(/** 仅保留满足以下条件的条目：`sample.elements.length > 0`。
+ * @param sample - 当前操作使用的 sample。 */ sample => sample.elements.length > 0).map(/** 序列化每个采样点的元素几何与呈现状态，检测动画是否实际变化。
+ * @param sample - 当前操作使用的 sample。 */ sample => JSON.stringify(sample.elements.map(/** 将当前条目映射为`{ x, y, width, height, opacity, transforms }`。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ x, y, width, height, opacity, transforms }) =>
         ({ x, y, width, height, opacity, transforms }))));
       expect(new Set(states).size, `${name} 主体本身必须移动、缩放或渐变，不能只靠背景变化`).toBeGreaterThan(1);
     }
     if (options.requireChange !== false) {
-      expect(frames.some(frame => !frame.equals(frames[0])), `${name} 必须包含不同的动画帧`).toBe(true);
+      expect(frames.some(/** 判断是否存在满足以下条件的条目：`!frame.equals(frames[0])`。
+ * @param frame - 当前操作使用的 frame。 */ frame => !frame.equals(frames[0])), `${name} 必须包含不同的动画帧`).toBe(true);
     }
   } finally {
     await info.attach(`${name}-timeline`, { contentType: 'application/json',
       body: JSON.stringify({ clip: options.clip, samples }, null, 2) });
     // 归还 CSS 动画的播放控制，后续真实开关不能继承上一段的暂停状态。
-    if (!hasNormalCardSpriteClock(page)) await page.evaluate(() => {
+    if (!hasNormalCardSpriteClock(page)) await page.evaluate(/** 恢复尚未结束的页面动画，避免重播已完成的退场动画。 */ () => {
       for (const animation of document.getAnimations()) {
         const end = animation.effect?.getComputedTiming().endTime;
         // 对已结束的 CSS 动画调用 play() 会从头重放，导致退场遮罩再次拦截点击。

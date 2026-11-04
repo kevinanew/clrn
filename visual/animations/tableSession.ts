@@ -32,9 +32,9 @@ async function createRoomWithRetry(page: Page, game: 'texas' | 'zhajinhua',
     let before: ProxySnapshot | undefined;
     try {
       return await createPrivateGameRoom(page, registerRoom, game === 'texas' ? 'texas_react_native' : 'zhajinhua', false,
-        async () => { before = await snapshot?.().catch(() => undefined); });
+        /** 创建房间前保存可选快照，供重试预检判断真实行为。 */ async () => { before = await snapshot?.().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined); });
     } catch (error) {
-      const after = await snapshot?.().catch(() => undefined);
+      const after = await snapshot?.().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
       await recoverRoomForm(page, error, attempt, registeredRoom(),
         Boolean(before && after && completedRoomPreflight(before, after)));
     }
@@ -77,7 +77,7 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
   ).last();
   // 德州选线失败后会避让节点 120 秒，需留出避让结束后重新探测及订阅的时间。
   const timeout = game === 'texas' ? 180_000 : 90_000;
-  await expect.poll(async () => {
+  await expect.poll(/** 轮询牌桌连接状态，有限重试后保留明确的连接失败状态。 */ async () => {
     if (await retry.isVisible()) {
       if (retries >= 3) connection.state = 'alert';
       else {
@@ -138,8 +138,8 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
       recordDiagnostic(page, '建房成功', { roomId: created.roomId, node: diagnosticNode(created.apiOrigin) });
       writeFileSync(info.outputPath('created-room.json'), JSON.stringify({ roomId: created.roomId, apiNode: diagnosticNode(created.apiOrigin) }));
     };
-    room = await createRoomWithRetry(page, game, registerRoom, () => room,
-      async () => await proxy.diagnostics?.() ?? { events: [], dropped: 1 });
+    room = await createRoomWithRetry(page, game, registerRoom, /** 向建房重试器返回本次已创建的房间资料。 */ () => room,
+      /** 提供代理诊断快照，缺失时标记取证不完整。 */ async () => await proxy.diagnostics?.() ?? { events: [], dropped: 1 });
     recordDiagnostic(page, '等待牌桌连接及订阅就绪');
     const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
     if (hall) await enterTexasRoom(page, room);
@@ -156,17 +156,23 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     await diagnostics.save();
     await saveCardSpriteDiagnostics(page, info);
   } catch (error) {
-    await diagnostics.save(error).catch(failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
-    const overlays = await page.evaluate(() => Array.from(document.querySelectorAll('[data-testid="screen-mask-touch-to-close"]')).map(mask => ({
+    await diagnostics.save(error).catch(/** 记录牌桌诊断保存失败，并保留原始用例异常。
+ * @param failure - 当前操作使用的 failure。 */ failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
+    const overlays = await page.evaluate(/** 在页面中采集残留遮罩的位置与关联测试标记。 */ () => Array.from(document.querySelectorAll('[data-testid="screen-mask-touch-to-close"]')).map(/** 整理当前遮罩边界及其父容器中的可识别内容。
+ * @param mask - 当前操作使用的 mask。 */ mask => ({
       rect: mask.getBoundingClientRect().toJSON(),
-      contents: Array.from(mask.parentElement?.querySelectorAll('[data-testid]') || []).map(node => node.getAttribute('data-testid')),
-    }))).catch(() => []);
+      contents: Array.from(mask.parentElement?.querySelectorAll('[data-testid]') || []).map(/** 将当前条目映射为`node.getAttribute('data-testid')`。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.getAttribute('data-testid')),
+    }))).catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []);
     writeFileSync(info.outputPath('overlays.json'), JSON.stringify(overlays, null, 2));
-    await page.screenshot({ path: info.outputPath('failure.png'), timeout: 5000 }).catch(() => undefined);
+    await page.screenshot({ path: info.outputPath('failure.png'), timeout: 5000 }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
     // 先保留冻结时钟下的失败，再做诊断性时钟对照；任何恢复都不能改变原始失败。
-    await saveCardSpriteDiagnostics(page, info, 'frozen').catch(failure => console.log(`牌面诊断保存失败：${diagnosticText(failure)}`));
-    await observeCardSpriteClockControl(page).catch(failure => console.log(`牌面时钟对照失败：${diagnosticText(failure)}`));
-    await saveCardSpriteDiagnostics(page, info).catch(failure => console.log(`牌面对照保存失败：${diagnosticText(failure)}`));
+    await saveCardSpriteDiagnostics(page, info, 'frozen').catch(/** 记录冻结牌面诊断保存失败，保留原始失败结果。
+ * @param failure - 当前操作使用的 failure。 */ failure => console.log(`牌面诊断保存失败：${diagnosticText(failure)}`));
+    await observeCardSpriteClockControl(page).catch(/** 记录独立牌面时钟对照失败，避免覆盖原异常。
+ * @param failure - 当前操作使用的 failure。 */ failure => console.log(`牌面时钟对照失败：${diagnosticText(failure)}`));
+    await saveCardSpriteDiagnostics(page, info).catch(/** 记录牌面对照附件保存失败，保留原用例结果。
+ * @param failure - 当前操作使用的 failure。 */ failure => console.log(`牌面对照保存失败：${diagnosticText(failure)}`));
     sanitizeTableError(error);
     throw error;
   } finally {
@@ -185,7 +191,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
  */
 async function sampleTable(page: Page, info: TestInfo, room: RoomSession,
   viewport: { width: number; height: number }, task: (session: TableSession) => Promise<void>) {
-  const self = await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
+  const self = await page.evaluate(/** 在页面中读取`JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
   const width = info.project.name === 'mobile' ? 375 : 450;
   recordDiagnostic(page, '牌桌就绪，开始动画采样');
   await task({ page, roomId: room.roomId, self,

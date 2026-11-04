@@ -17,7 +17,8 @@ export async function readTestingApiToken(environment = process.env,
   if (!environment.CI && environment.GITHUB_ACTIONS !== 'true') {
     try {
       const deployment = await readFile(deploymentFile, 'utf8');
-      const secret = deployment.split(/^---\s*$/m).find(document =>
+      const secret = deployment.split(/^---\s*$/m).find(/** 查找 staging 命名空间的测试 API 令牌 Secret。
+ * @param document - 当前操作使用的 document。 */ document =>
         /^kind:\s*Secret\s*$/m.test(document)
         && /^\s+name:\s*test-api-token\s*$/m.test(document)
         && /^\s+namespace:\s*goplay-staging\s*$/m.test(document));
@@ -90,7 +91,8 @@ export async function prepareTestAccountCoins(account, token) {
     Authorization: `${session.api_token.token_type} ${session.api_token.access_token}`,
   }, 'prepare-account-verify-coins');
   const wallet = reading.result;
-  const coins = Array.isArray(wallet.currencies) ? wallet.currencies.filter(currency => currency?.code === 'coin') : [];
+  const coins = Array.isArray(wallet.currencies) ? wallet.currencies.filter(/** 仅保留满足以下条件的条目：`currency?.code === 'coin'`。
+ * @param currency - 当前操作使用的 currency。 */ currency => currency?.code === 'coin') : [];
   if (coins.length !== 1 || Number(coins[0].balance) !== Number(initialCoinBalance)) {
     throw requestFailure('prepare-account-verify-coins', 'invalid-response', reading.status);
   }

@@ -6,7 +6,9 @@ import { resetViewportScroll } from './renderReadiness';
 import { selectScenario } from '../../e2e/helpers/scenario-proxy';
 import { lockBottomSheetDocumentScroll } from './bottomSheetScroll';
 
-test('guest search confirmation enter and exit', async ({ context, page }, info) => {
+test('guest search confirmation enter and exit', /** 验证游客搜索确认弹窗的进入与退出动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   await openApplication(context, page, info, 'hall');
   await expect(page.getByTestId('match-game-bet-info').first()).toHaveText('1/2', { timeout: 60_000 });
   const viewport = page.viewportSize()!;
@@ -18,7 +20,9 @@ test('guest search confirmation enter and exit', async ({ context, page }, info)
   });
 });
 
-test('club more menu enter and exit', async ({ context, page }, info) => {
+test('club more menu enter and exit', /** 验证俱乐部更多菜单的进入与退出动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   await openApplication(context, page, info);
   await navigate(page, 'club-tab');
   await exercisePopup(page, info, { name: 'club-more', target: page.getByTestId('club-more-popup'),
@@ -27,7 +31,9 @@ test('club more menu enter and exit', async ({ context, page }, info) => {
   });
 });
 
-test('private room invitation bottom sheet enter and exit', async ({ context, page }, info) => {
+test('private room invitation bottom sheet enter and exit', /** 验证私人房邀请底部面板的进入与退出动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   await openApplication(context, page, info);
   await selectScenario(context, 'invitation');
   await navigate(page, 'private-room-tab');
@@ -40,7 +46,9 @@ test('private room invitation bottom sheet enter and exit', async ({ context, pa
   });
 });
 
-test('create room game picker enter and exit', async ({ context, page }, info) => {
+test('create room game picker enter and exit', /** 验证建房玩法选择器的进入与退出动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   await openApplication(context, page, info);
   await navigate(page, 'private-room-tab');
   await expect(visible(page, 'create-game-button')).toBeVisible();
@@ -56,7 +64,9 @@ test('create room game picker enter and exit', async ({ context, page }, info) =
   });
 });
 
-test('club rooms empty state fades in', async ({ context, page }, info) => {
+test('club rooms empty state fades in', /** 验证俱乐部房间空态的淡入动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   await selectScenario(context, 'club-empty');
   await openApplication(context, page, info);
   await navigate(page, 'club-tab');
@@ -68,7 +78,9 @@ test('club rooms empty state fades in', async ({ context, page }, info) => {
   await captureTimeline(page, info, 'club-empty', target, { startOffset: 16, requireMotion: true });
 });
 
-test('hall matching spinner modal enter and exit', async ({ context, page }, info) => {
+test('hall matching spinner modal enter and exit', /** 验证大厅匹配等待弹窗的进入与退出动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   await selectScenario(context, 'matching');
   await openApplication(context, page, info);
   await expect(page.getByTestId('match-game-bet-info').first()).toHaveText('1/2', { timeout: 60_000 });

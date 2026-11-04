@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { test } from 'node:test';
 import { mitmproxySources } from './mitmproxy-sources';
 
-test('代理只使用真实节点资料中的确切来源和本轮发布包的反馈分支', async () => {
+test('代理只使用真实节点资料中的确切来源和本轮发布包的反馈分支', /** 验证代理只使用真实节点资料中的确切来源和本轮发布包的反馈分支。 */ async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'proxy-sources-'));
   const fetch = globalThis.fetch;
   const calls: string[] = [];
@@ -19,7 +19,9 @@ test('代理只使用真实节点资料中的确切来源和本轮发布包的�
      * @param address - 当前请求地址。
      * @param options - 请求限制。
      */
-    globalThis.fetch = async (address, options) => {
+    globalThis.fetch = /** 核对节点发现使用只读 POST、固定请求头且不携带账号数据。
+ * @param address - 当前操作使用的 address。
+ * @param options - 当前操作使用的 options。 */ async (address, options) => {
       calls.push(String(address));
       assert.equal(options?.method, 'POST', '节点资料使用只读 POST，GET 会被真实服务拒绝');
       assert.deepEqual(options?.headers, { 'Content-Type': 'application/json' });
@@ -39,7 +41,7 @@ test('代理只使用真实节点资料中的确切来源和本轮发布包的�
   }
 });
 
-test('节点失败或契约损坏时拒绝启动夹具且错误不包含来源', async () => {
+test('节点失败或契约损坏时拒绝启动夹具且错误不包含来源', /** 验证节点失败或契约损坏时拒绝启动夹具且错误不包含来源。 */ async () => {
   const fetch = globalThis.fetch;
   const failures = [
     { response: new Response('', { status: 405 }), reason: 'HTTP 405' },
@@ -52,30 +54,31 @@ test('节点失败或契约损坏时拒绝启动夹具且错误不包含来源',
   try {
     for (const [index, { response, reason }] of failures.entries()) {
       /** 返回当前损坏响应，不发起网络请求。 */
-      globalThis.fetch = async () => response;
+      globalThis.fetch = /** 向节点发现测试返回当前预设的响应。 */ async () => response;
       await assert.rejects(mitmproxySources({ VISUAL_API_BASE_URL: `https://failed-${index}.invalid` }),
         { message: `读取 laiwan_prd 真实节点资料失败（${reason}），未启动响应夹具` });
     }
     /** 模拟断连，底层错误不得进入公开报告。 */
-    globalThis.fetch = async () => { throw new Error('包含连接资料的底层错误'); };
+    globalThis.fetch = /** 注入含连接资料的底层错误，验证对外诊断不会泄露原文。 */ async () => { throw new Error('包含连接资料的底层错误'); };
     await assert.rejects(mitmproxySources({ VISUAL_API_BASE_URL: 'https://disconnected.invalid' }),
       { message: '读取 laiwan_prd 真实节点资料失败（传输失败），未启动响应夹具' });
   } finally { globalThis.fetch = fetch; }
 });
 
-test('同轮并发共享失败但不自动重试，后续独立初始化重新读取真实资料', async () => {
+test('同轮并发共享失败但不自动重试，后续独立初始化重新读取真实资料', /** 验证同轮并发共享失败但不自动重试，后续独立初始化重新读取真实资料。 */ async () => {
   const fetch = globalThis.fetch;
   let calls = 0;
   const input = { VISUAL_API_BASE_URL: 'https://independent.invalid' };
   try {
     /** 首次读取失败，后续独立调用提供有效节点资料。 */
-    globalThis.fetch = async () => {
+    globalThis.fetch = /** 首次返回 405，后续提供节点资料以验证协议失败处理。 */ async () => {
       calls++;
       return calls === 1 ? new Response('', { status: 405 })
         : Response.json({ ok: true, result: { servers: { 'node.invalid': '192.0.2.1' } } });
     };
     const failed = await Promise.allSettled([mitmproxySources(input), mitmproxySources(input)]);
-    assert.ok(failed.every(result => result.status === 'rejected'), '失败不得伪装成成功或自动恢复');
+    assert.ok(failed.every(/** 确认所有条目均满足：`result.status === 'rejected'`。
+ * @param result - 当前操作使用的 result。 */ result => result.status === 'rejected'), '失败不得伪装成成功或自动恢复');
     assert.equal(calls, 1, '并发调用共享同次读取，失败后没有自动重试');
     const configured = await mitmproxySources(input);
     assert.equal(calls, 2, '后续独立初始化不能永久沿用旧失败');
@@ -86,7 +89,7 @@ test('同轮并发共享失败但不自动重试，后续独立初始化重新�
   } finally { globalThis.fetch = fetch; }
 });
 
-test('离线来源必须明确输入且不发起真实请求', async () => {
+test('离线来源必须明确输入且不发起真实请求', /** 验证离线来源必须明确输入且不发起真实请求。 */ async () => {
   const input = { MITMPROXY_API_HOSTS: '["api.invalid"]', MITMPROXY_FEEDBACK_ORIGIN: 'https://feedback.invalid' };
   assert.equal(await mitmproxySources(input), input);
 });

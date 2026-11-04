@@ -7,7 +7,8 @@ export default defineConfig({
   testMatch: 'cardSpriteControl.spec.ts',
   testIgnore: [],
   // 普通桌面项目也排除了对照文件；独立入口必须显式清除项目级排除。
-  projects: config.projects?.map(project => ({ ...project, testIgnore: [] })),
+  projects: config.projects?.map(/** 将当前条目映射为`{ ...project, testIgnore: [] }`。
+ * @param project - 当前操作使用的 project。 */ project => ({ ...project, testIgnore: [] })),
   outputDir: '../test-results/card-sprite-control',
   reporter: [['list'], ['html', { open: 'never', outputFolder: '../playwright-report/card-sprite-control' }]],
   updateSnapshots: 'none',

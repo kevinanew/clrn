@@ -152,16 +152,20 @@ export async function observePaginationGesture(page: Page) {
      * 保存一次阶段快照。
      * @param phase - 不含业务数据的固定阶段名。
      */
-    async mark(phase: string) { await observation.evaluate((observer, value) => observer.snapshot(value), phase); },
+    async mark(phase: string) { await observation.evaluate(/** 在页面中读取`observer.snapshot(value)`，供测试判断当前界面状态。
+ * @param observer - 当前操作使用的 observer。
+ * @param value - 当前待转换或校验的值。 */ (observer, value) => observer.snapshot(value), phase); },
     /** 开始观察原始横滑，不改变输入参数。 */
-    async begin() { await observation.evaluate(observer => observer.begin()); },
+    async begin() { await observation.evaluate(/** 在页面中读取`observer.begin()`，供测试判断当前界面状态。
+ * @param observer - 当前操作使用的 observer。 */ observer => observer.begin()); },
     /**
      * 将白名单诊断附到桌面或触屏报告，用于对照成功与失败的实际事件。
      * @param info - 当前用例报告。
      */
     async save(info: TestInfo) {
       try {
-        const result = await observation.evaluate(observer => observer.finish());
+        const result = await observation.evaluate(/** 在页面中读取`observer.finish()`，供测试判断当前界面状态。
+ * @param observer - 当前操作使用的 observer。 */ observer => observer.finish());
         await info.attach('分页手势诊断', { body: JSON.stringify({ ...result,
           configured: { viewport: info.project.use.viewport, isMobile: info.project.use.isMobile,
             hasTouch: info.project.use.hasTouch, deviceScaleFactor: info.project.use.deviceScaleFactor } }),

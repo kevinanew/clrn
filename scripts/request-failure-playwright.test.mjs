@@ -31,9 +31,12 @@ function checkFailure(error, status, reason) {
   }
 }
 
-test('真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接仍失败且安全定位', async context => {
+test('真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接仍失败且安全定位', /** 验证真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接仍失败且安全定位。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const seen = new Set();
-  const server = createServer((incoming, outgoing) => {
+  const server = createServer(/** 按请求路径制造超时、断连和指定状态的真实 HTTP 失败。
+ * @param incoming - 本机测试服务收到的请求。
+ * @param outgoing - 本机测试服务发送的响应。 */ (incoming, outgoing) => {
     const route = new URL(incoming.url, 'http://fixture.invalid').pathname;
     seen.add(route);
     if (route === '/timeout') return;
@@ -41,18 +44,21 @@ test('真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接�
     outgoing.writeHead(route === '/http-error' ? 500 : 201, { 'Content-Type': 'application/json' });
     outgoing.end(secret);
   });
-  context.after(async () => {
+  context.after(/** 关闭请求失败测试服务及所有遗留连接。 */ async () => {
     server.closeAllConnections();
-    await new Promise(resolve => server.close(resolve));
+    await new Promise(/** 等待请求失败测试服务完成关闭。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => server.close(resolve));
   });
-  await new Promise((resolve, reject) => {
+  await new Promise(/** 等待本机错误场景服务开始监听，传播监听失败。
+ * @param resolve - 完成当前异步等待的通知。
+ * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
     server.once('error', reject);
     server.listen(0, '127.0.0.1', resolve);
   });
   const api = await request.newContext({ extraHTTPHeaders: {
     Authorization: `Bearer ${secret}`, Cookie: `session=${secret}`,
   } });
-  context.after(() => api.dispose());
+  context.after(/** 用例结束后释放 Playwright API 请求上下文。 */ () => api.dispose());
   const origin = `http://127.0.0.1:${server.address().port}`;
 
   /**
@@ -62,7 +68,8 @@ test('真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接�
   async function read(route) {
     const response = await api.get(`${origin}${route}?token=${secret}`, {
       timeout: 1000, maxRetries: 0, maxRedirects: 0,
-    }).catch(error => {
+    }).catch(/** 检查真实 Playwright 异常形态，并将其交给安全诊断分类。
+ * @param error - 当前操作抛出的错误。 */ error => {
       if (route === '/timeout' || route === '/refused' || route === '/disconnect') {
         assert.equal(error.code, undefined, '覆盖 Playwright 丢弃顶层 code 的真实形态');
         assert.equal(error.name, route === '/timeout' ? 'TimeoutError' : 'Error');
@@ -79,15 +86,18 @@ test('真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接�
   for (const [route, status, reason] of [['/http-error', '500', 'http-error'],
     ['/invalid-json', '201', 'invalid-json'], ['/timeout', 'unavailable', 'timeout'],
     ['/disconnect', 'unavailable', 'connection-failed']]) {
-    await context.test(reason, async () => {
-      await assert.rejects(read(route), error => { checkFailure(error, status, reason); return true; });
+    await context.test(reason, /** 验证当前 HTTP 路由的安全失败诊断且请求确实到达服务。 */ async () => {
+      await assert.rejects(read(route), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => { checkFailure(error, status, reason); return true; });
       assert.ok(seen.has(route), '确认请求实际到达本例服务');
     });
   }
   server.closeAllConnections();
-  await new Promise(resolve => server.close(resolve));
-  await context.test('connection-failed', async () => {
-    await assert.rejects(read('/refused'), error => { checkFailure(error, 'unavailable', 'connection-failed'); return true; });
+  await new Promise(/** 关闭监听端口，构造真实的连接拒绝场景。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => server.close(resolve));
+  await context.test('connection-failed', /** 验证连接拒绝的真实 Playwright 请求被归类为安全的连接失败诊断。 */ async () => {
+    await assert.rejects(read('/refused'), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => { checkFailure(error, 'unavailable', 'connection-failed'); return true; });
     assert.equal(seen.has('/refused'), false);
   });
 });

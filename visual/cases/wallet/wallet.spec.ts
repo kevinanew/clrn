@@ -4,7 +4,8 @@ import { buildScenarios } from '../../scenarios';
 import { runVisualScenario } from '../runScenario';
 import { runCurrencyTransactionScenario } from './transactions';
 
-for (const scenario of buildScenarios().filter(item => item.group === 'wallet')) {
+for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'wallet'`。
+ * @param item - 当前遍历的条目。 */ item => item.group === 'wallet')) {
   test(scenario.label,
     /**
      * 按页面类型选择固定流水校验或通用截图流程。

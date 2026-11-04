@@ -15,14 +15,16 @@ export async function captureImageFrames(page: Page, info: TestInfo, name: strin
   const response = loadedResponse || await page.request.get(url, { timeout: 60_000 });
   expect(response.ok()).toBe(true);
   const bytes = await response.body();
-  const frames = await page.evaluate(async encoded => {
+  const frames = await page.evaluate(/** 在浏览器中解码动画图片的全部帧，返回可比较的逐帧像素数据。
+ * @param encoded - 当前操作使用的 encoded。 */ async encoded => {
     type Decoder = { tracks: { ready: Promise<void>; selectedTrack: { frameCount: number } };
       decode(options: { frameIndex: number }): Promise<{ image: VideoFrame }>; close(): void };
     const Constructor = (globalThis as unknown as { ImageDecoder: new (options: {
       data: Uint8Array; type: string; preferAnimation: boolean;
     }) => Decoder }).ImageDecoder;
     if (!Constructor) throw new Error('当前浏览器不支持动画图片逐帧解码');
-    const decoder = new Constructor({ data: Uint8Array.from(atob(encoded), char => char.charCodeAt(0)),
+    const decoder = new Constructor({ data: Uint8Array.from(atob(encoded), /** 为当前索引构造`char.charCodeAt(0)`。
+ * @param char - 当前操作使用的 char。 */ char => char.charCodeAt(0)),
       type: 'image/webp', preferAnimation: true });
     try {
       await decoder.tracks.ready;
@@ -42,12 +44,14 @@ export async function captureImageFrames(page: Page, info: TestInfo, name: strin
       return result;
     } finally { decoder.close(); }
   }, bytes.toString('base64'));
-  expect(new Set(frames.map(frame => frame.png)).size, '动画素材必须包含不同图像帧').toBeGreaterThan(1);
+  expect(new Set(frames.map(/** 将当前条目映射为`frame.png`。
+ * @param frame - 当前操作使用的 frame。 */ frame => frame.png)).size, '动画素材必须包含不同图像帧').toBeGreaterThan(1);
   for (const frame of frames) {
     expect(Buffer.from(frame.png, 'base64')).toMatchSnapshot(`asset-${name}-${frame.index}frame.png`,
       imageComparisonOptions(0));
   }
-  const timing = frames.map(({ png: _png, ...frame }) => frame);
+  const timing = frames.map(/** 将当前条目映射为`frame`。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ png: _png, ...frame }) => frame);
   expect(JSON.stringify(timing, null, 2)).toMatchSnapshot(`asset-${name}-timing.json`);
   await info.attach(`${name}-asset-timing`, { body: JSON.stringify(timing), contentType: 'application/json' });
 }

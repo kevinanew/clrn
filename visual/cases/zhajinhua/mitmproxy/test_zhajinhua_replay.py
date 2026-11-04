@@ -12,6 +12,7 @@ with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
 
 
 def flow(url, method='GET', body=b'', token=None):
+    """构造炸金花重放测试使用的独立 HTTP 流。"""
     result = http.HTTPFlow(
         connection.Client(peername=('127.0.0.1', 12345), sockname=('127.0.0.1', 8080)),
         connection.Server(address=('node-0.service.invalid', 443)), live=True)
@@ -27,12 +28,14 @@ CHANNEL = f'zhajinhua>{ROOM}#{SELF}'
 
 
 def socket_flow():
+    """构造带空 WebSocket 状态的炸金花重放连接。"""
     result = flow('https://node-4.service.invalid/v2/centrifugo/connection/websocket')
     result.websocket = websocket.WebSocketData()
     return result
 
 
 def message(result, frames, from_client=True, injected=False):
+    """将指定方向及注入标记的 JSON 文本帧追加到连接。"""
     content = '\n'.join(json.dumps(frame) for frame in frames).encode()
     msg = websocket.WebSocketMessage(Opcode.TEXT, from_client, content, injected=injected)
     result.websocket.messages.append(msg)
@@ -40,7 +43,9 @@ def message(result, frames, from_client=True, injected=False):
 
 
 class ZhajinhuaReplayTests(unittest.TestCase):
+    """验证炸金花房间回放、订阅确认与其他流量保留。"""
     def setUp(self):
+        """创建独立回放器与连接，并完成本用例的房间订阅准备。"""
         self.replay = ZhajinhuaReplay()
         self.socket = socket_flow()
         message(self.socket, [{'id': 1, 'method': 1, 'params': {'channel': CHANNEL}}])
@@ -49,6 +54,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
         self.replay.websocket_message(self.socket)
 
     def test_操作奖励必须绑定房间且释放后重置(self):
+        """验证操作奖励必须绑定房间且释放后重置。"""
         with self.assertRaises(ValueError):
             self.replay.set_operation_reward(ROOM, True)
         with patch('zhajinhua_replay.ctx.master', create=True):
@@ -69,6 +75,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
             self.replay.set_operation_reward(ROOM, True)
 
     def test_发布必须等待订阅成功确认(self):
+        """验证发布必须等待订阅成功确认。"""
         pending_socket = socket_flow()
         message(pending_socket, [{'id': 60, 'method': 1, 'params': {'channel': f'zhajinhua>{OTHER}#{SELF}'}}])
         self.replay.websocket_message(pending_socket)
@@ -87,6 +94,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
             self.assertEqual(master.commands.call.call_args.args[1], pending_socket)
 
     def test_服务端取消订阅移除已确认频道且保留原帧(self):
+        """验证服务端取消订阅移除已确认频道且保留原帧。"""
         unsubscribe = {'result': {'type': 3, 'channel': CHANNEL, 'data': {'code': 2500}}}
         msg = message(self.socket, [unsubscribe], False)
         self.replay.websocket_message(self.socket)
@@ -96,6 +104,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
             self.replay.publish(ROOM, {})
 
     def test_客户端取消订阅和连接关闭清除待确认状态(self):
+        """验证客户端取消订阅和连接关闭清除待确认状态。"""
         message(self.socket, [{'id': 62, 'method': 1, 'params': {'channel': CHANNEL}},
                               {'id': 63, 'method': 2, 'params': {'channel': CHANNEL}}])
         self.replay.websocket_message(self.socket)
@@ -109,6 +118,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
         self.assertNotIn(self.socket.id, self.replay.pending_subscriptions)
 
     def test_发布面向浏览器且必须匹配活动房间(self):
+        """验证发布面向浏览器且必须匹配活动房间。"""
         payload = {'stream': 'zhajinhua', 'queue': [{'event': 'room_status'}]}
         with patch('zhajinhua_replay.ctx.master', create=True) as master:
             self.replay.publish(ROOM, payload)
@@ -125,6 +135,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
                 self.replay.publish(ROOM, payload)
 
     def test_混合批次保留心跳与无关调用且仅隔离回放房间(self):
+        """验证混合批次保留心跳与无关调用且仅隔离回放房间。"""
         self.replay.room_id = ROOM
         ping = {'id': 2, 'method': 7}
         unrelated = {'id': 3, 'method': 9, 'params': {'data': {
@@ -145,6 +156,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
             self.assertEqual(master.commands.call.call_count, 2)
 
     def test_推送过滤保留远程调用与已注入消息(self):
+        """验证推送过滤保留远程调用与已注入消息。"""
         self.replay.room_id = ROOM
         publication = {'result': {'channel': CHANNEL}}
         reply = {'id': 10, 'result': {'data': {}}}
@@ -156,6 +168,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
         self.assertFalse(injected.dropped)
 
     def test_资料按归属匹配且释放后清除夹具(self):
+        """验证资料按归属匹配且释放后清除夹具。"""
         self.replay.room_id = ROOM
         self.replay.self_id = SELF
         self.assertIsNone(self.replay.http_fixture(f'/v10/profile/{OTHER}'))
@@ -166,6 +179,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
         self.assertIsNone(self.replay.self_id)
 
     def test_推送过滤保留其他数据流取消订阅与损坏结果(self):
+        """验证推送过滤保留其他数据流取消订阅与损坏结果。"""
         self.replay.room_id = ROOM
         unrelated = {'result': {'channel': f'chat>{ROOM}#{SELF}', 'type': 0}}
         unsubscribe = {'result': {'channel': CHANNEL, 'type': 3}}
@@ -176,6 +190,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
                          [unrelated, unsubscribe, malformed])
 
     def test_取消订阅与已关闭连接不能收到回放(self):
+        """验证取消订阅与已关闭连接不能收到回放。"""
         message(self.socket, [{'id': 2, 'method': 2, 'params': {'channel': CHANNEL}}])
         self.replay.websocket_message(self.socket)
         with self.assertRaises(ValueError):
@@ -184,6 +199,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
         self.assertNotIn(self.socket.id, self.replay.subscriptions)
 
     def test_连接池仅在激活后隔离所属房间且释放后恢复流量(self):
+        """验证连接池仅在激活后隔离所属房间且释放后恢复流量。"""
         unregistered = socket_flow()
         seat = {'id': 40, 'method': 9, 'params': {'data': {
             'method': 'PUT', 'path': f'/v10/zhajinhua/room/{ROOM}/enter_and_sit'}}}
@@ -208,6 +224,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
             self.assertEqual(master.commands.call.call_count, 1)
 
     def test_活动回放不能被其他已订阅房间替换(self):
+        """验证活动回放不能被其他已订阅房间替换。"""
         with patch('zhajinhua_replay.ctx.master', create=True):
             self.replay.publish(ROOM, {})
         message(self.socket, [{'id': 50, 'method': 1, 'params': {
@@ -218,6 +235,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
         self.assertEqual(self.replay.room_id, ROOM)
 
     def test_实时通信响应保留聊天室字段且不匹配其他房间(self):
+        """验证实时通信响应保留聊天室字段且不匹配其他房间。"""
         with patch('zhajinhua_replay.ctx.master', create=True):
             self.replay.publish(ROOM, {})
         for action in ('join', 'quit'):
@@ -230,6 +248,7 @@ class ZhajinhuaReplayTests(unittest.TestCase):
         self.assertFalse(self.replay.is_replay_rpc(frame))
 
     def test_切换场景释放回放且控制必须认证(self):
+        """验证切换场景释放回放且控制必须认证。"""
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             addon = ZhajinhuaVisualProxy()
         addon.scenario = 'visual-stable'

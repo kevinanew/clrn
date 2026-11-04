@@ -15,6 +15,7 @@ SELF = 'visual-user'
 
 
 def flow(path, method='GET', body=None, token=None, host='node-0.service.invalid'):
+    """构造带可选控制令牌及 JSON 正文的战绩测试 HTTP 流。"""
     result = http.HTTPFlow(
         connection.Client(peername=('127.0.0.1', 12345), sockname=('127.0.0.1', 8080)),
         connection.Server(address=(host, 443)), live=True)
@@ -27,7 +28,9 @@ def flow(path, method='GET', body=None, token=None, host='node-0.service.invalid
 
 
 class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
+    """验证战绩夹具的新旧版本、分页、编辑和响应边界。"""
     def setUp(self):
+        """为每个用例配置隔离来源环境、控制令牌和独立代理状态。"""
         self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.proxy = GameRecordProxy()
@@ -36,15 +39,18 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.proxy.mode = 'list'
 
     async def request(self, path, method='GET', body=None, **kwargs):
+        """将战绩请求交给当前代理，并等待异步处理完成。"""
         request = flow(path, method, body, **kwargs)
         await self.proxy.request(request)
         return request
 
     def result(self, flow):
+        """从战绩响应正文提取业务结果供测试断言。"""
         return json.loads(flow.response.content)['result']
 
     def test_房间名称遵守界面创建限制(self):
         # 建房按 UTF-16 字符单元计数：ASCII 为 1，其他为 2，上限 20。
+        """验证房间名称遵守界面创建限制。"""
         for record in all_records():
             units = record['name'].encode('utf-16-le')
             length = sum(1 if units[i] < 128 and units[i + 1] == 0 else 2
@@ -54,6 +60,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
                                   if record['play_session_id'] == PREFIX + 'large')), 20)
 
     async def test_列表包含未开局且无结算的记录(self):
+        """验证列表包含未开局且无结算的记录。"""
         room_id = PREFIX + 'empty'
         legacy = self.result(await self.request(f'/v10/texas_holdem/user/{SELF}/game_records'))
         self.assertIn(room_id, [item['room_id'] for item in legacy['items']])
@@ -69,6 +76,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(count['results'][0]['game_amount'], 0)
 
     async def test_其他账号主机与方法必须透传(self):
+        """验证其他账号主机与方法必须透传。"""
         path = f'/v10/texas_holdem/user/{SELF}/game_records'
         self.assertIsNotNone((await self.request(path)).response)
         for host in ('node-9.service.invalid', 'node-17.service.invalid'):
@@ -80,6 +88,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone((await self.request(path)).response)
 
     async def test_混合未知房间与资料请求必须透传(self):
+        """验证混合未知房间与资料请求必须透传。"""
         self.assertIsNone((await self.request('/v1/room', 'PUT',
                                               {'rooms': [PREFIX + 'private', 'real-room']})).response)
         self.assertIsNone((await self.request('/v10/profile/users', 'PUT',
@@ -87,6 +96,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNotNone((await self.request('/v10/clubs', 'PUT', {'club_ids': [CLUB]})).response)
 
     async def test_认证控制先验证再改变状态(self):
+        """验证认证控制先验证再改变状态。"""
         control = {'userId': SELF, 'version': 'v2', 'mode': 'empty'}
         denied = await self.request('/records/configure', 'POST', control, host='test-mitmproxy.invalid')
         self.assertEqual(denied.response.status_code, 403)
@@ -98,6 +108,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(self.proxy.mode, 'list')
 
     async def test_分页记录不能遗漏或重复(self):
+        """验证分页记录不能遗漏或重复。"""
         self.proxy.mode = 'paged'
         path = f'/v10/texas_holdem/user/{SELF}/game_records'
         first = self.result(await self.request(path))
@@ -120,6 +131,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(remaining, [room_id for room_id in ids if room_id != PREFIX + 'club'])
 
     async def test_加载闸门释放无需固定等待(self):
+        """验证加载闸门释放无需固定等待。"""
         self.proxy.hold.clear()
         task = asyncio.create_task(self.request(f'/v10/texas_holdem/user/{SELF}/game_records'))
         await asyncio.sleep(0)
@@ -128,6 +140,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await task).response.status_code, 200)
 
     async def test_删除失败保留记录且成功后移除(self):
+        """验证删除失败保留记录且成功后移除。"""
         path = f'/v1/game_log/user/{SELF}/room/{PREFIX}club'
         self.proxy.mode = 'delete-error'
         rejected = await self.request(path, 'DELETE')
@@ -141,6 +154,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone((await self.request(path.replace(SELF, 'another-user'), 'DELETE')).response)
 
     async def test_新版列表与详情故障保持独立(self):
+        """验证新版列表与详情故障保持独立。"""
         self.proxy.mode = 'list-error'
         path = f'/v11/game_log/{SELF}/play_session_record/'
         self.assertEqual((await self.request(path + 'recent', 'PUT', {'user_id': SELF})).response.status_code, 503)
@@ -152,6 +166,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone((await self.request(path + 'real-session')).response)
 
     async def test_当前资料与版本保留真实字段及错误(self):
+        """验证当前资料与版本保留真实字段及错误。"""
         request = await self.request('/v10/profile/users', 'PUT', {'users': [SELF, PLAYER]})
         self.assertIsNone(request.response)
         self.assertEqual(request.request.json()['users'], [SELF])

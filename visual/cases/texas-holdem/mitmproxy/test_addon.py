@@ -16,7 +16,9 @@ from test_network_faults import source_environment
 
 
 class TexasAddonTests(unittest.TestCase):
+    """验证德州视觉插件的场景认证、真实响应覆盖及接口边界。"""
     def setUp(self):
+        """为每个用例配置隔离来源环境、控制令牌和独立代理状态。"""
         self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.addon = TexasVisualProxy()
@@ -25,12 +27,14 @@ class TexasAddonTests(unittest.TestCase):
         self.addon.texas.self_id = SELF
 
     def request(self, path, method='GET', body=None, host='node-0.service.invalid'):
+        """构造指定来源和方法的请求并交给德州插件处理。"""
         request = flow(f'https://{host}{path}', method,
                        b'' if body is None else json.dumps(body).encode())
         self.addon.request(request)
         return request
 
     def test_回放绑定实际订阅房间而不依赖固定节点(self):
+        """验证回放绑定实际订阅房间而不依赖固定节点。"""
         for host in ('candidate-0', 'candidate-1', 'candidate-2'):
             with self.subTest(host=host), patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
                 addon = TexasVisualProxy()
@@ -50,6 +54,7 @@ class TexasAddonTests(unittest.TestCase):
                         addon.texas.publish(OTHER, {})
 
     def test_只读夹具不掩盖写入或其他用户(self):
+        """验证只读夹具不掩盖写入或其他用户。"""
         player = PLAYER_IDS[0]
         for path in (f'/v10/profile/{player}', f'/v10/wallet/{player}/currency/coin',
                      f'/v1/texas_statistics/player/{player}/rounds/100'):
@@ -73,6 +78,7 @@ class TexasAddonTests(unittest.TestCase):
             self.assertIsNone(self.request(path).response)
 
     def test_屏蔽夹具只匹配回放玩家与已知方法(self):
+        """验证屏蔽夹具只匹配回放玩家与已知方法。"""
         path = '/v1/hall_matching/blacklist'
         for method in ('POST', 'DELETE'):
             self.assertIsNotNone(self.request(path, method, {'black_user_id': PLAYER_IDS[0]}).response)
@@ -82,6 +88,7 @@ class TexasAddonTests(unittest.TestCase):
             self.assertIsNone(self.request(path, method, {'black_user_id': PLAYER_IDS[0]}).response)
 
     def test_其他环境来源与关闭场景始终透传(self):
+        """验证其他环境来源与关闭场景始终透传。"""
         paths = ('/public/v13/metadata/servers', '/node/v1/status',
                  f'/v10/profile/{PLAYER_IDS[0]}')
         for path in paths:
@@ -92,6 +99,7 @@ class TexasAddonTests(unittest.TestCase):
             self.assertIsNone(self.request(path).response)
 
     def test_损坏或未认证控制不能改变回放(self):
+        """验证损坏或未认证控制不能改变回放。"""
         for body in (b'[]', b'null', b'{', b'{}', b'{"scenario":"club-failure"}'):
             request = flow('http://test-mitmproxy.invalid/scenario', 'POST', body, 'test-token')
             self.addon.request(request)
@@ -103,6 +111,7 @@ class TexasAddonTests(unittest.TestCase):
         self.assertEqual(self.addon.texas.room_id, ROOM)
 
     def test_新版战绩控制必须认证且可释放(self):
+        """验证新版战绩控制必须认证且可释放。"""
         path = '/public/v11/game_log/available.json'
         unauthorized = flow('http://test-mitmproxy.invalid/texas/records', 'POST', b'{"empty":true}')
         self.addon.request(unauthorized)
@@ -129,7 +138,9 @@ class TexasAddonTests(unittest.TestCase):
 
 
 class CombinedSceneTests(unittest.IsolatedAsyncioTestCase):
+    """验证共用夹具与德州专用插件组合后的场景隔离。"""
     async def test_共用闸门优先生效且释放后仍隔离写入(self):
+        """验证共用闸门优先生效且释放后仍隔离写入。"""
         self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             common, game = ScenarioFixtures(), TexasVisualProxy()
@@ -142,12 +153,14 @@ class CombinedSceneTests(unittest.IsolatedAsyncioTestCase):
         creation.response = http.Response.make(200, json.dumps({'ok': True, 'result': {'room_id': ROOM}}).encode())
         common.response(creation)
         async def select(phase):
+            """通过共用控制入口选择当前房间的自动补充带入阶段。"""
             command = flow('http://fixtures-mitmproxy.invalid/fixtures/select', 'POST', json.dumps({
                 'name': 'auto-rebuy', 'roomId': ROOM, 'phase': phase}).encode(), 'test-token')
             await common.request(command)
             game.request(command)
             self.assertEqual(command.response.status_code, 200)
         async def request():
+            """依次交给共用及德州插件处理自动补充带入设置请求。"""
             target = flow(f'https://node-0.service.invalid/v10/texas_holdem/room/{ROOM}/user_settings/enable_auto_rebuy', 'PUT')
             await common.request(target)
             game.request(target)

@@ -28,10 +28,12 @@ PHASES['slot'] |= {'coin', 'currency_diamond', 'energy', 'exhausted'}
 
 
 def data(name):
+    """读取指定名称的共用场景 JSON 数据。"""
     return json.loads((DATA / f'{name}.json').read_text())
 
 
 def respond(flow, body, status=200):
+    """向代理流写入 JSON 响应及必要跨域头。"""
     flow.response = http.Response.make(status, json.dumps(body).encode(), {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': flow.request.headers.get('Origin', '*'),
@@ -40,10 +42,12 @@ def respond(flow, body, status=200):
 
 
 def result(flow, body):
+    """将夹具内容包装成成功业务结果并发送。"""
     respond(flow, {'ok': True, 'result': body})
 
 
 def clubs():
+    """构造用于列表交互验证的固定俱乐部资料。"""
     return [{'id': f'00000000-0000-4000-8000-00000000010{i}', 'club_no': 100 + i,
              'name': f'TestClub{i}', 'owner_id': 'visual-owner', 'member_count': 5,
              'created_at': '2026-01-01T00:00:00Z', 'admin_ids': [], 'game_type': 'texas_holdem'}
@@ -51,6 +55,7 @@ def clubs():
 
 
 def applications(start, count):
+    """从指定偏移生成固定数量的带入申请记录。"""
     return [{'application_id': f'interaction-{i}', 'status': 'approve', 'amount': 100,
              'user_id': 'interaction-player', 'created_at': '2026-09-01T00:00:00Z',
              'auditor_id': 'interaction-auditor', 'nickname': f'滚动玩家{i}',
@@ -71,7 +76,9 @@ def parse_websocket_command(line):
 
 
 class ScenarioFixtures:
+    """管理分页、商城、钱包与动画场景的可控 HTTP 和 WebSocket 夹具。"""
     def __init__(self):
+        """初始化token、name、phase、visual、user_id等状态。"""
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.name = 'none'
         self.phase = 'ready'
@@ -87,10 +94,12 @@ class ScenarioFixtures:
         self.gate.set()
 
     def status(self):
+        """返回场景请求、挂起、旋转与分页游标等观测状态。"""
         return {'requests': self.requests, 'held': self.held, 'spins': self.spins,
                 'energyReads': self.energy_reads, 'observed': self.observed, 'cursors': self.cursors}
 
     def control(self, flow):
+        """校验令牌并执行夹具选择、释放与状态控制命令。"""
         if flow.request.headers.get('X-E2E-Control-Token') != self.token:
             respond(flow, {'error': 'Forbidden'}, 403)
             return
@@ -137,6 +146,7 @@ class ScenarioFixtures:
         respond(flow, self.status())
 
     async def wait(self):
+        """累计挂起请求数并等待当前场景闸门放行。"""
         self.held += 1
         gate = self.gate
         await gate.wait()
@@ -168,6 +178,7 @@ class ScenarioFixtures:
         return None
 
     async def request(self, flow):
+        """按当前夹具场景、来源及请求方法路由或挂起业务读取。"""
         if flow.request.host == CONTROL_HOST:
             self.control(flow)
             return
@@ -264,6 +275,7 @@ class ScenarioFixtures:
             result(flow, {'auto_rebuy': path.endswith('/enable_auto_rebuy')})
 
     def response(self, flow):
+        """在限定真实响应中稳定展示字段，保留未命中的业务数据。"""
         if not is_staging(flow.request.host) or not flow.response or flow.response.status_code != 200:
             return
         path = urlsplit(flow.request.path).path
@@ -291,6 +303,7 @@ class ScenarioFixtures:
             return
         if self.name == 'daily-bonus' and self.user_id and flow.request.method == 'PUT' and path == f'/v10/wallet/{self.user_id}':
             def change(wallet):
+                """校验钱包币种列表后按当前视觉场景修改指定币种展示余额。"""
                 currencies = wallet.get('currencies')
                 if not isinstance(currencies, list):
                     raise ValueError('Missing currencies')
@@ -301,6 +314,7 @@ class ScenarioFixtures:
             patch_result(flow, change)
 
     def websocket_message(self, flow):
+        """处理当前场景的 WebSocket 读取与支付隔离，保留无关消息。"""
         if ((self.name not in ('slot', 'matching', 'mall') and not self.visual)
                 or not is_staging(flow.request.host) or not flow.websocket):
             return
@@ -340,6 +354,7 @@ class ScenarioFixtures:
                                      '\n'.join(json.dumps(reply) for reply in replies).encode(), True)
 
     def slot_reply(self, path):
+        """记录老虎机读取并按用户、路径返回当前场景结果。"""
         self.requests += 1
         self.observed.append('9:' + re.sub(r'user/[^/]+', 'user/current', path))
         if not self.user_id or not path.startswith(f'/v2/slot_machine/user/{self.user_id}/'):
@@ -352,6 +367,7 @@ class ScenarioFixtures:
         return self.slot_result(spin)
 
     def slot_result(self, spin):
+        """按旋转与能量阶段构造老虎机能量、工厂和奖励数据。"""
         energy = {'user_energy': {'total_energy': 0}, 'energy_factory': {
             'capacity': 50, 'quantity': 50, 'remaining_production_time': '00:00:00'}}
         if spin and self.phase == 'exhausted':

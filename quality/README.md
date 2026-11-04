@@ -10,6 +10,7 @@ CI 的 `lint.yml` 在 push、PR 和手动触发时使用相同 pre-commit 入口
 | --- | --- |
 | `npm run lint:js` | ESLint 10.12.0：complexity classic > 10、max-depth > 3、TS 网络响应入口，以及全部既有规则；警告同样失败 |
 | `npm run lint:python` | Ruff 0.15.12：原有规则及 C901 > 10；独立强制 C901 扫描不接受 noqa、配置忽略或阈值放宽 |
+| `npm run lint:docs` | 全仓逐实现 TSDoc、Python 公私有 docstring、lambda 与 Shell 用途说明；缺文档、空摘要、解析及工具异常均失败 |
 | `npm run lint:architecture` | dependency-cruiser 18.7.0：循环（包含类型导入）、直接或间接越层、本地导入无法解析 |
 | `npm run lint:duplication` | jscpd 5.4.2：至少 5 行、70 词元、mild 模式；不使用总百分比容忍新增重复 |
 | `npm run --silent quality:report` | 输出全部实测诊断、依赖图和无源码片段的重复位置 JSON；用于测量，不代表门禁通过 |
@@ -99,3 +100,43 @@ Ruff C901 不能通过 noqa 隐藏。改变阈值、扫描范围、工具配置�
 
 `node --test scripts/quality.test.mjs` 使用临时负例验证复杂度、嵌套、循环、间接越层、无法解析导入、
 多种 Mock 入口、规则禁用、清单扩张、新增重复和历史第三份副本；同时验证合法代理单测和数据/文字不误报。
+
+## 函数用途文档（#110）
+
+`npm run lint:docs` 是只读全仓入口，已加入 `npm run lint`，由原有 pre-commit 和 CI 链路调用。
+所有 JS/TS 扩展名均逐实现检查普通、异步、生成器、方法、构造器、访问器、箭头与嵌套回调；
+无实现体的声明不要求实现摘要。每个实现需要自己的紧邻文档，不能向外层函数或调用表达式借用。
+所有真实 TSDoc 块均使用锁定的 `@microsoft/tsdoc` 0.17.1 参考解析器校验；
+空白、标点、仅标签、链接或示例不能代替用途正文。规则同时接入 ESLint 10.12.0，
+独立文档入口不接受行内禁用，也不读取历史豁免。
+
+Ruff 0.15.12 启用 D100–D107 与 D419；独立扫描使用 isolated、ignore-noqa，
+AST 检查补齐 Ruff 不要求的具名私有实现，并通过 tokenize 识别 lambda 附近的真实用途注释。
+Shell 检查入口及具名函数前的用途注释。当前没有 Swift，未来发现 Swift 会明确要求接入检查，不能静默漏扫。
+Python 补充工具固定使用 3.12.12；语法错误、工具缺失和空扫描都导致非零退出。
+
+在 `4e15d4d` 源码上重新测量的结果如下，详细计数见 [documentation-measurement.json](documentation-measurement.json)。
+
+| 检查 | 修改前有效文件 | 修改前诊断 | 修改后有效文件 | 修改后诊断 |
+| --- | --- | --- | --- | --- |
+| 逐实现 JS/TS | 327 | 1953 | 331 | 0 |
+| Ruff D100–D107/D419 | 46 | 389 | 49 | 0 |
+| Python AST 存在性 | 46 | 397 | 49 | 0 |
+| Python lambda 用途注释 | 46 | 6 | 49 | 0 |
+| Shell 入口及函数 | 3 | 5 | 3 | 0 |
+
+Ruff 的 389 项包含模块、类、方法与函数；AST 的 397 项与其重叠，额外覆盖 8 个私有实现，不能相加或称为缺失函数数。
+新增说明保留有效旧文档，未改动业务签名、分支、返回、异常和测试断言。
+hook 验收中已有 Python/Shell 负例仅补用途说明，使其仍分别到达原来的 F821/SC2086 断言。
+少数接近 400 行的 JS/TS 文件压缩文档和空白排版，长度规则与全部手写目录继续保留。
+
+ESLint 历史锚点允许解析器识别的行内 TSDoc 跨行后还原原始源码行；规则、诊断、原始行哈希及次数仍按既有清单匹配。
+`baseline.json` 只刷新行列坐标。jscpd mild 模式将注释纳入内容指纹，因此重复检查先在临时目录构造文档投影：
+以最后修改原生重复基线的固定 Git 提交为参照，只移除新增 TSDoc 与真正的 Python 首语句 docstring，
+保留普通注释和全部代码词元。代码词元与普通注释完全相同时复用原排版；字符串和正则中的注释标记不受影响。
+所有手写 JS/TS/Python 文件仍交给原生 jscpd 检查，阈值、mild 模式、原生指纹与次数基线均不改。
+投影报告的行号属于临时扫描文本；源码、基线与工作区均不会被检查命令写回。
+
+`node --test scripts/documentation.test.mjs` 包含有效中英文说明、各实现语法、空摘要、标签、链接、示例、
+非法 TSDoc、匿名回调借用说明、行内禁用、空扫描和工具缺失的负例，并调用 Python 规则测试验证私有方法、
+lambda、Shell、语法失败与文档投影。测试中的业务代码和普通字符串必须保留；既有原生 jscpd 负例继续验证第三份副本失败。

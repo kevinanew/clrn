@@ -56,8 +56,10 @@ export async function loadDeploymentRelease(options) {
     throw new Error(`读取 CLRN H5 Release 失败：HTTP ${response.status}`);
   }
   const release = await response.json();
-  const archive = release.assets?.find(candidate => candidate.name === artifact.name);
-  const information = release.assets?.find(candidate => candidate.name === 'build-info.json');
+  const archive = release.assets?.find(/** 查找满足以下条件的首个条目：`candidate.name === artifact.name`。
+ * @param candidate - 当前操作使用的 candidate。 */ candidate => candidate.name === artifact.name);
+  const information = release.assets?.find(/** 查找满足以下条件的首个条目：`candidate.name === 'build-info.json'`。
+ * @param candidate - 当前操作使用的 candidate。 */ candidate => candidate.name === 'build-info.json');
   if (release.tag_name !== artifact.release_tag || release.draft || !release.prerelease ||
     !release.body?.includes('<!-- laiwan-web-staging-package -->') ||
     !release.body.includes(`应用提交：${commit}`) ||
@@ -139,5 +141,6 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch(error => { console.error(error.message); process.exitCode = 1; });
+  main().catch(/** 输出部署校验的安全错误信息并设置失败退出码。
+ * @param error - 当前操作抛出的错误。 */ error => { console.error(error.message); process.exitCode = 1; });
 }

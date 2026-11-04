@@ -3,19 +3,20 @@ import { formInput } from '../_shared/form';
 import { unique } from '../_shared/page';
 import { clickAfterSignInNotices } from '../_shared/sign-in-notices';
 
-test('PRIVATE-004：九位数字房号才启用加入，字母输入被拒绝', async ({ page, signedInAccount }) => {
+test('PRIVATE-004：九位数字房号才启用加入，字母输入被拒绝', /** 验证PRIVATE-004：九位数字房号才启用加入，字母输入被拒绝。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, signedInAccount }) => {
   expect(signedInAccount.userId).toBeTruthy();
   await clickAfterSignInNotices(page, 'private-room-tab');
   const number = await formInput(page, 'personal-room-smooth-pin-code-input');
   const join = await unique(page, 'join-game-button');
-  await test.step('空房号和八位房号禁用加入，九位启用', async () => {
+  await test.step('空房号和八位房号禁用加入，九位启用', /** 执行空房号和八位房号禁用加入，九位启用。 */ async () => {
     await expect(join).toHaveAttribute('aria-disabled', 'true');
     await number.fill('12345678');
     await expect(join).toHaveAttribute('aria-disabled', 'true');
     await number.fill('123456789');
     await expect(join).not.toHaveAttribute('aria-disabled', 'true');
   });
-  await test.step('真实按键清空，输入字母后仍为空且禁用加入', async () => {
+  await test.step('真实按键清空，输入字母后仍为空且禁用加入', /** 执行真实按键清空，输入字母后仍为空且禁用加入。 */ async () => {
     await number.press('ControlOrMeta+A');
     await number.press('Backspace');
     await expect(number).toHaveValue('');

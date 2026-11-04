@@ -24,7 +24,7 @@ async function click(page: Page, id: string): Promise<void> {
  */
 export async function captureGameplay(page: Page, scenario: VisualScenario,
   proxy: ZhajinhuaProxy, roomId: string): Promise<void> {
-  const self = await page.evaluate(() => JSON.parse(
+  const self = await page.evaluate(/** 在页面中读取`JSON.parse( localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(
     localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
   let index = 0;
   /**
@@ -35,9 +35,9 @@ export async function captureGameplay(page: Page, scenario: VisualScenario,
     expect(state).toBe(GAME_STATES[index++]);
     await capture(page, scenario, state);
   };
-  await expect.poll(async () => {
+  await expect.poll(/** 推进页面时钟并重放炸金花牌桌，直到状态恢复成功。 */ async () => {
     await page.clock.runFor(250);
-    return proxy.replay(roomId, restoreTable(self)).then(() => true, () => false);
+    return proxy.replay(roomId, restoreTable(self)).then(/** 将异步结果转换为`true`，供后续步骤使用。 */ () => true, /** 将异步结果转换为`false`，供后续步骤使用。 */ () => false);
   }, { timeout: 30_000, message: '拼三张本次新建房间应接受回放' }).toBe(true);
   await page.clock.runFor(3000);
   await expect(page.locator('[data-testid^="zhajinhua-player-container-"]:visible')).toHaveCount(5);

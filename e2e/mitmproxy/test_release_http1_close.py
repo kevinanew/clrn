@@ -11,7 +11,9 @@ from mitmproxy.proxy.layers.http._http1 import Http1Client
 
 
 class ReleaseHttp1CloseTests(unittest.TestCase):
+    """验证 HTTP/1 响应关闭策略不会提前丢失发布资源正文。"""
     def client(self):
+        """构造连接到发布资源来源的 HTTP/1 客户端状态机。"""
         context = Context(connection.Client(peername=('192.0.2.1', 10001),
                                             sockname=('192.0.2.2', 10002)), options.Options())
         context.server.address = ('release.invalid', 18080)
@@ -24,6 +26,7 @@ class ReleaseHttp1CloseTests(unittest.TestCase):
         return client, context.server
 
     def test_完整正文后即关闭不等FIN且keepalive对照仍可复用(self):
+        """验证完整正文后即关闭不等FIN且keepalive对照仍可复用。"""
         for header in (b'close', b'keep-alive'):
             with self.subTest(connection=header):
                 client, server = self.client()
@@ -40,6 +43,7 @@ class ReleaseHttp1CloseTests(unittest.TestCase):
                     self.assertIs(closed[0].connection, server)
 
     def test_提前断开不能因ConnectionClose而当作完整正文(self):
+        """验证提前断开不能因ConnectionClose而当作完整正文。"""
         client, server = self.client()
         list(client.handle_event(events.DataReceived(server,
             b'HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nabc')))

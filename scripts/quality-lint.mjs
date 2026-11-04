@@ -25,18 +25,23 @@ export function runJSON(command, args) {
  * @returns 所有未被 ESLint 抑制的诊断。
  */
 export async function javascriptFindings() {
-  const files = sourceFiles().filter(file => /\.[cm]?[jt]sx?$/.test(file));
+  const files = sourceFiles().filter(/** 仅保留满足以下条件的条目：`/\.[cm]?[jt]sx?$/.test(file)`。
+ * @param file - 当前源码或资源路径。 */ file => /\.[cm]?[jt]sx?$/.test(file));
   if (!files.length) throw new Error('ESLint 没有扫描到源码。');
   const results = await new ESLint({ cwd: repository }).lintFiles(files);
   const directiveChecker = new Linter();
-  const findings = results.flatMap(result => {
+  const findings = results.flatMap(/** 合并真实 ESLint 诊断和不可被行内禁用的指令检查结果。
+ * @param result - 当前操作使用的 result。 */ result => {
     // 独立检查禁止的指令，防止 eslint-disable 把检查它自己的规则也关闭。
     const directives = directiveChecker.verify(result.source ?? readFileSync(result.filePath, 'utf8'), [{
       languageOptions: { parser: tseslint.parser }, linterOptions: { noInlineConfig: true },
       plugins: { quality }, rules: { 'quality/no-quality-disable': 'error' },
-    }]).filter(item => item.ruleId === 'quality/no-quality-disable');
-    const messages = new Map([...result.messages, ...directives].map(item => [JSON.stringify(item), item]));
-    return [...messages.values()].map(message => ({
+    }]).filter(/** 仅保留满足以下条件的条目：`item.ruleId === 'quality/no-quality-disable'`。
+ * @param item - 当前遍历的条目。 */ item => item.ruleId === 'quality/no-quality-disable');
+    const messages = new Map([...result.messages, ...directives].map(/** 将当前条目映射为`[JSON.stringify(item), item]`。
+ * @param item - 当前遍历的条目。 */ item => [JSON.stringify(item), item]));
+    return [...messages.values()].map(/** 将 ESLint 消息转换为仓库相对路径的统一诊断结构。
+ * @param message - 当前操作使用的 message。 */ message => ({
       file: relative(repository, result.filePath), rule: message.ruleId ?? 'parse-error',
       line: message.line ?? 1, column: message.column ?? 1, message: message.message,
     }));
@@ -49,7 +54,8 @@ export async function javascriptFindings() {
  * @returns 去重后的全部 Python 诊断。
  */
 export function pythonFindings() {
-  const files = sourceFiles().filter(file => file.endsWith('.py'));
+  const files = sourceFiles().filter(/** 仅保留满足以下条件的条目：`file.endsWith('.py')`。
+ * @param file - 当前源码或资源路径。 */ file => file.endsWith('.py'));
   if (!files.length) throw new Error('Ruff 没有扫描到源码。');
   const args = ['--from', 'ruff==0.15.12', 'ruff', 'check', '--no-cache', '--output-format', 'json'];
   const regular = runJSON('uvx', [...args, ...files]);

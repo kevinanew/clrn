@@ -15,7 +15,8 @@ const test = accountTest.extend<{ clubSearchProxy: Mitmproxy }>({
    * @param use - 将代理交给本例并等待测试结束。
    */
   clubSearchProxy: async ({}, use) => {
-    await withMitmproxy(async proxy => {
+    await withMitmproxy(/** 在代理有效期内向当前测试提供俱乐部搜索夹具。
+ * @param proxy - 当前隔离的代理控制器。 */ async proxy => {
       await use(proxy);
     });
   },
@@ -30,26 +31,29 @@ const test = accountTest.extend<{ clubSearchProxy: Mitmproxy }>({
   ignoreHTTPSErrors: true,
 });
 
-test('俱乐部搜索命中固定结果并显示对应卡片', async ({ page, signedInAccount, clubSearchProxy }) => {
+test('俱乐部搜索命中固定结果并显示对应卡片', /** 验证俱乐部搜索命中固定结果并显示对应卡片。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, signedInAccount, clubSearchProxy }) => {
   expect(signedInAccount.userId).toBeTruthy();
 
-  await test.step('从俱乐部菜单进入搜索页', async () => {
+  await test.step('从俱乐部菜单进入搜索页', /** 执行从俱乐部菜单进入搜索页。 */ async () => {
     await (await unique(page, 'club-tab')).click();
     await (await unique(page, 'show-more-button')).click();
     await (await unique(page, 'popup-content-container')).getByTestId('search-club-button').click();
     await expect(await unique(page, 'club-search-input')).toBeVisible();
   });
 
-  await test.step('提交关键字并核对两段查询和结果卡片', async () => {
+  await test.step('提交关键字并核对两段查询和结果卡片', /** 执行提交关键字并核对两段查询和结果卡片。 */ async () => {
     // 登录和进入俱乐部时可能读取其他俱乐部资料；进入搜索页后才启用定向夹具。
     await clubSearchProxy.inject('club-search-result');
-    const searchResponse = page.waitForResponse(response => {
+    const searchResponse = page.waitForResponse(/** 匹配GET `/v10/club/search` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ response => {
       const url = new URL(response.url());
       return response.request().method() === 'GET'
         && url.pathname === '/v10/club/search'
         && url.searchParams.get('keyword') === keyword;
     });
-    const detailsResponse = page.waitForResponse(response => {
+    const detailsResponse = page.waitForResponse(/** 匹配包含目标俱乐部 ID 的批量查询请求，避免误用其他列表响应。
+ * @param response - 当前收到的接口响应。 */ response => {
       const request = response.request();
       if (request.method() !== 'PUT' || new URL(response.url()).pathname !== '/v10/clubs') return false;
       try {

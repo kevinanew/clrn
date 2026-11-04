@@ -34,11 +34,15 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
     const arrows = page.locator('[data-testid^="seat-guide-"] img').locator('..');
     await expect(arrows).toHaveCount(9);
     // 先跨过循环的大部分区间，接近起点后逐毫秒定位，避免 16 毫秒步长错过基准相位。
-    await expect.poll(async () => {
-      const offsets = await arrows.evaluateAll(nodes => nodes.map(node =>
+    await expect.poll(/** 读取九个箭头的位移并推进时钟，等待箭头恢复基准位置。 */ async () => {
+      const offsets = await arrows.evaluateAll(/** 在浏览器中提取各箭头 CSS 变换的纵向偏移。
+ * @param nodes - 当前匹配的页面节点集合。 */ nodes => nodes.map(/** 将当前条目映射为`new DOMMatrixReadOnly(getComputedStyle(node).transform).m42`。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node =>
         new DOMMatrixReadOnly(getComputedStyle(node).transform).m42));
-      if (offsets.length === 9 && offsets.every(offset => Math.abs(offset) < 0.1)) return true;
-      await page.clock.runFor(offsets.length === 9 && offsets.every(offset => Math.abs(offset) < 0.5) ? 1 : 16);
+      if (offsets.length === 9 && offsets.every(/** 确认所有条目均满足：`Math.abs(offset) < 0.1`。
+ * @param offset - 当前操作使用的 offset。 */ offset => Math.abs(offset) < 0.1)) return true;
+      await page.clock.runFor(offsets.length === 9 && offsets.every(/** 确认所有条目均满足：`Math.abs(offset) < 0.5`。
+ * @param offset - 当前操作使用的 offset。 */ offset => Math.abs(offset) < 0.5) ? 1 : 16);
       return false;
     }, { timeout: 30_000, intervals: [0], message: '全部空座引导应回到真实循环起点' }).toBe(true);
     await captureTimeline(page, info, 'zhajinhua-seat-guides', arrows,
@@ -48,7 +52,7 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
   await exercisePopup(page, info, { name: `${game}-menu`, target: page.getByTestId('drawer-menu-item-exit'), clip,
     open: /** 点击真实入口。 */ () => press(page, 'menu-button'), close: /** 通过实际按钮或遮罩关闭。 */ () => closeTableMask(page, 'drawer-menu-item-exit') });
   for (const panel of menuPanels) {
-    await testStep(info, panel.name, async () => {
+    await testStep(info, panel.name, /** 打开并采样当前牌桌面板的进出动画。 */ async () => {
       await exercisePopup(page, info, { name: `${game}-${panel.name}`, target: page.getByTestId(panel.marker), clip,
         open: /** 打开菜单后点击对应入口。 */ async () => {
           await press(page, 'menu-button');
@@ -68,7 +72,7 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
       open: /** 点击真实入口；排行榜完成请求后再采样动画，避免网络快慢决定“加载中”画面。 */ async () => {
         await press(page, panel.open);
         if (panel.name === 'leaderboard') {
-          await expect.poll(async () => {
+          await expect.poll(/** 仅提交当前虚拟时刻的任务，等待排行榜数据或空态出现。 */ async () => {
             // 只提交当前时刻的异步任务，不推进弹窗动画的虚拟时间。
             await page.clock.runFor(0);
             return await page.getByTestId('public-leader-board-empty').isVisible()

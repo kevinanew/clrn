@@ -113,8 +113,10 @@ async function withRelease(fixture, operation) {
   }
 }
 
-test('下载指定 Release 的真实字节，核对构建信息并提供脚本、字体及版本入口', async () => {
-  await withRelease(releaseFixture(), async (options, requests) => {
+test('下载指定 Release 的真实字节，核对构建信息并提供脚本、字体及版本入口', /** 验证下载指定 Release 的真实字节，核对构建信息并提供脚本、字体及版本入口。 */ async () => {
+  await withRelease(releaseFixture(), /** 验证固定发布包的下载、摘要检查与本机资源服务行为。
+ * @param options - 当前操作使用的 options。
+ * @param requests - 当前操作使用的 requests。 */ async (options, requests) => {
     const prepared = await prepareReleaseWeb(options);
     assert.equal(prepared.commit, expectedCommit);
     assert.equal(requests.length, 3);
@@ -136,38 +138,46 @@ test('下载指定 Release 的真实字节，核对构建信息并提供脚本�
   });
 });
 
-test('拒绝实际字节损坏、构建信息错配和错误页面版本，不能回退 Staging', async () => {
+test('拒绝实际字节损坏、构建信息错配和错误页面版本，不能回退 Staging', /** 验证拒绝实际字节损坏、构建信息错配和错误页面版本，不能回退 Staging。 */ async () => {
   const corruptArchive = releaseFixture();
   corruptArchive.archive[10] ^= 1;
-  await withRelease(corruptArchive, async options => {
+  await withRelease(corruptArchive, /** 验证发布包摘要或大小不匹配时拒绝使用缓存。
+ * @param options - 当前操作使用的 options。 */ async options => {
     await assert.rejects(prepareReleaseWeb(options), /摘要或大小不匹配/);
   });
   const corruptInformation = releaseFixture();
   corruptInformation.information = Buffer.from(corruptInformation.information.toString().replace('staging', 'invalid'));
   corruptInformation.release.assets[1].digest = `sha256:${digest(corruptInformation.information)}`;
-  await withRelease(corruptInformation, async options => {
+  await withRelease(corruptInformation, /** 验证缺少构建信息的发布包被拒绝。
+ * @param options - 当前操作使用的 options。 */ async options => {
     await assert.rejects(prepareReleaseWeb(options), /build-info.json/);
   });
-  await withRelease(releaseFixture({ pageCommit: 'b'.repeat(40) }), async options => {
+  await withRelease(releaseFixture({ pageCommit: 'b'.repeat(40) }), /** 验证入口版本与构建信息不一致时终止准备。
+ * @param options - 当前操作使用的 options。 */ async options => {
     await assert.rejects(prepareReleaseWeb(options), /入口应用版本不匹配/);
   });
-  await withRelease(releaseFixture(), async (options, requests) => {
+  await withRelease(releaseFixture(), /** 验证指定应用提交不匹配时停止下载并拒绝发布包。
+ * @param options - 当前操作使用的 options。
+ * @param requests - 当前操作使用的 requests。 */ async (options, requests) => {
     await assert.rejects(prepareReleaseWeb({ ...options, expectedCommit: 'b'.repeat(40) }), /指定应用提交/);
     assert.equal(requests.length, 1);
   });
 });
 
-test('在写入站点目录前拒绝路径越界和符号链接', async () => {
+test('在写入站点目录前拒绝路径越界和符号链接', /** 验证在写入站点目录前拒绝路径越界和符号链接。 */ async () => {
   for (const extra of [{ name: '../outside' }, { name: '/tmp/outside' }, { name: 'linked', link: '/tmp' }]) {
-    await withRelease(releaseFixture({ extra }), async options => {
+    await withRelease(releaseFixture({ extra }), /** 验证发布包中的非法路径或文件类型被拒绝。
+ * @param options - 当前操作使用的 options。 */ async options => {
       await assert.rejects(prepareReleaseWeb(options), /不允许的路径或文件类型/);
     });
   }
 });
 
-test('两个版本同时启动时各自提供固定包，后来的版本不覆盖前者', async () => {
-  await withRelease(releaseFixture(), async firstOptions => {
-    await withRelease(releaseFixture({ commit: 'b'.repeat(40) }), async secondOptions => {
+test('两个版本同时启动时各自提供固定包，后来的版本不覆盖前者', /** 验证两个版本同时启动时各自提供固定包，后来的版本不覆盖前者。 */ async () => {
+  await withRelease(releaseFixture(), /** 同时准备两个不同提交的发布包，验证缓存与服务相互隔离。
+ * @param firstOptions - 当前操作使用的 firstOptions。 */ async firstOptions => {
+    await withRelease(releaseFixture({ commit: 'b'.repeat(40) }), /** 启动两个提交对应的资源服务并核对各自内容。
+ * @param secondOptions - 当前操作使用的 secondOptions。 */ async secondOptions => {
       const first = await prepareReleaseWeb(firstOptions);
       const second = await prepareReleaseWeb(secondOptions);
       const firstServer = await startReleaseWebServer(first.webRoot);
@@ -184,8 +194,9 @@ test('两个版本同时启动时各自提供固定包，后来的版本不覆�
   });
 });
 
-test('完整测试命令继承同一入口，失败退出码和取消均会关闭服务器', async () => {
-  await withRelease(releaseFixture(), async options => {
+test('完整测试命令继承同一入口，失败退出码和取消均会关闭服务器', /** 验证完整测试命令继承同一入口，失败退出码和取消均会关闭服务器。 */ async () => {
+  await withRelease(releaseFixture(), /** 使用已校验的发布包启动命令，验证版本环境与服务生命周期。
+ * @param options - 当前操作使用的 options。 */ async options => {
     const prepared = await prepareReleaseWeb(options);
     const environment = { ...process.env, CLRN_RELEASE_WEB_ROOT: prepared.webRoot,
       CLRN_EXPECTED_APPLICATION_COMMIT: prepared.commit };
@@ -204,13 +215,15 @@ test('完整测试命令继承同一入口，失败退出码和取消均会关�
     const child = spawn(process.execPath, [wrapper, process.execPath, '-e', `
       require('node:fs').writeFileSync(process.argv[1], process.env.VISUAL_BASE_URL);
       setInterval(() => {}, 1000);`, outputFile], { env: environment, cwd: path.dirname(prepared.webRoot), stdio: 'ignore' });
-    const completion = new Promise(resolve => child.once('exit', resolve));
+    const completion = new Promise(/** 等待被测子进程退出，检查退出后的资源清理。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => child.once('exit', resolve));
     let cancelledAddress;
     try {
       for (let attempt = 0; attempt < 100; attempt += 1) {
-        cancelledAddress = await readFile(outputFile, 'utf8').catch(() => undefined);
+        cancelledAddress = await readFile(outputFile, 'utf8').catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
         if (cancelledAddress) break;
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(/** 短暂等待子进程启动，随后检查服务的就绪状态。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => setTimeout(resolve, 50));
       }
       assert.ok(cancelledAddress, '测试子进程必须在取消前完成启动');
       child.kill('SIGTERM');
@@ -220,7 +233,7 @@ test('完整测试命令继承同一入口，失败退出码和取消均会关�
   });
 });
 
-test('所有发布调用固定记录和检出提交，各套件执行前准备 Release 并包装浏览器命令', async () => {
+test('所有发布调用固定记录和检出提交，各套件执行前准备 Release 并包装浏览器命令', /** 验证所有发布调用固定记录和检出提交，各套件执行前准备 Release 并包装浏览器命令。 */ async () => {
   const parent = await readFile(new URL('../.github/workflows/staging-deployment.yml', import.meta.url), 'utf8');
   assert.match(parent, /cancel-in-progress: false\n {2}queue: max/);
   assert.equal(parent.split('release_record: ${{ needs.deployment.outputs.release_record }}').length - 1, 5);

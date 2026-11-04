@@ -6,7 +6,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
  * @param entrance - 背景页面中的弹层入口，用于固定其祖先的隐藏溢出容器。
  */
 export async function lockBottomSheetDocumentScroll(page: Page, entrance?: Locator): Promise<void> {
-  await page.evaluate(() => {
+  await page.evaluate(/** 锁定文档与 body 的尺寸和溢出行为，防止弹层动画推动视口。 */ () => {
     window.scrollTo(0, 0);
     Object.assign(document.documentElement.style, {
       position: 'fixed', inset: '0', width: '100%', height: '100%', overflow: 'clip',
@@ -26,7 +26,8 @@ export async function lockBottomSheetDocumentScroll(page: Page, entrance?: Locat
     }
   });
   // 入口也可能位于独立的隐藏溢出容器中。
-  await entrance?.evaluate(node => {
+  await entrance?.evaluate(/** 沿入口元素的隐藏溢出祖先复位滚动，清除焦点恢复留下的位移。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
     for (let parent = node.parentElement; parent; parent = parent.parentElement) {
       const style = getComputedStyle(parent);
       if (style.overflowX !== 'hidden' || style.overflowY !== 'hidden') continue;
@@ -35,6 +36,6 @@ export async function lockBottomSheetDocumentScroll(page: Page, entrance?: Locat
       parent.style.overflow = 'clip';
     }
   });
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-  await expect.poll(() => page.evaluate(() => document.body.scrollTop)).toBe(0);
+  await expect.poll(/** 重复读取`page.evaluate(() => window.scrollY)`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`window.scrollY`，供测试判断当前界面状态。 */ () => window.scrollY)).toBe(0);
+  await expect.poll(/** 重复读取`page.evaluate(() => document.body.scrollTop)`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`document.body.scrollTop`，供测试判断当前界面状态。 */ () => document.body.scrollTop)).toBe(0);
 }

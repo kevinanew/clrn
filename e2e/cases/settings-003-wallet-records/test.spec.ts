@@ -2,8 +2,9 @@ import { expect, test } from '../_shared/read-account-fixture';
 import { unique } from '../_shared/page';
 import { goBack } from '../_shared/navigation';
 
-test('SETTINGS-003：商城商品、钱包流水、购买记录和礼品卡浏览', async ({ page, signedInAccount }) => {
-  await test.step('登录并打开商城，等待真实商品加载', async () => {
+test('SETTINGS-003：商城商品、钱包流水、购买记录和礼品卡浏览', /** 验证SETTINGS-003：商城商品、钱包流水、购买记录和礼品卡浏览。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, signedInAccount }) => {
+  await test.step('登录并打开商城，等待真实商品加载', /** 执行登录并打开商城，等待真实商品加载。 */ async () => {
     expect(signedInAccount.userId).toBeTruthy();
     await (await unique(page, 'settings-tab')).click();
     await (await unique(page, 'mall')).click();
@@ -11,10 +12,11 @@ test('SETTINGS-003：商城商品、钱包流水、购买记录和礼品卡浏�
     await expect(await unique(page, 'product-amount-0')).toHaveText(/^\d+颗钻石$/);
     await expect(await unique(page, 'product-price-0')).toHaveText(/^¥\d/);
   });
-  await test.step('金币和钻石流水与真实接口一致，兼容没有注册奖励的账号', async () => {
+  await test.step('金币和钻石流水与真实接口一致，兼容没有注册奖励的账号', /** 执行金币和钻石流水与真实接口一致，兼容没有注册奖励的账号。 */ async () => {
     for (const currency of ['coin', 'diamond']) {
       // 在点击前监听页面自己的请求；空列表必须有成功响应，不能把加载失败当成空态。
-      const recordsResponse = page.waitForResponse((response) => {
+      const recordsResponse = page.waitForResponse(/** 匹配GET `/v11/wallet/${signedInAccount.userId}/currency/${currency}/statement` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ (response) => {
         const url = new URL(response.url());
         return url.pathname === `/v11/wallet/${signedInAccount.userId}/currency/${currency}/statement`
           && response.request().method() === 'GET';
@@ -44,14 +46,14 @@ test('SETTINGS-003：商城商品、钱包流水、购买记录和礼品卡浏�
     await goBack(page);
     await expect(await unique(page, 'diamond-goods-list')).toContainText('颗钻石');
   });
-  await test.step('打开购买记录，确认空态并返回', async () => {
+  await test.step('打开购买记录，确认空态并返回', /** 执行打开购买记录，确认空态并返回。 */ async () => {
     await (await unique(page, 'purchase-history-button')).click();
     await expect(await unique(page, 'purchase-history-empty-text')).toHaveText('没有购买记录');
     await goBack(page);
     await expect(await unique(page, 'currency-transaction-record-button')).toBeVisible();
     await goBack(page);
   });
-  await test.step('切换可用和过期礼品卡，打开兑换表单后返回', async () => {
+  await test.step('切换可用和过期礼品卡，打开兑换表单后返回', /** 执行切换可用和过期礼品卡，打开兑换表单后返回。 */ async () => {
     await (await unique(page, 'gift-card')).click();
     await expect(await unique(page, 'available-gift-card')).toHaveText('这里空空的');
     await (await unique(page, 'expired-gift-card-tab')).click();

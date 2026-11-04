@@ -8,7 +8,7 @@ import ts from 'typescript';
 import { Mitmproxy } from './mitmproxy-client';
 import { bindScenarioProxy, scenarioProxy, selectScenario } from './scenario-proxy';
 
-test('共用场景客户端不依赖调用方之外的 Playwright 安装', () => {
+test('共用场景客户端不依赖调用方之外的 Playwright 安装', /** 验证客户端可在独立依赖环境编译。 */ () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'clrn-scenario-types-'));
   const require = createRequire(import.meta.url);
   try {
@@ -22,14 +22,15 @@ test('共用场景客户端不依赖调用方之外的 Playwright 安装', () =>
       strict: true, noEmit: true, skipLibCheck: true, types: ['node'],
       typeRoots: [path.dirname(path.dirname(require.resolve('@types/node/package.json')))],
     });
-    assert.deepEqual(ts.getPreEmitDiagnostics(program).map(item =>
+    assert.deepEqual(ts.getPreEmitDiagnostics(program).map(/** 格式化 TypeScript 诊断。
+ * @param item - 当前诊断。 */ item =>
       ts.flattenDiagnosticMessageText(item.messageText, '\n')), [], '单独安装视觉依赖时共用客户端必须能编译');
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
 });
 
-test('场景代理按上下文身份隔离，未绑定的上下文立即失败', async () => {
+test('场景代理按上下文身份隔离，未绑定的上下文立即失败', /** 验证上下文之间的场景代理隔离。 */ async () => {
   const first = {}, second = {}, unbound = {};
   const firstProxy = new Mitmproxy(1, 'test-only');
   const secondProxy = new Mitmproxy(2, 'test-only');
@@ -46,7 +47,7 @@ test('场景代理按上下文身份隔离，未绑定的上下文立即失败',
   bindScenarioProxy(second, secondProxy);
   assert.equal(scenarioProxy(first), firstProxy);
   assert.equal(scenarioProxy(second), secondProxy);
-  assert.throws(() => scenarioProxy(unbound), /当前上下文未绑定 Python 场景代理/);
+  assert.throws(/** 验证未绑定上下文被拒绝。 */ () => scenarioProxy(unbound), /当前上下文未绑定 Python 场景代理/);
   await selectScenario(first, 'pagination', { userId: '本轮账号' });
   assert.deepEqual(commands, [{ endpoint: 'fixtures/select', payload: { name: 'pagination', userId: '本轮账号' } }]);
 });

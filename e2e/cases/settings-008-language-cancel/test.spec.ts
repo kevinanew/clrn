@@ -3,17 +3,18 @@ import { goBack } from '../_shared/navigation';
 import { openHall, prepareContext, unique } from '../_shared/page';
 import { openSettings } from '../_shared/settings-navigation';
 
-test('SETTINGS-008：语言预览后取消恢复已保存语言', async ({ page, context }) => {
+test('SETTINGS-008：语言预览后取消恢复已保存语言', /** 验证SETTINGS-008：语言预览后取消恢复已保存语言。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, context }) => {
   await prepareContext(context);
   await openHall(page);
   await openSettings(page, 'application-management');
   await (await unique(page, 'language')).click();
-  await test.step('选择英文后立即显示英文预览和选中标记', async () => {
+  await test.step('选择英文后立即显示英文预览和选中标记', /** 执行选择英文后立即显示英文预览和选中标记。 */ async () => {
     await (await unique(page, 'english')).click();
     await expect(page.getByRole('heading', { name: 'Language', exact: true })).toBeVisible();
     await expect((await unique(page, 'english')).getByTestId('checkmark-icon')).toBeVisible();
   });
-  await test.step('返回取消，再次打开仍选中简中且显示中文', async () => {
+  await test.step('返回取消，再次打开仍选中简中且显示中文', /** 执行返回取消，再次打开仍选中简中且显示中文。 */ async () => {
     await goBack(page);
     await (await unique(page, 'language')).click();
     await expect((await unique(page, 'zh-hans')).getByTestId('checkmark-icon')).toBeVisible();

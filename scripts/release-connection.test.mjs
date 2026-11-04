@@ -15,12 +15,16 @@ import { startReleaseWebServer } from './release-web-server.mjs';
  * @param method - 本例实际方法。
  */
 function read(address, agent, method) {
-  return new Promise((resolve, reject) => {
-    const pending = request(address, { agent, method }, response => {
+  return new Promise(/** 发起本机发布资源请求，收集响应状态、连接头与完整正文。
+ * @param resolve - 完成当前异步等待的通知。
+ * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
+    const pending = request(address, { agent, method }, /** 收集发布资源响应的数据块，并在结束后返回连接生命周期信息。
+ * @param response - 当前收到的接口响应。 */ response => {
       const chunks = [];
-      response.on('data', chunk => chunks.push(chunk));
+      response.on('data', /** 保存收到的响应数据块，供后续拼接正文。
+ * @param chunk - 本次读取的数据块。 */ chunk => chunks.push(chunk));
       response.on('error', reject);
-      response.on('end', () => resolve({ status: response.statusCode,
+      response.on('end', /** 响应结束后返回状态、连接策略、完整性标记与拼接后的正文。 */ () => resolve({ status: response.statusCode,
         connection: response.headers.connection, complete: response.complete,
         body: Buffer.concat(chunks) }));
     });
@@ -29,9 +33,10 @@ function read(address, agent, method) {
   });
 }
 
-test('逐响应关闭静态上游，完整读取和原HTTP状态保留，不等待空闲回收', async context => {
+test('逐响应关闭静态上游，完整读取和原HTTP状态保留，不等待空闲回收', /** 验证逐响应关闭静态上游，完整读取和原HTTP状态保留，不等待空闲回收。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-release-connection-'));
-  context.after(() => rm(directory, { recursive: true, force: true }));
+  context.after(/** 发布连接测试结束后删除临时资源目录。 */ () => rm(directory, { recursive: true, force: true }));
   const contents = Buffer.alloc(4 * 1024 * 1024, 65);
   await writeFile(path.join(directory, 'index.html'), contents);
   const events = [];
@@ -41,7 +46,7 @@ test('逐响应关闭静态上游，完整读取和原HTTP状态保留，不等�
  */ event => events.push(event),
   });
   const agent = new Agent({ keepAlive: true, maxSockets: 1 });
-  context.after(() => { agent.destroy(); server.closeAllConnections(); server.close(); });
+  context.after(/** 销毁连接池并关闭测试服务及所有残留连接。 */ () => { agent.destroy(); server.closeAllConnections(); server.close(); });
   const requests = [
     ['GET', '', 200, contents], ['GET', '', 200, contents],
     ['HEAD', '', 200, Buffer.alloc(0)], ['GET', 'missing.js', 404, Buffer.alloc(0)],
@@ -56,14 +61,20 @@ test('逐响应关闭静态上游，完整读取和原HTTP状态保留，不等�
     assert.deepEqual(response.body, expected);
   }
   const deadline = Date.now() + 2000;
-  while (events.filter(event => event.event === 'release.tcp-close').length < requests.length) {
+  while (events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.tcp-close'`。
+ * @param event - 当前触发的事件。 */ event => event.event === 'release.tcp-close').length < requests.length) {
     assert.ok(Date.now() < deadline, '响应完成后连接必须关闭');
     await setTimeout(10);
   }
-  const received = events.filter(event => event.event === 'release.request');
+  const received = events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.request'`。
+ * @param event - 当前触发的事件。 */ event => event.event === 'release.request');
   assert.equal(received.length, requests.length);
-  assert.equal(new Set(received.map(event => event.connectionId)).size, requests.length);
-  assert.equal(events.filter(event => event.event === 'release.finish').length, requests.length);
-  assert.equal(events.some(event => event.event === 'release.tcp-timeout'), false);
-  assert.equal(events.some(event => event.event === 'release.interrupted'), false);
+  assert.equal(new Set(received.map(/** 将当前条目映射为`event.connectionId`。
+ * @param event - 当前触发的事件。 */ event => event.connectionId)).size, requests.length);
+  assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.finish'`。
+ * @param event - 当前触发的事件。 */ event => event.event === 'release.finish').length, requests.length);
+  assert.equal(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'release.tcp-timeout'`。
+ * @param event - 当前触发的事件。 */ event => event.event === 'release.tcp-timeout'), false);
+  assert.equal(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'release.interrupted'`。
+ * @param event - 当前触发的事件。 */ event => event.event === 'release.interrupted'), false);
 });

@@ -72,7 +72,8 @@ async function createAuthContext(
           origins: [
             {
               origin: new URL(baseUrl).origin,
-              localStorage: Object.entries(storageEntries).map(([name, value]) => ({
+              localStorage: Object.entries(storageEntries).map(/** 将当前条目映射为`{ name, value, }`。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([name, value]) => ({
                 name,
                 value,
               })),
@@ -85,7 +86,8 @@ async function createAuthContext(
   await disableAnimations(context);
   // 测试账号缺失时由 Python 环境边界禁止注册，登录与节点探测仍使用真实接口。
   await context.addInitScript(
-    ({
+    /** 登录采集开始前写入固定语言与设备标识。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({
       device,
       langKey,
     }: {
@@ -105,7 +107,7 @@ async function createAuthContext(
  * @param page - 执行操作的 Playwright 页面。
  */
 async function collectLocalStorageEntries(page: import('@playwright/test').Page) {
-  const entries: Record<string, string> = await page.evaluate(() => {
+  const entries: Record<string, string> = await page.evaluate(/** 从页面收集全部本地存储项，供保存登录态使用。 */ () => {
     const all: Record<string, string> = {};
     for (let i = 0; i < window.localStorage.length; i += 1) {
       const key = window.localStorage.key(i);
@@ -148,9 +150,10 @@ async function validateCapturedAuthState(
 ): Promise<Record<string, string>> {
   const context = await createAuthContext(browser, proxy, entries);
 
-  return runWithContext(context, async () => {
+  return runWithContext(context, /** 在新上下文中验证已采集的登录态，监听认证失败并检查实际页面。 */ async () => {
     const page = await context.newPage();
-    page.on('response', (response) => {
+    page.on('response', /** 注入登录态验证遇到 401 时记录响应位置。
+ * @param response - 当前收到的接口响应。 */ (response) => {
       if (response.status() === 401) {
         console.log(`AUTH STATE > 注入验证收到 401：${response.url()}`);
       }
@@ -184,12 +187,14 @@ async function captureAuthState(proxy: Mitmproxy): Promise<void> {
         console.log(`AUTH STATE > 采集尝试 ${attempt}/${MAX_CAPTURE_ATTEMPTS}`);
         const page = await context.newPage();
         // 仅记录认证接口路径与状态，不输出凭据、请求正文或 token。
-        page.on('response', response => {
+        page.on('response', /** 监听登录、注册及用户名检查响应，输出业务状态诊断。
+ * @param response - 当前收到的接口响应。 */ response => {
           const pathname = new URL(response.url()).pathname;
           if (/\/user\/(login|register|username\/is_existed)/.test(pathname)) {
-            void response.json().then(body => {
+            void response.json().then(/** 仅输出认证响应的状态和错误类型，避免记录凭据正文。
+ * @param body - 当前操作使用的 body。 */ body => {
               console.log(`AUTH HTTP > ${response.status()} ${pathname} ok=${String(body?.ok)} error_type=${String(body?.error_type || '')}`);
-            }).catch(() => console.log(`AUTH HTTP > ${response.status()} ${pathname}`));
+            }).catch(/** 响应正文不可读时仅记录 HTTP 状态与路径。 */ () => console.log(`AUTH HTTP > ${response.status()} ${pathname}`));
           }
         });
         await page.goto(baseUrl, { waitUntil: 'load', timeout: 120000 });
@@ -197,10 +202,10 @@ async function captureAuthState(proxy: Mitmproxy): Promise<void> {
         await ensureAppReadyPastStaging(page);
         console.log('AUTH STATE > 大厅已就绪');
         await page
-          .waitForFunction(() => !document.querySelector('[role="progressbar"]'), undefined, {
+          .waitForFunction(/** 等待页面加载指示消失，确认登录采集可以继续。 */ () => !document.querySelector('[role="progressbar"]'), undefined, {
             timeout: 60000,
           })
-          .catch(() => undefined);
+          .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
 
         await ensureSignedIn(page, { username, password });
         console.log('AUTH STATE > UI 登录完成，验证注入态');
@@ -218,7 +223,8 @@ async function captureAuthState(proxy: Mitmproxy): Promise<void> {
       }
 
       if (attempt < MAX_CAPTURE_ATTEMPTS) {
-        await new Promise((resolve) => {
+        await new Promise(/** 登录采集重试前等待两秒，留出页面和网络恢复时间。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
           setTimeout(resolve, 2000);
         });
       }
@@ -232,13 +238,15 @@ async function captureAuthState(proxy: Mitmproxy): Promise<void> {
 
 /** 使用仅固定地域环境和第三方内容的代理，执行真实登录态采集。 */
 async function main(): Promise<void> {
-  await withMitmproxy(async proxy => {
+  await withMitmproxy(/** 启用代理视觉环境并执行登录态采集。
+ * @param proxy - 当前隔离的代理控制器。 */ async proxy => {
     await proxy.command('fixtures/environment', { visual: true });
     await captureAuthState(proxy);
   });
 }
 
-main().catch((error: Error) => {
+main().catch(/** 连续登录失败后删除无效登录态文件，并保留失败退出状态。
+ * @param error - 当前操作抛出的错误。 */ (error: Error) => {
   console.error(`AUTH STATE > 登录态采集连续失败：${error.message}`);
   try {
     fs.rmSync(AUTH_STATE_PATH, { force: true });

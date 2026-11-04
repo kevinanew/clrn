@@ -7,36 +7,45 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { allocateCiAccount, ciAccountCredentials, ciAccounts, visualAccountMatrix, animationAccountMatrix } from './ci-accounts.mjs';
 
-test('连续 100 个运行 ID 轮转完整 Web 账号池，重跑和大整数 ID 分配稳定', () => {
-  assert.equal(new Set(Array.from({length:100},(_,i)=>allocateCiAccount(String(100+i)))).size,100);
+test('连续 100 个运行 ID 轮转完整 Web 账号池，重跑和大整数 ID 分配稳定', /** 验证连续 100 个运行 ID 轮转完整 Web 账号池，重跑和大整数 ID 分配稳定。 */ () => {
+  assert.equal(new Set(Array.from({length:100},/** 为当前索引构造`allocateCiAccount(String(100+i))`。
+ * @param _ - 当前操作使用的 _。
+ * @param i - 当前生成项的索引。 */ (_,i)=>allocateCiAccount(String(100+i)))).size,100);
   assert.equal(allocateCiAccount('90071992547409931'), allocateCiAccount('90071992547409931'));
   assert.equal(allocateCiAccount('90071992547409931'), ciAccounts[Number(90071992547409931n % 100n)]);
-  for (const id of ['', '1\n', 'abc', '-1', undefined]) assert.throws(()=>allocateCiAccount(id));
-  for (const offset of [-1,100,0.5]) assert.throws(()=>allocateCiAccount('1',offset));
+  for (const id of ['', '1\n', 'abc', '-1', undefined]) assert.throws(/** 尝试按无效运行编号分配账号，验证编号校验会拒绝输入。 */ ()=>allocateCiAccount(id));
+  for (const offset of [-1,100,0.5]) assert.throws(/** 尝试使用无效槽位偏移分配账号，验证索引边界。 */ ()=>allocateCiAccount('1',offset));
 });
 
-test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留原账号槽位', () => {
+test('全量视觉矩阵九个任务使用九个账号，单套件筛选保留原账号槽位', /** 验证全量视觉矩阵九个任务使用九个账号，单套件筛选保留原账号槽位。 */ () => {
   const full=visualAccountMatrix('29','all',true).include;
   assert.equal(full.length,9);
-  assert.equal(new Set(full.map(item=>item.account)).size,9);
+  assert.equal(new Set(full.map(/** 将当前条目映射为`item.account`。
+ * @param item - 当前遍历的条目。 */ item=>item.account)).size,9);
   assert.equal(visualAccountMatrix('29').include.length,3);
-  assert.deepEqual(visualAccountMatrix('29').include.map(item => item.suite), ['texas', 'zhajinhua', 'app']);
-  assert.deepEqual(full.map(item => `${item.suite}/${item.locale}`),
-    ['texas', 'zhajinhua', 'app'].flatMap(suite => ['zh-Hans', 'zh-Hant', 'en'].map(locale => `${suite}/${locale}`)));
+  assert.deepEqual(visualAccountMatrix('29').include.map(/** 将当前条目映射为`item.suite`。
+ * @param item - 当前遍历的条目。 */ item => item.suite), ['texas', 'zhajinhua', 'app']);
+  assert.deepEqual(full.map(/** 将当前条目映射为`${item.suite}/${item.locale}`。
+ * @param item - 当前遍历的条目。 */ item => `${item.suite}/${item.locale}`),
+    ['texas', 'zhajinhua', 'app'].flatMap(/** 展开当前条目对应的`['zh-Hans', 'zh-Hant', 'en'].map(locale => ${suite}/${locale})`。
+ * @param suite - 当前操作使用的 suite。 */ suite => ['zh-Hans', 'zh-Hant', 'en'].map(/** 将当前条目映射为`${suite}/${locale}`。
+ * @param locale - 当前测试使用的语言。 */ locale => `${suite}/${locale}`)));
   for (const item of full) {
     const offset = { app: 0, texas: 3, zhajinhua: 6 }[item.suite] + ['zh-Hans', 'zh-Hant', 'en'].indexOf(item.locale);
     assert.equal(item.account, allocateCiAccount('29', offset));
   }
   for (const suite of ['app','texas','zhajinhua']) {
-    assert.deepEqual(visualAccountMatrix('29',suite,true).include,full.filter(item=>item.suite===suite));
+    assert.deepEqual(visualAccountMatrix('29',suite,true).include,full.filter(/** 仅保留满足以下条件的条目：`item.suite===suite`。
+ * @param item - 当前遍历的条目。 */ item=>item.suite===suite));
   }
-  assert.throws(()=>visualAccountMatrix('29','typo'));
+  assert.throws(/** 尝试构造未知视觉套件的账号矩阵，验证拼写错误不会静默执行。 */ ()=>visualAccountMatrix('29','typo'));
 });
 
-test('同一运行编号下 Web 的 19 个任务不重复分配账号', () => {
+test('同一运行编号下 Web 的 19 个任务不重复分配账号', /** 验证同一运行编号下 Web 的 19 个任务不重复分配账号。 */ () => {
   const directory = mkdtempSync(join(tmpdir(), 'clrn-deployment-accounts-'));
   const accounts = visualAccountMatrix('99', 'all', true).include
-    .map(item => item.account);
+    .map(/** 将当前条目映射为`item.account`。
+ * @param item - 当前遍历的条目。 */ item => item.account);
   try {
     for (const mode of ['e2e', 'functional', 'interactions']) {
       const output = join(directory, mode);
@@ -53,11 +62,13 @@ test('同一运行编号下 Web 的 19 个任务不重复分配账号', () => {
     assert.equal(result.status, 0, result.stderr);
     const matrix = JSON.parse(readFileSync(output, 'utf8').slice('matrix='.length));
     assert.deepEqual(matrix, animationAccountMatrix('99'));
-    assert.deepEqual(matrix.include.map(item => `${item.suite}/${item.part}`),
+    assert.deepEqual(matrix.include.map(/** 将当前条目映射为`${item.suite}/${item.part}`。
+ * @param item - 当前遍历的条目。 */ item => `${item.suite}/${item.part}`),
       ['app/application', 'app/ui',
         'texas/table', 'texas/gameplay', 'texas/social',
         'zhajinhua/panels', 'zhajinhua/gameplay']);
-    accounts.push(...matrix.include.map(item => item.account));
+    accounts.push(...matrix.include.map(/** 将当前条目映射为`item.account`。
+ * @param item - 当前遍历的条目。 */ item => item.account));
     assert.equal(accounts.length, 19);
     assert.equal(new Set(accounts).size, 19);
   } finally {
@@ -65,12 +76,13 @@ test('同一运行编号下 Web 的 19 个任务不重复分配账号', () => {
   }
 });
 
-test('动画单套件筛选保留账号槽位，调度入口支持选择且拒绝未知套件', () => {
+test('动画单套件筛选保留账号槽位，调度入口支持选择且拒绝未知套件', /** 验证动画单套件筛选保留账号槽位，调度入口支持选择且拒绝未知套件。 */ () => {
   const full = animationAccountMatrix('99').include;
   const directory = mkdtempSync(join(tmpdir(), 'clrn-animation-accounts-'));
   try {
     for (const suite of ['app', 'texas', 'zhajinhua']) {
-      const expected = { include: full.filter(item => item.suite === suite) };
+      const expected = { include: full.filter(/** 仅保留满足以下条件的条目：`item.suite === suite`。
+ * @param item - 当前遍历的条目。 */ item => item.suite === suite) };
       assert.deepEqual(animationAccountMatrix('99', suite), expected);
       const output = join(directory, suite);
       const result = spawnSync(process.execPath, ['scripts/plan-ci-accounts.mjs', 'animations'], {
@@ -79,25 +91,33 @@ test('动画单套件筛选保留账号槽位，调度入口支持选择且拒�
       assert.equal(result.status, 0, result.stderr);
       assert.deepEqual(JSON.parse(readFileSync(output, 'utf8').slice('matrix='.length)), expected);
     }
-    assert.throws(() => animationAccountMatrix('99', 'typo'));
+    assert.throws(/** 尝试构造未知动画套件的账号矩阵，验证套件白名单。 */ () => animationAccountMatrix('99', 'typo'));
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
-test('凭据按公开账号名读取，不依赖 Secret 排序，错误不包含密码', () => {
+test('凭据按公开账号名读取，不依赖 Secret 排序，错误不包含密码', /** 验证凭据按公开账号名读取，不依赖 Secret 排序，错误不包含密码。 */ () => {
   const password='SensitiveTest1234';
-  const accounts=ciAccounts.map(username=>({username,password,status:'ready'}));
+  const accounts=ciAccounts.map(/** 将当前条目映射为`{username,password,status:'ready'}`。
+ * @param username - 当前操作使用的 username。 */ username=>({username,password,status:'ready'}));
   assert.deepEqual(ciAccountCredentials(JSON.stringify({accounts:[...accounts].reverse()}),ciAccounts[5]),{username:ciAccounts[5],password});
   for (const invalid of [password,JSON.stringify({accounts:accounts.slice(1)}),
     JSON.stringify({accounts:[accounts[0],...accounts.slice(0,-1)]}),
-    JSON.stringify({accounts:accounts.map((a,i)=>i===0?{...a,status:'registered'}:a)}),
-    JSON.stringify({accounts:accounts.map((a,i)=>i===0?{...a,password:'x'.repeat(21)}:a)}),
-    JSON.stringify({accounts:accounts.map((a,i)=>i===0?{...a,password:'injected\nKEY=value'}:a)})]) {
-    assert.throws(()=>ciAccountCredentials(invalid,ciAccounts[5]), error=>!error.message.includes(password));
+    JSON.stringify({accounts:accounts.map(/** 将当前条目映射为`i===0?{...a,status:'registered'}:a`。
+ * @param a - 当前操作使用的 a。
+ * @param i - 当前生成项的索引。 */ (a,i)=>i===0?{...a,status:'registered'}:a)}),
+    JSON.stringify({accounts:accounts.map(/** 将当前条目映射为`i===0?{...a,password:'x'.repeat(21)}:a`。
+ * @param a - 当前操作使用的 a。
+ * @param i - 当前生成项的索引。 */ (a,i)=>i===0?{...a,password:'x'.repeat(21)}:a)}),
+    JSON.stringify({accounts:accounts.map(/** 将当前条目映射为`i===0?{...a,password:'injected\nKEY=value'}:a`。
+ * @param a - 当前操作使用的 a。
+ * @param i - 当前生成项的索引。 */ (a,i)=>i===0?{...a,password:'injected\nKEY=value'}:a)})]) {
+    assert.throws(/** 读取损坏的账号池凭据，验证结构与密码校验。 */ ()=>ciAccountCredentials(invalid,ciAccounts[5]), /** 确认账号校验异常不包含测试密码。
+ * @param error - 当前操作抛出的错误。 */ error=>!error.message.includes(password));
   }
-  assert.throws(()=>ciAccountCredentials(JSON.stringify({accounts}),'laiwanvisual01'));
+  assert.throws(/** 读取包含异常账号条目的账号池，验证必需字段约束。 */ ()=>ciAccountCredentials(JSON.stringify({accounts}),'laiwanvisual01'));
 });
 
-test('Actions 调度输出与注入凭据一致，只导出一个账号，配置缺失时拒绝默认账号', () => {
+test('Actions 调度输出与注入凭据一致，只导出一个账号，配置缺失时拒绝默认账号', /** 验证Actions 调度输出与注入凭据一致，只导出一个账号，配置缺失时拒绝默认账号。 */ () => {
   const directory=mkdtempSync(join(tmpdir(),'ci-account-env-'));
   const output=join(directory,'outputs');
   const environment=join(directory,'environment');
@@ -117,24 +137,29 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     assert.equal(planned.status,0,planned.stderr);
     const {include}=JSON.parse(readFileSync(output,'utf8').slice('matrix='.length));
     const selected=include[0].account;
-    const accounts=ciAccounts.map((username,i)=>({username,password:`FakePassword${i}123`,status:'ready'}));
+    const accounts=ciAccounts.map(/** 将当前条目映射为`{username,password:FakePassword${i}123,status:'ready'}`。
+ * @param username - 当前操作使用的 username。
+ * @param i - 当前生成项的索引。 */ (username,i)=>({username,password:`FakePassword${i}123`,status:'ready'}));
     const configured=spawnSync(process.execPath,['--import', './scripts/account-network-fixture.mjs', 'scripts/configure-ci-account.mjs'],{
       encoding:'utf8',env:{...process.env,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'kevinanew/clrn',GITHUB_ENV:environment,
         CLRN_CI_ACCOUNT:selected,CLRN_CI_TEST_ACCOUNTS:JSON.stringify({accounts}),TESTING_API_TOKEN:'test-token'},
     });
     assert.equal(configured.status,0,configured.stderr);
     assert.equal(readFileSync(join(directory, 'prepared-accounts'), 'utf8'), `${selected}\n`);
-    const values=Object.fromEntries(readFileSync(environment,'utf8').trim().split('\n').map(line=>{
+    const values=Object.fromEntries(readFileSync(environment,'utf8').trim().split('\n').map(/** 将 GitHub 环境文件中的赋值拆为名称和值，保留值中的等号。
+ * @param line - 当前操作使用的 line。 */ line=>{
       const delimiter=line.indexOf('=');return [line.slice(0,delimiter),line.slice(delimiter+1)];
     }));
-    const password=accounts.find(account=>account.username===selected).password;
+    const password=accounts.find(/** 查找满足以下条件的首个条目：`account.username===selected`。
+ * @param account - 当前操作使用的 account。 */ account=>account.username===selected).password;
     for(const prefix of ['E2E_TEST','E2E_CREATION','VISUAL']) {
       assert.equal(values[`${prefix}_USERNAME`],selected);
       assert.equal(values[`${prefix}_PASSWORD`],password);
     }
     assert.equal(Object.keys(values).length,6);
     assert.ok(configured.stdout.includes(`::add-mask::${password}`));
-    assert.ok(!configured.stdout.includes(accounts.find(account=>account.username!==selected).password));
+    assert.ok(!configured.stdout.includes(accounts.find(/** 查找满足以下条件的首个条目：`account.username!==selected`。
+ * @param account - 当前操作使用的 account。 */ account=>account.username!==selected).password));
     for (const failedPath of ['/set_balance/testing', '/v10/wallet/', '/v10/house/user/', '/v2/building/rooms']) {
       writeFileSync(environment, '');
       writeFileSync(join(directory, 'reject-wallet'), failedPath);
@@ -170,25 +195,30 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
 });
 
 
-test('公开清单仅含 100 个 Web 账号，凭据必须完整且不能混入池外账号', () => {
+test('公开清单仅含 100 个 Web 账号，凭据必须完整且不能混入池外账号', /** 验证公开清单仅含 100 个 Web 账号，凭据必须完整且不能混入池外账号。 */ () => {
   const expected = [
-    ...Array.from({ length: 30 }, (_, index) => `clrnci261009${String(index + 1).padStart(2, '0')}`),
-    ...Array.from({ length: 70 }, (_, index) => `clrnci261018${String(index + 1).padStart(3, '0')}`),
+    ...Array.from({ length: 30 }, /** 为当前索引构造`clrnci261009${String(index + 1).padStart(2, '0')}`。
+ * @param _ - 当前操作使用的 _。
+ * @param index - 当前条目在集合中的位置。 */ (_, index) => `clrnci261009${String(index + 1).padStart(2, '0')}`),
+    ...Array.from({ length: 70 }, /** 为当前索引构造`clrnci261018${String(index + 1).padStart(3, '0')}`。
+ * @param _ - 当前操作使用的 _。
+ * @param index - 当前条目在集合中的位置。 */ (_, index) => `clrnci261018${String(index + 1).padStart(3, '0')}`),
   ];
   assert.deepEqual(ciAccounts, expected);
-  const accounts = ciAccounts.map(username => ({ username, password: 'AccountPool123', status: 'ready' }));
+  const accounts = ciAccounts.map(/** 将当前条目映射为`{ username, password: 'AccountPool123', status: 'ready' }`。
+ * @param username - 当前操作使用的 username。 */ username => ({ username, password: 'AccountPool123', status: 'ready' }));
   const serialized = JSON.stringify({ accounts });
   for (const username of expected) {
     assert.equal(ciAccountCredentials(serialized, username).username, username);
   }
-  assert.throws(() => ciAccountCredentials(serialized, 'unmanagedaccount'));
-  assert.throws(() => ciAccountCredentials(JSON.stringify({ accounts: accounts.slice(0, 30) }), ciAccounts[0]));
+  assert.throws(/** 尝试读取不在托管池中的账号，验证账号范围限制。 */ () => ciAccountCredentials(serialized, 'unmanagedaccount'));
+  assert.throws(/** 尝试读取数量不足的账号池，验证池容量要求。 */ () => ciAccountCredentials(JSON.stringify({ accounts: accounts.slice(0, 30) }), ciAccounts[0]));
   const foreign = { username: 'unmanagedaccount', password: 'AccountPool123', status: 'ready' };
-  assert.throws(() => ciAccountCredentials(JSON.stringify({ accounts: [...accounts.slice(0, -1), foreign] }), ciAccounts[0]));
-  assert.throws(() => ciAccountCredentials(JSON.stringify({ accounts: [...accounts, foreign] }), ciAccounts[0]));
+  assert.throws(/** 尝试用外来账号替换池内账号，验证托管身份完整性。 */ () => ciAccountCredentials(JSON.stringify({ accounts: [...accounts.slice(0, -1), foreign] }), ciAccounts[0]));
+  assert.throws(/** 尝试向账号池追加外来条目，验证额外账号不会被接受。 */ () => ciAccountCredentials(JSON.stringify({ accounts: [...accounts, foreign] }), ciAccounts[0]));
 });
 
-test('五组工作流统一引用新版 Web 凭据并保留账号互斥', () => {
+test('五组工作流统一引用新版 Web 凭据并保留账号互斥', /** 验证五组工作流统一引用新版 Web 凭据并保留账号互斥。 */ () => {
   for (const workflow of ['e2e', 'functional', 'interactions', 'visual', 'animations']) {
     const source = readFileSync(`.github/workflows/${workflow}.yml`, 'utf8');
     assert.match(source, /secrets\.CLRN_CI_TEST_ACCOUNTS_V3/);

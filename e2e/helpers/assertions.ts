@@ -11,16 +11,16 @@ export async function expectSiteReady(page: Page, siteUrl: string): Promise<void
   await expect(page.locator('#root')).toBeVisible();
   await expect
     .poll(
-      async () => {
+      /** 等待加载指示消失且根节点出现有效内容。 */ async () => {
         const loadingVisible = await page
           .locator('.loading-container')
           .isVisible()
-          .catch(() => false);
+          .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
         const rootText = (
           await page
             .locator('#root')
             .innerText()
-            .catch(() => '')
+            .catch(/** 文本读取失败时按空页面处理，继续等待应用内容。 */ () => '')
         ).trim();
         return !loadingVisible && rootText.length > 0;
       },

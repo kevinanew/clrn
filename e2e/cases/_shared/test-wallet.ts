@@ -15,7 +15,8 @@ export async function readTestApiToken(): Promise<string> {
     try {
       const deployment = await readFile(resolve(__dirname,
         '../../../../goplay_staging_auto_stack/user_transaction_flask/deploy.yaml'), 'utf8');
-      const secret = deployment.split(/^---\s*$/m).find(document =>
+      const secret = deployment.split(/^---\s*$/m).find(/** 查找 staging 命名空间内存放测试 API 令牌的 Secret 文档。
+ * @param document - 当前操作使用的 document。 */ document =>
         /^kind:\s*Secret\s*$/m.test(document)
         && /^\s+name:\s*test-api-token\s*$/m.test(document)
         && /^\s+namespace:\s*goplay-staging\s*$/m.test(document));

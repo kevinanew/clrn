@@ -5,7 +5,7 @@ import { diagnosticFields, diagnosticNode, diagnosticText } from './diagnostic-p
 import { DiagnosticRecorder } from './diagnostic-recorder';
 import diagnosticPaths from '../mitmproxy/data/diagnostic-paths.json';
 
-test('连接地址与认证参数不进入诊断，节点标签与 Python 保持一致', () => {
+test('连接地址与认证参数不进入诊断，节点标签与 Python 保持一致', /** 验证连接地址与认证参数不进入诊断，节点标签与 Python 保持一致。 */ () => {
   const host = 'api.fixture.invalid';
   const address = `wss://user:password@${host}:9443/private-entry?access_token=secret#credential`;
   const node = diagnosticNode(host);
@@ -34,7 +34,7 @@ test('连接地址与认证参数不进入诊断，节点标签与 Python 保持
   assert.ok(!('body' in fields));
 });
 
-test('区分候选、真实健康响应、模拟响应、缓存和 WebSocket 尝试', () => {
+test('区分候选、真实健康响应、模拟响应、缓存和 WebSocket 尝试', /** 验证区分候选、真实健康响应、模拟响应、缓存和 WebSocket 尝试。 */ () => {
   const recorder = new DiagnosticRecorder();
   recorder.record('nodes.received', { candidates: ['A', 'B', 'C'] });
   recorder.record('http.start', { node: 'A', method: 'GET', path: '/node/v1/status' });
@@ -51,7 +51,7 @@ test('区分候选、真实健康响应、模拟响应、缓存和 WebSocket 尝
   assert.match(new DiagnosticRecorder().markdown('old build'), /无法确定/);
 });
 
-test('容量有限并显示截断，时间线按采集时间排序', () => {
+test('容量有限并显示截断，时间线按采集时间排序', /** 验证容量有限并显示截断，时间线按采集时间排序。 */ () => {
   const recorder = new DiagnosticRecorder();
   for (let index = 0; index < 5002; index++) recorder.record('probe.start', { observedAt: 9000 - index });
   const result = recorder.snapshot();
@@ -61,15 +61,17 @@ test('容量有限并显示截断，时间线按采集时间排序', () => {
 });
 
 
-test('合并旧代理历史不会挤掉最新的浏览器失败现场', () => {
+test('合并旧代理历史不会挤掉最新的浏览器失败现场', /** 验证合并旧代理历史不会挤掉最新的浏览器失败现场。 */ () => {
   const recorder = new DiagnosticRecorder();
   recorder.record('test.failure', { observedAt: 10000, reason: '连接失败' });
-  recorder.merge(Array.from({ length: 5000 }, (_, index) => ({ event: 'proxy.request', observedAt: index })));
+  recorder.merge(Array.from({ length: 5000 }, /** 为当前索引构造`{ event: 'proxy.request', observedAt: index }`。
+ * @param _ - 当前操作使用的 _。
+ * @param index - 当前条目在集合中的位置。 */ (_, index) => ({ event: 'proxy.request', observedAt: index })));
   assert.equal(recorder.snapshot().events.at(-1)?.event, 'test.failure');
   assert.equal(recorder.dropped, 1);
 });
 
-test('相对路径仅输出已知操作模板，记录和代理合并均不保留任意路径段', () => {
+test('相对路径仅输出已知操作模板，记录和代理合并均不保留任意路径段', /** 验证相对路径仅输出已知操作模板，记录和代理合并均不保留任意路径段。 */ () => {
   const inputs = ['api.fixture.invalid', '192.0.2.10:8443', '[2001:db8::10]:9443',
     'token=synthetic-secret', 'Bearer synthetic-secret', 'synthetic-secret',
     '%61pi.fixture.invalid', '%31%39%32.0.2.10', '%255B2001%253Adb8%253A%253A10%255D'];
@@ -93,10 +95,11 @@ test('相对路径仅输出已知操作模板，记录和代理合并均不保�
   assert.equal(diagnosticFields({ path: ['secret'] }).path, '[未知接口]');
   const output = JSON.stringify(recorder.snapshot()) + recorder.markdown('case');
   for (const input of inputs) assert.ok(!output.includes(input), '任意路径段不能进入附件或终端摘要');
-  assert.ok(recorder.snapshot().events.some(event => event.status === 503), '真实失败状态仍保留');
+  assert.ok(recorder.snapshot().events.some(/** 判断是否存在满足以下条件的条目：`event.status === 503`。
+ * @param event - 当前触发的事件。 */ event => event.status === 503), '真实失败状态仍保留');
 });
 
-test('共用路径登记保留操作语义且重复清理不改变实体模板', () => {
+test('共用路径登记保留操作语义且重复清理不改变实体模板', /** 验证共用路径登记保留操作语义且重复清理不改变实体模板。 */ () => {
   for (const path of diagnosticPaths) {
     assert.equal(diagnosticFields({ path }).path, path);
     assert.equal(diagnosticFields({ path: path.replace(/\{[^}]+\}/g, 'token=synthetic-secret') }).path, path);

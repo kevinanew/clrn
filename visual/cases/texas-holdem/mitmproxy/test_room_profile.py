@@ -8,11 +8,14 @@ from test_texas_replay import ROOM, OTHER, SELF, flow
 
 
 class RoomProfileTests(unittest.TestCase):
+    """验证真实房间资料缓存的结构、来源及认证隔离。"""
     def setUp(self):
+        """准备本用例的独立对象、来源配置与请求记录，避免状态跨用例共享。"""
         test_addon.TexasAddonTests.setUp(self)
 
     def profile_request(self, room=ROOM, token='Bearer real-session', origin='https://web.invalid',
                         method='GET', host='node-0.service.invalid', suffix=''):
+        """构造携带指定房间、认证头和来源的资料请求。"""
         request = flow(f'https://{host}/v10/texas_holdem/room/{room}/profile{suffix}', method)
         request.request.headers['Authorization'] = token
         request.request.headers['Origin'] = origin
@@ -20,6 +23,7 @@ class RoomProfileTests(unittest.TestCase):
         return request
 
     def record(self, body=None, status=200, **options):
+        """先确认首次读取透传，再记录指定上游资料响应。"""
         request = self.profile_request(**options)
         self.assertIsNone(request.response, '首次读取必须到真实上游')
         data = body if body is not None else {'ok': True, 'result': {
@@ -29,6 +33,7 @@ class RoomProfileTests(unittest.TestCase):
         return data
 
     def test_成功规则读取原样复用且保留当前来源的跨域头(self):
+        """验证成功规则读取原样复用且保留当前来源的跨域头。"""
         data = self.record()
         for host in ('node-0.service.invalid', 'candidate-0.node-18.service.invalid'):
             request = self.profile_request(host=host)
@@ -37,6 +42,7 @@ class RoomProfileTests(unittest.TestCase):
             self.assertEqual(request.response.headers['Access-Control-Allow-Origin'], 'https://web.invalid')
 
     def test_错误与不完整规则不能被补为成功(self):
+        """验证错误与不完整规则不能被补为成功。"""
         for status, body in [(503, {'ok': True, 'result': {'all_time_based_rule': []}}),
                              (200, {'ok': False, 'error': 'denied'}),
                              (200, {'ok': True, 'result': {}}),
@@ -51,6 +57,7 @@ class RoomProfileTests(unittest.TestCase):
         self.assertIsNone(self.profile_request().response)
 
     def test_其他认证来源房间方法主机和查询必须透传(self):
+        """验证其他认证来源房间方法主机和查询必须透传。"""
         self.record()
         for options in ({'token': 'Bearer different'}, {'token': ''}, {'token': 'Bearer '},
                         {'origin': 'https://other.invalid'}, {'room': OTHER},
@@ -60,6 +67,7 @@ class RoomProfileTests(unittest.TestCase):
                 self.assertIsNone(self.profile_request(**options).response)
 
     def test_释放场景或更换房间玩家后必须重新真实读取(self):
+        """验证释放场景或更换房间玩家后必须重新真实读取。"""
         for change in ('release', 'scenario', 'room', 'self'):
             with self.subTest(change=change):
                 self.addon.texas.room_id, self.addon.texas.self_id = ROOM, SELF
