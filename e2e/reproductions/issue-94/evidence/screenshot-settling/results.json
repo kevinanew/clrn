@@ -1,0 +1,38 @@
+{
+  "testCommit": "4810b8b4e4a91ec628bb8c59d02a9757e89e235b",
+  "stats": {
+    "startTime": "2026-11-04T09:49:31.031Z",
+    "duration": 143268.602,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "私人桌 HTTP 带入 missing-fields 应正确提示并可恢复",
+      "status": "failed",
+      "durationSeconds": 82.339,
+      "errors": [
+        "Error: 请求失败后应有可读提示"
+      ]
+    },
+    {
+      "title": "私人桌无故障正常带入及入座对照",
+      "status": "passed",
+      "durationSeconds": 28.547,
+      "errors": []
+    },
+    {
+      "title": "私人桌入座 missing-fields 应正确提示，解除故障后真实重试",
+      "status": "failed",
+      "durationSeconds": 31.377,
+      "errors": [
+        "Error: 缺失字段须有可读提示"
+      ]
+    }
+  ],
+  "animationChecks": "three real Chromium scenarios passed: JavaScript zoom-in, delayed unmount after zoom-out, error popup zoom-in; infinite spinner continues running",
+  "screenshotFailures": 0,
+  "note": "Two existing business assertions still fail. Earlier evidence remains unchanged; these images come from a new real run."
+}

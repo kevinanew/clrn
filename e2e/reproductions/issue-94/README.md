@@ -41,6 +41,8 @@ node e2e/reproductions/issue-94/run.mjs --coin-baseline
 
 本目录截图统一通过 `screenshotAfterSettling`：恢复截图等待带入/错误弹窗节点实际移除；弹窗展开截图等待可见内容及其祖先的几何、缩放和透明度连续稳定 500 毫秒，并等待有限动画结束。持续循环的加载图标保持运行，不修改动画速度或隐藏弹窗。10 秒内不能稳定就使截图步骤失败，不退回即时截图。可独立运行真实浏览器验证：`node --import tsx --test e2e/reproductions/issue-94/screenshot.browser.ts`。
 
+截图等待修正已在 CLRN `4810b8b4e4a91ec628bb8c59d02a9757e89e235b` 定向复测：正常带入、HTTP 缺失字段恢复、WebSocket 缺失字段恢复的截图步骤全部通过，原有两条业务缺陷断言仍失败。新截图见[弹窗完全展开](evidence/screenshot-settling/normal/02-buy-in.png)、[HTTP 恢复后弹窗完全关闭](evidence/screenshot-settling/http-missing-fields/02-http-recovered.png)、[完整错误弹窗](evidence/screenshot-settling/websocket-missing-fields/04-fault.png)。[新一轮版本和结果](evidence/screenshot-settling/results.json)与原先取证独立保存，旧截图保留历史，不冒充修正后的画面。
+
 ## 故障边界
 
 | 边界 | 入口 | 故障 | 必须观察的结果 |

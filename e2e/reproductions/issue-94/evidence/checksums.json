@@ -60,5 +60,14 @@
   "coin-prerequisite/01-signed-in.png": "f16a38ed967550fbb9381931fd86a2cda372a73cba08feeb3c05f4c43258c024",
   "coin-prerequisite/03-matching-outcome.png": "59668b2b673b2053a720de802629b8c85acd929fff04598ec94dfb2b0633b955",
   "coin-prerequisite/manifest.json": "bf9bd0b7b5ae87f82b2b28a3b013e0f0e1a5c1d332dc690888448dae0a091cbb",
-  "coin-prerequisite/matching-prerequisites.json": "ad27a1676c4287a224bd9a20dbcdc90c7d3bf6b895a27baf2284d7bde48a35ed"
+  "coin-prerequisite/matching-prerequisites.json": "ad27a1676c4287a224bd9a20dbcdc90c7d3bf6b895a27baf2284d7bde48a35ed",
+  "screenshot-settling/http-missing-fields/02-http-recovered.png": "99af9b2d816918e99534fbd525341b0972bc60201f2016a793f68ed1111d562b",
+  "screenshot-settling/http-missing-fields/scoped-http-timeline.json": "d0d039247090b261af1b41d8938c8c2f61fca260600d7fff557d888d03f18a06",
+  "screenshot-settling/manifest.json": "61c0aac1a41cb38e9c6a1d4a8e13e88f0ce8600493d28d7b3512552da510439d",
+  "screenshot-settling/normal/02-buy-in.png": "c0d246be571a7cc54991e7a2146d82632146456a8a6ec3584ce15d084322fdf4",
+  "screenshot-settling/normal/03-seated.png": "c769f464ad73f751bb78e476317b8db9ea2e75cfc814cb58cead99c91d25db1a",
+  "screenshot-settling/results.json": "6cc70b9867d595b50981ee3a950ac6798b1c053def8f87a817688f268d02b56d",
+  "screenshot-settling/websocket-missing-fields/04-fault.png": "6a96849a1d44ab7234c9d432d06d3379a4b99b2c736c7af9576b4a52e456a1e7",
+  "screenshot-settling/websocket-missing-fields/05-recovered.png": "02dd73fcc25fd2ba70a2b7d949b28c56b0db3c2cc487b328f16640d13c4858a5",
+  "screenshot-settling/websocket-missing-fields/scoped-rpc-timeline.json": "0bc3771ee72775cace094c3ee856daf54640e6269cc09d050528709fbb1af67b"
 }
