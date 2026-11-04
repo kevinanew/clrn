@@ -23,9 +23,10 @@ for (const mode of ['http-503', 'http-504', 'timeout', 'disconnect', 'invalid-js
         }, { message: 'HTTP 故障必须命中本例真实带入请求', timeout: 30_000 }).toBeGreaterThan(0);
         const notice = page.getByTestId('toastText1')
           .or(page.getByTestId('common-alert-message')).or(page.getByTestId('alert-message-text')).filter({ visible: true }).first();
-        await expect(notice, '请求失败后应有可读提示').toBeVisible({ timeout: 40_000 });
-        const text = await notice.textContent();
-        expect.soft(text).not.toMatch(/undefined|筹码不足|余额不足/);
+        await expect.soft(notice, '请求失败后应有可读提示').toBeVisible({ timeout: 40_000 });
+        if (await notice.isVisible()) {
+          expect.soft(await notice.textContent()).not.toMatch(/undefined|筹码不足|余额不足/);
+        }
         await page.screenshot({ path: information.outputPath('01-http-fault.png') });
         await expect(page.getByTestId('texas-holdem-self-seated-marker')).not.toBeVisible();
         await faultProxy.command('texas', { ...scope, mode: 'none' });

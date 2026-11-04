@@ -95,6 +95,10 @@ class BackendContract(unittest.TestCase):
                 "transactions": len(wallet.transactions),
                 "hits": wallet.hits[first_hit:],
                 "events": [message["event"] for message in messages],
+                "capturedAtMessageExit": [
+                    message["event"] for message in engine.last_queue.delay_messages
+                ],
+                "messageDelivery": "isolated capture; not delivered by a real gateway",
                 "errorClass": type(error).__name__ if error else None,
                 "errorType": error.error_type
                 if isinstance(error, SDKException)
@@ -156,7 +160,8 @@ class BackendContract(unittest.TestCase):
     def invoke(self, engine, wrapper_type, transactions, player, **arguments):
         """执行真实包装器并读取它持久化的房间配置，不伪造离座或补码事件。"""
         wrapper = wrapper_type()
-        wrapper.set_queue_message(DummyQueueMessage(ROOM))
+        engine.last_queue = DummyQueueMessage(ROOM)
+        wrapper.set_queue_message(engine.last_queue)
         wrapper.set_redis_client(engine.fake_redis_client)
         wrapper.set_room_db(TexasHoldemRoomDBV1, ROOM)
         wrapper.set_user_transaction_service_class(transactions)
