@@ -1,0 +1,47 @@
+{
+  "key": "websocket-disconnect",
+  "title": "私人桌入座 disconnect 应正确提示，解除故障后真实重试",
+  "status": "failed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 82844,
+  "startTime": "2026-11-04T21:01:00.808Z",
+  "errors": [
+    {
+      "message": "Error: 故障期间再次入座仍应提示错误\n\nexpect(locator).toBeVisible() failed\n\nLocator: getByTestId('common-alert-message').filter({ visible: true })\nExpected: visible\nTimeout: 40000ms\nError: element(s) not found\n\nCall log:\n  - 故障期间再次入座仍应提示错误 with timeout 40000ms\n  - waiting for getByTestId('common-alert-message').filter({ visible: true })\n\n\n  65 |           return status.timeline.filter(event => event.direction === 'request' && event.mode === mode).length;\n  66 |         }, { message: '故障期间再次重试必须再次命中', timeout: 30_000 }).toBeGreaterThan(hits);\n> 67 |         await expect.soft(message, '故障期间再次入座仍应提示错误').toBeVisible({ timeout: 40_000 });\n     |                                                      ^\n  68 |         await faultProxy.command('texas', { ...scope, mode: 'none' });\n  69 |         await retrySit(page);\n  70 |         await expect.poll(async () => {\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:67:54\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:43:5",
+      "location": {
+        "file": "/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts",
+        "column": 54,
+        "line": 67
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "04-fault.png",
+      "bytes": 313913,
+      "sha256": "fd7f3f4a4286cc0a046fb502127569adbf5661825d0e0edf232dbbe3c6c12e8d"
+    },
+    {
+      "file": "05-recovered.png",
+      "bytes": 349635,
+      "sha256": "a365a158d501a7a542b119bb62704106bd874332ca444cc74eedbc2abc9e5c54"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 293937,
+      "sha256": "2f1058bb359218e4117fbd7e7f4b1c77d113658a4f09bec29904f52b3408bd36"
+    },
+    {
+      "file": "scoped-rpc-timeline.json",
+      "bytes": 668,
+      "sha256": "88f04a90195bfddb5962fd3469f09f4274e2f936ca6e17cdae28dcb489a547ee"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 1866488,
+      "sha256": "60beaebf95d56b6cfa55aaeabeddf0c3ce9a9f3892d63680922e0a89caa83833",
+      "originalAttachmentBasename": "signed-in-video-63e2b006499a7a80e0e401e85882ea2a6623b6ec.webm"
+    }
+  ]
+}

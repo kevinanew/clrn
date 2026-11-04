@@ -1,0 +1,47 @@
+{
+  "key": "http-missing-fields",
+  "title": "私人桌 HTTP 带入 missing-fields 应正确提示并可恢复",
+  "status": "failed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 72620,
+  "startTime": "2026-11-04T20:56:55.782Z",
+  "errors": [
+    {
+      "message": "Error: 请求失败后应有可读提示\n\nexpect(locator).toBeVisible() failed\n\nLocator: getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\nExpected: visible\nTimeout: 40000ms\nError: element(s) not found\n\nCall log:\n  - 请求失败后应有可读提示 with timeout 40000ms\n  - waiting for getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\n\n\n  39 |         const notice = page.getByTestId('toastText1')\n  40 |           .or(page.getByTestId('common-alert-message')).or(page.getByTestId('alert-message-text')).filter({ visible: true }).first();\n> 41 |         await expect.soft(notice, '请求失败后应有可读提示').toBeVisible({ timeout: 40_000 });\n     |                                                  ^\n  42 |         if (await notice.isVisible()) {\n  43 |           expect.soft(await notice.textContent()).not.toMatch(/undefined|筹码不足|余额不足/);\n  44 |         }\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:41:50\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:27:5",
+      "location": {
+        "file": "/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts",
+        "column": 50,
+        "line": 41
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "01-http-fault.png",
+      "bytes": 359611,
+      "sha256": "b4f6cc1189f6edefceba7dd334d6c9a6822ace1c5f5d15384b8eccb2d1bb43a6"
+    },
+    {
+      "file": "02-http-recovered.png",
+      "bytes": 349259,
+      "sha256": "42dbe064b385b431b94cc3a6aa69241d86291296d3caead82009f3054e7ff4a3"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 290516,
+      "sha256": "9d028e1294ae7b4e7fd95168eb45c2cf49ab8d281d754c508fba9d9a1126d7cc"
+    },
+    {
+      "file": "scoped-http-timeline.json",
+      "bytes": 1233,
+      "sha256": "a5491855c92fd58efed52fb26a6e94dd57507b1f897dabd0d5f98ff37f18e308"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 1667966,
+      "sha256": "fa37efdd63a32e52d49a91a89d1d69551a2c4aa78735d4139c36202296365678",
+      "originalAttachmentBasename": "signed-in-video-45a96e6fb524ed452c1db5c75b16f218a565e1a2.webm"
+    }
+  ]
+}

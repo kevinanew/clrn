@@ -2,6 +2,23 @@
 
 关联：[复现任务 #94](https://github.com/kevinanew/clrn/issues/94)、[应用 #5159](https://github.com/kevinanew/laiwan_react_native/issues/5159)、[后续验收 #95](https://github.com/kevinanew/clrn/issues/95)。本目录是定向复现入口，文件使用 `.scenario.ts` 和独立配置，不加入默认 Playwright 套件。正确行为断言失败时命令返回非零；没有预期失败、跳过或自动重试。
 
+## 动画稳定后重跑及钱包传输故障
+
+以下是新一轮结果；后文历史记录中的“尚未完成”描述只对应各自当时的范围。PR 继续保持草稿，#94 整体取证仍在补齐。
+
+- 客户端完整 13 项已重跑，9 项通过、4 项正确行为断言失败，零准备失败、零跳过、零重试。HTTP 非 JSON、缺字段没有可读提示；WebSocket 缺字段显示 `undefined-sit`，重复断连后缺少提示。所有故障均重复命中，解除后从可见入口取得真实成功回复并恢复 100 筹码。见[本轮结果](evidence/client-stable/results.json)、[版本与源码摘要](evidence/client-stable/manifest.json)和[耗时、内存](evidence/client-stable/measurement.json)。
+- 用户指出的 HTTP 缺字段恢复帧已重新取证：[新截图](evidence/client-stable/http-missing-fields/02-http-recovered.png)显示已入座的 100 筹码，带入弹窗已完整关闭。截图仍等待真实动画和连续 500 毫秒的布局稳定；[原始登录后录像](evidence/client-stable/http-missing-fields/signed-in.webm)与摘要一并保留，旧证据不覆盖。
+- 原生钱包 HTTP 503 和真实读取超时均已完成完整网页取证。故障期间两次可见操作各触发原 SDK 的三次请求；503 日志保留实际 HTTP 状态，超时日志保留真实 `ReadTimeout`，请求间隔约两秒。实际旧版网关返回 `result.data=null`，网页显示解构异常，没有误报余额不足，也没有真实站起推送。解除后可见重试产生恰好一笔 100 金币扣款、真实自动补码及入座，钱包/有效桌上筹码/未结算底池始终合计 20000，退桌后钱包合计 20000。
+
+| 原生钱包故障 | 正确行为断言及指标 | 证据 |
+| --- | --- | --- |
+| HTTP 503 | 网页显示 `Cannot destructure … null`，可读提示断言失败、退出 1；132.463 秒，最大子进程 RSS 362758144 字节 | [消息、账本及恢复](evidence/native-wallet/http-503/report.json)、[SDK 重试](evidence/native-wallet/http-503/native-sdk-diagnostics.json)、[录像索引](evidence/native-wallet/http-503/artifacts.json) |
+| 真实读取超时 | 同样保留网页空数据错误，退出 1；159.093 秒，最大子进程 RSS 400048128 字节 | [消息、账本及恢复](evidence/native-wallet/timeout/report.json)、[真实超时记录](evidence/native-wallet/timeout/native-sdk-diagnostics.json)、[录像索引](evidence/native-wallet/timeout/artifacts.json) |
+
+两个原生案例的全部入口文件指纹匹配实现提交 `70b6a40bc0ac7b1a4e1ff1d02f8b3f12acf750cb`；客户端源码指纹匹配 `56efc07a0f6ca12445aaacf4cfc010ea1a60fc94`，均使用原固定 Release。原生服务及工具版本、源码无改动检查和资源清理结果分别在案例目录中。钱包资金核对区分未结算底池和已发奖后的历史贡献，四条回归测试防止重复计入或漏报真实资金缺口。新的文本证据已扫描账号池密码、测试令牌、GitHub 令牌、JWT 和认证头。
+
+真实余额不足的最终恢复、交易冲突在故障期间重复手动操作，以及提交后丢失响应的跨网页重试仍在运行；这些新增证据尚不代表 #94 全部完成，也没有证明原反馈重新入座 `player_not_enough_stack` 的完整根因。
+
 ## 合入门槛（尚未满足）
 
 **PR #96 必须继续保持草稿，当前不能合入主干。** Issue #94 明确要求“不将未修复的失败用例直接并入主干”；独立配置、如实记录失败及复现工具自测通过均不能豁免该要求。现有客户端错误提示及后端吞错仍有正确行为断言失败，历史证据和这些断言完整保留。

@@ -1,0 +1,50 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793825760.575336,
+      "direction": "request",
+      "mode": "invalid-json",
+      "layer": "http",
+      "requestId": "b78dd1ed-d0f5-4c25-aad0-efbc99cf2195"
+    },
+    {
+      "at": 1793825760.575629,
+      "direction": "injected-response",
+      "mode": "invalid-json",
+      "layer": "http",
+      "requestId": "b78dd1ed-d0f5-4c25-aad0-efbc99cf2195",
+      "status": 200
+    },
+    {
+      "at": 1793825802.168107,
+      "direction": "request",
+      "mode": "invalid-json",
+      "layer": "http",
+      "requestId": "f54e9bf9-68b1-468a-bbe6-92dea4eeed21"
+    },
+    {
+      "at": 1793825802.168187,
+      "direction": "injected-response",
+      "mode": "invalid-json",
+      "layer": "http",
+      "requestId": "f54e9bf9-68b1-468a-bbe6-92dea4eeed21",
+      "status": 200
+    },
+    {
+      "at": 1793825803.670651,
+      "direction": "request",
+      "mode": "none",
+      "layer": "http",
+      "requestId": "62a4d78a-ff4b-41fd-8e00-0bad74b7cb00"
+    },
+    {
+      "at": 1793825803.889788,
+      "direction": "upstream-response",
+      "layer": "http",
+      "requestId": "62a4d78a-ff4b-41fd-8e00-0bad74b7cb00",
+      "status": 200,
+      "ok": true
+    }
+  ]
+}

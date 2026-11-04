@@ -1,0 +1,11 @@
+{
+  "runId": "1793825578647-94992-client-stable",
+  "command": "node e2e/reproductions/issue-94/run.mjs private-table.scenario.ts http-buy-in.scenario.ts",
+  "exitCode": 1,
+  "elapsedSeconds": 614.37,
+  "maximumResidentSetSizeBytes": 571506688,
+  "measurement": "Actual macOS /usr/bin/time -l output for entire client launcher process tree; largest RSS, not sum of simultaneous browser/proxy memory.",
+  "parallelExecution": "Independent native coin cases ran concurrently with separate exclusive accounts and services.",
+  "assertions": "9 pass, 4 correctness failures; 0 skipped, 0 retries, 0 fixture preparation failures.",
+  "credentialScan": "Text checked against local pool passwords, testing token, GitHub token, JWT and Authorization fields; no matches."
+}

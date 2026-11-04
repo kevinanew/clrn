@@ -1,0 +1,50 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793825906.5878952,
+      "direction": "request",
+      "mode": "business-conflict",
+      "layer": "http",
+      "requestId": "d2d7c923-cbc4-455e-b496-f6c09e61ac80"
+    },
+    {
+      "at": 1793825906.5879822,
+      "direction": "injected-response",
+      "mode": "business-conflict",
+      "layer": "http",
+      "requestId": "d2d7c923-cbc4-455e-b496-f6c09e61ac80",
+      "status": 200
+    },
+    {
+      "at": 1793825908.751952,
+      "direction": "request",
+      "mode": "business-conflict",
+      "layer": "http",
+      "requestId": "9e5b2b40-8ae5-4723-bff6-298e656aa8fd"
+    },
+    {
+      "at": 1793825908.7520268,
+      "direction": "injected-response",
+      "mode": "business-conflict",
+      "layer": "http",
+      "requestId": "9e5b2b40-8ae5-4723-bff6-298e656aa8fd",
+      "status": 200
+    },
+    {
+      "at": 1793825910.504301,
+      "direction": "request",
+      "mode": "none",
+      "layer": "http",
+      "requestId": "a65c948f-4dd4-4137-961f-f37311a1f93f"
+    },
+    {
+      "at": 1793825910.848744,
+      "direction": "upstream-response",
+      "layer": "http",
+      "requestId": "a65c948f-4dd4-4137-961f-f37311a1f93f",
+      "status": 200,
+      "ok": true
+    }
+  ]
+}

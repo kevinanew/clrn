@@ -1,0 +1,38 @@
+{
+  "key": "http-business-conflict",
+  "title": "私人桌 HTTP 带入 business-conflict 应正确提示并可恢复",
+  "status": "passed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 29130,
+  "startTime": "2026-11-04T20:58:08.760Z",
+  "errors": [],
+  "artifacts": [
+    {
+      "file": "01-http-fault.png",
+      "bytes": 347231,
+      "sha256": "1ecfaaa056b8dd142fc014d563ba344dee67038ae89509efa192fbe5af4e56d2"
+    },
+    {
+      "file": "02-http-recovered.png",
+      "bytes": 349167,
+      "sha256": "764644f6de436f6d5a3308bd5541077c6c4f9df7a0845570ea35d5904dac433d"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 280898,
+      "sha256": "eec3ea691bd504d33aeae7d7d6570d212e1fbf92cd4e14c94abf55289f6de381"
+    },
+    {
+      "file": "scoped-http-timeline.json",
+      "bytes": 1246,
+      "sha256": "d7101a587e736864f66d9fde81f09b2f08d3803b47a29c11ee5a9ce916730aeb"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 942997,
+      "sha256": "042aed4926b778e02d5be4a03c54e3151c18497490f69fc48791d8312b590477",
+      "originalAttachmentBasename": "signed-in-video-962289185435bd7a17538da60a3e8b5b6efe9b82.webm"
+    }
+  ]
+}

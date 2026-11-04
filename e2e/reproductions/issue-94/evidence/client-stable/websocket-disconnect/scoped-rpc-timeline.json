@@ -1,0 +1,34 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793826076.7182631,
+      "direction": "request",
+      "commandId": 10,
+      "mode": "disconnect",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793826088.445487,
+      "direction": "request",
+      "commandId": 13,
+      "mode": "disconnect",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793826128.914604,
+      "direction": "request",
+      "commandId": 22,
+      "mode": "none",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793826129.079144,
+      "direction": "upstream-response",
+      "commandId": 22,
+      "layer": "websocket",
+      "ok": true,
+      "errorType": null
+    }
+  ]
+}

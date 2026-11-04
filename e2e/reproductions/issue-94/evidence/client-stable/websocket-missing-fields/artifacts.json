@@ -1,0 +1,47 @@
+{
+  "key": "websocket-missing-fields",
+  "title": "私人桌入座 missing-fields 应正确提示，解除故障后真实重试",
+  "status": "failed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 32712,
+  "startTime": "2026-11-04T20:59:07.840Z",
+  "errors": [
+    {
+      "message": "Error: 缺失字段须有可读提示\n\nexpect(received).not.toContain(expected) // indexOf\n\nExpected substring: not \"undefined\"\nReceived string:        \"undefined-sit\"\n\n  55 |         await screenshotAfterSettling(page, information.outputPath('04-fault.png'));\n  56 |         if (await message.isVisible()) {\n> 57 |           expect.soft(await message.textContent(), '缺失字段须有可读提示').not.toContain('undefined');\n     |                                                                      ^\n  58 |           expect.soft(await message.textContent(), '非余额故障不得误报筹码不足').not.toMatch(/筹码不足|余额不足/);\n  59 |         }\n  60 |         const first = await faultProxy.command<FaultStatus>('texas');\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:57:70\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:43:5",
+      "location": {
+        "file": "/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts",
+        "column": 70,
+        "line": 57
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "04-fault.png",
+      "bytes": 324644,
+      "sha256": "3b6f266f9bda25bdedb14d851428d5fd269d68405e9428b2e25827f6554b07ab"
+    },
+    {
+      "file": "05-recovered.png",
+      "bytes": 349502,
+      "sha256": "3af65d275407f78af8c084ab1f1c2a36ca95dd258e858bc711d97c615419082f"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 282777,
+      "sha256": "c2d35b922fc801b6876c2a256ef5e0912a69c7e252fa9fbf84f4bd75a5e73b69"
+    },
+    {
+      "file": "scoped-rpc-timeline.json",
+      "bytes": 1007,
+      "sha256": "40c5fd73b5333e7b39420102e13ade9e27bbedb0726224f5304a8284a70644ab"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 937451,
+      "sha256": "0bf5b2831c3885c4655a874a1e14183c24a020c314ee580947a3fa02f7c0c9be",
+      "originalAttachmentBasename": "signed-in-video-d0f06c9f8b5d8308bd200e9d5ef8ca2fe196bbc0.webm"
+    }
+  ]
+}

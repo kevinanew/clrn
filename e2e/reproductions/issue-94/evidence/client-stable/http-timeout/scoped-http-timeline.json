@@ -1,0 +1,34 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793825676.723765,
+      "direction": "request",
+      "mode": "timeout",
+      "layer": "http",
+      "requestId": "3e86abac-c824-4a8f-8c8e-8fa308dda738"
+    },
+    {
+      "at": 1793825689.804778,
+      "direction": "request",
+      "mode": "timeout",
+      "layer": "http",
+      "requestId": "0d138792-d3c8-4360-a756-79d7fee20e82"
+    },
+    {
+      "at": 1793825700.9201238,
+      "direction": "request",
+      "mode": "none",
+      "layer": "http",
+      "requestId": "d0eca44d-16b3-455a-907b-bb9f1b10cb7e"
+    },
+    {
+      "at": 1793825701.468652,
+      "direction": "upstream-response",
+      "layer": "http",
+      "requestId": "d0eca44d-16b3-455a-907b-bb9f1b10cb7e",
+      "status": 200,
+      "ok": true
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "key": "websocket-timeout",
+  "title": "私人桌入座 timeout 应正确提示，解除故障后真实重试",
+  "status": "passed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 51352,
+  "startTime": "2026-11-04T21:00:09.431Z",
+  "errors": [],
+  "artifacts": [
+    {
+      "file": "04-fault.png",
+      "bytes": 316127,
+      "sha256": "09053c535b0ea95cfb54c8fd757c1b188e8b2261255385f7d83d5ab78b42e125"
+    },
+    {
+      "file": "05-recovered.png",
+      "bytes": 349481,
+      "sha256": "f933aa910ce6c9a8ed7229e948977f3eb846ce113cda5a7d02dfc54ee63e4602"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 291842,
+      "sha256": "d271ed6f498c40f724be7e22ec2438430e76ac3e3aa53520d6baf5a2a4d8039c"
+    },
+    {
+      "file": "scoped-rpc-timeline.json",
+      "bytes": 661,
+      "sha256": "e92a676b096c53e35a320ba294135c2359bb3018d39eba8f9dacacf2376f3d7f"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 1344925,
+      "sha256": "1d59a7c2a388e91c7308513456efe881ad6b5e7593870c2cdc978fbbfb050d7e",
+      "originalAttachmentBasename": "signed-in-video-6866eb6fc1a3b776999f2823446af5dbee11f425.webm"
+    }
+  ]
+}

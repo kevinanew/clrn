@@ -1,0 +1,38 @@
+{
+  "key": "http-timeout",
+  "title": "私人桌 HTTP 带入 timeout 应正确提示并可恢复",
+  "status": "passed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 53797,
+  "startTime": "2026-11-04T20:54:18.867Z",
+  "errors": [],
+  "artifacts": [
+    {
+      "file": "01-http-fault.png",
+      "bytes": 348341,
+      "sha256": "a13de2cd7906db53ab6f9f9eb1fbf2d0a144a1abe89ff11dd7a7dd57ed4234c5"
+    },
+    {
+      "file": "02-http-recovered.png",
+      "bytes": 349711,
+      "sha256": "8c13034782625e24663ca69859bbb4558dd090ad8b2f038c7597f79763825429"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 280840,
+      "sha256": "605fb624be708a63bcb148cffdd7b43acb3dd638615565121327ab26a1f2f252"
+    },
+    {
+      "file": "scoped-http-timeline.json",
+      "bytes": 782,
+      "sha256": "4eaf5eb2eb86cd19b5b59d5a33dba4f5d3ef01fffe022ff0f4048638ea6356f2"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 1377084,
+      "sha256": "1fd2808dc407cd3d10dd16d416c424de952d49d18ac196c4fb0d632a09431ccd",
+      "originalAttachmentBasename": "signed-in-video-6c709d4c3ae23cdc0c7242880309a822807a2ed6.webm"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "key": "normal",
+  "title": "私人桌无故障正常带入及入座对照",
+  "status": "passed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 29841,
+  "startTime": "2026-11-04T20:58:37.992Z",
+  "errors": [],
+  "artifacts": [
+    {
+      "file": "01-private-table.png",
+      "bytes": 359926,
+      "sha256": "f5ccde3b5fa947a66ef8eb6a4609561b45fcbe372f7b221c71c40fff2ae06c91"
+    },
+    {
+      "file": "02-buy-in.png",
+      "bytes": 304597,
+      "sha256": "442d0639cc727fe3301f73dd992370c79eda2fc2302e6f48195fa913210019e1"
+    },
+    {
+      "file": "03-seated.png",
+      "bytes": 349601,
+      "sha256": "dcc3078f99718e33cee069ec69df289719c5bfc19cc741131581b00f096b7141"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 281230,
+      "sha256": "cd1c5e57095ce1ed67333e7f1cb8dda40a6c4e621798d3c7a9da20f5f8120b17"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 807560,
+      "sha256": "e3dee06b8b6433a55c7d639720c808ee4fd3f77c936f5f0f748dd05b92db9c60",
+      "originalAttachmentBasename": "signed-in-video-4511ae7286aaeec7ad5c85442dc2a92c6a315ef0.webm"
+    }
+  ]
+}

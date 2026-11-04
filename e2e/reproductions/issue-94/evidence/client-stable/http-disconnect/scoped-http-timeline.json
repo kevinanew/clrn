@@ -1,0 +1,48 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793825733.4675782,
+      "direction": "request",
+      "mode": "disconnect",
+      "layer": "http",
+      "requestId": "1da8cdf0-6046-4f57-88d0-b69f08279faa"
+    },
+    {
+      "at": 1793825733.620856,
+      "direction": "request",
+      "mode": "disconnect",
+      "layer": "http",
+      "requestId": "8fe6dbeb-f7a3-498f-bf33-bc5dbf833536"
+    },
+    {
+      "at": 1793825736.0860958,
+      "direction": "request",
+      "mode": "disconnect",
+      "layer": "http",
+      "requestId": "1e392561-c123-41fc-8f48-fd4f13b4b6b3"
+    },
+    {
+      "at": 1793825736.105647,
+      "direction": "request",
+      "mode": "disconnect",
+      "layer": "http",
+      "requestId": "fb70ccf7-4c39-4c94-a7ad-a946501f7254"
+    },
+    {
+      "at": 1793825737.853152,
+      "direction": "request",
+      "mode": "none",
+      "layer": "http",
+      "requestId": "eded7c56-e326-4519-b781-b00049232485"
+    },
+    {
+      "at": 1793825738.900592,
+      "direction": "upstream-response",
+      "layer": "http",
+      "requestId": "eded7c56-e326-4519-b781-b00049232485",
+      "status": 200,
+      "ok": true
+    }
+  ]
+}

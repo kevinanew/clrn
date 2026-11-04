@@ -1,0 +1,50 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793825642.7159429,
+      "direction": "request",
+      "mode": "http-504",
+      "layer": "http",
+      "requestId": "cc222c65-6e23-407e-ad2e-03d85b8246b5"
+    },
+    {
+      "at": 1793825642.716052,
+      "direction": "injected-response",
+      "mode": "http-504",
+      "layer": "http",
+      "requestId": "cc222c65-6e23-407e-ad2e-03d85b8246b5",
+      "status": 504
+    },
+    {
+      "at": 1793825644.6370811,
+      "direction": "request",
+      "mode": "http-504",
+      "layer": "http",
+      "requestId": "068a42c5-5d70-4bce-a962-91ce457d42c3"
+    },
+    {
+      "at": 1793825644.6371682,
+      "direction": "injected-response",
+      "mode": "http-504",
+      "layer": "http",
+      "requestId": "068a42c5-5d70-4bce-a962-91ce457d42c3",
+      "status": 504
+    },
+    {
+      "at": 1793825646.170089,
+      "direction": "request",
+      "mode": "none",
+      "layer": "http",
+      "requestId": "1a9072cf-f210-450c-b463-ec6186f3695c"
+    },
+    {
+      "at": 1793825646.33985,
+      "direction": "upstream-response",
+      "layer": "http",
+      "requestId": "1a9072cf-f210-450c-b463-ec6186f3695c",
+      "status": 200,
+      "ok": true
+    }
+  ]
+}

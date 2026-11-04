@@ -1,0 +1,38 @@
+{
+  "key": "http-http-503",
+  "title": "私人桌 HTTP 带入 http-503 应正确提示并可恢复",
+  "status": "passed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 36089,
+  "startTime": "2026-11-04T20:53:10.662Z",
+  "errors": [],
+  "artifacts": [
+    {
+      "file": "01-http-fault.png",
+      "bytes": 348950,
+      "sha256": "67d8b243b9607f62ae7c18b68a246c5acfbef62008fd3867a6ada4fc3da1a698"
+    },
+    {
+      "file": "02-http-recovered.png",
+      "bytes": 349859,
+      "sha256": "d6bb56a18d57998d7ac65cdb8551548cbda8d006e30d088a5cd56806b40acabd"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 281283,
+      "sha256": "a010289e5cac8a7d30346c0858516938c9c2c09a6a9d33a8ce957e2461b09542"
+    },
+    {
+      "file": "scoped-http-timeline.json",
+      "bytes": 1207,
+      "sha256": "b083c996657018d2b025fd8845130d1c578a1935d80d5548213e032054958097"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 993224,
+      "sha256": "c581044bcc5adc0ed42257e8dfa5da0e07bf2f1cd0387e32f2a3fda2897d9f81",
+      "originalAttachmentBasename": "signed-in-video-423b996cfea0ef641bf2ed5ee6ce7b5531d09f1f.webm"
+    }
+  ]
+}

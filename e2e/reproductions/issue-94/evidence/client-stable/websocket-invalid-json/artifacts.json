@@ -1,0 +1,38 @@
+{
+  "key": "websocket-invalid-json",
+  "title": "私人桌入座 invalid-json 应正确提示，解除故障后真实重试",
+  "status": "passed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 48747,
+  "startTime": "2026-11-04T21:02:23.940Z",
+  "errors": [],
+  "artifacts": [
+    {
+      "file": "04-fault.png",
+      "bytes": 313771,
+      "sha256": "1cf944f350bebfe9887c13d26414439cc5453c546cacebff0d5b4898ce84e5df"
+    },
+    {
+      "file": "05-recovered.png",
+      "bytes": 349476,
+      "sha256": "2cf22ec3cf488c120522024a771f48878f9b75a0c7a2c32d3852aa3a1200ddbf"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 301595,
+      "sha256": "8c644ee1b0ed257eb2dd4dcd418e5c2a2abb3717284362b7d9ddab63b1ecdd7e"
+    },
+    {
+      "file": "scoped-rpc-timeline.json",
+      "bytes": 999,
+      "sha256": "7edb427b45294b8b5f46df862ef52029a47ac194ee149c4cd0357a37213a9b84"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 1277602,
+      "sha256": "c1d943a17b65546cc257e74a3b988b5c9c3e713be7f878134e30594940aeeef6",
+      "originalAttachmentBasename": "signed-in-video-2f79db74bdb5562734169abfd40f96d9e89e5a65.webm"
+    }
+  ]
+}

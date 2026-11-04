@@ -1,0 +1,181 @@
+{
+  "runId": "1793825578647-94992-client-stable",
+  "originalPlaywrightReportSha256": "3987c17e98d1cfcb6773a605673ce5721ce0a5515f77d032dae319077df3701c",
+  "derivation": "Selected actual statuses, timings, errors and artifact digests; config, stdout, duplicate attachments and embedded base64 summaries omitted.",
+  "stats": {
+    "startTime": "2026-11-04T20:53:10.398Z",
+    "duration": 602537.309,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "key": "http-http-503",
+      "title": "私人桌 HTTP 带入 http-503 应正确提示并可恢复",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 36089,
+      "startTime": "2026-11-04T20:53:10.662Z",
+      "errors": []
+    },
+    {
+      "key": "http-http-504",
+      "title": "私人桌 HTTP 带入 http-504 应正确提示并可恢复",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 31901,
+      "startTime": "2026-11-04T20:53:46.958Z",
+      "errors": []
+    },
+    {
+      "key": "http-timeout",
+      "title": "私人桌 HTTP 带入 timeout 应正确提示并可恢复",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 53797,
+      "startTime": "2026-11-04T20:54:18.867Z",
+      "errors": []
+    },
+    {
+      "key": "http-disconnect",
+      "title": "私人桌 HTTP 带入 disconnect 应正确提示并可恢复",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 29807,
+      "startTime": "2026-11-04T20:55:12.672Z",
+      "errors": []
+    },
+    {
+      "key": "http-invalid-json",
+      "title": "私人桌 HTTP 带入 invalid-json 应正确提示并可恢复",
+      "status": "failed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 73005,
+      "startTime": "2026-11-04T20:55:42.485Z",
+      "errors": [
+        {
+          "message": "Error: 请求失败后应有可读提示\n\nexpect(locator).toBeVisible() failed\n\nLocator: getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\nExpected: visible\nTimeout: 40000ms\nError: element(s) not found\n\nCall log:\n  - 请求失败后应有可读提示 with timeout 40000ms\n  - waiting for getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\n\n\n  39 |         const notice = page.getByTestId('toastText1')\n  40 |           .or(page.getByTestId('common-alert-message')).or(page.getByTestId('alert-message-text')).filter({ visible: true }).first();\n> 41 |         await expect.soft(notice, '请求失败后应有可读提示').toBeVisible({ timeout: 40_000 });\n     |                                                  ^\n  42 |         if (await notice.isVisible()) {\n  43 |           expect.soft(await notice.textContent()).not.toMatch(/undefined|筹码不足|余额不足/);\n  44 |         }\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:41:50\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:27:5",
+          "location": {
+            "file": "/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts",
+            "column": 50,
+            "line": 41
+          }
+        }
+      ]
+    },
+    {
+      "key": "http-missing-fields",
+      "title": "私人桌 HTTP 带入 missing-fields 应正确提示并可恢复",
+      "status": "failed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 72620,
+      "startTime": "2026-11-04T20:56:55.782Z",
+      "errors": [
+        {
+          "message": "Error: 请求失败后应有可读提示\n\nexpect(locator).toBeVisible() failed\n\nLocator: getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\nExpected: visible\nTimeout: 40000ms\nError: element(s) not found\n\nCall log:\n  - 请求失败后应有可读提示 with timeout 40000ms\n  - waiting for getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\n\n\n  39 |         const notice = page.getByTestId('toastText1')\n  40 |           .or(page.getByTestId('common-alert-message')).or(page.getByTestId('alert-message-text')).filter({ visible: true }).first();\n> 41 |         await expect.soft(notice, '请求失败后应有可读提示').toBeVisible({ timeout: 40_000 });\n     |                                                  ^\n  42 |         if (await notice.isVisible()) {\n  43 |           expect.soft(await notice.textContent()).not.toMatch(/undefined|筹码不足|余额不足/);\n  44 |         }\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:41:50\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:27:5",
+          "location": {
+            "file": "/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts",
+            "column": 50,
+            "line": 41
+          }
+        }
+      ]
+    },
+    {
+      "key": "http-business-conflict",
+      "title": "私人桌 HTTP 带入 business-conflict 应正确提示并可恢复",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 29130,
+      "startTime": "2026-11-04T20:58:08.760Z",
+      "errors": []
+    },
+    {
+      "key": "normal",
+      "title": "私人桌无故障正常带入及入座对照",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 29841,
+      "startTime": "2026-11-04T20:58:37.992Z",
+      "errors": []
+    },
+    {
+      "key": "websocket-missing-fields",
+      "title": "私人桌入座 missing-fields 应正确提示，解除故障后真实重试",
+      "status": "failed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 32712,
+      "startTime": "2026-11-04T20:59:07.840Z",
+      "errors": [
+        {
+          "message": "Error: 缺失字段须有可读提示\n\nexpect(received).not.toContain(expected) // indexOf\n\nExpected substring: not \"undefined\"\nReceived string:        \"undefined-sit\"\n\n  55 |         await screenshotAfterSettling(page, information.outputPath('04-fault.png'));\n  56 |         if (await message.isVisible()) {\n> 57 |           expect.soft(await message.textContent(), '缺失字段须有可读提示').not.toContain('undefined');\n     |                                                                      ^\n  58 |           expect.soft(await message.textContent(), '非余额故障不得误报筹码不足').not.toMatch(/筹码不足|余额不足/);\n  59 |         }\n  60 |         const first = await faultProxy.command<FaultStatus>('texas');\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:57:70\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:43:5",
+          "location": {
+            "file": "/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts",
+            "column": 70,
+            "line": 57
+          }
+        }
+      ]
+    },
+    {
+      "key": "websocket-business-conflict",
+      "title": "私人桌入座 business-conflict 应正确提示，解除故障后真实重试",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 28467,
+      "startTime": "2026-11-04T20:59:40.850Z",
+      "errors": []
+    },
+    {
+      "key": "websocket-timeout",
+      "title": "私人桌入座 timeout 应正确提示，解除故障后真实重试",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 51352,
+      "startTime": "2026-11-04T21:00:09.431Z",
+      "errors": []
+    },
+    {
+      "key": "websocket-disconnect",
+      "title": "私人桌入座 disconnect 应正确提示，解除故障后真实重试",
+      "status": "failed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 82844,
+      "startTime": "2026-11-04T21:01:00.808Z",
+      "errors": [
+        {
+          "message": "Error: 故障期间再次入座仍应提示错误\n\nexpect(locator).toBeVisible() failed\n\nLocator: getByTestId('common-alert-message').filter({ visible: true })\nExpected: visible\nTimeout: 40000ms\nError: element(s) not found\n\nCall log:\n  - 故障期间再次入座仍应提示错误 with timeout 40000ms\n  - waiting for getByTestId('common-alert-message').filter({ visible: true })\n\n\n  65 |           return status.timeline.filter(event => event.direction === 'request' && event.mode === mode).length;\n  66 |         }, { message: '故障期间再次重试必须再次命中', timeout: 30_000 }).toBeGreaterThan(hits);\n> 67 |         await expect.soft(message, '故障期间再次入座仍应提示错误').toBeVisible({ timeout: 40_000 });\n     |                                                      ^\n  68 |         await faultProxy.command('texas', { ...scope, mode: 'none' });\n  69 |         await retrySit(page);\n  70 |         await expect.poll(async () => {\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:67:54\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:43:5",
+          "location": {
+            "file": "/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts",
+            "column": 54,
+            "line": 67
+          }
+        }
+      ]
+    },
+    {
+      "key": "websocket-invalid-json",
+      "title": "私人桌入座 invalid-json 应正确提示，解除故障后真实重试",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 48747,
+      "startTime": "2026-11-04T21:02:23.940Z",
+      "errors": []
+    }
+  ]
+}

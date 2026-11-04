@@ -1,0 +1,54 @@
+{
+  "source": "unmodified native texas SDK logger; raw logs discarded",
+  "attempts": [
+    {
+      "method": "POST",
+      "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "operation": "withdraw",
+      "attempt": 1,
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "operation": "withdraw",
+      "attempt": 2,
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "operation": "withdraw",
+      "attempt": 3,
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "operation": "withdraw",
+      "attempt": 1,
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "operation": "withdraw",
+      "attempt": 2,
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "operation": "withdraw",
+      "attempt": 3,
+      "status": 503
+    }
+  ],
+  "exceptionNameOccurrences": {
+    "ReadTimeout": 0,
+    "HTTPError": 12,
+    "ConnectionError": 0,
+    "JSONDecodeError": 0,
+    "Request failed after retries": 4
+  }
+}

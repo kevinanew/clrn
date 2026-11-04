@@ -1,0 +1,38 @@
+{
+  "key": "http-disconnect",
+  "title": "私人桌 HTTP 带入 disconnect 应正确提示并可恢复",
+  "status": "passed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 29807,
+  "startTime": "2026-11-04T20:55:12.672Z",
+  "errors": [],
+  "artifacts": [
+    {
+      "file": "01-http-fault.png",
+      "bytes": 346276,
+      "sha256": "62bf95cc4b640643232bc5c47e6525a344f244d0c3ab713a08fb1ed1c9c51ae6"
+    },
+    {
+      "file": "02-http-recovered.png",
+      "bytes": 349025,
+      "sha256": "62dfadc15ad6d2df4be11a716bd17105ce04e6f7da03f44a8de119b05c7eb6a9"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 297658,
+      "sha256": "9955d1b3b6b179f72dc307268643457f4e4a51063987c1d3982808e69fc4a30c"
+    },
+    {
+      "file": "scoped-http-timeline.json",
+      "bytes": 1155,
+      "sha256": "b5e7a080add1b70c1172f9efe545bc92c40aa3f9ebccdf27c908d6e3ca8515e8"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 956916,
+      "sha256": "77ecfaa54dbc7f12cc4575581ed3d07a73befd0871add61112ce5fcf42dce337",
+      "originalAttachmentBasename": "signed-in-video-02799b878ac6d424248b5b14a57a6ed5cf154c72.webm"
+    }
+  ]
+}

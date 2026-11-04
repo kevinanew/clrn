@@ -1,0 +1,31 @@
+{
+  "runId": "1793826112204-99765-timeout",
+  "createdAt": "2026-11-04T21:01:59.306Z",
+  "applicationCommit": "b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec",
+  "releaseTag": "web-staging-200001602-b20853dbe65c",
+  "archiveSha256": "ca1f1b81e9a750e5a517287a6c1209be866d9d36cd408391f10f6eb7b40fbe87",
+  "recordedClrnCommit": "70b6a40bc0ac7b1a4e1ff1d02f8b3f12acf750cb",
+  "worktreeHadChangesAtReleasePreparation": false,
+  "implementationCommitMatchingEveryNativeFileFingerprint": "70b6a40bc0ac7b1a4e1ff1d02f8b3f12acf750cb",
+  "originalReleaseManifestSha256": "6e6a1be9f63d54c0cf64686c601cd6138f818fc2f6d7f35a2594e0f425d59421",
+  "sourceSha256": {
+    "e2e/mitmproxy/test_texas_faults.py": "9394af7abf84484178fc9aab9dbcef3cd81ae3af71bc7eb37da8af506fdaf4d7",
+    "e2e/mitmproxy/texas_faults.py": "ce749db2dd6759b1fee3b43b9b3988c274376b267915c920ffb7ce1167ecb29b",
+    "e2e/reproductions/issue-94/backend_contract.py": "d58666511844cab53138331283df0c1910d9d3193b202e0d78c2f838ba60ec02",
+    "e2e/reproductions/issue-94/coin-table.scenario.ts": "a5454ed701f0fc04c489f995bac8fe63ebbfe7f5a90a45e3388599699d7ed6a4",
+    "e2e/reproductions/issue-94/fixtures.ts": "798d868643776f4aba202fe6ad32262df4dfb51668ad88545146340bf9c6b5e2",
+    "e2e/reproductions/issue-94/http-buy-in.scenario.ts": "3abb205b5602fc4d8778f6c17559877f8f74af06a9a0ab002c459a705eca4d62",
+    "e2e/reproductions/issue-94/isolated_wallet.py": "25e5e8aefc180d578c71ca5fc16e882fd1c8ffeed3b108ed07819656b2857c45",
+    "e2e/reproductions/issue-94/manifest.mjs": "e91c492e2a9ef685e928574a800a6b62853af8b703ad91607d4e62fbfabe3e5a",
+    "e2e/reproductions/issue-94/playwright.config.ts": "feab3a3e7ecd2f3625386d1b1cb04d8a93554c9a18e85508a0372674c5946614",
+    "e2e/reproductions/issue-94/private-table.scenario.ts": "bc803468b3b1fb9d23a230e8a39e3c90f39e5af8f4801353dff142d1c3422149",
+    "e2e/reproductions/issue-94/private-table.ts": "52c1e1c2645b8a82a94a80bf3e3461a3b059792aaf034ba2d4da69e3ab33f542",
+    "e2e/reproductions/issue-94/run.mjs": "1fa7f4c832362a9ef1eb5aa54ed65cdd289885736d4c09cfe914d4daa8044f87",
+    "e2e/reproductions/issue-94/screenshot.browser.ts": "a8c566de559c8ee9b8e09cbb2b08c9688410d918fa5d8ef423adc9c914692afd",
+    "e2e/reproductions/issue-94/screenshot.ts": "623d850f998bd324cfb5af99c70d5fbcf6bb5ad30def460e9a631b2b6336a11d",
+    "e2e/reproductions/issue-94/test_backend_contract.py": "715d670e27f59a9f69724269ab5ec953c83cc9fc7895ee23c183f063d075c048",
+    "package-lock.json": "6362985a66dba1ba979d5d06aebc1940a93e8326dd586abda81c11bc2cad2882"
+  },
+  "nativeBackendProvenance": "native-provenance.json",
+  "derivation": "Selected actual release and git fields; legacy engine-only backend default omitted. Native service versions recorded independently."
+}

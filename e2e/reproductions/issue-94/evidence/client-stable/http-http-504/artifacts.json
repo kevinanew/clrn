@@ -1,0 +1,38 @@
+{
+  "key": "http-http-504",
+  "title": "私人桌 HTTP 带入 http-504 应正确提示并可恢复",
+  "status": "passed",
+  "expectedStatus": "passed",
+  "retry": 0,
+  "durationMs": 31901,
+  "startTime": "2026-11-04T20:53:46.958Z",
+  "errors": [],
+  "artifacts": [
+    {
+      "file": "01-http-fault.png",
+      "bytes": 348369,
+      "sha256": "6178b87d4c487a918199673215d62ea0fc4fd5986fe8b8a0576be99645afef19"
+    },
+    {
+      "file": "02-http-recovered.png",
+      "bytes": 349324,
+      "sha256": "1189e4a290fae0f81e3a8af27d1fe3ea95e7ce358ea166f8bf09ff9a7e3cb419"
+    },
+    {
+      "file": "connection-diagnostics.json",
+      "bytes": 285371,
+      "sha256": "c7d1b19ac8cb2152a9ff77fad24c68e0a94ea2122234b384d662f193efe29b6e"
+    },
+    {
+      "file": "scoped-http-timeline.json",
+      "bytes": 1209,
+      "sha256": "18c6f78a3702c128edf05ee9427ba654efcf75dc34759281d4483438d42bf296"
+    },
+    {
+      "file": "signed-in.webm",
+      "bytes": 990782,
+      "sha256": "401f530313ac0f76f9231ae21753cd5a2d501a7e2493cf1f3c59829e1ae8cccc",
+      "originalAttachmentBasename": "signed-in-video-80c451a0a7e59a5a09c27ab967960e3d8aa8e09c.webm"
+    }
+  ]
+}
