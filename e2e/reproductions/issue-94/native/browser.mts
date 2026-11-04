@@ -3,7 +3,7 @@ import { chromium, expect, type BrowserContext, type Page, type Browser, type Br
 import type { Mitmproxy } from '../../../helpers/mitmproxy-client';
 import type { NativeStatus, NativeReport, WalletState, WalletHit, NativeGamePublication, RoomSnapshot } from './types';
 import { verifyFaultAndRecovery, verifyTransportAndRecovery } from './recovery.mjs';
-import { nativeFunds as verifyFunds } from './funds';
+import { nativeFunds as verifyFunds } from './funds.mjs';
 import { safeDiagnosticReason } from '../../../../scripts/request-failure.cjs';
 import * as pageModule from '../../../cases/_shared/page';
 const { openHall, prepareContext } = compatibleModule(pageModule);

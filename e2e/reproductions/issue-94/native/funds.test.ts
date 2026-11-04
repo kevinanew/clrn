@@ -1,7 +1,7 @@
 /** Regression for settlement-phase accounting and genuine committed-loss detection. */
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { nativeFunds } from './funds';
+import { nativeFunds } from './funds.mjs';
 import type { RoomSnapshot, WalletState } from './types';
 
 /**
