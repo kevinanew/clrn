@@ -1,0 +1,152 @@
+{
+  "startedAt": 1793779141323,
+  "dropped": 0,
+  "sourceEventCount": 875,
+  "selection": "Texas API, WebSocket lifecycle, page errors and test completion only",
+  "events": [
+    {
+      "connectionId": "socket-76",
+      "node": "laiwan_prd-dbf2ec5fcfa2",
+      "path": "/v2/centrifugo/connection/websocket",
+      "event": "websocket.start",
+      "observedAt": 1793779142147
+    },
+    {
+      "requestId": "http-194",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/user_settings",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": "unavailable",
+      "response": "not-received",
+      "event": "http.start",
+      "observedAt": 1793779149823
+    },
+    {
+      "requestId": "http-194",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/user_settings",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 744,
+      "source": "browser",
+      "event": "http.response",
+      "observedAt": 1793779150567
+    },
+    {
+      "requestId": "http-194",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/user_settings",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 744,
+      "event": "http.finished",
+      "observedAt": 1793779150567
+    },
+    {
+      "connectionId": "socket-237",
+      "node": "laiwan_prd-dbf2ec5fcfa2",
+      "path": "/v2/centrifugo/connection/websocket",
+      "event": "websocket.start",
+      "observedAt": 1793779154815
+    },
+    {
+      "connectionId": "socket-238",
+      "node": "laiwan_prd-109768476dca",
+      "path": "/v2/centrifugo/connection/websocket",
+      "event": "websocket.start",
+      "observedAt": 1793779154820
+    },
+    {
+      "requestId": "http-249",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/enter",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": "unavailable",
+      "response": "not-received",
+      "event": "http.start",
+      "observedAt": 1793779156112
+    },
+    {
+      "requestId": "http-249",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/enter",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 737,
+      "source": "browser",
+      "event": "http.response",
+      "observedAt": 1793779156849
+    },
+    {
+      "requestId": "http-249",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/enter",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 737,
+      "event": "http.finished",
+      "observedAt": 1793779156849
+    },
+    {
+      "reason": "detail=withheld reason=request-failed",
+      "event": "page.error",
+      "observedAt": 1793779156864
+    },
+    {
+      "reason": "detail=withheld reason=request-failed",
+      "event": "page.error",
+      "observedAt": 1793779167983
+    },
+    {
+      "requestId": "http-270",
+      "node": "laiwan_prd-dbf2ec5fcfa2",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": "unavailable",
+      "response": "not-received",
+      "event": "http.start",
+      "observedAt": 1793779179834
+    },
+    {
+      "requestId": "http-270",
+      "node": "laiwan_prd-dbf2ec5fcfa2",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 245,
+      "source": "browser",
+      "event": "http.response",
+      "observedAt": 1793779180079
+    },
+    {
+      "requestId": "http-270",
+      "node": "laiwan_prd-dbf2ec5fcfa2",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 245,
+      "event": "http.finished",
+      "observedAt": 1793779180079
+    },
+    {
+      "reason": "detail=withheld reason=request-failed",
+      "event": "test.complete",
+      "observedAt": 1793779183353
+    }
+  ]
+}

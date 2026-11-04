@@ -1,0 +1,34 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793779029.006477,
+      "direction": "request",
+      "commandId": 10,
+      "mode": "timeout",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793779040.169492,
+      "direction": "request",
+      "commandId": 13,
+      "mode": "timeout",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793779051.268897,
+      "direction": "request",
+      "commandId": 16,
+      "mode": "none",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793779051.7632399,
+      "direction": "upstream-response",
+      "commandId": 16,
+      "layer": "websocket",
+      "ok": true,
+      "errorType": null
+    }
+  ]
+}

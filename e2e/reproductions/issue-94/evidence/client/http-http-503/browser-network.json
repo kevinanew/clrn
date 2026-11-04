@@ -1,0 +1,214 @@
+{
+  "startedAt": 1793778608316,
+  "dropped": 0,
+  "sourceEventCount": 874,
+  "selection": "Texas API, WebSocket lifecycle, page errors and test completion only",
+  "events": [
+    {
+      "connectionId": "socket-76",
+      "node": "laiwan_prd-109768476dca",
+      "path": "/v2/centrifugo/connection/websocket",
+      "event": "websocket.start",
+      "observedAt": 1793778609399
+    },
+    {
+      "requestId": "http-195",
+      "node": "laiwan_prd-109768476dca",
+      "path": "/v10/texas_holdem/room/{room}/user_settings",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": "unavailable",
+      "response": "not-received",
+      "event": "http.start",
+      "observedAt": 1793778615069
+    },
+    {
+      "requestId": "http-195",
+      "node": "laiwan_prd-109768476dca",
+      "path": "/v10/texas_holdem/room/{room}/user_settings",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 465,
+      "source": "browser",
+      "event": "http.response",
+      "observedAt": 1793778615534
+    },
+    {
+      "requestId": "http-195",
+      "node": "laiwan_prd-109768476dca",
+      "path": "/v10/texas_holdem/room/{room}/user_settings",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 465,
+      "event": "http.finished",
+      "observedAt": 1793778615534
+    },
+    {
+      "connectionId": "socket-253",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v2/centrifugo/connection/websocket",
+      "event": "websocket.start",
+      "observedAt": 1793778618495
+    },
+    {
+      "connectionId": "socket-254",
+      "node": "laiwan_prd-109768476dca",
+      "path": "/v2/centrifugo/connection/websocket",
+      "event": "websocket.start",
+      "observedAt": 1793778618497
+    },
+    {
+      "requestId": "http-260",
+      "node": "laiwan_prd-109768476dca",
+      "path": "/v10/texas_holdem/room/{room}/enter",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": "unavailable",
+      "response": "not-received",
+      "event": "http.start",
+      "observedAt": 1793778620296
+    },
+    {
+      "requestId": "http-260",
+      "node": "laiwan_prd-109768476dca",
+      "path": "/v10/texas_holdem/room/{room}/enter",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 783,
+      "source": "browser",
+      "event": "http.response",
+      "observedAt": 1793778621079
+    },
+    {
+      "requestId": "http-260",
+      "node": "laiwan_prd-109768476dca",
+      "path": "/v10/texas_holdem/room/{room}/enter",
+      "operation": "browser-api-request",
+      "method": "PUT",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 783,
+      "event": "http.finished",
+      "observedAt": 1793778621079
+    },
+    {
+      "requestId": "http-274",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": "unavailable",
+      "response": "not-received",
+      "event": "http.start",
+      "observedAt": 1793778622469
+    },
+    {
+      "requestId": "http-274",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": 503,
+      "response": "received",
+      "elapsedMs": 316,
+      "source": "browser",
+      "event": "http.response",
+      "observedAt": 1793778622785
+    },
+    {
+      "requestId": "http-274",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": 503,
+      "response": "received",
+      "elapsedMs": 318,
+      "event": "http.finished",
+      "observedAt": 1793778622787
+    },
+    {
+      "requestId": "http-275",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": "unavailable",
+      "response": "not-received",
+      "event": "http.start",
+      "observedAt": 1793778624003
+    },
+    {
+      "requestId": "http-275",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": 503,
+      "response": "received",
+      "elapsedMs": 12,
+      "source": "browser",
+      "event": "http.response",
+      "observedAt": 1793778624015
+    },
+    {
+      "requestId": "http-275",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": 503,
+      "response": "received",
+      "elapsedMs": 12,
+      "event": "http.finished",
+      "observedAt": 1793778624015
+    },
+    {
+      "requestId": "http-276",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": "unavailable",
+      "response": "not-received",
+      "event": "http.start",
+      "observedAt": 1793778626005
+    },
+    {
+      "requestId": "http-276",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 786,
+      "source": "browser",
+      "event": "http.response",
+      "observedAt": 1793778626791
+    },
+    {
+      "requestId": "http-276",
+      "node": "laiwan_prd-b0daa720cf69",
+      "path": "/v10/texas_holdem/room/{room}/buy_in/apply",
+      "operation": "browser-api-request",
+      "method": "POST",
+      "status": 200,
+      "response": "received",
+      "elapsedMs": 787,
+      "event": "http.finished",
+      "observedAt": 1793778626792
+    },
+    {
+      "reason": "detail=withheld reason=request-failed",
+      "event": "test.complete",
+      "observedAt": 1793778636051
+    }
+  ]
+}

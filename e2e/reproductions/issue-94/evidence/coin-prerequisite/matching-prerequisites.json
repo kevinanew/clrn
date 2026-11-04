@@ -1,0 +1,15 @@
+{
+  "checkIpAddress": true,
+  "checkGpsCoordinate": false,
+  "roomSettings": {
+    "auto_start_player_quantity": 2,
+    "buy_in_highest_stack": 4000,
+    "can_reserve_seat": false,
+    "currency_name": "coin",
+    "maximum_buy_in": 200,
+    "minimum_buy_in": 100,
+    "seat_quantity": 6
+  },
+  "outcome": "matching-not-yet-confirmed",
+  "backendDeployment": "not-verified"
+}

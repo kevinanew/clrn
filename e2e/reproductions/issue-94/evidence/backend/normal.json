@@ -1,0 +1,74 @@
+{
+  "mode": "normal",
+  "walletBefore": {
+    "94000000-0000-4000-8000-000000000002": 9845,
+    "94000000-0000-4000-8000-000000000003": 9845
+  },
+  "walletAfter": {
+    "94000000-0000-4000-8000-000000000002": 9845,
+    "94000000-0000-4000-8000-000000000003": 9690
+  },
+  "initialTransactions": 2,
+  "transactions": 3,
+  "hits": [
+    {
+      "mode": "normal",
+      "transaction": "d9cefe36-a002-466e-a931-a19ce08a8dd7",
+      "player": "94000000-0000-4000-8000-000000000003",
+      "amount": 155,
+      "at": 1793779142.4666529,
+      "status": 200,
+      "errorType": null
+    }
+  ],
+  "events": [
+    "all_in",
+    "pots_updated",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "all_in_show_hole_card",
+    "showdown",
+    "settlement",
+    "end_game",
+    "about_to_start",
+    "deposit_buy_in",
+    "hand_analyse",
+    "hand_analyse"
+  ],
+  "capturedAtMessageExit": [
+    "all_in",
+    "pots_updated",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "all_in_show_hole_card",
+    "showdown",
+    "settlement",
+    "end_game",
+    "about_to_start",
+    "deposit_buy_in",
+    "hand_analyse",
+    "hand_analyse"
+  ],
+  "messageDelivery": "isolated capture; not delivered by a real gateway",
+  "errorClass": null,
+  "errorType": null,
+  "elapsedSeconds": 0.026,
+  "tableStacks": {
+    "94000000-0000-4000-8000-000000000002": 310,
+    "94000000-0000-4000-8000-000000000003": 155
+  }
+}

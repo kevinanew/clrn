@@ -1,0 +1,50 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793778880.007596,
+      "direction": "request",
+      "mode": "invalid-json",
+      "layer": "http",
+      "requestId": "ca3a69c5-227e-4b4f-835c-c40d878091e2"
+    },
+    {
+      "at": 1793778880.007679,
+      "direction": "injected-response",
+      "mode": "invalid-json",
+      "layer": "http",
+      "requestId": "ca3a69c5-227e-4b4f-835c-c40d878091e2",
+      "status": 200
+    },
+    {
+      "at": 1793778921.78066,
+      "direction": "request",
+      "mode": "invalid-json",
+      "layer": "http",
+      "requestId": "88663f89-e4aa-459d-8bc9-a678fbc10de3"
+    },
+    {
+      "at": 1793778921.7807412,
+      "direction": "injected-response",
+      "mode": "invalid-json",
+      "layer": "http",
+      "requestId": "88663f89-e4aa-459d-8bc9-a678fbc10de3",
+      "status": 200
+    },
+    {
+      "at": 1793778923.97888,
+      "direction": "request",
+      "mode": "none",
+      "layer": "http",
+      "requestId": "add1534c-7066-4fa3-8386-526a30024ef6"
+    },
+    {
+      "at": 1793778924.3577878,
+      "direction": "upstream-response",
+      "layer": "http",
+      "requestId": "add1534c-7066-4fa3-8386-526a30024ef6",
+      "status": 200,
+      "ok": true
+    }
+  ]
+}

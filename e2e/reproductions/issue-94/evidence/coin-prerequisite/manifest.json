@@ -1,0 +1,29 @@
+{
+  "runId": "coin-prerequisite-20261104",
+  "createdAt": "2026-11-04T07:43:30.904Z",
+  "applicationCommit": "b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec",
+  "releaseTag": "web-staging-200001602-b20853dbe65c",
+  "archiveSha256": "ca1f1b81e9a750e5a517287a6c1209be866d9d36cd408391f10f6eb7b40fbe87",
+  "clrnCommit": "8c08991a11eda78ba64dae4b3c274c64adb07bfc",
+  "worktreeHasChanges": false,
+  "sourceSha256": {
+    "e2e/mitmproxy/test_texas_faults.py": "9394af7abf84484178fc9aab9dbcef3cd81ae3af71bc7eb37da8af506fdaf4d7",
+    "e2e/mitmproxy/texas_faults.py": "ce749db2dd6759b1fee3b43b9b3988c274376b267915c920ffb7ce1167ecb29b",
+    "e2e/reproductions/issue-94/backend_contract.py": "3dbb857d02ffe61202d91791787791ce333e7a13c269fd5b121e725f02299fbc",
+    "e2e/reproductions/issue-94/coin-table.scenario.ts": "723686672ac7b20cf1280182d5c5999ba53084299fd6fb38f2b7ceeeab49b711",
+    "e2e/reproductions/issue-94/fixtures.ts": "e4b919cbe306b6a4f3b762b9b14de91587965aa782d3e24e798bbb8b113cf83c",
+    "e2e/reproductions/issue-94/http-buy-in.scenario.ts": "d3ff44db1a2888f481e8c7b8249c0a2b9c3258cbd6299f9f0c44d430b3aad750",
+    "e2e/reproductions/issue-94/isolated_wallet.py": "9699a24c2b2db5dca9065a8af17953347b4edef54ae997b96b7575bbc284bb96",
+    "e2e/reproductions/issue-94/manifest.mjs": "e91c492e2a9ef685e928574a800a6b62853af8b703ad91607d4e62fbfabe3e5a",
+    "e2e/reproductions/issue-94/playwright.config.ts": "feab3a3e7ecd2f3625386d1b1cb04d8a93554c9a18e85508a0372674c5946614",
+    "e2e/reproductions/issue-94/private-table.scenario.ts": "a0f9277ab47e7216f327f7b054462b4da93f042d89ea58ea24e7dea460182e9e",
+    "e2e/reproductions/issue-94/private-table.ts": "52c1e1c2645b8a82a94a80bf3e3461a3b059792aaf034ba2d4da69e3ab33f542",
+    "e2e/reproductions/issue-94/run.mjs": "69f1222e15a0fc6c2c5e5066a28f1b9ad2ccec05b73d2349f0650abff424a6f5",
+    "package-lock.json": "6362985a66dba1ba979d5d06aebc1940a93e8326dd586abda81c11bc2cad2882"
+  },
+  "backend": {
+    "stagingDeployment": "not-verified",
+    "isolatedSource": "recorded separately by backend_contract.py"
+  },
+  "initialization": "normal application startup and real login; no visual fixtures"
+}

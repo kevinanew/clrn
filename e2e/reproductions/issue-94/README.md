@@ -78,3 +78,29 @@ npm run check
 ```
 
 完整金币链路仍需：本轮专属金币房间/匹配分组、合法独立出口或仅对该分组关闭同 IP 检查、版本可追溯的隔离德州服务、可配置的钱包回环依赖，以及真实消息网关投递。共享 staging 全局依赖和规则均不应修改。部署前需登记服务版本、钱包协议和消息契约，完成浏览器操作触发的自动补码及交易核对，再向 #95 交接正式验收。
+
+## 2026-11-04 实测记录
+
+应用 Release 为 `web-staging-200001602-b20853dbe65c`，完整应用提交 `b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec`，构建包 SHA-256 为 `ca1f1b81e9a750e5a517287a6c1209be866d9d36cd408391f10f6eb7b40fbe87`。浏览器测试固定 CLRN `6c78b01fb28c8ad0b2cd170b83b0eb219d031a50`；全部运行源文件摘要已与该 Git 提交逐一核对。后端定向用例固定 CLRN `d938fea110d9dc7c0c81a25872fbadbe7cc023dd` 和上述德州源码版本。环境为 macOS arm64、Node 24.14.0、Playwright 1.61.1、mitmproxy 12.2.3/Python 3.12.0，隔离引擎为 Python 3.13.8，依赖来自该源码的冻结 `uv.lock`。
+
+| 检查 | 实际结果 | 时间与内存 |
+| --- | --- | --- |
+| 浏览器主矩阵 13 场景 | 9 通过，3 条正确行为断言失败，1 条在账号准备阶段超时而未注入；无跳过、无自动重试 | 整个命令 596.78 秒，最大常驻内存 502202368 字节 |
+| HTTP 非 JSON 定向补测 | 实际注入两次；可读提示断言失败，解除故障后的真实带入/入座和 100 筹码断言通过 | 整个命令 94.13 秒，最大常驻内存 442695680 字节 |
+| 隔离后端 10 场景 | 9 通过，非余额业务原因丢失的正确行为断言失败 | 10.769 秒，Python 进程峰值常驻内存 63373312 字节 |
+| 仓库与代理工具 | 全仓 lint/typecheck 通过，218 项 Node 测试通过；代理整套 80 项自测通过，其中新增 8 项 | 未单独测量内存 |
+
+浏览器内存采用 macOS `/usr/bin/time -l` 的单命令观测值，不是全部进程 RSS 的合计。逐例耗时、错误及环境阻塞保存在 [客户端结果](evidence/client/results.json)，版本和内容指纹见 [构建清单](evidence/client/manifest.json)，后端指标与来源见 [后端运行记录](evidence/backend/run.json)。主矩阵的非 JSON 用例因设置测试钻石超时而未触发故障，定向补测单独保留，不将两轮拼成全绿。
+
+本轮关键事实：
+
+- WebSocket 缺失错误字段：显示 `undefined-sit`，两次故障期间重试均命中。解除后第三个命令收到真实 `ok=true`，带入并入座为 100。[关键帧](evidence/client/websocket-missing-fields/04-fault-video-frame-13s.png)、[恢复截图](evidence/client/websocket-missing-fields/05-recovered.png)、[登录后录像](evidence/client/websocket-missing-fields/signed-in.webm)、[命令时间线](evidence/client/websocket-missing-fields/scoped-rpc-timeline.json)。原脚本截图落在弹窗 300 毫秒入场动画中，关键帧取自同一原始录像第 13 秒，提取方式和原片摘要见同目录 `derived-frames.json`，没有绘制或修改页面内容。
+- HTTP 缺失字段和非 JSON：真实带入接口命中故障，但可读错误提示断言失败；故障期间再次操作仍命中，解除故障后重新请求上游并恢复 100 筹码。[缺失字段录像](evidence/client/http-missing-fields/signed-in.webm)、[非 JSON 录像](evidence/client/http-invalid-json/signed-in.webm)、[非 JSON 请求时间线](evidence/client/http-invalid-json/scoped-http-timeline.json)。
+- WebSocket 断连：第二次故障后自动重连并出现带入弹窗，40 秒窗口内没有预期的错误提示，按本任务要求保留失败；解除后新命令和实际入座恢复成功。此结果不能推断原事件根因。[录像](evidence/client/websocket-disconnect/signed-in.webm)、[时间线](evidence/client/websocket-disconnect/scoped-rpc-timeline.json)。
+- 其他 HTTP 503/504、超时、断连及其他业务错误，以及 WebSocket 超时、非 JSON 帧和其他业务错误通过本轮错误提示、故障期间再次操作、解除故障后真实重试及筹码核对。完整范围以结果文件和本目录断言为准。
+- 后端交易冲突：余额 9845、自动补码 155，实际结算后输出站起并吞掉冲突原因。紧接着调用真实入座包装器时**没有返回筹码不足错误**，而是输出 `prompt_buy_in`，没有新增钱包请求；手动带入后恢复。正常及冲突场景通过钱包与桌上筹码总额守恒检查。[完整账本及消息出口记录](evidence/backend/conflict.json)。这证实吞错路径，未复现原事件“重新入座报筹码不足”的完整现象。
+- HTTP 503/504、断连和读取超时在后端引擎内产生的消息，与真正到达隔离消息出口的消息分别记录；不能把抛异常前准备好的站起消息当成已投递推送。提交后丢回复的账本确认实际扣款一次，仍不代表线上事务或跨页面重试已验证。
+
+金币匹配前置检查仍失败，队列现场及真实大厅规则见 [截图](evidence/coin-prerequisite/03-matching-outcome.png) 和 [规则记录](evidence/coin-prerequisite/matching-prerequisites.json)。本轮没有建立成功的金币牌局。实际后端部署版本、完整隔离服务/网关、金币自动补码网页录像及线上钱包交易恢复继续由 #1648 补齐；#94 和 #95 均不能据此关闭。
+
+本轮新建私人房间均由准确 UUID 删除，并等待实际退款到账；本工作区账号锁已释放。代理及临时证书由每例 finally 清理。提交的文本证据已针对本机账号池密码和测试令牌扫描，未包含凭据；没有保存原始网络 trace 或登录状态。

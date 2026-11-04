@@ -1,0 +1,155 @@
+{
+  "testCommit": "6c78b01fb28c8ad0b2cd170b83b0eb219d031a50",
+  "primary": {
+    "stats": {
+      "startTime": "2026-11-04T07:49:57.920Z",
+      "duration": 585653.299,
+      "expected": 9,
+      "skipped": 0,
+      "unexpected": 4,
+      "flaky": 0
+    },
+    "metrics": {
+      "wallSeconds": 596.78,
+      "maximumResidentSetSizeBytes": 502202368,
+      "instrument": "macOS /usr/bin/time -l; not the sum of all process RSS"
+    },
+    "cases": [
+      {
+        "title": "私人桌 HTTP 带入 http-503 应正确提示并可恢复",
+        "status": "passed",
+        "durationSeconds": 36.654,
+        "errors": [],
+        "classification": "passed"
+      },
+      {
+        "title": "私人桌 HTTP 带入 http-504 应正确提示并可恢复",
+        "status": "passed",
+        "durationSeconds": 42.96,
+        "errors": [],
+        "classification": "passed"
+      },
+      {
+        "title": "私人桌 HTTP 带入 timeout 应正确提示并可恢复",
+        "status": "passed",
+        "durationSeconds": 50.178,
+        "errors": [],
+        "classification": "passed"
+      },
+      {
+        "title": "私人桌 HTTP 带入 disconnect 应正确提示并可恢复",
+        "status": "passed",
+        "durationSeconds": 42.813,
+        "errors": [],
+        "classification": "passed"
+      },
+      {
+        "title": "私人桌 HTTP 带入 invalid-json 应正确提示并可恢复",
+        "status": "failed",
+        "durationSeconds": 17.428,
+        "errors": [
+          "Error: 设置创建账号钻石失败：method=POST operation=set-creation-diamonds source=laiwan_prd status=unavailable response=not-received reason=timeout\n\n   at ../../../visual/src/support/requestJson.ts:32\n\n  30 | export async function fetchRequestJson(url: string, options: RequestInit, operation: string) {\n  31 |   const response = await fetch(url, options).catch(error => {\n> 32 |     throw new Error(requestErrorSummary(error, operation));\n     |           ^\n  33 |   });\n  34 |   const body = await readRequestJson({ status: /** 读取真实状态。 */ () => response.status, ok: /** 读取真实 HTTP 结果。 */ () => response.ok,\n  35 |     json: /** 读取真实响应正文。 */ () => response.json() }, operation);\n    at /Users/kevina/orca/workspaces/clrn/5159/visual/src/support/requestJson.ts:32:11\n    at fetchRequestJson (/Users/kevina/orca/workspaces/clrn/5159/visual/src/support/requestJson.ts:31:20)\n    at setCreationDiamondBalance (/Users/kevina/orca/workspaces/clrn/5159/e2e/cases/_shared/test-wallet.ts:53:28)\n    at Object.newAccount (/Users/kevina/orca/workspaces/clrn/5159/e2e/cases/_shared/creation-account-fixture.ts:79:5)"
+        ],
+        "classification": "setup-blocked"
+      },
+      {
+        "title": "私人桌 HTTP 带入 missing-fields 应正确提示并可恢复",
+        "status": "failed",
+        "durationSeconds": 77.946,
+        "errors": [
+          "Error: 请求失败后应有可读提示\n\nexpect(locator).toBeVisible() failed\n\nLocator: getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\nExpected: visible\nTimeout: 40000ms\nError: element(s) not found\n\nCall log:\n  - 请求失败后应有可读提示 with timeout 40000ms\n  - waiting for getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\n\n\n  38 |         const notice = page.getByTestId('toastText1')\n  39 |           .or(page.getByTestId('common-alert-message')).or(page.getByTestId('alert-message-text')).filter({ visible: true }).first();\n> 40 |         await expect.soft(notice, '请求失败后应有可读提示').toBeVisible({ timeout: 40_000 });\n     |                                                  ^\n  41 |         if (await notice.isVisible()) {\n  42 |           expect.soft(await notice.textContent()).not.toMatch(/undefined|筹码不足|余额不足/);\n  43 |         }\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:40:50\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:26:5"
+        ],
+        "classification": "assertion-failed"
+      },
+      {
+        "title": "私人桌 HTTP 带入 business-conflict 应正确提示并可恢复",
+        "status": "passed",
+        "durationSeconds": 36.088,
+        "errors": [],
+        "classification": "passed"
+      },
+      {
+        "title": "私人桌无故障正常带入及入座对照",
+        "status": "passed",
+        "durationSeconds": 42.146,
+        "errors": [],
+        "classification": "passed"
+      },
+      {
+        "title": "私人桌入座 missing-fields 应正确提示，解除故障后真实重试",
+        "status": "failed",
+        "durationSeconds": 30.95,
+        "errors": [
+          "Error: 缺失字段须有可读提示\n\nexpect(received).not.toContain(expected) // indexOf\n\nExpected substring: not \"undefined\"\nReceived string:        \"undefined-sit\"\n\n  53 |         await page.screenshot({ path: information.outputPath('04-fault.png') });\n  54 |         if (await message.isVisible()) {\n> 55 |           expect.soft(await message.textContent(), '缺失字段须有可读提示').not.toContain('undefined');\n     |                                                                      ^\n  56 |           expect.soft(await message.textContent(), '非余额故障不得误报筹码不足').not.toMatch(/筹码不足|余额不足/);\n  57 |         }\n  58 |         const first = await faultProxy.command<FaultStatus>('texas');\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:55:70\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:41:5"
+        ],
+        "classification": "assertion-failed"
+      },
+      {
+        "title": "私人桌入座 business-conflict 应正确提示，解除故障后真实重试",
+        "status": "passed",
+        "durationSeconds": 31.197,
+        "errors": [],
+        "classification": "passed"
+      },
+      {
+        "title": "私人桌入座 timeout 应正确提示，解除故障后真实重试",
+        "status": "passed",
+        "durationSeconds": 50.956,
+        "errors": [],
+        "classification": "passed"
+      },
+      {
+        "title": "私人桌入座 disconnect 应正确提示，解除故障后真实重试",
+        "status": "failed",
+        "durationSeconds": 73.117,
+        "errors": [
+          "Error: 故障期间再次入座仍应提示错误\n\nexpect(locator).toBeVisible() failed\n\nLocator: getByTestId('common-alert-message').filter({ visible: true })\nExpected: visible\nTimeout: 40000ms\nError: element(s) not found\n\nCall log:\n  - 故障期间再次入座仍应提示错误 with timeout 40000ms\n  - waiting for getByTestId('common-alert-message').filter({ visible: true })\n\n\n  63 |           return status.timeline.filter(event => event.direction === 'request' && event.mode === mode).length;\n  64 |         }, { message: '故障期间再次重试必须再次命中', timeout: 30_000 }).toBeGreaterThan(hits);\n> 65 |         await expect.soft(message, '故障期间再次入座仍应提示错误').toBeVisible({ timeout: 40_000 });\n     |                                                      ^\n  66 |         await faultProxy.command('texas', { ...scope, mode: 'none' });\n  67 |         await retrySit(page);\n  68 |         await expect.poll(async () => {\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:65:54\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.scenario.ts:41:5"
+        ],
+        "classification": "assertion-failed"
+      },
+      {
+        "title": "私人桌入座 invalid-json 应正确提示，解除故障后真实重试",
+        "status": "passed",
+        "durationSeconds": 49.623,
+        "errors": [],
+        "classification": "passed"
+      }
+    ]
+  },
+  "manualTargetedRun": {
+    "reason": "Primary invalid-json case failed during account setup before fault injection. This separate zero-retry run records the actual fault.",
+    "stats": {
+      "startTime": "2026-11-04T07:54:13.251Z",
+      "duration": 82995.04400000001,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "metrics": {
+      "wallSeconds": 94.13,
+      "maximumResidentSetSizeBytes": 442695680,
+      "instrument": "macOS /usr/bin/time -l; not the sum of all process RSS"
+    },
+    "cases": [
+      {
+        "title": "私人桌 HTTP 带入 invalid-json 应正确提示并可恢复",
+        "status": "failed",
+        "durationSeconds": 82.547,
+        "errors": [
+          "Error: 请求失败后应有可读提示\n\nexpect(locator).toBeVisible() failed\n\nLocator: getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\nExpected: visible\nTimeout: 40000ms\nError: element(s) not found\n\nCall log:\n  - 请求失败后应有可读提示 with timeout 40000ms\n  - waiting for getByTestId('toastText1').or(getByTestId('common-alert-message')).or(getByTestId('alert-message-text')).filter({ visible: true }).first()\n\n\n  38 |         const notice = page.getByTestId('toastText1')\n  39 |           .or(page.getByTestId('common-alert-message')).or(page.getByTestId('alert-message-text')).filter({ visible: true }).first();\n> 40 |         await expect.soft(notice, '请求失败后应有可读提示').toBeVisible({ timeout: 40_000 });\n     |                                                  ^\n  41 |         if (await notice.isVisible()) {\n  42 |           expect.soft(await notice.textContent()).not.toMatch(/undefined|筹码不足|余额不足/);\n  43 |         }\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:40:50\n    at withPrivateTable (/Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/private-table.ts:37:5)\n    at /Users/kevina/orca/workspaces/clrn/5159/e2e/reproductions/issue-94/http-buy-in.scenario.ts:26:5"
+        ],
+        "classification": "assertion-failed"
+      }
+    ]
+  },
+  "coinPrerequisite": {
+    "metrics": {
+      "wallSeconds": 84.65,
+      "maximumResidentSetSizeBytes": 320438272,
+      "instrument": "macOS /usr/bin/time -l; not the sum of all process RSS"
+    },
+    "result": "still queued after 60 seconds; no coin table reached"
+  },
+  "scope": "real private chip tables; not coin auto-rebuy acceptance"
+}

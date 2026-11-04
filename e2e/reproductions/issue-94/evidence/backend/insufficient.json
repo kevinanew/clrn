@@ -1,0 +1,78 @@
+{
+  "mode": "insufficient",
+  "walletBefore": {
+    "94000000-0000-4000-8000-000000000002": 0,
+    "94000000-0000-4000-8000-000000000003": 0
+  },
+  "walletAfter": {
+    "94000000-0000-4000-8000-000000000002": 0,
+    "94000000-0000-4000-8000-000000000003": 0
+  },
+  "initialTransactions": 2,
+  "transactions": 2,
+  "hits": [
+    {
+      "mode": "insufficient",
+      "transaction": "d9b43148-5e2f-4eb7-864d-0f19dd0bf901",
+      "player": "94000000-0000-4000-8000-000000000003",
+      "amount": 155,
+      "at": 1793779140.906801,
+      "status": 200,
+      "errorType": "insufficient_balance"
+    }
+  ],
+  "events": [
+    "all_in",
+    "pots_updated",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "all_in_show_hole_card",
+    "showdown",
+    "settlement",
+    "end_game",
+    "stand_up",
+    "prompt_buy_in",
+    "reserve_seat",
+    "about_to_start",
+    "hand_analyse",
+    "hand_analyse"
+  ],
+  "capturedAtMessageExit": [
+    "all_in",
+    "pots_updated",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "all_in_show_hole_card",
+    "showdown",
+    "settlement",
+    "end_game",
+    "stand_up",
+    "prompt_buy_in",
+    "reserve_seat",
+    "about_to_start",
+    "hand_analyse",
+    "hand_analyse"
+  ],
+  "messageDelivery": "isolated capture; not delivered by a real gateway",
+  "errorClass": null,
+  "errorType": null,
+  "elapsedSeconds": 0.014,
+  "tableStacks": {
+    "94000000-0000-4000-8000-000000000002": 310,
+    "94000000-0000-4000-8000-000000000003": 0
+  }
+}

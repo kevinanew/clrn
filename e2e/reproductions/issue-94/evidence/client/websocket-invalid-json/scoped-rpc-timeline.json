@@ -1,0 +1,48 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793779156.857078,
+      "direction": "request",
+      "commandId": 10,
+      "mode": "invalid-json",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793779156.8591301,
+      "direction": "injected-response",
+      "commandId": 10,
+      "mode": "invalid-json",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793779167.981622,
+      "direction": "request",
+      "commandId": 13,
+      "mode": "invalid-json",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793779167.981864,
+      "direction": "injected-response",
+      "commandId": 13,
+      "mode": "invalid-json",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793779179.2147589,
+      "direction": "request",
+      "commandId": 16,
+      "mode": "none",
+      "layer": "websocket"
+    },
+    {
+      "at": 1793779179.58035,
+      "direction": "upstream-response",
+      "commandId": 16,
+      "layer": "websocket",
+      "ok": true,
+      "errorType": null
+    }
+  ]
+}

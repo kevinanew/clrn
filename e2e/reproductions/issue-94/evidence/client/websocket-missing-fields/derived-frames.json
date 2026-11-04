@@ -1,0 +1,9 @@
+{
+  "source": "signed-in.webm",
+  "sourceSha256": "72aae2face0f442554c7c41f99db8845f499e79d8b02bca525f215cde3b0c5cf",
+  "frame": "04-fault-video-frame-13s.png",
+  "timeSeconds": 13.0,
+  "operation": "ffmpeg -ss 13.0 -i signed-in.webm -frames:v 1 frame.png",
+  "changes": "single original video frame; no overlays, cropping or retouching",
+  "note": "The direct screenshot was taken during the 300 ms dialog entrance animation; the video frame shows the fully visible dialog."
+}

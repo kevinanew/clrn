@@ -1,0 +1,50 @@
+{
+  "mode": "none",
+  "timeline": [
+    {
+      "at": 1793778812.972008,
+      "direction": "request",
+      "mode": "missing-fields",
+      "layer": "http",
+      "requestId": "532251bb-98f5-4acf-8d72-63a912d98c28"
+    },
+    {
+      "at": 1793778812.9720619,
+      "direction": "injected-response",
+      "mode": "missing-fields",
+      "layer": "http",
+      "requestId": "532251bb-98f5-4acf-8d72-63a912d98c28",
+      "status": 200
+    },
+    {
+      "at": 1793778854.030603,
+      "direction": "request",
+      "mode": "missing-fields",
+      "layer": "http",
+      "requestId": "c615f97d-b20c-46c9-bd8e-fd94d770d1c5"
+    },
+    {
+      "at": 1793778854.030675,
+      "direction": "injected-response",
+      "mode": "missing-fields",
+      "layer": "http",
+      "requestId": "c615f97d-b20c-46c9-bd8e-fd94d770d1c5",
+      "status": 200
+    },
+    {
+      "at": 1793778855.681429,
+      "direction": "request",
+      "mode": "none",
+      "layer": "http",
+      "requestId": "6a0ec27b-f9dd-4abf-8176-3eefd72ecbdf"
+    },
+    {
+      "at": 1793778856.454498,
+      "direction": "upstream-response",
+      "layer": "http",
+      "requestId": "6a0ec27b-f9dd-4abf-8176-3eefd72ecbdf",
+      "status": 200,
+      "ok": true
+    }
+  ]
+}

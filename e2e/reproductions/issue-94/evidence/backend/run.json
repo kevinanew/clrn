@@ -1,0 +1,41 @@
+[
+  {
+    "texasSourceCommit": "def3a1291c4ef0add64b46cc302d2ea730425675",
+    "clrnTestCommit": "d938fea110d9dc7c0c81a25872fbadbe7cc023dd",
+    "driverSha256": {
+      "backend_contract.py": "3d4f96e456e9d5a65d2e7196b0f85e092b43aee6c35787560017a6064af64d82",
+      "isolated_wallet.py": "25e5e8aefc180d578c71ca5fc16e882fd1c8ffeed3b108ed07819656b2857c45"
+    },
+    "environment": "isolated-engine-http-wallet; not deployed staging"
+  },
+  {
+    "elapsedSeconds": 10.769,
+    "maximumResidentSetSize": 63373312,
+    "memoryUnit": "bytes on macOS; KiB on Linux"
+  },
+  {
+    "tests": 10,
+    "passed": 9,
+    "failed": 1,
+    "failure": "test_business_conflict_preserves_reason",
+    "wallet": "simulated isolated HTTP ledger",
+    "messageGateway": "isolated capture only",
+    "walletInsufficiencyContractSource": {
+      "repository": "kevinanew/user_transaction_flask",
+      "localSourceCommit": "4430dbaf5b514ffca7e3cae42b09069ae194eb6c",
+      "path": "src/user_transaction_engine_v2/model/user_wallet_v2.py",
+      "errorType": "insufficient_balance",
+      "deployment": "not verified"
+    }
+  },
+  {
+    "sourceSha256": {
+      "uv.lock": "6bd018ee7f39685b0d8503a08130f61c813a40200ef8b09f7299a3254a13b962",
+      "src/sdk/sdk_client.py": "5767290a77bdb64184ae4b4bbd12d4794b9c254f61588a309b2241fd3eb3d83e",
+      "src/sdk/user_transaction_flask/user_transaction_flask.py": "c7afbd51be589f43a5164cfa594fa12720f4a589fb36de96264ea258e12cc652",
+      "src/poker_engine_v1/controller/room/auto_rebuy_controller_v1.py": "eb0bd951413b017e4b5542ae4b3838c48d16582c5f05085d0cde26270077ca3d",
+      "src/poker_engine_v1/wrapper/all_in_wrapper_v1.py": "fefa82a8e691d7d78a1a07ce67b15baba6659f3904761e7630bade47cfbe2ea7",
+      "src/poker_engine_v1/wrapper/sit_wrapper_v1.py": "1067a1d276183c944afff06cc1ea4498d32742a3864fd05cfd59299be1e93624"
+    }
+  }
+]

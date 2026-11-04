@@ -1,0 +1,66 @@
+{
+  "mode": "timeout",
+  "walletBefore": {
+    "94000000-0000-4000-8000-000000000002": 9845,
+    "94000000-0000-4000-8000-000000000003": 9845
+  },
+  "walletAfter": {
+    "94000000-0000-4000-8000-000000000002": 9845,
+    "94000000-0000-4000-8000-000000000003": 9845
+  },
+  "initialTransactions": 2,
+  "transactions": 2,
+  "hits": [
+    {
+      "mode": "timeout",
+      "transaction": "0b42c1b2-1b1d-4efb-8343-ad6727801c4e",
+      "player": "94000000-0000-4000-8000-000000000003",
+      "amount": 155,
+      "at": 1793779143.0128
+    },
+    {
+      "mode": "timeout",
+      "transaction": "0b42c1b2-1b1d-4efb-8343-ad6727801c4e",
+      "player": "94000000-0000-4000-8000-000000000003",
+      "amount": 155,
+      "at": 1793779145.029496
+    },
+    {
+      "mode": "timeout",
+      "transaction": "0b42c1b2-1b1d-4efb-8343-ad6727801c4e",
+      "player": "94000000-0000-4000-8000-000000000003",
+      "amount": 155,
+      "at": 1793779147.032704
+    }
+  ],
+  "events": [
+    "all_in",
+    "pots_updated",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "all_in_show_hole_card",
+    "showdown",
+    "settlement",
+    "end_game",
+    "stand_up",
+    "prompt_buy_in",
+    "reserve_seat",
+    "about_to_start"
+  ],
+  "capturedAtMessageExit": [],
+  "messageDelivery": "isolated capture; not delivered by a real gateway",
+  "errorClass": "Exception",
+  "errorType": null,
+  "elapsedSeconds": 6.064,
+  "tableStacks": {
+    "94000000-0000-4000-8000-000000000002": 0,
+    "94000000-0000-4000-8000-000000000003": 144
+  }
+}

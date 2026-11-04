@@ -1,0 +1,94 @@
+{
+  "mode": "conflict",
+  "walletBefore": {
+    "94000000-0000-4000-8000-000000000002": 9845,
+    "94000000-0000-4000-8000-000000000003": 9845
+  },
+  "walletAfter": {
+    "94000000-0000-4000-8000-000000000002": 9845,
+    "94000000-0000-4000-8000-000000000003": 9845
+  },
+  "initialTransactions": 2,
+  "transactions": 2,
+  "hits": [
+    {
+      "mode": "conflict",
+      "transaction": "4603ab24-11b8-4e36-94e8-f2b322db8ce0",
+      "player": "94000000-0000-4000-8000-000000000003",
+      "amount": 155,
+      "at": 1793779138.300863,
+      "status": 200,
+      "errorType": "transaction_conflict"
+    }
+  ],
+  "events": [
+    "all_in",
+    "pots_updated",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "all_in_show_hole_card",
+    "showdown",
+    "settlement",
+    "end_game",
+    "stand_up",
+    "prompt_buy_in",
+    "reserve_seat",
+    "about_to_start",
+    "hand_analyse",
+    "hand_analyse"
+  ],
+  "capturedAtMessageExit": [
+    "all_in",
+    "pots_updated",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "start_street",
+    "hand_strength",
+    "hand_strength",
+    "all_in_show_hole_card",
+    "showdown",
+    "settlement",
+    "end_game",
+    "stand_up",
+    "prompt_buy_in",
+    "reserve_seat",
+    "about_to_start",
+    "hand_analyse",
+    "hand_analyse"
+  ],
+  "messageDelivery": "isolated capture; not delivered by a real gateway",
+  "errorClass": null,
+  "errorType": null,
+  "elapsedSeconds": 0.032,
+  "tableStacks": {
+    "94000000-0000-4000-8000-000000000002": 310,
+    "94000000-0000-4000-8000-000000000003": 0
+  },
+  "resitWithoutBuyIn": {
+    "errorType": null,
+    "walletBalance": 9845,
+    "newWalletRequests": 0,
+    "capturedAtMessageExit": [
+      "prompt_buy_in"
+    ],
+    "seated": false
+  },
+  "recovery": {
+    "walletBefore": 9845,
+    "walletAfter": 9690,
+    "stack": 155,
+    "newTransactions": 1,
+    "seated": true
+  }
+}
