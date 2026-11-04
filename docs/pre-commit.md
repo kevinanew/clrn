@@ -40,6 +40,8 @@ Git 不会复制本地 hook，每个新克隆都要安装；CI 无论本地是�
 `pass_filenames: false` 与 `require_serial: true` 避免按文件批量重复调用全仓检查。
 两个 hook 仅在 `pre-commit` 阶段运行；只检查，不带 `--fix` 或自动格式化参数。
 lint 包含 JavaScript/TypeScript、Python、Shell、工作流和文件长度；typecheck 同时检查根目录与 `visual/`。
+Python 文件强制不超过 500 物理行（含空行、注释和 docstring），已跟踪及未忽略的新文件均检查。
+可用 `npm run lint:python:lines` 独立执行；扫描范围和失败条件见 [质量门禁](../quality/README.md#python-文件长度111)。
 
 手动检查当前工作区全部文件：
 
