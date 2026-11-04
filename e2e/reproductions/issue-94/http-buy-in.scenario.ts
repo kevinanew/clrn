@@ -4,6 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { test, expect } from './fixtures';
 import { withPrivateTable } from './private-table';
 import type { Page } from '@playwright/test';
+import { screenshotAfterSettling } from './screenshot';
 
 type HttpEvent = { direction: string; mode?: string; layer: string; status?: number; ok?: boolean };
 type FaultStatus = { mode: string; timeline: HttpEvent[] };
@@ -41,7 +42,7 @@ for (const mode of ['http-503', 'http-504', 'timeout', 'disconnect', 'invalid-js
         if (await notice.isVisible()) {
           expect.soft(await notice.textContent()).not.toMatch(/undefined|筹码不足|余额不足/);
         }
-        await page.screenshot({ path: information.outputPath('01-http-fault.png') });
+        await screenshotAfterSettling(page, information.outputPath('01-http-fault.png'), { buyIn: 'closed' });
         await expect(page.getByTestId('texas-holdem-self-seated-marker')).not.toBeVisible();
         const first = await faultProxy.command<FaultStatus>('texas');
         const hits = first.timeline.filter(event => event.direction === 'request' && event.mode === mode).length;
@@ -59,7 +60,8 @@ for (const mode of ['http-503', 'http-504', 'timeout', 'disconnect', 'invalid-js
         }, { message: '解除 HTTP 故障后必须再次请求真实上游并成功', timeout: 30_000 }).toBeGreaterThan(0);
         await expect(page.getByTestId('texas-holdem-self-seated-marker')).toBeVisible({ timeout: 30_000 });
         await expect(page.getByTestId('text-holdem-own-balance-text')).toHaveText('100');
-        await page.screenshot({ path: information.outputPath('02-http-recovered.png') });
+        await screenshotAfterSettling(page, information.outputPath('02-http-recovered.png'),
+          { buyIn: 'closed', commonAlert: 'closed' });
       } finally {
         await faultProxy.command('texas', { ...scope, mode: 'none' });
         const status = await faultProxy.command<FaultStatus>('texas');

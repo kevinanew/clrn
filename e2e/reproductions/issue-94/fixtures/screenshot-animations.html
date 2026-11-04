@@ -1,0 +1,50 @@
+<!doctype html>
+<!-- 用真实逐帧缩放和延迟卸载验证截图等待，不依赖账号或业务接口。 -->
+<html lang="zh-CN">
+<meta charset="utf-8">
+<style>
+  body { margin: 0; background: #ddeeff; }
+  [data-testid="run-game-view"] { width: 500px; height: 400px; }
+  .panel { width: 300px; height: 160px; background: white; transform-origin: center; }
+  .spinner { width: 20px; height: 20px; background: green; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+<button id="show">展开带入弹窗</button><button id="hide">关闭带入弹窗</button>
+<button id="alert">展开错误弹窗</button>
+<div data-testid="run-game-view"><div class="spinner"></div></div>
+<script>
+  function animate(panel, opening, done) {
+    const started = performance.now();
+    function frame(now) {
+      const progress = Math.min((now - started) / 400, 1);
+      const scale = opening ? 0.1 + 0.9 * progress : 1 - 0.9 * progress;
+      panel.style.transform = `scale(${scale})`;
+      panel.style.opacity = String(opening ? progress : 1 - progress);
+      if (progress < 1) requestAnimationFrame(frame);
+      else done();
+    }
+    panel.style.transform = opening ? 'scale(0.1)' : 'scale(1)';
+    requestAnimationFrame(frame);
+  }
+  document.querySelector('#show').onclick = () => {
+    const marker = document.createElement('div');
+    marker.dataset.testid = 'texas-holdem-buy-in-popup-visible-marker';
+    marker.innerHTML = '<div class="panel"><span data-testid="buy-in-title">计分牌带入</span></div>';
+    document.body.append(marker);
+    animate(marker.firstElementChild, true, () => { marker.dataset.opened = 'true'; });
+  };
+  document.querySelector('#hide').onclick = () => {
+    const marker = document.querySelector('[data-testid="texas-holdem-buy-in-popup-visible-marker"]');
+    animate(marker.firstElementChild, false, () => {
+      setTimeout(() => { marker.remove(); document.body.dataset.closed = 'true'; }, 500);
+    });
+  };
+  document.querySelector('#alert').onclick = () => {
+    const container = document.createElement('div');
+    container.dataset.testid = 'common-alert-container';
+    container.innerHTML = '<div class="panel"><span data-testid="common-alert-message">实际错误提示</span></div>';
+    document.body.append(container);
+    animate(container.firstElementChild, true, () => { container.dataset.opened = 'true'; });
+  };
+</script>
+</html>

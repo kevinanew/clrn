@@ -7,6 +7,7 @@ import { environment } from '../../helpers/environment';
 import { withMitmproxy } from '../../helpers/mitmproxy-session';
 import type { Mitmproxy } from '../../helpers/mitmproxy-client';
 import { installConnectionDiagnostics } from '../../../visual/src/support/connectionDiagnostics';
+import { screenshotAfterSettling } from './screenshot';
 
 export const test = accountTest.extend<{ faultProxy: Mitmproxy; tablePage: Page }>({
   /**
@@ -50,11 +51,11 @@ export const test = accountTest.extend<{ faultProxy: Mitmproxy; tablePage: Page 
     } finally {
       try {
         if (information.status !== information.expectedStatus && !recorded.isClosed()) {
-          await recorded.screenshot({ path: information.outputPath('failure.png') });
+          await screenshotAfterSettling(recorded, information.outputPath('failure.png'));
         }
-        await diagnostics.save(information.error);
       } finally {
-        await context.close();
+        try { await diagnostics.save(information.error); }
+        finally { await context.close(); }
       }
       const video = await recorded.video()?.path();
       if (video) await information.attach('signed-in-video', { path: video, contentType: 'video/webm' });

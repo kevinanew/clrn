@@ -4,6 +4,7 @@ import { openHall, prepareContext } from '../../cases/_shared/page';
 import { signIn } from '../../cases/_shared/auth';
 import { clickAfterSignInNotices } from '../../cases/_shared/sign-in-notices';
 import { writeFile } from 'node:fs/promises';
+import { screenshotAfterSettling } from './screenshot';
 
 test('金币桌匹配及入座前置检查（需要不同真实出口）', async ({ page, context, browser }, information) => {
   const username = process.env.ISSUE94_PEER_USERNAME;
@@ -13,7 +14,7 @@ test('金币桌匹配及入座前置检查（需要不同真实出口）', async
   await openHall(page);
   await signIn(page);
   await clickAfterSignInNotices(page, 'hall-tab');
-  await page.screenshot({ path: information.outputPath('01-signed-in.png') });
+  await screenshotAfterSettling(page, information.outputPath('01-signed-in.png'));
   const room = page.getByTestId('match-game-item-texas_holdem-tourists');
   await expect(room).toBeVisible();
   const peerProxy = process.env.ISSUE94_PEER_PROXY_URL;
@@ -42,9 +43,9 @@ test('金币桌匹配及入座前置检查（需要不同真实出口）', async
     await peer.getByTestId('match-game-item-texas_holdem-tourists').click();
     await expect(page.getByTestId('run-game-view')).toBeVisible({ timeout: 60_000 });
     await expect(page.getByTestId('texas-holdem-self-seated-marker')).toBeVisible({ timeout: 30_000 });
-    await page.screenshot({ path: information.outputPath('02-table.png') });
+    await screenshotAfterSettling(page, information.outputPath('02-table.png'));
   } finally {
-    await page.screenshot({ path: information.outputPath('03-matching-outcome.png') });
+    await screenshotAfterSettling(page, information.outputPath('03-matching-outcome.png'));
     for (const current of [page, ...(peerSignedIn ? [peer] : [])]) {
       const cancel = current.getByTestId('cancel-match-button');
       if (await cancel.isVisible()) await cancel.click();
