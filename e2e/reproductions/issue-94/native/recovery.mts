@@ -40,6 +40,7 @@ export async function verifyFaultAndRecovery(targetPage: Page, room: string, hit
   roomId:room,players:Object.keys(faultRoom.player_pool.players),restore:true});
  await walletControl('fault',{mode:'normal'});
  const before=await walletControl<WalletState>('state');
+ await dismissWalletNotice(targetPage);
  for(const id of ['common-alert-button-undefined','common-alert-button-retry','common-alert-button-ok']){
   const close=targetPage.getByTestId(id);if(await close.isVisible())await close.click();
  }
@@ -68,6 +69,16 @@ export async function verifyFaultAndRecovery(targetPage: Page, room: string, hit
  report.phase='assert-actual-wallet-reason-on-web';
  assert.equal(report.correctness.originalWalletReasonReachesBrowser,true,'Non-balance wallet failure must reach the browser with its actual reason');
  report.outcome='fault-reason-and-recovery-passed';
+}
+
+/**
+ * Dismiss the genuine insufficient-balance purchase offer through its visible cancel control.
+ * @param page - Wallet owner's current browser.
+ */
+async function dismissWalletNotice(page: Page) {
+ const cancel=page.getByTestId('common-alert-button-cancel').or(
+  page.getByTestId('alert-custom-button').filter({hasText:/^(取消|cancel)$/i})).filter({visible:true});
+ if(await cancel.isVisible())await cancel.click();
 }
 
 /**
