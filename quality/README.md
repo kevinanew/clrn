@@ -9,8 +9,9 @@ CI 的 `lint.yml` 在 push、PR 和手动触发时使用相同 pre-commit 入口
 | 命令 | 工具与失败条件 |
 | --- | --- |
 | `npm run lint:js` | ESLint 10.12.0：complexity classic > 10、max-depth > 3、TS 网络响应入口，以及全部既有规则；警告同样失败 |
-| `npm run lint:python` | Ruff 0.15.12：原有规则及 C901 > 10；独立强制 C901 扫描不接受 noqa、配置忽略或阈值放宽 |
 | `npm run lint:docs` | 全仓逐实现 TSDoc、Python 公私有 docstring、lambda 与 Shell 用途说明；缺文档、空摘要、解析及工具异常均失败 |
+| `npm run lint:python` | 先执行 Python 500 物理行硬门禁，再执行 Ruff 0.15.12：原有规则及 C901 > 10；独立强制 C901 扫描不接受 noqa、配置忽略或阈值放宽 |
+| `npm run lint:python:lines` | 独立只读扫描 Python 文件；超过 500 物理行、读取失败、Git 缺失或空扫描均失败 |
 | `npm run lint:architecture` | dependency-cruiser 18.7.0：循环（包含类型导入）、直接或间接越层、本地导入无法解析 |
 | `npm run lint:duplication` | jscpd 5.4.2：至少 5 行、70 词元、mild 模式；不使用总百分比容忍新增重复 |
 | `npm run --silent quality:report` | 输出全部实测诊断、依赖图和无源码片段的重复位置 JSON；用于测量，不代表门禁通过 |
@@ -19,6 +20,27 @@ CI 的 `lint.yml` 在 push、PR 和手动触发时使用相同 pre-commit 入口
 初次测量使用 Node 24.14.0、uv 0.11.32。最终采用复杂度 10、嵌套 3，原因是实测已有超限，
 但可用精确清单迁移，无需提高阈值或为了指标立即改写账号、诊断和动画控制流。
 静态检查不启动应用、设备、代理或真实业务请求；jscpd 报告和基线副本只写系统临时目录并清理。
+
+## Python 文件长度（#111）
+
+`npm run lint:python:lines` 可独立执行，不需要安装 Python 包；也可直接运行
+`node scripts/python-lines.mjs`。`npm run lint:python`、`npm run lint`、pre-commit 的 lint hook
+和 `lint.yml` / `account-tools.yml` 的 pre-commit 步骤沿同一调用链阻断超长文件。
+
+扫描复用 `scripts/source-files.mjs`：Git 已跟踪文件和未忽略的新 `.py` 文件均覆盖，
+包含普通源码、代理、测试、fixture 和工具，支持嵌套目录及特殊文件名；删除文件正常跳过。
+沿用 Git 忽略规则和既有依赖、产物目录排除：`node_modules`、`.venv`、`test-results`、
+`playwright-report`、`blob-report`、`snapshots`、`.ttyctl`，不新增文件豁免或历史额度。
+空行、注释与 docstring 全部计入；空文件为 0 行，支持 LF、CRLF、CR 和没有末尾换行的文件。
+输出扫描文件数、最长文件及每个超限文件的实际行数与 500 行上限，超限时非零退出。
+
+实施前在 `4e15d4d` 重新扫描：46 个适用 Python 文件，最长
+`e2e/mitmproxy/scenario_fixtures.py` 为 367 行，全部通过，无需拆分源码。
+这是实施前实测；当前代码应以重新执行扫描命令的输出为准。
+
+`node --test scripts/python-lines.test.mjs` 用临时 Git 仓库验证 500/501、换行、空文件、
+新文件、删除文件、嵌套及排除目录、读取失败、Git 缺失和空扫描，并验证实际 npm 静态入口阻断。
+`scripts/verify-pre-commit.py` 另通过真实 `git commit` 验证 500 行可提交、501 行被 hook 拦截。
 
 ## 最新代码的初始测量
 

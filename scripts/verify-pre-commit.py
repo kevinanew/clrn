@@ -117,6 +117,7 @@ class PreCommitAcceptance(unittest.TestCase):
         cases = (
             ("hook-acceptance.mjs", "console.log(clrnHookMissing);\n", "no-undef"),
             ("hook_acceptance.py", '"""验证未定义变量会阻止提交。"""\nprint(clrn_hook_missing)\n', "F821"),
+            ("hook_python_lines.py", "# Physical line.\n" * 501, "501 行（上限 500 行）"),
             (
                 "hook-acceptance.sh",
                 "#!/bin/sh\n# 验证未引用变量会触发 ShellCheck。\nvalue='two words'\nprintf '%s\\n' $value\n",
@@ -136,6 +137,17 @@ class PreCommitAcceptance(unittest.TestCase):
                 self.assertEqual(self.snapshot(), before)
                 self.run_command("git", "reset", "--quiet", "HEAD", "--", name)
                 path.unlink()
+
+    def test_python_500_lines_commit(self):
+        """验证恰好 500 行的 Python 文件可以提交。"""
+        name = "hook_python_lines.py"
+        path = self.repository / name
+        contents = "\n" * 499 + "# No final newline."
+        path.write_text(contents)
+        self.run_command("git", "add", name)
+        result = self.commit()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.run_command("git", "show", f"HEAD:{name}").stdout, contents)
 
     def test_partial_staging_failure_then_success(self):
         """验证部分暂存失败和修复成功时未暂存内容均被保留。"""
