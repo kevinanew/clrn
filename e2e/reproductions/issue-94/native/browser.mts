@@ -73,6 +73,8 @@ function failureReason(error: unknown): string {
  const message=error instanceof Error?error.message:'';
  const known=['Non-balance wallet failure must reach the browser with its actual reason',
   'No real automatic coin rebuy was observed','No real native game publication for wallet outcome',
+  'Transport failure must show a readable error','Non-balance transport failure must not claim insufficient balance',
+  'Native wallet, table and pot funds must be conserved','Real insufficient balance must remain distinguishable',
   'All-in slider must reach its actual maximum'];
  return known.find(value=>message.startsWith(value))||safeDiagnosticReason(error);
 }

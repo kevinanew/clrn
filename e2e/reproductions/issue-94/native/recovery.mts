@@ -119,7 +119,7 @@ async function failedRpc(proxy: Mitmproxy, after: number): Promise<NativeRecord>
  * @param page - Browser whose genuine RPC failed.
  */
 function operationRetry(page: Page) {
- return page.locator('[data-testid^="common-alert-button-"]').filter({hasText:/^(重试|retry)$/i}).filter({visible:true});
+ return page.getByTestId(/^common-alert-button-(?!text-)/).filter({hasText:/^(重试|retry)$/i}).filter({visible:true});
 }
 
 /**
