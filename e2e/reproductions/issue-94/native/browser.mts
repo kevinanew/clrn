@@ -308,7 +308,7 @@ try {
    }
    }
   }finally{for(let i=0;i<pages.length;i++){if(!pages[i].isClosed())await screenshotAfterSettling(pages[i],evidence+`/actor${i}-outcome.png`).catch(()=>{});}report.bridge=await proxy.command<NativeStatus>('native/status');}
- },{addonPath:new URL('./native_bridge.py',import.meta.url).pathname});
+ },{addonPath:new URL('./native_bridge.py',import.meta.url).pathname,temporaryRoot:root+'/browser-temp'});
 }catch(error){report.outcome='failed';report.failure=String(report.phase||'native-case')+': '+failureReason(error);process.exitCode=1;}
 finally{
  const cleanupErrors: string[]=[];

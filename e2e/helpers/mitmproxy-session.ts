@@ -25,12 +25,12 @@ async function unusedPort(): Promise<number> {
 /**
  * 测试结束或失败时先停止代理，再删除临时证书。
  * @param task - 在已准备好的上下文或代理上执行的异步任务。
- * @param options - 专用插件、进程环境和启动后的证书准备步骤；默认保持 Web 代理行为。
+ * @param options - 专用插件、进程环境、临时根目录和证书准备步骤；默认保持 Web 代理行为。
  */
 export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>,
-  options: { addonPath?: string; environment?: NodeJS.ProcessEnv;
+  options: { addonPath?: string; environment?: NodeJS.ProcessEnv; temporaryRoot?: string;
     prepare?: (directory: string, proxy: Mitmproxy) => Promise<void> } = {}): Promise<T> {
-  const directory = await mkdtemp(path.join(tmpdir(), 'test-mitmproxy-'));
+  const directory = await mkdtemp(path.join(options.temporaryRoot ?? tmpdir(), 'test-mitmproxy-'));
   const token = randomBytes(32).toString('hex');
   try {
     const port = await unusedPort();

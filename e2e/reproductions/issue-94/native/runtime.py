@@ -17,6 +17,7 @@ import time
 import urllib.request
 from ports import available
 from sdk_diagnostics import summarize
+from processes import stop_detached
 
 
 SOURCES = {
@@ -185,6 +186,7 @@ class NativeStack:
                 child.wait(timeout=5)
         for output in self.handles:
             output.close()
+        detached = stop_detached(self.root)
         sdk_log = self.root / 'logs/texas.log'
         (self.evidence / 'native-sdk-diagnostics.json').write_text(json.dumps(
             summarize(sdk_log.read_text(errors='replace') if sdk_log.exists() else ''), indent=2))
@@ -202,6 +204,7 @@ class NativeStack:
         (self.evidence / "native-cleanup.json").write_text(json.dumps({
             "ownedProcessGroups": len(self.children),
             "allOwnedProcessesExited": all(child.poll() is not None for child in self.children),
+            "detachedOwnedExecutablesReaped": detached,
             "ownedWorktreesRemoved": all(not destination.exists() for _, destination in self.worktrees),
             "privateRuntimeDirectoryRemoved": not self.root.exists(),
             "errors": errors,
@@ -225,6 +228,8 @@ def main():
     try:
         stack.prepare()
         stack.start()
+        proxy_temp = stack.root / 'browser-temp'
+        proxy_temp.mkdir()
         environment = {**stack.environment,
             "MITMDUMP_PATH": str(stack.root / "proxy-venv/bin/mitmdump"),
             "PYTHONPATH": str(REPOSITORY / "e2e/mitmproxy"),
