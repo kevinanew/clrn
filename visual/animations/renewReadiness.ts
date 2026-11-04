@@ -59,7 +59,7 @@ async function readRenewPopup(page: Page): Promise<void> {
 }
 
 /**
- * 在真实请求中断时立即结束等待，并在所有出口移除监听器。
+ * 在本次读取期限内等待应用切换节点；无成功响应才恢复入口，并移除监听器。
  * @param page - 当前牌桌页面。
  * @param requests - 本次打开期间发出的请求。
  * @param method - 读取方法。
@@ -69,6 +69,7 @@ async function readRenewPopup(page: Page): Promise<void> {
 function waitForRead(page: Page, requests: Set<Request>, method: string, path: RegExp,
   operation: string): Promise<Response> {
   return new Promise((resolve, reject) => {
+    let interrupted = false;
     /**
      * 只匹配本次打开的真实读取。
      * @param request - 浏览器发出的请求。
@@ -96,12 +97,14 @@ function waitForRead(page: Page, requests: Set<Request>, method: string, path: R
      */
     const failed = (request: Request) => {
       if (!matches(request)) return;
-      cleanup();
-      reject(new InterruptedRenewRead(requestFailure(operation, 'connection-failed').message));
+      // 应用可能已在另一个节点重发同一读取，旧节点失败不能抢先终止等待。
+      interrupted = true;
     };
     const timeout = setTimeout(() => {
       cleanup();
-      reject(requestFailure(operation, 'timeout'));
+      reject(interrupted
+        ? new InterruptedRenewRead(requestFailure(operation, 'connection-failed').message)
+        : requestFailure(operation, 'timeout'));
     }, 15_000);
     page.on('response', responded);
     page.on('requestfailed', failed);
