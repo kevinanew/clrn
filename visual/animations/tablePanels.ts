@@ -3,6 +3,7 @@ import { visible, press, pressTarget } from './appSession';
 import { exerciseTablePopup as exercisePopup } from './popups';
 import { captureTimeline, settleAnimations, type CaptureArea } from './timeline';
 import { openRenewPopup } from './renewReadiness';
+import { waitForSeatGuideStart } from './seatGuideReadiness';
 
 /**
  * 通过所属弹层的真实遮罩关闭，避免误点其他历史面板。
@@ -32,15 +33,7 @@ const menuPanels = [
 export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'zhajinhua', clip: CaptureArea): Promise<void> {
   if (game === 'zhajinhua') {
     const arrows = page.locator('[data-testid^="seat-guide-"] img').locator('..');
-    await expect(arrows).toHaveCount(9);
-    // 先跨过循环的大部分区间，接近起点后逐毫秒定位，避免 16 毫秒步长错过基准相位。
-    await expect.poll(async () => {
-      const offsets = await arrows.evaluateAll(nodes => nodes.map(node =>
-        new DOMMatrixReadOnly(getComputedStyle(node).transform).m42));
-      if (offsets.length === 9 && offsets.every(offset => Math.abs(offset) < 0.1)) return true;
-      await page.clock.runFor(offsets.length === 9 && offsets.every(offset => Math.abs(offset) < 0.5) ? 1 : 16);
-      return false;
-    }, { timeout: 30_000, intervals: [0], message: '全部空座引导应回到真实循环起点' }).toBe(true);
+    await waitForSeatGuideStart(page, arrows);
     await captureTimeline(page, info, 'zhajinhua-seat-guides', arrows,
       { clip, times: [0, 160, 500, 1000, 1500, 2000], requireMotion: true });
   }
