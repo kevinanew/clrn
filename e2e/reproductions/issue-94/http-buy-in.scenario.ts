@@ -3,9 +3,23 @@ import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { test, expect } from './fixtures';
 import { withPrivateTable } from './private-table';
+import type { Page } from '@playwright/test';
 
 type HttpEvent = { direction: string; mode?: string; layer: string; status?: number; ok?: boolean };
 type FaultStatus = { mode: string; timeline: HttpEvent[] };
+
+/**
+ * 从可见座位重新打开带入弹窗并确认，保留真实业务请求。
+ * @param page - 当前真实牌桌页面。
+ */
+async function submitBuyInFromSeat(page: Page): Promise<void> {
+  if (await page.getByTestId('common-alert-button-undefined').isVisible()) {
+    await page.getByTestId('common-alert-button-undefined').click();
+  }
+  await page.getByTestId('in-game-container-seat').first().click();
+  await expect(page.getByTestId('buy-in-confirm-button')).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId('buy-in-confirm-button').click();
+}
 
 for (const mode of ['http-503', 'http-504', 'timeout', 'disconnect', 'invalid-json', 'missing-fields', 'business-conflict']) {
   test(`私人桌 HTTP 带入 ${mode} 应正确提示并可恢复`, async ({ tablePage: page, newAccount, faultProxy }, information) => {
@@ -29,13 +43,16 @@ for (const mode of ['http-503', 'http-504', 'timeout', 'disconnect', 'invalid-js
         }
         await page.screenshot({ path: information.outputPath('01-http-fault.png') });
         await expect(page.getByTestId('texas-holdem-self-seated-marker')).not.toBeVisible();
+        const first = await faultProxy.command<FaultStatus>('texas');
+        const hits = first.timeline.filter(event => event.direction === 'request' && event.mode === mode).length;
+        await submitBuyInFromSeat(page);
+        await expect.poll(async () => {
+          const status = await faultProxy.command<FaultStatus>('texas');
+          return status.timeline.filter(event => event.direction === 'request' && event.mode === mode).length;
+        }, { message: 'HTTP 故障期间再次操作必须再次命中', timeout: 30_000 }).toBeGreaterThan(hits);
+        await expect(page.getByTestId('buy-in-confirm-button')).not.toBeVisible({ timeout: 40_000 });
         await faultProxy.command('texas', { ...scope, mode: 'none' });
-        if (await page.getByTestId('common-alert-button-undefined').isVisible()) {
-          await page.getByTestId('common-alert-button-undefined').click();
-        }
-        await page.getByTestId('in-game-container-seat').first().click();
-        await expect(page.getByTestId('buy-in-confirm-button')).toBeVisible({ timeout: 30_000 });
-        await page.getByTestId('buy-in-confirm-button').click();
+        await submitBuyInFromSeat(page);
         await expect.poll(async () => {
           const status = await faultProxy.command<FaultStatus>('texas');
           return status.timeline.filter(event => event.direction === 'upstream-response' && event.ok).length;

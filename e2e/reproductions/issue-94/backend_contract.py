@@ -15,11 +15,13 @@ from unittest.mock import patch
 
 from isolated_wallet import IsolatedWallet
 from poker_engine.controller.classic_controller import ClassicController
+from poker_engine.model.player_use_chip import PlayerNotEnoughStack
 from poker_engine.view.dummy_queue_message import DummyQueueMessage
 from poker_engine_v1.model.texas_holdem_room_db_v1 import TexasHoldemRoomDBV1
 from poker_engine_v1.unittests.wrapper import PokerBaseTestV1
 from poker_engine_v1.wrapper.all_in_wrapper_v1 import AllInWrapperV1
 from poker_engine_v1.wrapper.apply_buy_in_wrapper_v1 import ApplyBuyInWrapperV1
+from poker_engine_v1.wrapper.sit_wrapper_v1 import SitWrapperV1
 from sdk.sdk_client import SDKConfig, SDKException
 from sdk.user_transaction_flask import UserTransactionService
 
@@ -111,7 +113,14 @@ class BackendContract(unittest.TestCase):
                 .stack
                 for player in PLAYERS
             }
-            if mode == "conflict":
+            if (
+                mode == "conflict"
+                and error is None
+                and "stand_up" in observation["events"]
+            ):
+                observation["resitWithoutBuyIn"] = self.resit(
+                    engine, wallet, LocalTransactions, first_hit
+                )
                 observation["recovery"] = self.recover(
                     engine, wallet, LocalTransactions, first_hit
                 )
@@ -119,6 +128,36 @@ class BackendContract(unittest.TestCase):
             self.assertEqual(initial_transactions, 2, "正常手动带入应实际扣款两次")
             self.assertTrue(observation["hits"], "必须由真实 all-in 触发钱包补码请求")
             self.verify(mode, observation, error, messages)
+
+    def resit(self, engine, wallet, transactions, first_hit):
+        """真实站起后再次调用入座，观察钱包充足与桌上筹码不足的区别。"""
+        player = uuid.UUID(wallet.hits[first_hit]["player"])
+        hits = len(wallet.hits)
+        error_type = None
+        try:
+            self.invoke(
+                engine,
+                SitWrapperV1,
+                transactions,
+                player,
+                room_id=ROOM,
+                player_id=player,
+                seat_number=PLAYERS.index(player) + 1,
+                accept_language="zh",
+            )
+        except PlayerNotEnoughStack as error:
+            error_type = error.error_type
+        return {
+            "errorType": error_type,
+            "walletBalance": wallet.balances[str(player)],
+            "newWalletRequests": len(wallet.hits) - hits,
+            "capturedAtMessageExit": [
+                message["event"] for message in engine.last_queue.delay_messages
+            ],
+            "seated": ClassicController(engine.config).table.has_seated_player(
+                ClassicController(engine.config).player_pool.get_or_create(player)
+            ),
+        }
 
     def recover(self, engine, wallet, transactions, first_hit):
         """解除业务故障后执行真实手动带入，检查唯一扣款、筹码及入座。"""
