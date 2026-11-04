@@ -1,0 +1,19 @@
+{
+  "checkedAtUTC": "2026-11-04T21:27:47.167538+00:00",
+  "ownedNativeExecutablesRemaining": [],
+  "ownedAccountLocksRemaining": [],
+  "completedNativeCasesVerified": [
+    "normal",
+    "http-503",
+    "timeout",
+    "insufficient",
+    "conflict",
+    "committed-response-lost"
+  ],
+  "interruptedExperiment": {
+    "verifiedDetachedProxyStopped": true,
+    "privateCertificatesRemoved": true,
+    "cancellationRegression": "test_processes.py uses real detached root-owned executable, private certificate marker and unrelated live process"
+  },
+  "boundary": "Pre-existing unrelated proxies/certificates were not removed; assertions cover this workspace and recorded native cases."
+}

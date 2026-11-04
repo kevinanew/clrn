@@ -1,0 +1,5337 @@
+{
+  "faultNotices": [],
+  "scope": "native coin service path; wallet business and transport faults; broader issue94 matrix tracked separately",
+  "steps": [
+    {
+      "event": "genuine-stage-login-and-key-verified",
+      "actor": 0,
+      "user": "cad91ad8-9b77-432e-92df-19b6ed529888"
+    },
+    {
+      "event": "genuine-stage-login-and-key-verified",
+      "actor": 1,
+      "user": "715aa6a4-90a2-46c6-8143-84544c7663aa"
+    },
+    {
+      "event": "actual-web-coin-table-ready",
+      "actor": 1
+    },
+    {
+      "event": "actual-web-coin-table-ready",
+      "actor": 0
+    },
+    {
+      "event": "manual-buy-in-request-completed",
+      "actor": 0
+    },
+    {
+      "event": "manual-buy-in-request-completed",
+      "actor": 1
+    },
+    {
+      "event": "web-all-in-click",
+      "actor": 1
+    },
+    {
+      "event": "web-all-in-click",
+      "actor": 0
+    },
+    {
+      "event": "web-all-in-click",
+      "actor": 0
+    },
+    {
+      "event": "web-all-in-click",
+      "actor": 1
+    }
+  ],
+  "outcome": "normal-manual-buyin-and-automatic-rebuy",
+  "phase": "assert-displayed-automatic-rebuy",
+  "scopeRejectionChecks": [
+    {
+      "status": 400,
+      "errorType": "isolated_scope_rejected"
+    },
+    {
+      "status": 400,
+      "errorType": "isolated_scope_rejected"
+    }
+  ],
+  "ledger": {
+    "balances": {
+      "cad91ad8-9b77-432e-92df-19b6ed529888": {
+        "coin": 9700,
+        "diamond": 60
+      },
+      "715aa6a4-90a2-46c6-8143-84544c7663aa": {
+        "coin": 9800,
+        "diamond": 60
+      },
+      "c33f60fe-6459-495a-a4fc-1d2084765ffa": {
+        "coin": 0,
+        "diamond": 0
+      }
+    },
+    "transactions": {
+      "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9": {
+        "identity": [
+          "c33f60fe-6459-495a-a4fc-1d2084765ffa",
+          "withdraw",
+          "diamond",
+          0
+        ],
+        "player": "c33f60fe-6459-495a-a4fc-1d2084765ffa",
+        "event": "withdraw",
+        "currency": "diamond",
+        "amount": 0,
+        "before": 0,
+        "after": 0,
+        "memo": "create room v2",
+        "committedAt": 1793827576.6334841
+      },
+      "51dd3cd3-6040-4acd-a6e3-4f10ae923cb6": {
+        "identity": [
+          "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 10000,
+        "after": 9900,
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827580.7222772
+      },
+      "fdea624a-abe1-4de7-9d1d-3c302cd2fd7b": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 10000,
+        "after": 9900,
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827581.8672168
+      },
+      "71fd7e27-8c4a-45d0-bf95-9d7462253b7f": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 9900,
+        "after": 9800,
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827587.2423549
+      },
+      "509206f9-0797-47b4-b1a1-249b296a0935": {
+        "identity": [
+          "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 9900,
+        "after": 9800,
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827587.310743
+      },
+      "8e1a96c7-a736-4d6a-9d2f-6fc6f50c940b": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 9800,
+        "after": 9700,
+        "memo": "[all_in]Auto rebuy in:coin",
+        "committedAt": 1793827606.2103071
+      }
+    },
+    "hits": [
+      {
+        "player": "c33f60fe-6459-495a-a4fc-1d2084765ffa",
+        "operation": "withdraw",
+        "transaction": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "amount": 0,
+        "currency": "diamond",
+        "memo": "create room v2",
+        "errorType": null,
+        "at": 1793827576.633497
+      },
+      {
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "operation": "withdraw",
+        "transaction": "51dd3cd3-6040-4acd-a6e3-4f10ae923cb6",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827580.7222888
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "withdraw",
+        "transaction": "fdea624a-abe1-4de7-9d1d-3c302cd2fd7b",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827581.867219
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "withdraw",
+        "transaction": "71fd7e27-8c4a-45d0-bf95-9d7462253b7f",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827587.242364
+      },
+      {
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "operation": "withdraw",
+        "transaction": "509206f9-0797-47b4-b1a1-249b296a0935",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827587.3107462
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "withdraw",
+        "transaction": "8e1a96c7-a736-4d6a-9d2f-6fc6f50c940b",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "[all_in]Auto rebuy in:coin",
+        "errorType": null,
+        "at": 1793827606.210311
+      }
+    ],
+    "fault": {
+      "mode": "normal",
+      "players": [],
+      "roomId": null
+    }
+  },
+  "roomAfterAutomaticRebuy": {
+    "player_pool": {
+      "players": {
+        "715aa6a4-90a2-46c6-8143-84544c7663aa": {
+          "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "_seat_number": 1,
+          "is_ready": true,
+          "is_playing": true,
+          "is_winner": false,
+          "is_stand_up": false,
+          "is_quit": false,
+          "minimum_operating_extension_seconds": 0,
+          "maximum_operating_extension_seconds": 60,
+          "operating_start_at_timestamp": 1793827618.654691,
+          "operate_waiting_seconds": 0,
+          "operating_seconds": 60,
+          "operating_transmission_seconds": 4,
+          "max_extension_times": 2,
+          "used_extension_times": 0,
+          "played_game_count": 3,
+          "initial_stack": 400,
+          "stack": 399,
+          "stack_after_pay": 399,
+          "is_reset_statistics": true,
+          "buy_in_amount": 0,
+          "history_buy_in_amount": 200,
+          "refund_amount": 0,
+          "history_refund_amount": 0,
+          "settlement_net_amount": 200,
+          "pay_amount": 1,
+          "pay_status": "pay_till_end",
+          "prize": null,
+          "position": "BTN",
+          "hole_card": [
+            "tc",
+            "5h"
+          ],
+          "public_hole_card": [
+            null,
+            null
+          ],
+          "hole_card_score": null,
+          "best_cards": [],
+          "hand_strength": "high_card",
+          "strength_cards": [],
+          "action_name": "small_blind",
+          "action_amount": 1,
+          "action_street": "preflop",
+          "action_at_timestamp": 1793827618.654648,
+          "is_max_raiser": false,
+          "is_showdown": false,
+          "is_max_strength": false,
+          "street_bet_amount": 1
+        },
+        "cad91ad8-9b77-432e-92df-19b6ed529888": {
+          "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "_seat_number": 5,
+          "is_ready": true,
+          "is_playing": true,
+          "is_winner": false,
+          "is_stand_up": false,
+          "is_quit": false,
+          "minimum_operating_extension_seconds": 0,
+          "maximum_operating_extension_seconds": 60,
+          "operating_start_at_timestamp": null,
+          "operate_waiting_seconds": 0,
+          "operating_seconds": 60,
+          "operating_transmission_seconds": 4,
+          "max_extension_times": 2,
+          "used_extension_times": 0,
+          "played_game_count": 1,
+          "initial_stack": 100,
+          "stack": 98,
+          "stack_after_pay": 98,
+          "is_reset_statistics": true,
+          "buy_in_amount": 0,
+          "history_buy_in_amount": 100,
+          "refund_amount": 0,
+          "history_refund_amount": 0,
+          "settlement_net_amount": 0,
+          "pay_amount": 2,
+          "pay_status": "pay_till_end",
+          "prize": null,
+          "position": "BB",
+          "hole_card": [
+            "2c",
+            "4c"
+          ],
+          "public_hole_card": [
+            null,
+            null
+          ],
+          "hole_card_score": null,
+          "best_cards": [],
+          "hand_strength": "high_card",
+          "strength_cards": [],
+          "action_name": "big_blind",
+          "action_amount": 2,
+          "action_street": "preflop",
+          "action_at_timestamp": 1793827618.654669,
+          "is_max_raiser": false,
+          "is_showdown": false,
+          "is_max_strength": false,
+          "street_bet_amount": 2
+        }
+      }
+    },
+    "buy_in": {
+      "currency": "coin",
+      "audit": false,
+      "auto_buy_in_amount": 0,
+      "minimum": 100,
+      "maximum": 200,
+      "lowest_stack": 2,
+      "highest_stack": 4000,
+      "can_apply": true
+    },
+    "room": {
+      "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+      "pattern": "tradition",
+      "created_at": "2026-11-04T21:26:16.673082+00:00",
+      "is_start": true,
+      "start_at_timestamp": 1793827581.8647192,
+      "duration": 172800,
+      "is_close": false,
+      "close_at_timestamp": null,
+      "_auto_start_player_quantity": 2,
+      "variation": "texas_holdem",
+      "settings": {
+        "ante": 0,
+        "big_blind": 2,
+        "small_blind": 1,
+        "add_operating_seconds_ttl": 1800
+      },
+      "player_operating_seconds": 60,
+      "room_type": "hall"
+    },
+    "refund": {
+      "is_enable": true,
+      "stack_limit": null
+    },
+    "ReadyPhaseV1": {
+      "ready_quorum": 2,
+      "start_at": "20261105T052658Z",
+      "end_at": "20261105T052701Z",
+      "users": {
+        "715aa6a4-90a2-46c6-8143-84544c7663aa": "20261105T052658Z",
+        "cad91ad8-9b77-432e-92df-19b6ed529888": "20261105T052658Z"
+      }
+    },
+    "opening_room": {
+      "created_at": "2026-11-04T21:26:16.673099+00:00",
+      "start_at": "2026-11-04T21:26:21.864720+00:00",
+      "closed_at": "2026-11-06T21:26:21.864720+00:00",
+      "end_at": null,
+      "duration": 172800,
+      "close_by_user_id": null,
+      "close_reason": null,
+      "status": "running"
+    },
+    "game": {
+      "game_id": "793d3577-854b-4cb7-a35c-8e3218fcf795",
+      "_number": 3,
+      "is_ready_stage": false,
+      "is_start": true,
+      "start_at": "2026-11-04T21:26:58.654516+00:00",
+      "is_end": false,
+      "end_at_timestamp": null,
+      "end_game_delay": 4,
+      "player_operating_extension_times": 2
+    },
+    "HandPredictionRule": {
+      "prediction_currency": "coin",
+      "prediction_amount_options": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "BuildingV2": {
+      "building_type": "hall",
+      "building_id": "ba41a7da-c063-4b4f-9aa3-e44529de718b",
+      "building_name": "Tourists",
+      "room_name": "Tourists",
+      "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+    },
+    "PlaySessionV1": {
+      "all_play_session_id": {
+        "715aa6a4-90a2-46c6-8143-84544c7663aa": "66a5e6cd-be0a-4e30-abdd-44c02f9736e3",
+        "cad91ad8-9b77-432e-92df-19b6ed529888": "69f9e2ff-7201-43fa-8293-fdccc62eabf6"
+      },
+      "default_play_session_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+    },
+    "RoomPlayerGroupV1": {
+      "all_room_player": {
+        "715aa6a4-90a2-46c6-8143-84544c7663aa": {
+          "AliveV1": {
+            "enter_room_at": "20261105T052620Z",
+            "last_checked_alive_at": "20261105T052650Z"
+          }
+        },
+        "cad91ad8-9b77-432e-92df-19b6ed529888": {
+          "AliveV1": {
+            "enter_room_at": "20261105T052621Z",
+            "last_checked_alive_at": "20261105T052651Z"
+          }
+        }
+      }
+    },
+    "HandPredictionGroup": {
+      "all_player": {}
+    },
+    "HoldemRoundV1": {
+      "all_player": [
+        {
+          "user_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "is_quit": false,
+          "initial_stack": 100
+        },
+        {
+          "user_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "is_quit": false,
+          "initial_stack": 400
+        }
+      ]
+    },
+    "Deck": {
+      "cards": [
+        "ac",
+        "qc",
+        "6c",
+        "7c",
+        "2d",
+        "9s",
+        "9d",
+        "4d",
+        "th",
+        "7s",
+        "ts",
+        "qs",
+        "td",
+        "kd",
+        "ad",
+        "7h",
+        "as",
+        "jh",
+        "kh",
+        "5s",
+        "8c",
+        "8d",
+        "3h",
+        "7d",
+        "3c",
+        "6s",
+        "jd",
+        "6d",
+        "4s",
+        "5c",
+        "8h",
+        "ah",
+        "qd",
+        "2s",
+        "qh",
+        "5d",
+        "8s",
+        "6h",
+        "ks",
+        "3s",
+        "js",
+        "9h",
+        "3d"
+      ]
+    },
+    "UserGroupV1": {
+      "all_user": {
+        "cad91ad8-9b77-432e-92df-19b6ed529888": {
+          "UserSettingV1": {
+            "is_auto_rebuy": true
+          }
+        },
+        "715aa6a4-90a2-46c6-8143-84544c7663aa": {
+          "UserSettingV1": {
+            "is_auto_rebuy": true
+          }
+        }
+      }
+    },
+    "player_message": {
+      "currency": "coin",
+      "room_type": "hall",
+      "_messages": [],
+      "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+      "game_id": "793d3577-854b-4cb7-a35c-8e3218fcf795"
+    },
+    "variation": {
+      "name": "texas_holdem",
+      "can_check": true,
+      "can_call": true,
+      "can_raise": true,
+      "agree_amount": 2,
+      "raise_add": 0,
+      "open_raiser_id": null,
+      "round_count": 0,
+      "last_action": "big_blind",
+      "last_action_at": "2026-11-05 05:26:58",
+      "ante": 0,
+      "small_blind": 1,
+      "big_blind": 2,
+      "last_bet": "big_blind"
+    },
+    "reserve_seat_when_short_stack": false,
+    "stand_up_when_room_end": true,
+    "table": {
+      "_is_start": true,
+      "can_sit_down": true,
+      "can_reserve": false,
+      "seat_quantity": 6,
+      "seats": [
+        {
+          "number": 1,
+          "position": null,
+          "reserved_at": null,
+          "player": "715aa6a4-90a2-46c6-8143-84544c7663aa"
+        },
+        {
+          "number": 2,
+          "position": null,
+          "reserved_at": null
+        },
+        {
+          "number": 3,
+          "position": null,
+          "reserved_at": null
+        },
+        {
+          "number": 4,
+          "position": null,
+          "reserved_at": null
+        },
+        {
+          "number": 5,
+          "position": null,
+          "reserved_at": null,
+          "player": "cad91ad8-9b77-432e-92df-19b6ed529888"
+        },
+        {
+          "number": 6,
+          "position": null,
+          "reserved_at": null
+        }
+      ],
+      "_gaming_players": [
+        "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "715aa6a4-90a2-46c6-8143-84544c7663aa"
+      ],
+      "waiting_players": {},
+      "playing_players": {},
+      "quit_players": {},
+      "_quorum": 2,
+      "_player_amount_changed": false,
+      "lowest_stack": 2,
+      "button_player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "button_player_seat": 1,
+      "_small_blind_player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "_big_blind_player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+      "_current_players": [
+        "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "cad91ad8-9b77-432e-92df-19b6ed529888"
+      ]
+    },
+    "pot": {
+      "players": [
+        "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "715aa6a4-90a2-46c6-8143-84544c7663aa"
+      ]
+    },
+    "community_card": {
+      "cards": [
+        "kc",
+        "9c",
+        "jc",
+        "2h",
+        "4h"
+      ],
+      "street": "preflop"
+    },
+    "street": {
+      "name": "preflop",
+      "is_end": false
+    }
+  },
+  "ledgerAfterAutomaticRebuy": {
+    "balances": {
+      "cad91ad8-9b77-432e-92df-19b6ed529888": {
+        "coin": 9700,
+        "diamond": 60
+      },
+      "715aa6a4-90a2-46c6-8143-84544c7663aa": {
+        "coin": 9800,
+        "diamond": 60
+      },
+      "c33f60fe-6459-495a-a4fc-1d2084765ffa": {
+        "coin": 0,
+        "diamond": 0
+      }
+    },
+    "transactions": {
+      "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9": {
+        "identity": [
+          "c33f60fe-6459-495a-a4fc-1d2084765ffa",
+          "withdraw",
+          "diamond",
+          0
+        ],
+        "player": "c33f60fe-6459-495a-a4fc-1d2084765ffa",
+        "event": "withdraw",
+        "currency": "diamond",
+        "amount": 0,
+        "before": 0,
+        "after": 0,
+        "memo": "create room v2",
+        "committedAt": 1793827576.6334841
+      },
+      "51dd3cd3-6040-4acd-a6e3-4f10ae923cb6": {
+        "identity": [
+          "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 10000,
+        "after": 9900,
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827580.7222772
+      },
+      "fdea624a-abe1-4de7-9d1d-3c302cd2fd7b": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 10000,
+        "after": 9900,
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827581.8672168
+      },
+      "71fd7e27-8c4a-45d0-bf95-9d7462253b7f": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 9900,
+        "after": 9800,
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827587.2423549
+      },
+      "509206f9-0797-47b4-b1a1-249b296a0935": {
+        "identity": [
+          "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 9900,
+        "after": 9800,
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827587.310743
+      },
+      "8e1a96c7-a736-4d6a-9d2f-6fc6f50c940b": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 9800,
+        "after": 9700,
+        "memo": "[all_in]Auto rebuy in:coin",
+        "committedAt": 1793827606.2103071
+      }
+    },
+    "hits": [
+      {
+        "player": "c33f60fe-6459-495a-a4fc-1d2084765ffa",
+        "operation": "withdraw",
+        "transaction": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "amount": 0,
+        "currency": "diamond",
+        "memo": "create room v2",
+        "errorType": null,
+        "at": 1793827576.633497
+      },
+      {
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "operation": "withdraw",
+        "transaction": "51dd3cd3-6040-4acd-a6e3-4f10ae923cb6",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827580.7222888
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "withdraw",
+        "transaction": "fdea624a-abe1-4de7-9d1d-3c302cd2fd7b",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827581.867219
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "withdraw",
+        "transaction": "71fd7e27-8c4a-45d0-bf95-9d7462253b7f",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827587.242364
+      },
+      {
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "operation": "withdraw",
+        "transaction": "509206f9-0797-47b4-b1a1-249b296a0935",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827587.3107462
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "withdraw",
+        "transaction": "8e1a96c7-a736-4d6a-9d2f-6fc6f50c940b",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "[all_in]Auto rebuy in:coin",
+        "errorType": null,
+        "at": 1793827606.210311
+      }
+    ],
+    "fault": {
+      "mode": "normal",
+      "players": [],
+      "roomId": null
+    }
+  },
+  "fundsAfterAutomaticRebuy": {
+    "walletCoin": 19500,
+    "tableCoin": 497,
+    "potCoin": 3,
+    "total": 20000,
+    "expected": 20000,
+    "conserved": true
+  },
+  "bridge": {
+    "enabled": true,
+    "owners": 2,
+    "rooms": [
+      "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+    ],
+    "connections": [
+      {
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "subscriptions": [
+          "user#cad91ad8-9b77-432e-92df-19b6ed529888"
+        ],
+        "connected": true
+      },
+      {
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "subscriptions": [
+          "user#715aa6a4-90a2-46c6-8143-84544c7663aa"
+        ],
+        "connected": true
+      },
+      {
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "subscriptions": [
+          "chat_room|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+          "room_message|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+          "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+          "user#715aa6a4-90a2-46c6-8143-84544c7663aa"
+        ],
+        "connected": true
+      },
+      {
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "subscriptions": [
+          "user#715aa6a4-90a2-46c6-8143-84544c7663aa"
+        ],
+        "connected": true
+      },
+      {
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "subscriptions": [
+          "chat_room|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+          "room_message|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+          "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#cad91ad8-9b77-432e-92df-19b6ed529888",
+          "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+          "user#cad91ad8-9b77-432e-92df-19b6ed529888"
+        ],
+        "connected": true
+      },
+      {
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "subscriptions": [
+          "user#cad91ad8-9b77-432e-92df-19b6ed529888"
+        ],
+        "connected": true
+      }
+    ],
+    "records": [
+      {
+        "event": "native-http",
+        "at": 1793827573.7715578,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/wallet/cad91ad8-9b77-432e-92df-19b6ed529888",
+        "method": "PUT"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827573.921598,
+        "method": 0,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-connected",
+        "at": 1793827573.9468071,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827574.0558379,
+        "method": 1,
+        "path": null,
+        "channel": "room_projector#cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827574.055844,
+        "method": 1,
+        "path": null,
+        "channel": "game_hall#cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827574.055846,
+        "method": 1,
+        "path": null,
+        "channel": "system|cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827574.055847,
+        "method": 1,
+        "path": null,
+        "channel": "user#cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827574.055849,
+        "method": 1,
+        "path": null,
+        "channel": "user_transaction#cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827574.05585,
+        "method": 1,
+        "path": null,
+        "channel": "buy_in#cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827574.4858859,
+        "method": 9,
+        "path": "/v2/slot_machine/user/cad91ad8-9b77-432e-92df-19b6ed529888/energy",
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827574.698905,
+        "method": 9,
+        "path": "/v2/slot_machine/user/cad91ad8-9b77-432e-92df-19b6ed529888/energy",
+        "channel": null
+      },
+      {
+        "event": "native-http",
+        "at": 1793827575.60428,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/wallet/715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "method": "PUT"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827575.868165,
+        "method": 0,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-connected",
+        "at": 1793827575.870694,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827576.06832,
+        "method": 1,
+        "path": null,
+        "channel": "room_projector#715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827576.068325,
+        "method": 1,
+        "path": null,
+        "channel": "game_hall#715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827576.068326,
+        "method": 1,
+        "path": null,
+        "channel": "system|715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827576.068327,
+        "method": 1,
+        "path": null,
+        "channel": "user#715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827576.0683289,
+        "method": 1,
+        "path": null,
+        "channel": "user_transaction#715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827576.06833,
+        "method": 1,
+        "path": null,
+        "channel": "buy_in#715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827576.37005,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v1/hall_matching/join",
+        "method": "POST"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827576.452275,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v1/hall_matching/join",
+        "method": "POST"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827576.487678,
+        "method": 9,
+        "path": "/v2/slot_machine/user/715aa6a4-90a2-46c6-8143-84544c7663aa/energy",
+        "channel": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827576.488048,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "user#cad91ad8-9b77-432e-92df-19b6ed529888",
+        "rpcId": null,
+        "sha256": "c4f47dc04092da079c40c8d7605dcef6bc3ade7ddc31b43ec5765fcb2d5c90c1",
+        "bytes": 254,
+        "publication": {
+          "data": {
+            "stream": "hall_matching",
+            "sent_at": "2026-11-05T05:26:16.478094+08:00",
+            "queue": [
+              {
+                "waiting_player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "event": "waiting_for_others"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-booking",
+        "at": 1793827576.762314,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "room": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827576.762333,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "user#cad91ad8-9b77-432e-92df-19b6ed529888",
+        "rpcId": null,
+        "sha256": "c3cd03990898280e17a90ed1f6e51f220d45b90e57fc1ee5ebadc91ace4d8d42",
+        "bytes": 418,
+        "publication": {
+          "data": {
+            "stream": "hall_matching",
+            "sent_at": "2026-11-05T05:26:16.761075+08:00",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "hall_id": "ba41a7da-c063-4b4f-9aa3-e44529de718b",
+                "seat_number": 5,
+                "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+                "play_session_id": "69f9e2ff-7201-43fa-8293-fdccc62eabf6",
+                "event": "player_booking_seat"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-booking",
+        "at": 1793827576.7632692,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "room": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827576.763275,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "user#715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "rpcId": null,
+        "sha256": "0ebaf57a115ca3e3d110ba3ab9d1b4a7946919df2fd54e55932b227dfdf4d15f",
+        "bytes": 418,
+        "publication": {
+          "data": {
+            "stream": "hall_matching",
+            "sent_at": "2026-11-05T05:26:16.762471+08:00",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "hall_id": "ba41a7da-c063-4b4f-9aa3-e44529de718b",
+                "seat_number": 1,
+                "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+                "play_session_id": "66a5e6cd-be0a-4e30-abdd-44c02f9736e3",
+                "event": "player_booking_seat"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827577.576811,
+        "method": 9,
+        "path": "/v2/slot_machine/user/715aa6a4-90a2-46c6-8143-84544c7663aa/energy",
+        "channel": null
+      },
+      {
+        "event": "native-http",
+        "at": 1793827578.456716,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/user_settings",
+        "method": "PUT"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827578.6686459,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/user_settings",
+        "method": "PUT"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827579.843434,
+        "method": 0,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-connected",
+        "at": 1793827579.8472698,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.017473,
+        "method": 9,
+        "path": "v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/player/alive",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827580.017527,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/player/alive",
+        "rpcId": 2
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.020262,
+        "method": 1,
+        "path": null,
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827580.0753448,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": null,
+        "rpcId": 2,
+        "sha256": "3c2cabacead85f88b3f0a1a82ba2c81776fb90f706d07e05072f0a8d972c6ba4",
+        "bytes": 75,
+        "publication": null,
+        "reply": {
+          "id": 2,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "next_alive_in_second": 30
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.076113,
+        "method": 1,
+        "path": null,
+        "channel": "room_message|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.076641,
+        "method": 1,
+        "path": null,
+        "channel": "chat_room|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.077114,
+        "method": 1,
+        "path": null,
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.077573,
+        "method": 1,
+        "path": null,
+        "channel": "buy_in#715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.077777,
+        "method": 1,
+        "path": null,
+        "channel": "user#715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.2500749,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827580.2500858,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": 9
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827580.259546,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "rpcId": null,
+        "sha256": "687a7adf94eca65decc493a7dd692600a530ac04e4d9f1c589405bbd6f569b69",
+        "bytes": 994,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:20.256360",
+            "queue": [
+              {
+                "event": "room_account",
+                "status": {
+                  "balance": 0,
+                  "currency": "coin"
+                }
+              },
+              {
+                "event": "room_status",
+                "status": {
+                  "operating_seconds": 60,
+                  "remain_seconds": 172800,
+                  "settings": {
+                    "ante": 0,
+                    "big_blind": 2,
+                    "small_blind": 1,
+                    "add_operating_seconds_ttl": 1800
+                  },
+                  "state": "waiting",
+                  "pattern": "tradition",
+                  "variation": "texas_holdem"
+                },
+                "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+              },
+              {
+                "event": "table_status",
+                "status": {
+                  "seats": [
+                    {
+                      "number": 1,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    },
+                    {
+                      "number": 2,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    },
+                    {
+                      "number": 3,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    },
+                    {
+                      "number": 4,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    },
+                    {
+                      "number": 5,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    },
+                    {
+                      "number": 6,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    }
+                  ]
+                }
+              },
+              {
+                "event": "game_status",
+                "status": null
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827580.264317,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": null,
+        "rpcId": 9,
+        "sha256": "e9a11ddbd7caaca9c1476bdc1220dad27ec82bca38128173bdfaa2f5dfeffccb",
+        "bytes": 50,
+        "publication": null,
+        "reply": {
+          "id": 9,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {}
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.278254,
+        "method": 0,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-connected",
+        "at": 1793827580.2835321,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827580.583461,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/profile",
+        "method": "GET"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827580.59333,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/profile",
+        "method": "GET"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827580.674923,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v1/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "method": "GET"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827580.7012439,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/enter_and_sit",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827580.701251,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/enter_and_sit",
+        "rpcId": 10
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827580.7284741,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "8c72b14be02ff750bfe20bec8e55b81e7392d0c5036f16817ad3cc71893fe70d",
+        "bytes": 427,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:20.723987",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "event": "enter"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "buy_in_amount": 100,
+                "event": "deposit_buy_in"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 100,
+                "seat_number": 1,
+                "event": "sit"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827580.780492,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": null,
+        "rpcId": 10,
+        "sha256": "8de80dfc2d482bb8dc8081e78fa51019edcad992837ae05979bc8394423e60df",
+        "bytes": 107,
+        "publication": null,
+        "reply": {
+          "id": 10,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "play_session_id": "66a5e6cd-be0a-4e30-abdd-44c02f9736e3"
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.4819999,
+        "method": 0,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-connected",
+        "at": 1793827581.484267,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.5971808,
+        "method": 9,
+        "path": "v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/player/alive",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827581.597195,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/player/alive",
+        "rpcId": 2
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.598809,
+        "method": 1,
+        "path": null,
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827581.608232,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": null,
+        "rpcId": 2,
+        "sha256": "3c2cabacead85f88b3f0a1a82ba2c81776fb90f706d07e05072f0a8d972c6ba4",
+        "bytes": 75,
+        "publication": null,
+        "reply": {
+          "id": 2,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "next_alive_in_second": 30
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.609028,
+        "method": 1,
+        "path": null,
+        "channel": "room_message|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.609726,
+        "method": 1,
+        "path": null,
+        "channel": "chat_room|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.6103091,
+        "method": 1,
+        "path": null,
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.61092,
+        "method": 1,
+        "path": null,
+        "channel": "buy_in#cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.611186,
+        "method": 1,
+        "path": null,
+        "channel": "user#cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.693297,
+        "method": 0,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-connected",
+        "at": 1793827581.6954591,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.7234979,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827581.7235048,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": 9
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827581.728311,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#cad91ad8-9b77-432e-92df-19b6ed529888",
+        "rpcId": null,
+        "sha256": "e7e4cdb02572070ece0513782ee6edc3129970ceaa8db45128fb13df18f12fb8",
+        "bytes": 1223,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:21.727275",
+            "queue": [
+              {
+                "event": "room_account",
+                "status": {
+                  "balance": 0,
+                  "currency": "coin"
+                }
+              },
+              {
+                "event": "room_status",
+                "status": {
+                  "operating_seconds": 60,
+                  "remain_seconds": 172800,
+                  "settings": {
+                    "ante": 0,
+                    "big_blind": 2,
+                    "small_blind": 1,
+                    "add_operating_seconds_ttl": 1800
+                  },
+                  "state": "waiting",
+                  "pattern": "tradition",
+                  "variation": "texas_holdem"
+                },
+                "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+              },
+              {
+                "event": "table_status",
+                "status": {
+                  "seats": [
+                    {
+                      "number": 1,
+                      "position": null,
+                      "state": "occupied",
+                      "player": {
+                        "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                        "buy_in": 0,
+                        "stack": 100,
+                        "seat_number": 1,
+                        "is_leave": false,
+                        "is_playing": false,
+                        "last_action": {
+                          "street": null,
+                          "name": null,
+                          "amount": null
+                        },
+                        "position": null,
+                        "public_hole_card": [
+                          null,
+                          null
+                        ]
+                      }
+                    },
+                    {
+                      "number": 2,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    },
+                    {
+                      "number": 3,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    },
+                    {
+                      "number": 4,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    },
+                    {
+                      "number": 5,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    },
+                    {
+                      "number": 6,
+                      "position": null,
+                      "state": "empty",
+                      "player": null
+                    }
+                  ]
+                }
+              },
+              {
+                "event": "game_status",
+                "status": null
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827581.7321851,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": null,
+        "rpcId": 9,
+        "sha256": "e9a11ddbd7caaca9c1476bdc1220dad27ec82bca38128173bdfaa2f5dfeffccb",
+        "bytes": 50,
+        "publication": null,
+        "reply": {
+          "id": 9,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {}
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.774613,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-http",
+        "at": 1793827581.804778,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/profile",
+        "method": "GET"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827581.811944,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/profile",
+        "method": "GET"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827581.852095,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v1/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "method": "GET"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.860151,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/enter_and_sit",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827581.860171,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/enter_and_sit",
+        "rpcId": 10
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827581.8694131,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "03939da4fb583999ebe415af9d5d78ee853f2d9c1e5e0ce6724374211d2d3602",
+        "bytes": 535,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:21.868030",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "event": "enter"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "buy_in_amount": 100,
+                "event": "deposit_buy_in"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 100,
+                "seat_number": 5,
+                "event": "sit"
+              },
+              {
+                "event": "start_room"
+              },
+              {
+                "game_id": "00000000-0000-0000-0000-000000000000",
+                "version": 2,
+                "event": "ready_stage"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827581.869746,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "03939da4fb583999ebe415af9d5d78ee853f2d9c1e5e0ce6724374211d2d3602",
+        "bytes": 535,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:21.868030",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "event": "enter"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "buy_in_amount": 100,
+                "event": "deposit_buy_in"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 100,
+                "seat_number": 5,
+                "event": "sit"
+              },
+              {
+                "event": "start_room"
+              },
+              {
+                "game_id": "00000000-0000-0000-0000-000000000000",
+                "version": 2,
+                "event": "ready_stage"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.872001,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827581.872034,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "rpcId": 11
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827581.873685,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827581.873719,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "rpcId": 11
+      },
+      {
+        "event": "native-http",
+        "at": 1793827581.879043,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/profile",
+        "method": "GET"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827581.888167,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/profile",
+        "method": "GET"
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827581.986614,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": null,
+        "rpcId": 10,
+        "sha256": "1571a1147803453696d09e0da83b713aa1b8bc0e69c67c0abbf2bb972fb2d371",
+        "bytes": 107,
+        "publication": null,
+        "reply": {
+          "id": 10,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "play_session_id": "69f9e2ff-7201-43fa-8293-fdccc62eabf6"
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827581.9922938,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "c7b08f8cd8bba541fcdc0354e8de8758d6ad60c450deb44f69d69a6ec72119c6",
+        "bytes": 246,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:21.990540",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 100,
+                "event": "ready"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827581.992933,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "c7b08f8cd8bba541fcdc0354e8de8758d6ad60c450deb44f69d69a6ec72119c6",
+        "bytes": 246,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:21.990540",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 100,
+                "event": "ready"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827582.000077,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": null,
+        "rpcId": 11,
+        "sha256": "cee6643bf7b10a682fcdbe54fde5bf2903f292399b13bd3f109598780f763a6d",
+        "bytes": 51,
+        "publication": null,
+        "reply": {
+          "id": 11,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {}
+            }
+          }
+        }
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827582.001109,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "dca24373fe65e47de046ded672ee48742449628a19e1933361d86215a2740239",
+        "bytes": 1403,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:21.999093",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 99,
+                "event": "ready"
+              },
+              {
+                "game_id": "0471139d-9ed8-4953-84e1-60372eb22503",
+                "settings": {
+                  "ante": 0,
+                  "big_blind": 2,
+                  "small_blind": 1,
+                  "variation": "texas_holdem"
+                },
+                "event": "new_game"
+              },
+              {
+                "game_id": "0471139d-9ed8-4953-84e1-60372eb22503",
+                "event": "ready_stage_v1"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 99,
+                "event": "ready"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 98,
+                "event": "ready"
+              },
+              {
+                "room": {
+                  "pattern": "tradition"
+                },
+                "game": {
+                  "number": 1
+                },
+                "table": {
+                  "players": [
+                    {
+                      "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                      "stack": 98,
+                      "position": "BB",
+                      "seat_number": 5
+                    },
+                    {
+                      "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                      "stack": 99,
+                      "position": "BTN",
+                      "seat_number": 1
+                    }
+                  ]
+                },
+                "event": "begin_play"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 99,
+                "amount": 1,
+                "delay_seconds": 0.803,
+                "event": "small_blind"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 98,
+                "amount": 2,
+                "delay_seconds": 1.204,
+                "event": "big_blind"
+              },
+              {
+                "pots": [
+                  3
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "raise": {
+                    "minimum": 3
+                  },
+                  "all_in": {
+                    "amount": 99
+                  },
+                  "call": {
+                    "amount": 1
+                  },
+                  "fold": {}
+                },
+                "delay_seconds": 2.002,
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827582.001354,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "rpcId": null,
+        "sha256": "3196317ffaef452b5793c413a624ff1399d142454822487cf5bd7c45f1f7b9e3",
+        "bytes": 380,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:21.999108",
+            "queue": [
+              {
+                "hole_card": [
+                  "kc",
+                  "tc"
+                ],
+                "event": "deal_hole_card"
+              },
+              {
+                "hand_strength": "high_card",
+                "event": "hand_strength"
+              },
+              {
+                "operating_extension_times": 2,
+                "event": "operating_extension_times"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827582.001605,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "dca24373fe65e47de046ded672ee48742449628a19e1933361d86215a2740239",
+        "bytes": 1403,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:21.999093",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 99,
+                "event": "ready"
+              },
+              {
+                "game_id": "0471139d-9ed8-4953-84e1-60372eb22503",
+                "settings": {
+                  "ante": 0,
+                  "big_blind": 2,
+                  "small_blind": 1,
+                  "variation": "texas_holdem"
+                },
+                "event": "new_game"
+              },
+              {
+                "game_id": "0471139d-9ed8-4953-84e1-60372eb22503",
+                "event": "ready_stage_v1"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 99,
+                "event": "ready"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 98,
+                "event": "ready"
+              },
+              {
+                "room": {
+                  "pattern": "tradition"
+                },
+                "game": {
+                  "number": 1
+                },
+                "table": {
+                  "players": [
+                    {
+                      "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                      "stack": 98,
+                      "position": "BB",
+                      "seat_number": 5
+                    },
+                    {
+                      "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                      "stack": 99,
+                      "position": "BTN",
+                      "seat_number": 1
+                    }
+                  ]
+                },
+                "event": "begin_play"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 99,
+                "amount": 1,
+                "delay_seconds": 0.803,
+                "event": "small_blind"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 98,
+                "amount": 2,
+                "delay_seconds": 1.204,
+                "event": "big_blind"
+              },
+              {
+                "pots": [
+                  3
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "raise": {
+                    "minimum": 3
+                  },
+                  "all_in": {
+                    "amount": 99
+                  },
+                  "call": {
+                    "amount": 1
+                  },
+                  "fold": {}
+                },
+                "delay_seconds": 2.002,
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827582.001848,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#cad91ad8-9b77-432e-92df-19b6ed529888",
+        "rpcId": null,
+        "sha256": "685e860b6cd9dc41e1b713b704e1cd5967b099d3942c7c69b9a880aac7470e14",
+        "bytes": 380,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:21.999102",
+            "queue": [
+              {
+                "hole_card": [
+                  "js",
+                  "7c"
+                ],
+                "event": "deal_hole_card"
+              },
+              {
+                "hand_strength": "high_card",
+                "event": "hand_strength"
+              },
+              {
+                "operating_extension_times": 2,
+                "event": "operating_extension_times"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827582.0693839,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": null,
+        "rpcId": 11,
+        "sha256": "cee6643bf7b10a682fcdbe54fde5bf2903f292399b13bd3f109598780f763a6d",
+        "bytes": 51,
+        "publication": null,
+        "reply": {
+          "id": 11,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {}
+            }
+          }
+        }
+      },
+      {
+        "event": "native-http",
+        "at": 1793827582.5666292,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/user_settings/enable_auto_rebuy",
+        "method": "PUT"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827582.909676,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-http",
+        "at": 1793827585.271177,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/user_settings/enable_auto_rebuy",
+        "method": "PUT"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827585.659892,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-http",
+        "at": 1793827586.113654,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/wallet/cad91ad8-9b77-432e-92df-19b6ed529888",
+        "method": "PUT"
+      },
+      {
+        "event": "native-http",
+        "at": 1793827586.132024,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/wallet/715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "method": "PUT"
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827586.9042199,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827586.931968,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827587.011497,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827587.076661,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-http",
+        "at": 1793827587.231203,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/buy_in/apply",
+        "method": "POST"
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827587.2495959,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "9f78918721ba391a87dd7853106be9c7e15e2b6b0e9918c453465dcf3cc114d8",
+        "bytes": 263,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:27.247619",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "buy_in_amount": 100,
+                "event": "deposit_buy_in"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827587.2501812,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "9f78918721ba391a87dd7853106be9c7e15e2b6b0e9918c453465dcf3cc114d8",
+        "bytes": 263,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:27.247619",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "buy_in_amount": 100,
+                "event": "deposit_buy_in"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-http",
+        "at": 1793827587.3050199,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/buy_in/apply",
+        "method": "POST"
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827587.3126972,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "ab63fcbc7ef22e6896bc8422472bb87e9bbe4afe1fc6fcfcbba4a260f6dedf0b",
+        "bytes": 263,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:27.311580",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "buy_in_amount": 100,
+                "event": "deposit_buy_in"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827587.3130848,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "ab63fcbc7ef22e6896bc8422472bb87e9bbe4afe1fc6fcfcbba4a260f6dedf0b",
+        "bytes": 263,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:27.311580",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "buy_in_amount": 100,
+                "event": "deposit_buy_in"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827588.122661,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827588.9447858,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/0471139d-9ed8-4953-84e1-60372eb22503/all_in",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827588.944797,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/0471139d-9ed8-4953-84e1-60372eb22503/all_in",
+        "rpcId": 13
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827588.9639418,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "e362e85d41596e3bae954866a235171d70e44537bd72754af6dcb7348dd804bb",
+        "bytes": 444,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:28.961905",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 0,
+                "amount": 100,
+                "event": "all_in"
+              },
+              {
+                "pots": [
+                  102
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "all_in": {
+                    "amount": 98
+                  },
+                  "fold": {}
+                },
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827588.96469,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "e362e85d41596e3bae954866a235171d70e44537bd72754af6dcb7348dd804bb",
+        "bytes": 444,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:28.961905",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 0,
+                "amount": 100,
+                "event": "all_in"
+              },
+              {
+                "pots": [
+                  102
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "all_in": {
+                    "amount": 98
+                  },
+                  "fold": {}
+                },
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827588.9933481,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": null,
+        "rpcId": 13,
+        "sha256": "6401b1be05894e2ca04d17352e29aab6dcf743547894a35d8471df64ddef7696",
+        "bytes": 76,
+        "publication": null,
+        "reply": {
+          "id": 13,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "add_level_experience": 99
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827589.414641,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/0471139d-9ed8-4953-84e1-60372eb22503/all_in",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827589.4146519,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/0471139d-9ed8-4953-84e1-60372eb22503/all_in",
+        "rpcId": 13
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827589.4320042,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "e2034f2e2d5ee0811913838f9e953f70225149ddc170489dbd79348f8bb4f593",
+        "bytes": 1548,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:29.430190",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 0,
+                "amount": 100,
+                "event": "all_in"
+              },
+              {
+                "pots": [
+                  200
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "street": "flop",
+                "community_card": [
+                  "5s",
+                  "4s",
+                  "6h"
+                ],
+                "event": "start_street"
+              },
+              {
+                "street": "turn",
+                "community_card": [
+                  "5s",
+                  "4s",
+                  "6h",
+                  "9c"
+                ],
+                "delay_seconds": 2.6,
+                "event": "start_street"
+              },
+              {
+                "street": "river",
+                "community_card": [
+                  "5s",
+                  "4s",
+                  "6h",
+                  "9c",
+                  "ts"
+                ],
+                "delay_seconds": 4.6,
+                "event": "start_street"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "hole_card": [
+                      "js",
+                      "7c"
+                    ]
+                  },
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "hole_card": [
+                      "kc",
+                      "tc"
+                    ]
+                  }
+                ],
+                "event": "all_in_show_hole_card"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "hole_card": [
+                      "js",
+                      "7c"
+                    ],
+                    "best_cards": [
+                      "6h",
+                      "9c",
+                      "ts",
+                      "js",
+                      "7c"
+                    ],
+                    "strength_cards": [
+                      "js"
+                    ],
+                    "hand_strength": "high_card",
+                    "is_max_strength": false
+                  },
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "hole_card": [
+                      "kc",
+                      "tc"
+                    ],
+                    "best_cards": [
+                      "6h",
+                      "9c",
+                      "ts",
+                      "kc",
+                      "tc"
+                    ],
+                    "strength_cards": [
+                      "tc",
+                      "ts"
+                    ],
+                    "hand_strength": "pair",
+                    "is_max_strength": true
+                  }
+                ],
+                "delay_seconds": 6.1,
+                "event": "showdown"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "stack": 0,
+                    "prize": null,
+                    "net": -100
+                  },
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "stack": 200,
+                    "prize": 200,
+                    "net": 100
+                  }
+                ],
+                "delay_seconds": 6.6,
+                "event": "settlement"
+              },
+              {
+                "delay_seconds": 11.1,
+                "event": "end_game"
+              },
+              {
+                "delay_seconds": 11.799999999999999,
+                "event": "about_to_start"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827589.4325519,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "e2034f2e2d5ee0811913838f9e953f70225149ddc170489dbd79348f8bb4f593",
+        "bytes": 1548,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:29.430190",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 0,
+                "amount": 100,
+                "event": "all_in"
+              },
+              {
+                "pots": [
+                  200
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "street": "flop",
+                "community_card": [
+                  "5s",
+                  "4s",
+                  "6h"
+                ],
+                "event": "start_street"
+              },
+              {
+                "street": "turn",
+                "community_card": [
+                  "5s",
+                  "4s",
+                  "6h",
+                  "9c"
+                ],
+                "delay_seconds": 2.6,
+                "event": "start_street"
+              },
+              {
+                "street": "river",
+                "community_card": [
+                  "5s",
+                  "4s",
+                  "6h",
+                  "9c",
+                  "ts"
+                ],
+                "delay_seconds": 4.6,
+                "event": "start_street"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "hole_card": [
+                      "js",
+                      "7c"
+                    ]
+                  },
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "hole_card": [
+                      "kc",
+                      "tc"
+                    ]
+                  }
+                ],
+                "event": "all_in_show_hole_card"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "hole_card": [
+                      "js",
+                      "7c"
+                    ],
+                    "best_cards": [
+                      "6h",
+                      "9c",
+                      "ts",
+                      "js",
+                      "7c"
+                    ],
+                    "strength_cards": [
+                      "js"
+                    ],
+                    "hand_strength": "high_card",
+                    "is_max_strength": false
+                  },
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "hole_card": [
+                      "kc",
+                      "tc"
+                    ],
+                    "best_cards": [
+                      "6h",
+                      "9c",
+                      "ts",
+                      "kc",
+                      "tc"
+                    ],
+                    "strength_cards": [
+                      "tc",
+                      "ts"
+                    ],
+                    "hand_strength": "pair",
+                    "is_max_strength": true
+                  }
+                ],
+                "delay_seconds": 6.1,
+                "event": "showdown"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "stack": 0,
+                    "prize": null,
+                    "net": -100
+                  },
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "stack": 200,
+                    "prize": 200,
+                    "net": 100
+                  }
+                ],
+                "delay_seconds": 6.6,
+                "event": "settlement"
+              },
+              {
+                "delay_seconds": 11.1,
+                "event": "end_game"
+              },
+              {
+                "delay_seconds": 11.799999999999999,
+                "event": "about_to_start"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827589.4327738,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "rpcId": null,
+        "sha256": "524310ec1a48c381fe0801c688c84a49897ddcbc5efa396e406c16cb0b8e968c",
+        "bytes": 455,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:29.430213",
+            "queue": [
+              {
+                "hand_strength": "pair",
+                "delay_seconds": 1.8,
+                "event": "hand_strength"
+              },
+              {
+                "hand_strength": "pair",
+                "delay_seconds": 3.1,
+                "event": "hand_strength"
+              },
+              {
+                "hand_strength": "pair",
+                "delay_seconds": 5.1,
+                "event": "hand_strength"
+              },
+              {
+                "hand_power": 44,
+                "event": "hand_analyse"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827589.433334,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#cad91ad8-9b77-432e-92df-19b6ed529888",
+        "rpcId": null,
+        "sha256": "82c66bed2e15e60f6bfd1a6e13bcb56d93351df6ca14d23bd250a9dc27a747e8",
+        "bytes": 470,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:29.430207",
+            "queue": [
+              {
+                "hand_strength": "high_card",
+                "delay_seconds": 1.8,
+                "event": "hand_strength"
+              },
+              {
+                "hand_strength": "high_card",
+                "delay_seconds": 3.1,
+                "event": "hand_strength"
+              },
+              {
+                "hand_strength": "high_card",
+                "delay_seconds": 5.1,
+                "event": "hand_strength"
+              },
+              {
+                "hand_power": 15,
+                "event": "hand_analyse"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827589.4736261,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": null,
+        "rpcId": 13,
+        "sha256": "2e59178458901e948b4812b7c73a8e69be589c6303648f7d7647833d0b34f1f4",
+        "bytes": 76,
+        "publication": null,
+        "reply": {
+          "id": 13,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "add_level_experience": 98
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827590.855873,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827592.0331578,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827592.152247,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827593.325696,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827594.449836,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827594.477275,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827596.024674,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827597.1529028,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827597.371548,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827598.542628,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827599.590604,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827599.624508,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827601.215063,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.699618,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "b0105a67e893f9f682ad152a671aa3f1f03fed8e7bf69d111e728b74ba9cb382",
+        "bytes": 250,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:41.691324",
+            "queue": [
+              {
+                "game_id": "00000000-0000-0000-0000-000000000000",
+                "version": 2,
+                "event": "ready_stage"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.701212,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "b0105a67e893f9f682ad152a671aa3f1f03fed8e7bf69d111e728b74ba9cb382",
+        "bytes": 250,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:41.691324",
+            "queue": [
+              {
+                "game_id": "00000000-0000-0000-0000-000000000000",
+                "version": 2,
+                "event": "ready_stage"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827601.708362,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827601.7083762,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "rpcId": 16
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827601.7088408,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827601.708846,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "rpcId": 16
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.73781,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "7d81ac58511db28c892ba379cd3e51fcb49ecafca7dfcf079034d9911ed756b7",
+        "bytes": 246,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:41.736541",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 100,
+                "event": "ready"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.7381802,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "7d81ac58511db28c892ba379cd3e51fcb49ecafca7dfcf079034d9911ed756b7",
+        "bytes": 246,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:41.736541",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 100,
+                "event": "ready"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.751552,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": null,
+        "rpcId": 16,
+        "sha256": "aac6c6e8109b91cf65e10a44e200ff3e3618df039fd568d5a623bf477c661550",
+        "bytes": 51,
+        "publication": null,
+        "reply": {
+          "id": 16,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {}
+            }
+          }
+        }
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.8530402,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "1d3b0beb409bf1a3779dff69621e0594e65f5adeb3e96e99ccbb1890d487c291",
+        "bytes": 1407,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:41.849693",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 298,
+                "event": "ready"
+              },
+              {
+                "game_id": "fe7eedfd-2252-4b46-b7c6-0ff2039dd82d",
+                "settings": {
+                  "ante": 0,
+                  "big_blind": 2,
+                  "small_blind": 1,
+                  "variation": "texas_holdem"
+                },
+                "event": "new_game"
+              },
+              {
+                "game_id": "fe7eedfd-2252-4b46-b7c6-0ff2039dd82d",
+                "event": "ready_stage_v1"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 298,
+                "event": "ready"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 99,
+                "event": "ready"
+              },
+              {
+                "room": {
+                  "pattern": "tradition"
+                },
+                "game": {
+                  "number": 2
+                },
+                "table": {
+                  "players": [
+                    {
+                      "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                      "stack": 298,
+                      "position": "BB",
+                      "seat_number": 1
+                    },
+                    {
+                      "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                      "stack": 99,
+                      "position": "BTN",
+                      "seat_number": 5
+                    }
+                  ]
+                },
+                "event": "begin_play"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 99,
+                "amount": 1,
+                "delay_seconds": 0.803,
+                "event": "small_blind"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 298,
+                "amount": 2,
+                "delay_seconds": 1.204,
+                "event": "big_blind"
+              },
+              {
+                "pots": [
+                  3
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "raise": {
+                    "minimum": 3
+                  },
+                  "all_in": {
+                    "amount": 99
+                  },
+                  "call": {
+                    "amount": 1
+                  },
+                  "fold": {}
+                },
+                "delay_seconds": 2.002,
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.853365,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#cad91ad8-9b77-432e-92df-19b6ed529888",
+        "rpcId": null,
+        "sha256": "6a946bda928b2ee87846aae65a9efe9f30fb7e0921697755d5985472af522dc2",
+        "bytes": 380,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:41.849710",
+            "queue": [
+              {
+                "hole_card": [
+                  "qd",
+                  "js"
+                ],
+                "event": "deal_hole_card"
+              },
+              {
+                "hand_strength": "high_card",
+                "event": "hand_strength"
+              },
+              {
+                "operating_extension_times": 2,
+                "event": "operating_extension_times"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.853486,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "1d3b0beb409bf1a3779dff69621e0594e65f5adeb3e96e99ccbb1890d487c291",
+        "bytes": 1407,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:41.849693",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 298,
+                "event": "ready"
+              },
+              {
+                "game_id": "fe7eedfd-2252-4b46-b7c6-0ff2039dd82d",
+                "settings": {
+                  "ante": 0,
+                  "big_blind": 2,
+                  "small_blind": 1,
+                  "variation": "texas_holdem"
+                },
+                "event": "new_game"
+              },
+              {
+                "game_id": "fe7eedfd-2252-4b46-b7c6-0ff2039dd82d",
+                "event": "ready_stage_v1"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 298,
+                "event": "ready"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 99,
+                "event": "ready"
+              },
+              {
+                "room": {
+                  "pattern": "tradition"
+                },
+                "game": {
+                  "number": 2
+                },
+                "table": {
+                  "players": [
+                    {
+                      "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                      "stack": 298,
+                      "position": "BB",
+                      "seat_number": 1
+                    },
+                    {
+                      "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                      "stack": 99,
+                      "position": "BTN",
+                      "seat_number": 5
+                    }
+                  ]
+                },
+                "event": "begin_play"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 99,
+                "amount": 1,
+                "delay_seconds": 0.803,
+                "event": "small_blind"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 298,
+                "amount": 2,
+                "delay_seconds": 1.204,
+                "event": "big_blind"
+              },
+              {
+                "pots": [
+                  3
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "raise": {
+                    "minimum": 3
+                  },
+                  "all_in": {
+                    "amount": 99
+                  },
+                  "call": {
+                    "amount": 1
+                  },
+                  "fold": {}
+                },
+                "delay_seconds": 2.002,
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.853678,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "rpcId": null,
+        "sha256": "7505761e37f69b4d77adb72f503a2f9d44de4524f318650ee9c6125157be682a",
+        "bytes": 380,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:41.849704",
+            "queue": [
+              {
+                "hole_card": [
+                  "jh",
+                  "td"
+                ],
+                "event": "deal_hole_card"
+              },
+              {
+                "hand_strength": "high_card",
+                "event": "hand_strength"
+              },
+              {
+                "operating_extension_times": 2,
+                "event": "operating_extension_times"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827601.894906,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": null,
+        "rpcId": 16,
+        "sha256": "aac6c6e8109b91cf65e10a44e200ff3e3618df039fd568d5a623bf477c661550",
+        "bytes": 51,
+        "publication": null,
+        "reply": {
+          "id": 16,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {}
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827602.276194,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827602.5956202,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827603.747169,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827604.999371,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/fe7eedfd-2252-4b46-b7c6-0ff2039dd82d/all_in",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827604.999416,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/fe7eedfd-2252-4b46-b7c6-0ff2039dd82d/all_in",
+        "rpcId": 17
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827605.044918,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "7a14d6aa6662a3aeacae4bb8722f9cfc3fbed9232e6bd98ff47ab93803a1283a",
+        "bytes": 490,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:45.042753",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 0,
+                "amount": 100,
+                "event": "all_in"
+              },
+              {
+                "pots": [
+                  102
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "raise": {
+                    "minimum": 196
+                  },
+                  "all_in": {
+                    "amount": 298
+                  },
+                  "call": {
+                    "amount": 98
+                  },
+                  "fold": {}
+                },
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827605.045559,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "7a14d6aa6662a3aeacae4bb8722f9cfc3fbed9232e6bd98ff47ab93803a1283a",
+        "bytes": 490,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:45.042753",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 0,
+                "amount": 100,
+                "event": "all_in"
+              },
+              {
+                "pots": [
+                  102
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "raise": {
+                    "minimum": 196
+                  },
+                  "all_in": {
+                    "amount": 298
+                  },
+                  "call": {
+                    "amount": 98
+                  },
+                  "fold": {}
+                },
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827605.076163,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": null,
+        "rpcId": 17,
+        "sha256": "677969a11f8f5d643ef2335b49013fe308fdf8f730708a30cf67015215437934",
+        "bytes": 76,
+        "publication": null,
+        "reply": {
+          "id": 17,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "add_level_experience": 99
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827606.196168,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/fe7eedfd-2252-4b46-b7c6-0ff2039dd82d/all_in",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827606.196178,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/fe7eedfd-2252-4b46-b7c6-0ff2039dd82d/all_in",
+        "rpcId": 17
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827606.222241,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "90d75601e1550edcd5fb594e040229fee7e2cff77212894fac8566dc5d7dacb5",
+        "bytes": 1685,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:46.220623",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 0,
+                "amount": 300,
+                "event": "all_in"
+              },
+              {
+                "pots": [
+                  200,
+                  200
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "street": "flop",
+                "community_card": [
+                  "as",
+                  "8s",
+                  "3s"
+                ],
+                "event": "start_street"
+              },
+              {
+                "street": "turn",
+                "community_card": [
+                  "as",
+                  "8s",
+                  "3s",
+                  "5c"
+                ],
+                "delay_seconds": 2.6,
+                "event": "start_street"
+              },
+              {
+                "street": "river",
+                "community_card": [
+                  "as",
+                  "8s",
+                  "3s",
+                  "5c",
+                  "tc"
+                ],
+                "delay_seconds": 4.6,
+                "event": "start_street"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "hole_card": [
+                      "jh",
+                      "td"
+                    ]
+                  },
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "hole_card": [
+                      "qd",
+                      "js"
+                    ]
+                  }
+                ],
+                "event": "all_in_show_hole_card"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "hole_card": [
+                      "jh",
+                      "td"
+                    ],
+                    "best_cards": [
+                      "as",
+                      "8s",
+                      "tc",
+                      "jh",
+                      "td"
+                    ],
+                    "strength_cards": [
+                      "tc",
+                      "td"
+                    ],
+                    "hand_strength": "pair",
+                    "is_max_strength": true
+                  },
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "hole_card": [
+                      "qd",
+                      "js"
+                    ],
+                    "best_cards": [
+                      "as",
+                      "8s",
+                      "tc",
+                      "qd",
+                      "js"
+                    ],
+                    "strength_cards": [
+                      "as"
+                    ],
+                    "hand_strength": "high_card",
+                    "is_max_strength": false
+                  }
+                ],
+                "delay_seconds": 6.1,
+                "event": "showdown"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "stack": 400,
+                    "prize": 400,
+                    "net": 100
+                  },
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "stack": 0,
+                    "prize": null,
+                    "net": -100
+                  }
+                ],
+                "delay_seconds": 6.6,
+                "event": "settlement"
+              },
+              {
+                "delay_seconds": 11.1,
+                "event": "end_game"
+              },
+              {
+                "delay_seconds": 11.799999999999999,
+                "event": "about_to_start"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "buy_in_amount": 100,
+                "delay_seconds": 11.799999999999999,
+                "event": "deposit_buy_in"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827606.2234392,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#cad91ad8-9b77-432e-92df-19b6ed529888",
+        "rpcId": null,
+        "sha256": "e3957de2a981f4db2ca00f6e2d34fd9f06cafee5340bd40f4d04dfcd725bb7fd",
+        "bytes": 470,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:46.220641",
+            "queue": [
+              {
+                "hand_strength": "high_card",
+                "delay_seconds": 1.8,
+                "event": "hand_strength"
+              },
+              {
+                "hand_strength": "high_card",
+                "delay_seconds": 3.1,
+                "event": "hand_strength"
+              },
+              {
+                "hand_strength": "high_card",
+                "delay_seconds": 5.1,
+                "event": "hand_strength"
+              },
+              {
+                "hand_power": 31,
+                "event": "hand_analyse"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827606.223996,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "90d75601e1550edcd5fb594e040229fee7e2cff77212894fac8566dc5d7dacb5",
+        "bytes": 1685,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:46.220623",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 0,
+                "amount": 300,
+                "event": "all_in"
+              },
+              {
+                "pots": [
+                  200,
+                  200
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "street": "flop",
+                "community_card": [
+                  "as",
+                  "8s",
+                  "3s"
+                ],
+                "event": "start_street"
+              },
+              {
+                "street": "turn",
+                "community_card": [
+                  "as",
+                  "8s",
+                  "3s",
+                  "5c"
+                ],
+                "delay_seconds": 2.6,
+                "event": "start_street"
+              },
+              {
+                "street": "river",
+                "community_card": [
+                  "as",
+                  "8s",
+                  "3s",
+                  "5c",
+                  "tc"
+                ],
+                "delay_seconds": 4.6,
+                "event": "start_street"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "hole_card": [
+                      "jh",
+                      "td"
+                    ]
+                  },
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "hole_card": [
+                      "qd",
+                      "js"
+                    ]
+                  }
+                ],
+                "event": "all_in_show_hole_card"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "hole_card": [
+                      "jh",
+                      "td"
+                    ],
+                    "best_cards": [
+                      "as",
+                      "8s",
+                      "tc",
+                      "jh",
+                      "td"
+                    ],
+                    "strength_cards": [
+                      "tc",
+                      "td"
+                    ],
+                    "hand_strength": "pair",
+                    "is_max_strength": true
+                  },
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "hole_card": [
+                      "qd",
+                      "js"
+                    ],
+                    "best_cards": [
+                      "as",
+                      "8s",
+                      "tc",
+                      "qd",
+                      "js"
+                    ],
+                    "strength_cards": [
+                      "as"
+                    ],
+                    "hand_strength": "high_card",
+                    "is_max_strength": false
+                  }
+                ],
+                "delay_seconds": 6.1,
+                "event": "showdown"
+              },
+              {
+                "players": [
+                  {
+                    "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                    "stack": 400,
+                    "prize": 400,
+                    "net": 100
+                  },
+                  {
+                    "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                    "stack": 0,
+                    "prize": null,
+                    "net": -100
+                  }
+                ],
+                "delay_seconds": 6.6,
+                "event": "settlement"
+              },
+              {
+                "delay_seconds": 11.1,
+                "event": "end_game"
+              },
+              {
+                "delay_seconds": 11.799999999999999,
+                "event": "about_to_start"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "buy_in_amount": 100,
+                "delay_seconds": 11.799999999999999,
+                "event": "deposit_buy_in"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827606.224598,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "rpcId": null,
+        "sha256": "8d4b85ec10fc8474a769b31f8efabb0a520d0d0d95b462ae2e59570a48cfb6dc",
+        "bytes": 455,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:46.220634",
+            "queue": [
+              {
+                "hand_strength": "pair",
+                "delay_seconds": 1.8,
+                "event": "hand_strength"
+              },
+              {
+                "hand_strength": "pair",
+                "delay_seconds": 3.1,
+                "event": "hand_strength"
+              },
+              {
+                "hand_strength": "pair",
+                "delay_seconds": 5.1,
+                "event": "hand_strength"
+              },
+              {
+                "hand_power": 45,
+                "event": "hand_analyse"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827606.343198,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": null,
+        "rpcId": 17,
+        "sha256": "cb65a0dc20c05ee8d79d163f3c1721767c9c83e00fbfd69f9b1916f6924dcab3",
+        "bytes": 77,
+        "publication": null,
+        "reply": {
+          "id": 17,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "add_level_experience": 298
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827606.380739,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827607.3887959,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827607.813816,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827608.9526742,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827610.087212,
+        "method": 9,
+        "path": "v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/player/alive",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827610.08722,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/player/alive",
+        "rpcId": 18
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827610.132194,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": null,
+        "rpcId": 18,
+        "sha256": "a1fbbe7ae84fe19c4fff43896bf73c8ea19c581f06430d305d4bbf5fa23593e1",
+        "bytes": 76,
+        "publication": null,
+        "reply": {
+          "id": 18,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "next_alive_in_second": 30
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827611.244024,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827611.559168,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827611.6236959,
+        "method": 9,
+        "path": "v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/player/alive",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827611.623908,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/player/alive",
+        "rpcId": 19
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827611.6432772,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": null,
+        "rpcId": 19,
+        "sha256": "8359484df530017aa8407c5380ef64bcf09bb348037676cbbfa264a24e3c6ba8",
+        "bytes": 76,
+        "publication": null,
+        "reply": {
+          "id": 19,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {
+                "next_alive_in_second": 30
+              }
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827612.500246,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827613.033103,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827614.1977,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827615.1560278,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827616.655763,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827616.771337,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827617.61475,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827618.274518,
+        "method": 7,
+        "path": null,
+        "channel": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.515476,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "207144b650ca830952d14c145921a0487738765cfe4b82d2b489ce9483eefa27",
+        "bytes": 250,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:58.512553",
+            "queue": [
+              {
+                "game_id": "00000000-0000-0000-0000-000000000000",
+                "version": 2,
+                "event": "ready_stage"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.516363,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "207144b650ca830952d14c145921a0487738765cfe4b82d2b489ce9483eefa27",
+        "bytes": 250,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:58.512553",
+            "queue": [
+              {
+                "game_id": "00000000-0000-0000-0000-000000000000",
+                "version": 2,
+                "event": "ready_stage"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827618.518205,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827618.5182211,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "rpcId": 21
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827618.5187058,
+        "method": 9,
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "channel": null
+      },
+      {
+        "event": "native-rpc",
+        "at": 1793827618.51871,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "path": "/v10/texas_holdem/room/4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9/game/00000000-0000-0000-0000-000000000000/player/ready",
+        "rpcId": 20
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.537237,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "863c26c017b29cdb9dec4b0641f8c457e728bb7491cf92b6ded4958a8b06cc6d",
+        "bytes": 246,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:58.534409",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 100,
+                "event": "ready"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.5376608,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "863c26c017b29cdb9dec4b0641f8c457e728bb7491cf92b6ded4958a8b06cc6d",
+        "bytes": 246,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:58.534409",
+            "queue": [
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 100,
+                "event": "ready"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.547253,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": null,
+        "rpcId": 21,
+        "sha256": "4550e84ac81744dcc0692d47d69eab073f864d2cd2a950d0b3f4675abe5c7d9f",
+        "bytes": 51,
+        "publication": null,
+        "reply": {
+          "id": 21,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {}
+            }
+          }
+        }
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.660502,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "36a2b9de2d8964a0b0e4d4ea2b5d7fac51378ca8d327a152c9e111c4e47ca8cf",
+        "bytes": 1408,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:58.654855",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 399,
+                "event": "ready"
+              },
+              {
+                "game_id": "793d3577-854b-4cb7-a35c-8e3218fcf795",
+                "settings": {
+                  "ante": 0,
+                  "big_blind": 2,
+                  "small_blind": 1,
+                  "variation": "texas_holdem"
+                },
+                "event": "new_game"
+              },
+              {
+                "game_id": "793d3577-854b-4cb7-a35c-8e3218fcf795",
+                "event": "ready_stage_v1"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 399,
+                "event": "ready"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 98,
+                "event": "ready"
+              },
+              {
+                "room": {
+                  "pattern": "tradition"
+                },
+                "game": {
+                  "number": 3
+                },
+                "table": {
+                  "players": [
+                    {
+                      "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                      "stack": 98,
+                      "position": "BB",
+                      "seat_number": 5
+                    },
+                    {
+                      "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                      "stack": 399,
+                      "position": "BTN",
+                      "seat_number": 1
+                    }
+                  ]
+                },
+                "event": "begin_play"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 399,
+                "amount": 1,
+                "delay_seconds": 0.803,
+                "event": "small_blind"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 98,
+                "amount": 2,
+                "delay_seconds": 1.204,
+                "event": "big_blind"
+              },
+              {
+                "pots": [
+                  3
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "raise": {
+                    "minimum": 3
+                  },
+                  "all_in": {
+                    "amount": 399
+                  },
+                  "call": {
+                    "amount": 1
+                  },
+                  "fold": {}
+                },
+                "delay_seconds": 2.002,
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.661282,
+        "user": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#cad91ad8-9b77-432e-92df-19b6ed529888",
+        "rpcId": null,
+        "sha256": "3ea1d5acd2a1878906f2c74593f44e51ade0833b1477ae763230f937f49a76f8",
+        "bytes": 380,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:58.654863",
+            "queue": [
+              {
+                "hole_card": [
+                  "2c",
+                  "4c"
+                ],
+                "event": "deal_hole_card"
+              },
+              {
+                "hand_strength": "high_card",
+                "event": "hand_strength"
+              },
+              {
+                "operating_extension_times": 2,
+                "event": "operating_extension_times"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.6616151,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem|4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "rpcId": null,
+        "sha256": "36a2b9de2d8964a0b0e4d4ea2b5d7fac51378ca8d327a152c9e111c4e47ca8cf",
+        "bytes": 1408,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:58.654855",
+            "queue": [
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 399,
+                "event": "ready"
+              },
+              {
+                "game_id": "793d3577-854b-4cb7-a35c-8e3218fcf795",
+                "settings": {
+                  "ante": 0,
+                  "big_blind": 2,
+                  "small_blind": 1,
+                  "variation": "texas_holdem"
+                },
+                "event": "new_game"
+              },
+              {
+                "game_id": "793d3577-854b-4cb7-a35c-8e3218fcf795",
+                "event": "ready_stage_v1"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 399,
+                "event": "ready"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 98,
+                "event": "ready"
+              },
+              {
+                "room": {
+                  "pattern": "tradition"
+                },
+                "game": {
+                  "number": 3
+                },
+                "table": {
+                  "players": [
+                    {
+                      "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                      "stack": 98,
+                      "position": "BB",
+                      "seat_number": 5
+                    },
+                    {
+                      "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                      "stack": 399,
+                      "position": "BTN",
+                      "seat_number": 1
+                    }
+                  ]
+                },
+                "event": "begin_play"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "stack": 399,
+                "amount": 1,
+                "delay_seconds": 0.803,
+                "event": "small_blind"
+              },
+              {
+                "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+                "stack": 98,
+                "amount": 2,
+                "delay_seconds": 1.204,
+                "event": "big_blind"
+              },
+              {
+                "pots": [
+                  3
+                ],
+                "event": "pots_updated"
+              },
+              {
+                "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+                "operating_seconds": 60,
+                "valid_bets": {
+                  "raise": {
+                    "minimum": 3
+                  },
+                  "all_in": {
+                    "amount": 399
+                  },
+                  "call": {
+                    "amount": 1
+                  },
+                  "fold": {}
+                },
+                "delay_seconds": 2.002,
+                "event": "switch_player"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.6621451,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": "texas_holdem>4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9#715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "rpcId": null,
+        "sha256": "e87639fce719b8dab5dcd9b8b189fc29e6a074b1093bfa660ce09ef0ccb6286d",
+        "bytes": 380,
+        "publication": {
+          "data": {
+            "stream": "texas_holdem",
+            "sent_at": "2026-11-04T21:26:58.654869",
+            "queue": [
+              {
+                "hole_card": [
+                  "tc",
+                  "5h"
+                ],
+                "event": "deal_hole_card"
+              },
+              {
+                "hand_strength": "high_card",
+                "event": "hand_strength"
+              },
+              {
+                "operating_extension_times": 2,
+                "event": "operating_extension_times"
+              }
+            ]
+          }
+        },
+        "reply": null
+      },
+      {
+        "event": "native-to-browser",
+        "at": 1793827618.725464,
+        "user": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "channel": null,
+        "rpcId": 20,
+        "sha256": "e6302d3c7b99b61982e3e6187a75269a6e5045ccbd9e4ebc2844df8f478f99b8",
+        "bytes": 51,
+        "publication": null,
+        "reply": {
+          "id": 20,
+          "result": {
+            "data": {
+              "ok": true,
+              "result": {}
+            }
+          }
+        }
+      },
+      {
+        "event": "browser-command",
+        "at": 1793827619.5756721,
+        "method": 7,
+        "path": null,
+        "channel": null
+      }
+    ]
+  },
+  "closedRoom": {
+    "player_pool": {
+      "players": {
+        "715aa6a4-90a2-46c6-8143-84544c7663aa": {
+          "player_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "_seat_number": 1,
+          "is_ready": true,
+          "is_playing": false,
+          "is_winner": false,
+          "is_stand_up": true,
+          "is_quit": true,
+          "minimum_operating_extension_seconds": 0,
+          "maximum_operating_extension_seconds": 60,
+          "operating_start_at_timestamp": 1793827618.654691,
+          "operate_waiting_seconds": 0,
+          "operating_seconds": 60,
+          "operating_transmission_seconds": 4,
+          "max_extension_times": 2,
+          "used_extension_times": 0,
+          "played_game_count": 0,
+          "initial_stack": 400,
+          "stack": 402,
+          "stack_after_pay": 399,
+          "is_reset_statistics": true,
+          "buy_in_amount": 0,
+          "history_buy_in_amount": 0,
+          "refund_amount": 402,
+          "history_refund_amount": 0,
+          "settlement_net_amount": 0,
+          "pay_amount": 1,
+          "pay_status": "pay_till_end",
+          "prize": 3,
+          "position": null,
+          "hole_card": [
+            "tc",
+            "5h"
+          ],
+          "public_hole_card": [
+            null,
+            null
+          ],
+          "hole_card_score": null,
+          "best_cards": [],
+          "hand_strength": "high_card",
+          "strength_cards": [],
+          "action_name": "small_blind",
+          "action_amount": 1,
+          "action_street": "preflop",
+          "action_at_timestamp": 1793827618.654648,
+          "is_max_raiser": false,
+          "is_showdown": false,
+          "is_max_strength": false,
+          "street_bet_amount": 1
+        },
+        "cad91ad8-9b77-432e-92df-19b6ed529888": {
+          "player_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "_seat_number": 5,
+          "is_ready": true,
+          "is_playing": false,
+          "is_winner": false,
+          "is_stand_up": true,
+          "is_quit": true,
+          "minimum_operating_extension_seconds": 0,
+          "maximum_operating_extension_seconds": 60,
+          "operating_start_at_timestamp": null,
+          "operate_waiting_seconds": 0,
+          "operating_seconds": 60,
+          "operating_transmission_seconds": 4,
+          "max_extension_times": 2,
+          "used_extension_times": 0,
+          "played_game_count": 0,
+          "initial_stack": 100,
+          "stack": 98,
+          "stack_after_pay": 98,
+          "is_reset_statistics": true,
+          "buy_in_amount": 0,
+          "history_buy_in_amount": 0,
+          "refund_amount": 98,
+          "history_refund_amount": 0,
+          "settlement_net_amount": 0,
+          "pay_amount": 2,
+          "pay_status": "pay_till_end",
+          "prize": null,
+          "position": null,
+          "hole_card": [
+            "2c",
+            "4c"
+          ],
+          "public_hole_card": [
+            null,
+            null
+          ],
+          "hole_card_score": null,
+          "best_cards": [],
+          "hand_strength": "high_card",
+          "strength_cards": [],
+          "action_name": "big_blind",
+          "action_amount": 2,
+          "action_street": "preflop",
+          "action_at_timestamp": 1793827618.654669,
+          "is_max_raiser": false,
+          "is_showdown": false,
+          "is_max_strength": false,
+          "street_bet_amount": 2
+        }
+      }
+    },
+    "buy_in": {
+      "currency": "coin",
+      "audit": false,
+      "auto_buy_in_amount": 0,
+      "minimum": 100,
+      "maximum": 200,
+      "lowest_stack": 2,
+      "highest_stack": 4000,
+      "can_apply": true
+    },
+    "room": {
+      "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+      "pattern": "tradition",
+      "created_at": "2026-11-04T21:26:16.673082+00:00",
+      "is_start": true,
+      "start_at_timestamp": 1793827581.8647192,
+      "duration": 172800,
+      "is_close": true,
+      "close_at_timestamp": 1793827621.3974762,
+      "_auto_start_player_quantity": 2,
+      "variation": "texas_holdem",
+      "settings": {
+        "ante": 0,
+        "big_blind": 2,
+        "small_blind": 1,
+        "add_operating_seconds_ttl": 1800
+      },
+      "player_operating_seconds": 60,
+      "room_type": "hall"
+    },
+    "refund": {
+      "is_enable": true,
+      "stack_limit": null
+    },
+    "ReadyPhaseV1": {
+      "ready_quorum": 2,
+      "start_at": "20261105T052658Z",
+      "end_at": "20261105T052701Z"
+    },
+    "opening_room": {
+      "created_at": "2026-11-04T21:26:16.673099+00:00",
+      "start_at": "2026-11-04T21:26:21.864720+00:00",
+      "closed_at": "2026-11-04T21:27:01.397478+00:00",
+      "end_at": null,
+      "duration": 172800,
+      "close_by_user_id": "None",
+      "close_reason": "issue94-owned-native-cleanup",
+      "status": "closed"
+    },
+    "game": {
+      "game_id": "793d3577-854b-4cb7-a35c-8e3218fcf795",
+      "_number": 3,
+      "is_ready_stage": false,
+      "is_start": true,
+      "start_at": "2026-11-04T21:26:58.654516+00:00",
+      "is_end": true,
+      "end_at_timestamp": 1793827625.357117,
+      "end_game_delay": 4,
+      "player_operating_extension_times": 2
+    },
+    "HandPredictionRule": {
+      "prediction_currency": "coin",
+      "prediction_amount_options": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "BuildingV2": {
+      "building_type": "hall",
+      "building_id": "ba41a7da-c063-4b4f-9aa3-e44529de718b",
+      "building_name": "Tourists",
+      "room_name": "Tourists",
+      "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+    },
+    "PlaySessionV1": {
+      "default_play_session_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9"
+    },
+    "RoomPlayerGroupV1": {
+      "all_room_player": {
+        "715aa6a4-90a2-46c6-8143-84544c7663aa": {
+          "AliveV1": {
+            "enter_room_at": "20261105T052620Z",
+            "quit_room_at": "20261105T052701Z",
+            "last_checked_alive_at": "20261105T052650Z"
+          }
+        },
+        "cad91ad8-9b77-432e-92df-19b6ed529888": {
+          "AliveV1": {
+            "enter_room_at": "20261105T052621Z",
+            "quit_room_at": "20261105T052701Z",
+            "last_checked_alive_at": "20261105T052651Z"
+          }
+        }
+      }
+    },
+    "HandPredictionGroup": {
+      "all_player": {}
+    },
+    "HoldemRoundV1": {
+      "all_player": [
+        {
+          "user_id": "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "is_quit": false,
+          "initial_stack": 100
+        },
+        {
+          "user_id": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "is_quit": false,
+          "initial_stack": 400
+        }
+      ]
+    },
+    "Deck": {
+      "cards": [
+        "ac",
+        "qc",
+        "6c",
+        "7c",
+        "2d",
+        "9s",
+        "9d",
+        "4d",
+        "th",
+        "7s",
+        "ts",
+        "qs",
+        "td",
+        "kd",
+        "ad",
+        "7h",
+        "as",
+        "jh",
+        "kh",
+        "5s",
+        "8c",
+        "8d",
+        "3h",
+        "7d",
+        "3c",
+        "6s",
+        "jd",
+        "6d",
+        "4s",
+        "5c",
+        "8h",
+        "ah",
+        "qd",
+        "2s",
+        "qh",
+        "5d",
+        "8s",
+        "6h",
+        "ks",
+        "3s",
+        "js",
+        "9h",
+        "3d"
+      ]
+    },
+    "UserGroupV1": {
+      "all_user": {
+        "cad91ad8-9b77-432e-92df-19b6ed529888": {
+          "UserSettingV1": {
+            "is_auto_rebuy": true
+          }
+        },
+        "715aa6a4-90a2-46c6-8143-84544c7663aa": {
+          "UserSettingV1": {
+            "is_auto_rebuy": true
+          }
+        }
+      }
+    },
+    "player_message": {
+      "currency": "coin",
+      "room_type": "hall",
+      "_messages": [],
+      "room_id": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+      "game_id": "793d3577-854b-4cb7-a35c-8e3218fcf795"
+    },
+    "variation": {
+      "name": "texas_holdem",
+      "can_check": true,
+      "can_call": true,
+      "can_raise": true,
+      "agree_amount": 2,
+      "raise_add": 0,
+      "open_raiser_id": null,
+      "round_count": 0,
+      "last_action": "big_blind",
+      "last_action_at": null,
+      "ante": 0,
+      "small_blind": 1,
+      "big_blind": 2,
+      "last_bet": null
+    },
+    "reserve_seat_when_short_stack": false,
+    "stand_up_when_room_end": true,
+    "table": {
+      "_is_start": true,
+      "can_sit_down": true,
+      "can_reserve": false,
+      "seat_quantity": 6,
+      "seats": [
+        {
+          "number": 1,
+          "position": null,
+          "reserved_at": null
+        },
+        {
+          "number": 2,
+          "position": null,
+          "reserved_at": null
+        },
+        {
+          "number": 3,
+          "position": null,
+          "reserved_at": null
+        },
+        {
+          "number": 4,
+          "position": null,
+          "reserved_at": null
+        },
+        {
+          "number": 5,
+          "position": null,
+          "reserved_at": null
+        },
+        {
+          "number": 6,
+          "position": null,
+          "reserved_at": null
+        }
+      ],
+      "_gaming_players": [
+        "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "715aa6a4-90a2-46c6-8143-84544c7663aa"
+      ],
+      "waiting_players": {},
+      "playing_players": {},
+      "quit_players": {
+        "1": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "5": "cad91ad8-9b77-432e-92df-19b6ed529888"
+      },
+      "_quorum": 2,
+      "_player_amount_changed": false,
+      "lowest_stack": 2,
+      "button_player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "button_player_seat": 1,
+      "_small_blind_player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+      "_big_blind_player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+      "_current_players": [
+        "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "cad91ad8-9b77-432e-92df-19b6ed529888"
+      ]
+    },
+    "pot": {
+      "players": [
+        "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "715aa6a4-90a2-46c6-8143-84544c7663aa"
+      ]
+    },
+    "community_card": {
+      "cards": [
+        "kc",
+        "9c",
+        "jc",
+        "2h",
+        "4h"
+      ],
+      "street": "preflop"
+    },
+    "street": {
+      "name": "preflop",
+      "is_end": false
+    }
+  },
+  "finalLedger": {
+    "balances": {
+      "cad91ad8-9b77-432e-92df-19b6ed529888": {
+        "coin": 9798,
+        "diamond": 60
+      },
+      "715aa6a4-90a2-46c6-8143-84544c7663aa": {
+        "coin": 10202,
+        "diamond": 60
+      },
+      "c33f60fe-6459-495a-a4fc-1d2084765ffa": {
+        "coin": 0,
+        "diamond": 0
+      }
+    },
+    "transactions": {
+      "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9": {
+        "identity": [
+          "c33f60fe-6459-495a-a4fc-1d2084765ffa",
+          "withdraw",
+          "diamond",
+          0
+        ],
+        "player": "c33f60fe-6459-495a-a4fc-1d2084765ffa",
+        "event": "withdraw",
+        "currency": "diamond",
+        "amount": 0,
+        "before": 0,
+        "after": 0,
+        "memo": "create room v2",
+        "committedAt": 1793827576.6334841
+      },
+      "51dd3cd3-6040-4acd-a6e3-4f10ae923cb6": {
+        "identity": [
+          "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 10000,
+        "after": 9900,
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827580.7222772
+      },
+      "fdea624a-abe1-4de7-9d1d-3c302cd2fd7b": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 10000,
+        "after": 9900,
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827581.8672168
+      },
+      "71fd7e27-8c4a-45d0-bf95-9d7462253b7f": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 9900,
+        "after": 9800,
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827587.2423549
+      },
+      "509206f9-0797-47b4-b1a1-249b296a0935": {
+        "identity": [
+          "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 9900,
+        "after": 9800,
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "committedAt": 1793827587.310743
+      },
+      "8e1a96c7-a736-4d6a-9d2f-6fc6f50c940b": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "withdraw",
+          "coin",
+          100
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "withdraw",
+        "currency": "coin",
+        "amount": 100,
+        "before": 9800,
+        "after": 9700,
+        "memo": "[all_in]Auto rebuy in:coin",
+        "committedAt": 1793827606.2103071
+      },
+      "fd3484ce-63a8-4f65-8d1a-2f92d59d7a38": {
+        "identity": [
+          "cad91ad8-9b77-432e-92df-19b6ed529888",
+          "deposit",
+          "coin",
+          98
+        ],
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "event": "deposit",
+        "currency": "coin",
+        "amount": 98,
+        "before": 9700,
+        "after": 9798,
+        "memo": "Refund room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9 by synchronous call user_transaction_service",
+        "committedAt": 1793827621.372729
+      },
+      "6dd47ad9-4bda-409f-a915-a2f624827542": {
+        "identity": [
+          "715aa6a4-90a2-46c6-8143-84544c7663aa",
+          "deposit",
+          "coin",
+          402
+        ],
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "event": "deposit",
+        "currency": "coin",
+        "amount": 402,
+        "before": 9800,
+        "after": 10202,
+        "memo": "Refund room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9 by synchronous call user_transaction_service",
+        "committedAt": 1793827621.390881
+      }
+    },
+    "hits": [
+      {
+        "player": "c33f60fe-6459-495a-a4fc-1d2084765ffa",
+        "operation": "withdraw",
+        "transaction": "4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "amount": 0,
+        "currency": "diamond",
+        "memo": "create room v2",
+        "errorType": null,
+        "at": 1793827576.633497
+      },
+      {
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "operation": "withdraw",
+        "transaction": "51dd3cd3-6040-4acd-a6e3-4f10ae923cb6",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827580.7222888
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "withdraw",
+        "transaction": "fdea624a-abe1-4de7-9d1d-3c302cd2fd7b",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Enter sit buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827581.867219
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "withdraw",
+        "transaction": "71fd7e27-8c4a-45d0-bf95-9d7462253b7f",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827587.242364
+      },
+      {
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "operation": "withdraw",
+        "transaction": "509206f9-0797-47b4-b1a1-249b296a0935",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "Apply buy in coin in room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9",
+        "errorType": null,
+        "at": 1793827587.3107462
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "withdraw",
+        "transaction": "8e1a96c7-a736-4d6a-9d2f-6fc6f50c940b",
+        "amount": 100,
+        "currency": "coin",
+        "memo": "[all_in]Auto rebuy in:coin",
+        "errorType": null,
+        "at": 1793827606.210311
+      },
+      {
+        "player": "cad91ad8-9b77-432e-92df-19b6ed529888",
+        "operation": "deposit",
+        "transaction": "fd3484ce-63a8-4f65-8d1a-2f92d59d7a38",
+        "amount": 98,
+        "currency": "coin",
+        "memo": "Refund room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9 by synchronous call user_transaction_service",
+        "errorType": null,
+        "at": 1793827621.372736
+      },
+      {
+        "player": "715aa6a4-90a2-46c6-8143-84544c7663aa",
+        "operation": "deposit",
+        "transaction": "6dd47ad9-4bda-409f-a915-a2f624827542",
+        "amount": 402,
+        "currency": "coin",
+        "memo": "Refund room:4d994ce1-1b6a-40d3-8f95-f9ddfba6bec9 by synchronous call user_transaction_service",
+        "errorType": null,
+        "at": 1793827621.390883
+      }
+    ],
+    "fault": {
+      "mode": "normal",
+      "players": [],
+      "roomId": null
+    }
+  },
+  "finalFunds": {
+    "walletCoin": 20000,
+    "expected": 20000,
+    "conserved": true
+  }
+}

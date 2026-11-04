@@ -10,21 +10,24 @@
 - 用户指出的 HTTP 缺字段恢复帧已重新取证：[新截图](evidence/client-stable/http-missing-fields/02-http-recovered.png)显示已入座的 100 筹码，带入弹窗已完整关闭。截图仍等待真实动画和连续 500 毫秒的布局稳定；[原始登录后录像](evidence/client-stable/http-missing-fields/signed-in.webm)与摘要一并保留，旧证据不覆盖。
 - 原生钱包 HTTP 503 和真实读取超时均已完成完整网页取证。故障期间两次可见操作各触发原 SDK 的三次请求；503 日志保留实际 HTTP 状态，超时日志保留真实 `ReadTimeout`，请求间隔约两秒。实际旧版网关返回 `result.data=null`，网页显示解构异常，没有误报余额不足，也没有真实站起推送。解除后可见重试产生恰好一笔 100 金币扣款、真实自动补码及入座，钱包/有效桌上筹码/未结算底池始终合计 20000，退桌后钱包合计 20000。
 
-| 原生钱包故障 | 正确行为断言及指标 | 证据 |
+| 原生金币场景 | 正确行为断言及指标 | 证据 |
 | --- | --- | --- |
+| 最新正常对照 | 两人真实匹配、手动带入、all-in 触发自动补码 100；有效筹码与钱包合计 20000，退出退款后仍为 20000，退出 0；129.689 秒，最大子进程 RSS 365494272 字节 | [最新正常账本及消息](evidence/native-wallet/normal/report.json)、[补码截图](evidence/native-wallet/normal/normal-automatic-rebuy-displayed.png)、[录像索引](evidence/native-wallet/normal/artifacts.json) |
 | HTTP 503 | 网页显示 `Cannot destructure … null`，可读提示断言失败、退出 1；132.463 秒，最大子进程 RSS 362758144 字节 | [消息、账本及恢复](evidence/native-wallet/http-503/report.json)、[SDK 重试](evidence/native-wallet/http-503/native-sdk-diagnostics.json)、[录像索引](evidence/native-wallet/http-503/artifacts.json) |
 | 真实读取超时 | 同样保留网页空数据错误，退出 1；159.093 秒，最大子进程 RSS 400048128 字节 | [消息、账本及恢复](evidence/native-wallet/timeout/report.json)、[真实超时记录](evidence/native-wallet/timeout/native-sdk-diagnostics.json)、[录像索引](evidence/native-wallet/timeout/artifacts.json) |
 | 真实余额不足 | 正常带入后，以有流水的转账将两个钱包各留 50；实际自动/手动扣款返回 `insufficient_balance`，没有扣款。转回准备金后可见带入、入座成功，只扣一笔 100；全程合计 20000，退出 0；130.801 秒，最大子进程 RSS 367460352 字节 | [真实余额、转账及恢复](evidence/native-wallet/insufficient/report.json)、[提示截图](evidence/native-wallet/insufficient/fault-visible-manual-retry.png)、[录像索引](evidence/native-wallet/insufficient/artifacts.json) |
 | 交易冲突与故障期间手动重试 | 自动补码吞掉原因，真实网关下发站起/带入提示；故障期间手动重试确实命中并显示 `transaction conflict`，未扣款。解除后唯一 100 扣款、入座成功，总额 20000；最终自动补码原因未显示的断言失败、退出 1；146.976 秒，最大子进程 RSS 368508928 字节 | [实际消息、重复命中与恢复](evidence/native-wallet/conflict/report.json)、[录像索引](evidence/native-wallet/conflict/artifacts.json) |
 | 已提交但回复丢失 | 同一 ID 的 SDK 三次请求只记账一次；第一次操作、故障期间网页重试、解除后的网页重试分别创建三个 ID，各扣 100，仅最后一次补入 100。故障时总额 19900，恢复及退桌后均为 19800；可读提示断言及最终资金核对失败、退出 1；149.697 秒，最大子进程 RSS 372768768 字节 | [三笔真实提交与资金缺口](evidence/native-wallet/committed-response-lost/report.json)、[SDK 实际重试](evidence/native-wallet/committed-response-lost/native-sdk-diagnostics.json)、[录像索引](evidence/native-wallet/committed-response-lost/artifacts.json) |
 
-503、读取超时案例的全部入口文件指纹匹配实现提交 `70b6a40bc0ac7b1a4e1ff1d02f8b3f12acf750cb`；余额不足、交易冲突及已提交丢回复案例匹配 `de1a50d2d49ceef50ab5d483e05d4e3d7b7626d8`。客户端源码指纹匹配 `56efc07a0f6ca12445aaacf4cfc010ea1a60fc94`，均使用原固定 Release。原生服务及工具版本、源码无改动检查和资源清理结果分别在案例目录中。钱包资金核对区分未结算底池和已发奖后的历史贡献，四条回归测试防止重复计入或漏报真实资金缺口。新的文本证据已扫描账号池密码、测试令牌、GitHub 令牌、JWT 和认证头。
+最新正常对照的入口指纹匹配 `62960294ba56bef4e0dfaaed6edf882cb9964161`，同时验证代理证书放入本轮私有目录后的正常启动与清理。503、读取超时案例的全部入口文件指纹匹配实现提交 `70b6a40bc0ac7b1a4e1ff1d02f8b3f12acf750cb`；余额不足、交易冲突及已提交丢回复案例匹配 `de1a50d2d49ceef50ab5d483e05d4e3d7b7626d8`。客户端源码指纹匹配 `56efc07a0f6ca12445aaacf4cfc010ea1a60fc94`，均使用原固定 Release。原生服务及工具版本、源码无改动检查和资源清理结果分别在案例目录中。钱包资金核对区分未结算底池和已发奖后的历史贡献，四条回归测试防止重复计入或漏报真实资金缺口。新的文本证据已扫描账号池密码、测试令牌、GitHub 令牌、JWT 和认证头。
 
 每个新原生案例的 14 个进程组、独占 worktree、Redis 数据、私有配置、代理和临时证书均已删除，账号锁已释放。丢回复案例的 `cleanupErrors` 记录最终资金不守恒，`native-cleanup.json` 则证实资源全部回收；两者不能混淆。缺口只在本轮隔离账本中确认，未据此宣称线上已经发生同类损失。
 
-客户端 HTTP 七类故障、WebSocket 五类故障使用真实 staging 私人记分牌桌，验证各自实际协议与可见恢复；金币正常和钱包层故障则通过未修改的固定版本原生服务执行。共享 staging 的后端部署版本仍未核实，不把本机服务提交冒称其版本。钱包层额外 HTTP 504、非 JSON 等可选原生入口不作为已完成的浏览器证据，既有 SDK/引擎十场景仍单独保留。
+客户端 HTTP 七类故障、WebSocket 五类故障使用真实 staging 私人记分牌桌，验证各自实际协议与可见恢复；金币正常和钱包层故障则通过未修改的固定版本原生服务执行。共享 staging 的后端部署版本仍未核实，不把本机服务提交冒称其版本。本机 Centrifugo 的 RPC 代理时限为 10 秒，以观察钱包原始 SDK 最多约 6 秒重试后的真实返回；这不是对线上代理时限的断言。钱包层额外 HTTP 504、非 JSON 等可选原生入口不作为已完成的浏览器证据，既有 SDK/引擎十场景仍单独保留。
 
 合并当前主干后，全仓 lint/typecheck、Python 文件长度门禁、228 项 Node 单元测试通过；老虎机与空座引导的 3 项 Chromium 检查、5 项原生工具测试通过。代理整套 82 项检查也已通过。普通 CI 的结果与这些独立复现命令分开记录。
+
+最终[资源检查](evidence/resource-audit.json)确认本工作区新建的原生进程和三个账号锁均无遗留；一次被中断的历史实验遗留代理及证书已定点清理，并补上真实分离进程回归与取消清理保护。
 
 ## 合入门槛（尚未满足）
 
