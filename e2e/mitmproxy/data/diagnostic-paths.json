@@ -41,6 +41,8 @@
   "/v1/room/{room}",
   "/v10/texas_holdem/room/{room}/enter",
   "/v10/texas_holdem/room/{room}/enter_and_sit",
+  "/v10/texas_holdem/room/{room}/sit",
+  "/v10/texas_holdem/room/{room}/buy_in/apply",
   "/v10/texas_holdem/room/{room}/player_statistics",
   "/v10/texas_holdem/room/{room}/user_settings",
   "/v10/texas_holdem/room/{room}/user_settings/enable_auto_rebuy",
