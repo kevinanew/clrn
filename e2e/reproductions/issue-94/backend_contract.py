@@ -374,7 +374,7 @@ if __name__ == "__main__":
     if source_commit != expected_commit:
         raise RuntimeError("德州源码提交与指定版本不符，拒绝混用环境")
     subprocess.run(
-        ["git", "-C", str(source), "diff", "--exit-code", "--quiet"], check=True
+        ["git", "-C", str(source), "diff", "--exit-code", "--quiet", "HEAD"], check=True
     )
     print(
         json.dumps(

@@ -76,7 +76,7 @@ PYTHONPATH=/tmp/clrn-94-texas/src /tmp/clrn-94-texas/.venv/bin/python e2e/reprod
 PYTHONPATH=/tmp/clrn-94-texas/src /tmp/clrn-94-texas/.venv/bin/python e2e/reproductions/issue-94/backend_contract.py BackendContract.test_business_conflict_preserves_reason
 ```
 
-`ISSUE94_TEXAS_COMMIT` 可指定后续待验收的完整提交；导入源码的实际提交必须匹配，且已跟踪源码不得修改。版本与实测耗时、进程峰值常驻内存写入输出；逐例账本和消息写入 `e2e/test-results/issue-94/backend/`，可用 `ISSUE94_BACKEND_REPORT` 指定目录。
+`ISSUE94_TEXAS_COMMIT` 可指定后续待验收的完整提交；导入源码的实际提交必须匹配，且已跟踪源码不得修改。入口将实际工作区内容与 `HEAD` 比较，同时拒绝已暂存和未暂存的源码改动，避免把本地补丁的结果归属于固定原版。版本与实测耗时、进程峰值常驻内存写入输出；逐例账本和消息写入 `e2e/test-results/issue-94/backend/`，可用 `ISSUE94_BACKEND_REPORT` 指定目录。
 
 隔离边界为 FakeRedis、消息出口、钱包 HTTP 地址和可重复的随机牌堆种子。钱包 SDK、实际带入/入座/准备/双方 all-in、结算、自动补码、异常解析及钱包重试均保留。没有预先构造站起或补码消息。钱包服务仅绑定随机回环端口，采用独立账本，不连接远端；生产 SDK 的两秒超时真实等待，超时故障不使用 sleep mock。提交后丢回复使用同一交易编号的三次真实重试，检查只提交一次；这只证明本地账本与 SDK 单次调用的去重，**不证明线上钱包或跨页面重试幂等性**。
 
