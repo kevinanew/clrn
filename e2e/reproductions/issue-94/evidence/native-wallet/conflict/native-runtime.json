@@ -1,0 +1,7 @@
+{
+  "exitCode": 1,
+  "elapsedSecondsIncludingPreparation": 146.976,
+  "elapsedSecondsAfterBrowserStart": 98.296,
+  "maximumChildResidentSetSizeBytes": 368508928,
+  "memoryMeasurement": "largest completed child-process RSS; not aggregate simultaneous RSS"
+}

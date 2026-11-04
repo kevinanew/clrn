@@ -1,0 +1,89 @@
+{
+  "mode": "committed-response-lost",
+  "runId": "1793826826046-14689-committed-response-lost",
+  "implementationCommit": "de1a50d2d49ceef50ab5d483e05d4e3d7b7626d8",
+  "media": "Two original post-login recordings; opaque filenames retained without inferred actor assignment.",
+  "credentialScan": "Text evidence checked against local pool passwords, testing token, GitHub token, JWT and Authorization fields; no matches.",
+  "artifacts": [
+    {
+      "file": "actor0-hall.png",
+      "bytes": 287418,
+      "sha256": "28a282a72d86f624e4a09163e2cae25700b2ccca1d92b071dfb6d00576feccdc"
+    },
+    {
+      "file": "actor0-manual-buyin.png",
+      "bytes": 313506,
+      "sha256": "7526e4e7f08d3d7953b87296c82ac70130e671d8d0f35b5c470dd5c8d4c737dc"
+    },
+    {
+      "file": "actor0-outcome.png",
+      "bytes": 350160,
+      "sha256": "e9f21894636f9be3c20e41cddeb1653c9ebe2a5dbca1e0f8215bb1213e4a0f89"
+    },
+    {
+      "file": "actor1-hall.png",
+      "bytes": 287260,
+      "sha256": "2dc5ba6eaf2be3868d703f1055e272f0f9720881094d53ff319b0154e4560dec"
+    },
+    {
+      "file": "actor1-manual-buyin.png",
+      "bytes": 316054,
+      "sha256": "ff45fb31d292ca350637e7ff5a08f6c7ce37fd59fc57420b53e022a704e1dadf"
+    },
+    {
+      "file": "actor1-outcome.png",
+      "bytes": 346588,
+      "sha256": "ee27e001728125cea309c86015ebcc503e5893ab3528030f8a036a2e209dc045"
+    },
+    {
+      "file": "fault-operation-alert.png",
+      "bytes": 325015,
+      "sha256": "ece194650ce9f71ab6ba48c8d5063ab23216c23d05b5e47d34be05f144ead5c2"
+    },
+    {
+      "file": "fault-visible-retry.png",
+      "bytes": 324806,
+      "sha256": "d5980c096c75ce7ccf835cdb83068d806ead4077ddef08d0df679b593d57e211"
+    },
+    {
+      "file": "native-cleanup.json",
+      "bytes": 156,
+      "sha256": "709b44bcfec83be14fd8464e9a564b04fe618486386b11620fc8b41a0abf6006"
+    },
+    {
+      "file": "native-provenance.json",
+      "bytes": 4611,
+      "sha256": "1ec1aa5d131a7cb42caf068acbb1aecd32782e723bb6cb24be44c409e142c11c"
+    },
+    {
+      "file": "native-runtime.json",
+      "bytes": 255,
+      "sha256": "50ee6558de4650a1f951b055855da46acba47fd7401e34c125b34d640bb9204c"
+    },
+    {
+      "file": "native-sdk-diagnostics.json",
+      "bytes": 1246,
+      "sha256": "24cbe11602b280f58b53239f6ca2e17fe894711e4866a5339c60f65b0de3bfd6"
+    },
+    {
+      "file": "page@7219ff265add0513c331fdebb5f41b82.webm",
+      "bytes": 4700885,
+      "sha256": "7700f907f2653a2b9801ece4b81ca2802602c9814c2bc68c93b84d6c0300c491"
+    },
+    {
+      "file": "page@744b1ac3394e1c1f1e9216f8feb90bb1.webm",
+      "bytes": 4734500,
+      "sha256": "e47cd1435db04f592c644aadd9a2f8ec352e1e9cee388d7384d083d09cd1379a"
+    },
+    {
+      "file": "recovered-operation-retry.png",
+      "bytes": 350290,
+      "sha256": "4d182748a0d11dd339d1b6972a9de9c235470ad188597386b8edc15988962953"
+    },
+    {
+      "file": "report.json",
+      "bytes": 240145,
+      "sha256": "12abba0a6270ae2f149c4fd406cfecb80904828cb1b410e22f89bc397451fa97"
+    }
+  ]
+}

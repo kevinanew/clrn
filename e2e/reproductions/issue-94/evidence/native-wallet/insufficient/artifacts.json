@@ -1,0 +1,94 @@
+{
+  "mode": "insufficient",
+  "runId": "1793826530536-14689-insufficient",
+  "implementationCommit": "de1a50d2d49ceef50ab5d483e05d4e3d7b7626d8",
+  "media": "Two original post-login recordings; opaque filenames retained without inferred actor assignment.",
+  "credentialScan": "Text evidence checked against local pool passwords, testing token, GitHub token, JWT and Authorization fields; no matches.",
+  "artifacts": [
+    {
+      "file": "actor0-hall.png",
+      "bytes": 287224,
+      "sha256": "088c6cca01e46049f2007ed233a9d309ab2e156bcac92176af7abfc24baa26ac"
+    },
+    {
+      "file": "actor0-manual-buyin.png",
+      "bytes": 314503,
+      "sha256": "fef32cd93f6c14f09ad75d6e107021aac3c11ebb4b6bb991963c428fd4432ec5"
+    },
+    {
+      "file": "actor0-outcome.png",
+      "bytes": 346262,
+      "sha256": "ece5884c4710bc3f96c3b005e4050997ab75679c3625a7f80fa4dc367075aa86"
+    },
+    {
+      "file": "actor1-hall.png",
+      "bytes": 287248,
+      "sha256": "ed84e3e57dca11fcd79f24d14cb6f9b972f825e9b190b2a841bd906b34f98764"
+    },
+    {
+      "file": "actor1-manual-buyin.png",
+      "bytes": 319301,
+      "sha256": "6424f9dfe38ff667dbc3cf291ec359265799d3430f169eef0dd700881b5cb9d4"
+    },
+    {
+      "file": "actor1-outcome.png",
+      "bytes": 372032,
+      "sha256": "f4d565df345181ca52dd833b76efb8bf68f094e2c3d4c8201d9ddf9791f0f774"
+    },
+    {
+      "file": "fault-automatic-rebuy.png",
+      "bytes": 301643,
+      "sha256": "4f44218b1e34fd2dd7e4ac6c91b4e62290c80af6ac9f524ede11d368a00a90dd"
+    },
+    {
+      "file": "fault-resit.png",
+      "bytes": 301643,
+      "sha256": "4f44218b1e34fd2dd7e4ac6c91b4e62290c80af6ac9f524ede11d368a00a90dd"
+    },
+    {
+      "file": "fault-visible-manual-retry.png",
+      "bytes": 317150,
+      "sha256": "731043354f89cebc13f814f0888d6f59516f0e4544efaeb0986cb5c1fc592d56"
+    },
+    {
+      "file": "native-cleanup.json",
+      "bytes": 156,
+      "sha256": "709b44bcfec83be14fd8464e9a564b04fe618486386b11620fc8b41a0abf6006"
+    },
+    {
+      "file": "native-provenance.json",
+      "bytes": 4611,
+      "sha256": "1ec1aa5d131a7cb42caf068acbb1aecd32782e723bb6cb24be44c409e142c11c"
+    },
+    {
+      "file": "native-runtime.json",
+      "bytes": 256,
+      "sha256": "59a32856e9ff9f0082f25a2676e615c83666ad8f3c0f5b0783a7c764d909a54e"
+    },
+    {
+      "file": "native-sdk-diagnostics.json",
+      "bytes": 259,
+      "sha256": "0a82ec5d2ffede86f8ceb4411d724312d2735b7e6cd49c253be7afe049221a86"
+    },
+    {
+      "file": "page@0101922bb118026f3d4e3dbc85770d2e.webm",
+      "bytes": 3876171,
+      "sha256": "29ea17829c75089ab0410ab24954f5c7a202233fbce856b7ee800c4b0f217c01"
+    },
+    {
+      "file": "page@abcb295ba89c9bd17f960bb549490e7b.webm",
+      "bytes": 3882201,
+      "sha256": "8bec266348305861b5f9c5caa9a7336f3777c68d494fe9d4bf572fa63eb752d6"
+    },
+    {
+      "file": "recovered-manual-buyin.png",
+      "bytes": 351191,
+      "sha256": "b698f4aaa02020bc696728276adc786a11a35599a899e277adf1c01c819ffad0"
+    },
+    {
+      "file": "report.json",
+      "bytes": 231913,
+      "sha256": "a1264310f035e3ebdf00a49357f7e98fee2cc49a05f546aee9972dadf798df89"
+    }
+  ]
+}

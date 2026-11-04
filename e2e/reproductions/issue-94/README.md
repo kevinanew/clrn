@@ -2,9 +2,9 @@
 
 关联：[复现任务 #94](https://github.com/kevinanew/clrn/issues/94)、[应用 #5159](https://github.com/kevinanew/laiwan_react_native/issues/5159)、[后续验收 #95](https://github.com/kevinanew/clrn/issues/95)。本目录是定向复现入口，文件使用 `.scenario.ts` 和独立配置，不加入默认 Playwright 套件。正确行为断言失败时命令返回非零；没有预期失败、跳过或自动重试。
 
-## 动画稳定后重跑及钱包传输故障
+## 当前复现交付与证据边界
 
-以下是新一轮结果；后文历史记录中的“尚未完成”描述只对应各自当时的范围。PR 继续保持草稿，#94 整体取证仍在补齐。
+修复前取证已覆盖 #94 要求的客户端两种协议、原生金币正常链路、钱包业务异常/服务不可用/真实读取超时、真实余额不足，以及提交后丢回复的跨网页重试。保留正确行为断言失败，交给 #95 验收修复。**仍未复现原反馈重新入座报 `player_not_enough_stack` 的完整现象**；已证实的路径不能直接认定为原事件完整根因。后文标为历史的章节保留当时的结果与限制。
 
 - 客户端完整 13 项已重跑，9 项通过、4 项正确行为断言失败，零准备失败、零跳过、零重试。HTTP 非 JSON、缺字段没有可读提示；WebSocket 缺字段显示 `undefined-sit`，重复断连后缺少提示。所有故障均重复命中，解除后从可见入口取得真实成功回复并恢复 100 筹码。见[本轮结果](evidence/client-stable/results.json)、[版本与源码摘要](evidence/client-stable/manifest.json)和[耗时、内存](evidence/client-stable/measurement.json)。
 - 用户指出的 HTTP 缺字段恢复帧已重新取证：[新截图](evidence/client-stable/http-missing-fields/02-http-recovered.png)显示已入座的 100 筹码，带入弹窗已完整关闭。截图仍等待真实动画和连续 500 毫秒的布局稳定；[原始登录后录像](evidence/client-stable/http-missing-fields/signed-in.webm)与摘要一并保留，旧证据不覆盖。
@@ -14,18 +14,25 @@
 | --- | --- | --- |
 | HTTP 503 | 网页显示 `Cannot destructure … null`，可读提示断言失败、退出 1；132.463 秒，最大子进程 RSS 362758144 字节 | [消息、账本及恢复](evidence/native-wallet/http-503/report.json)、[SDK 重试](evidence/native-wallet/http-503/native-sdk-diagnostics.json)、[录像索引](evidence/native-wallet/http-503/artifacts.json) |
 | 真实读取超时 | 同样保留网页空数据错误，退出 1；159.093 秒，最大子进程 RSS 400048128 字节 | [消息、账本及恢复](evidence/native-wallet/timeout/report.json)、[真实超时记录](evidence/native-wallet/timeout/native-sdk-diagnostics.json)、[录像索引](evidence/native-wallet/timeout/artifacts.json) |
+| 真实余额不足 | 正常带入后，以有流水的转账将两个钱包各留 50；实际自动/手动扣款返回 `insufficient_balance`，没有扣款。转回准备金后可见带入、入座成功，只扣一笔 100；全程合计 20000，退出 0；130.801 秒，最大子进程 RSS 367460352 字节 | [真实余额、转账及恢复](evidence/native-wallet/insufficient/report.json)、[提示截图](evidence/native-wallet/insufficient/fault-visible-manual-retry.png)、[录像索引](evidence/native-wallet/insufficient/artifacts.json) |
+| 交易冲突与故障期间手动重试 | 自动补码吞掉原因，真实网关下发站起/带入提示；故障期间手动重试确实命中并显示 `transaction conflict`，未扣款。解除后唯一 100 扣款、入座成功，总额 20000；最终自动补码原因未显示的断言失败、退出 1；146.976 秒，最大子进程 RSS 368508928 字节 | [实际消息、重复命中与恢复](evidence/native-wallet/conflict/report.json)、[录像索引](evidence/native-wallet/conflict/artifacts.json) |
+| 已提交但回复丢失 | 同一 ID 的 SDK 三次请求只记账一次；第一次操作、故障期间网页重试、解除后的网页重试分别创建三个 ID，各扣 100，仅最后一次补入 100。故障时总额 19900，恢复及退桌后均为 19800；可读提示断言及最终资金核对失败、退出 1；149.697 秒，最大子进程 RSS 372768768 字节 | [三笔真实提交与资金缺口](evidence/native-wallet/committed-response-lost/report.json)、[SDK 实际重试](evidence/native-wallet/committed-response-lost/native-sdk-diagnostics.json)、[录像索引](evidence/native-wallet/committed-response-lost/artifacts.json) |
 
-两个原生案例的全部入口文件指纹匹配实现提交 `70b6a40bc0ac7b1a4e1ff1d02f8b3f12acf750cb`；客户端源码指纹匹配 `56efc07a0f6ca12445aaacf4cfc010ea1a60fc94`，均使用原固定 Release。原生服务及工具版本、源码无改动检查和资源清理结果分别在案例目录中。钱包资金核对区分未结算底池和已发奖后的历史贡献，四条回归测试防止重复计入或漏报真实资金缺口。新的文本证据已扫描账号池密码、测试令牌、GitHub 令牌、JWT 和认证头。
+503、读取超时案例的全部入口文件指纹匹配实现提交 `70b6a40bc0ac7b1a4e1ff1d02f8b3f12acf750cb`；余额不足、交易冲突及已提交丢回复案例匹配 `de1a50d2d49ceef50ab5d483e05d4e3d7b7626d8`。客户端源码指纹匹配 `56efc07a0f6ca12445aaacf4cfc010ea1a60fc94`，均使用原固定 Release。原生服务及工具版本、源码无改动检查和资源清理结果分别在案例目录中。钱包资金核对区分未结算底池和已发奖后的历史贡献，四条回归测试防止重复计入或漏报真实资金缺口。新的文本证据已扫描账号池密码、测试令牌、GitHub 令牌、JWT 和认证头。
 
-真实余额不足的最终恢复、交易冲突在故障期间重复手动操作，以及提交后丢失响应的跨网页重试仍在运行；这些新增证据尚不代表 #94 全部完成，也没有证明原反馈重新入座 `player_not_enough_stack` 的完整根因。
+每个新原生案例的 14 个进程组、独占 worktree、Redis 数据、私有配置、代理和临时证书均已删除，账号锁已释放。丢回复案例的 `cleanupErrors` 记录最终资金不守恒，`native-cleanup.json` 则证实资源全部回收；两者不能混淆。缺口只在本轮隔离账本中确认，未据此宣称线上已经发生同类损失。
+
+客户端 HTTP 七类故障、WebSocket 五类故障使用真实 staging 私人记分牌桌，验证各自实际协议与可见恢复；金币正常和钱包层故障则通过未修改的固定版本原生服务执行。共享 staging 的后端部署版本仍未核实，不把本机服务提交冒称其版本。钱包层额外 HTTP 504、非 JSON 等可选原生入口不作为已完成的浏览器证据，既有 SDK/引擎十场景仍单独保留。
+
+合并当前主干后，全仓 lint/typecheck、Python 文件长度门禁、228 项 Node 单元测试通过；老虎机与空座引导的 3 项 Chromium 检查、4 项原生工具测试通过。代理整套 82 项检查也已通过。普通 CI 的结果与这些独立复现命令分开记录。
 
 ## 合入门槛（尚未满足）
 
 **PR #96 必须继续保持草稿，当前不能合入主干。** Issue #94 明确要求“不将未修复的失败用例直接并入主干”；独立配置、如实记录失败及复现工具自测通过均不能豁免该要求。现有客户端错误提示及后端吞错仍有正确行为断言失败，历史证据和这些断言完整保留。
 
-解除阻断需先取得关联客户端、德州服务的修复版本及所需隔离环境，再固定完整提交、构建摘要和实际后端版本，重跑浏览器完整故障矩阵与后端 10 场景，补交全部正确行为断言通过的结果、消息出口、资金账本及恢复证据后，才能申请合入。不得以删除交付物、跳过、永久预期失败或放宽预期消除失败。本仓库的复现断言修复不改变外部产品行为，也不能代替上述通过证据；完整金币链路和 #94/#95 的其余验收项仍须分别完成。
+修复版本验收由 #95 承接：固定修复后的客户端与德州版本，重跑完整协议矩阵、原生金币场景及资金恢复检查，确认正确行为断言全部通过后再考虑合入。#94 是修复前复现和取证，不等待产品修复才交付；本仓库的截图、代理和测试修复不会改变外部产品行为。不得通过删除断言、跳过或永久预期失败消除已确认的缺陷。
 
-## 已证实与尚未完成
+## 历史：完整原生环境补齐前的记录
 
 - 真实 Release 页面初始化及登录成功；私人**记分牌**桌可真实创建、带入 100、入座。该对照不能代替金币桌正常补码。
 - 准确房间的入座 WebSocket RPC 收到缺失错误字段的响应时，页面显示 `undefined-sit`。清除故障后点击真实重试入口，代理收到新命令及真实上游成功回复，正常带入后桌上筹码为 100。
@@ -36,7 +43,7 @@
 
 新增的[本机原生服务入口](native/README.md)将同一真实登录网页接到固定版本的德州、匹配、房间、带入和 RPC 网关服务，以及真实 Redis Cluster 和 Centrifugo；金币交易使用独立本机账本。正常手动带入、all-in、自动补码和退款对照已在开发实验中通过，真实网关下发的交易冲突吞错也已到达网页。该入口目前仅实现 normal/conflict，不代表完整金币故障矩阵已经完成；原反馈的重新入座 `player_not_enough_stack` 仍未出现，实际结果是带入弹窗。
 
-## 原生金币链路实测
+## 历史：首轮正常与交易冲突对照
 
 在实现提交 `743211bed1ba2b835a0023947e1b4a8dae903265` 的干净工作区连续运行 normal/conflict，两轮都核对了全部原生入口文件 SHA-256，服务源码在运行前后均与固定提交一致。固定客户端仍为 `b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec`，构建摘要及来源见两轮 `run-manifest.json`。真实 staging 负责正常初始化和登录，实际 staging 后端部署版本仍未核实；金币操作使用版本已记录的本机真实服务。
 
@@ -126,7 +133,7 @@ PYTHONPATH=/tmp/clrn-94-texas/src /tmp/clrn-94-texas/.venv/bin/python -m unittes
 
 这些工具自测中的正确出口内容为边界夹具，不是外部产品已修复的证据；原后端回归仍须对未修改的待测源码单独运行并如实返回失败。
 
-## 工具检查与待补环境
+## 历史环境前置与工具检查
 
 ```sh
 e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -p test_texas_faults.py -v
@@ -135,7 +142,7 @@ npm run check
 
 完整金币链路仍需：本轮专属金币房间/匹配分组、合法独立出口或仅对该分组关闭同 IP 检查、版本可追溯的隔离德州服务、可配置的钱包回环依赖，以及真实消息网关投递。共享 staging 全局依赖和规则均不应修改。部署前需登记服务版本、钱包协议和消息契约，完成浏览器操作触发的自动补码及交易核对，再向 #95 交接正式验收。
 
-## 2026-11-04 实测记录
+## 历史：2026-11-04 首轮实测记录
 
 应用 Release 为 `web-staging-200001602-b20853dbe65c`，完整应用提交 `b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec`，构建包 SHA-256 为 `ca1f1b81e9a750e5a517287a6c1209be866d9d36cd408391f10f6eb7b40fbe87`。浏览器测试固定 CLRN `6c78b01fb28c8ad0b2cd170b83b0eb219d031a50`；全部运行源文件摘要已与该 Git 提交逐一核对。后端定向用例固定 CLRN `d938fea110d9dc7c0c81a25872fbadbe7cc023dd` 和上述德州源码版本。环境为 macOS arm64、Node 24.14.0、Playwright 1.61.1、mitmproxy 12.2.3/Python 3.12.0，隔离引擎为 Python 3.13.8，依赖来自该源码的冻结 `uv.lock`。
 
@@ -161,8 +168,8 @@ npm run check
 
 本轮新建私人房间均由准确 UUID 删除，并等待实际退款到账；本工作区账号锁已释放。代理及临时证书由每例 finally 清理。提交的文本证据已针对本机账号池密码和测试令牌扫描，未包含凭据；没有保存原始网络 trace 或登录状态。
 
-## 消息出口断言修复后的自检
+## 历史：消息出口断言修复后的自检
 
 本轮在未修改的固定德州版本上重新运行完整后端 10 场景，9 通过、交易冲突原因未到达故障玩家的断言失败；完整出口与再次入座记录见 [新冲突证据](evidence/backend-message-exit/conflict.json)。钱包余额不变、恢复后只新增一次扣款及 155 筹码的核对仍通过。耗时 10.694 秒，Python 峰值常驻内存 62996480 字节。
 
-断言自测 9 项通过，包括真实 HTTP/SDK 异常分支和三个坏修复负例；将原始 `verify` 方法在内存中换回后，三个负例均能识别其误接受，修复后全部通过。全仓 lint/typecheck、218 项 Node 测试、80 项代理测试及 3 项真实 Chromium 动画子测试通过。当前未提交工作区的源码摘要、运行结果与验证边界见 [自检记录](evidence/backend-message-exit/run.json)；本轮没有重跑需要额外授权的 staging 浏览器矩阵，既有浏览器失败证据完整保留，合入门槛仍未满足。
+断言自测 9 项通过，包括真实 HTTP/SDK 异常分支和三个坏修复负例；将原始 `verify` 方法在内存中换回后，三个负例均能识别其误接受，修复后全部通过。全仓 lint/typecheck、218 项 Node 测试、80 项代理测试及 3 项真实 Chromium 动画子测试通过。当前未提交工作区的源码摘要、运行结果与验证边界见 [自检记录](evidence/backend-message-exit/run.json)；该次历史自检没有重跑 staging 浏览器矩阵，既有浏览器失败证据完整保留，合入门槛仍未满足。
