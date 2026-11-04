@@ -1,5 +1,6 @@
 """运行未修改德州引擎与真实钱包 SDK；只隔离 Redis、消息出口和钱包 HTTP 地址。"""
 
+import hashlib
 import inspect
 import json
 import logging
@@ -127,6 +128,13 @@ class BackendContract(unittest.TestCase):
             self.save_observation(observation)
             self.assertEqual(initial_transactions, 2, "正常手动带入应实际扣款两次")
             self.assertTrue(observation["hits"], "必须由真实 all-in 触发钱包补码请求")
+            if mode in ("normal", "conflict"):
+                self.assertEqual(
+                    sum(observation["walletAfter"].values())
+                    + sum(observation["tableStacks"].values()),
+                    sum(before.values()) + 310,
+                    "钱包和结算后的桌上筹码总额必须守恒",
+                )
             self.verify(mode, observation, error, messages)
 
     def resit(self, engine, wallet, transactions, first_hit):
@@ -247,6 +255,9 @@ class BackendContract(unittest.TestCase):
         elif mode == "insufficient":
             self.assertEqual(observation["transactions"], 2)
             self.assertIn("stand_up", observation["events"])
+            self.assertEqual(
+                observation["hits"][0]["errorType"], "insufficient_balance"
+            )
         elif mode == "committed-response-lost":
             self.assertEqual(
                 len({hit["transaction"] for hit in observation["hits"]}), 1
@@ -326,6 +337,22 @@ if __name__ == "__main__":
         json.dumps(
             {
                 "texasSourceCommit": source_commit,
+                "clrnTestCommit": subprocess.check_output(
+                    [
+                        "git",
+                        "-C",
+                        str(Path(__file__).resolve().parents[3]),
+                        "rev-parse",
+                        "HEAD",
+                    ],
+                    text=True,
+                ).strip(),
+                "driverSha256": {
+                    name: hashlib.sha256(
+                        Path(__file__).with_name(name).read_bytes()
+                    ).hexdigest()
+                    for name in ("backend_contract.py", "isolated_wallet.py")
+                },
                 "environment": "isolated-engine-http-wallet; not deployed staging",
             }
         )

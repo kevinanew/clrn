@@ -100,7 +100,7 @@ class IsolatedWallet:
             if balance < amount:
                 return 200, {
                     "ok": False,
-                    "error_type": "not_enough_balance",
+                    "error_type": "insufficient_balance",
                     "error_message": "Insufficient balance",
                 }
             self.balances[player] = balance - amount
