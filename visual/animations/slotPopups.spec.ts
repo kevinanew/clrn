@@ -4,8 +4,10 @@ import { openApplication, press, pressTarget } from './appSession';
 import { selectScenario, scenarioStatus } from '../../e2e/helpers/scenario-proxy';
 import { exercisePopup } from './popups';
 import { settleAnimations } from './timeline';
+import { observeSlotSpinReplies, spinSlot } from './slotSpin';
 
 test('slot panel and no-energy dialog enter and exit', async ({ context, page }, info) => {
+  const replies = observeSlotSpinReplies(page);
   await context.addInitScript(() => { Math.random = /** 固定背景横幅的随机图标。 */ () => 0.37; });
   await selectScenario(context, 'slot');
   const realWallet = page.waitForResponse(response => response.request().method() === 'PUT'
@@ -56,8 +58,7 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
       await press(page, 'slot-banner');
       await settleAnimations(page, 1600);
       const previous = (await scenarioStatus(context)).spins;
-      await press(page, 'spin-button');
-      await expect.poll(async () => { await page.clock.runFor(0); return (await scenarioStatus(context)).spins; }).toBe(previous + 1);
+      await spinSlot(page, context, replies, 'exhausted', previous + 1);
       // exercisePopup 按真实挂载逐帧推进，不能在入场采样前固定跳过 500ms。
     }, close: /** 点击提示的确认按钮。 */ () => pressTarget(dialog.getByTestId('confirm-button')) });
 });

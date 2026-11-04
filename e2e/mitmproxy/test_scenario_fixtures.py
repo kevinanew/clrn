@@ -334,6 +334,50 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(json.loads(master.commands.call.call_args.args[3])['result']['data']['ok'])
         self.assertEqual(self.addon.requests, 6)
 
+    async def test_旋转可暂存但能量与心跳继续正常处理且只释放一次(self):
+        for phase in ('coin', 'currency_diamond', 'energy', 'exhausted'):
+            with self.subTest(phase=phase):
+                await self.control({'name': 'none'})
+                await self.control({'name': 'slot', 'userId': SELF, 'phase': f'hold-{phase}'})
+                socket = flow(HOST + '/connection/websocket')
+                socket.websocket = websocket.WebSocketData()
+                commands = [{'id': 1, 'method': 7}] + [
+                    {'id': index, 'method': 9, 'params': {'data': {
+                        'path': f'/v2/slot_machine/user/{owner}/{operation}'}}}
+                    for index, owner, operation in ((2, SELF, 'energy'), (3, OTHER, 'spin'), (4, SELF, 'spin'))]
+                message = websocket.WebSocketMessage(Opcode.TEXT, True,
+                    '\n'.join(json.dumps(command) for command in commands).encode())
+                socket.websocket.messages.append(message)
+                with patch('scenario_fixtures.ctx.master', create=True) as master:
+                    self.addon.websocket_message(socket)
+                    replies = [json.loads(line) for line in master.commands.call.call_args.args[3].decode().splitlines()]
+                    self.assertEqual([reply['id'] for reply in replies], [2, 3])
+                    self.assertEqual(replies[1]['result']['data']['error'], 'fixture_owner_mismatch')
+                    self.assertEqual(json.loads(message.text)['method'], 7)
+                    self.assertEqual((self.addon.spins, self.addon.held, self.addon.energy_reads), (1, 1, 1))
+                    master.commands.call.reset_mock()
+                    self.assertEqual(await self.control({'name': 'slot', 'phase': phase}), 200)
+                    reply = json.loads(master.commands.call.call_args.args[3])
+                    self.assertEqual(reply['id'], 4)
+                    self.assertEqual(reply['result']['data']['ok'], phase != 'exhausted')
+                    if phase != 'exhausted':
+                        self.assertEqual(reply['result']['data']['result']['outcome'], [phase] * 3)
+                    self.assertEqual(len(self.addon.slot_replies), 0)
+                    master.commands.call.reset_mock()
+                    await self.control({'name': 'slot', 'phase': phase})
+                    master.commands.call.assert_not_called()
+
+    async def test_延迟旋转不跨场景或奖励阶段释放且无效控制命令不清空队列(self):
+        for name, phase in (('none', 'ready'), ('slot', 'energy')):
+            await self.control({'name': 'slot', 'userId': SELF, 'phase': 'hold-coin'})
+            self.addon.slot_replies = [('original-socket', {'id': 1}, 'coin')]
+            self.assertEqual(await self.control({'name': 'slot', 'phase': 'invalid'}), 400)
+            self.assertEqual(len(self.addon.slot_replies), 1)
+            with patch('scenario_fixtures.ctx.master', create=True) as master:
+                await self.control({'name': name, 'phase': phase})
+                master.commands.call.assert_not_called()
+            self.assertEqual(self.addon.slot_replies, [])
+
 
 if __name__ == '__main__':
     unittest.main()

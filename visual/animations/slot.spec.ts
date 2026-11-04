@@ -1,11 +1,13 @@
 import { slotWalletMask } from './slotWallet';
 import { expect, test } from '../src/support/networkFixture';
-import { openApplication, navigate, press } from './appSession';
+import { openApplication, navigate } from './appSession';
 import { captureTimeline, fixedArea, freeze } from './timeline';
 import { selectScenario, scenarioStatus } from '../../e2e/helpers/scenario-proxy';
+import { observeSlotSpinReplies, spinSlot } from './slotSpin';
 
 test('老虎机滚轮和三种奖励动画', async ({ context, page }, info) => {
   test.setTimeout(600_000);
+  const replies = observeSlotSpinReplies(page);
   await selectScenario(context, 'slot');
   try {
     await openApplication(context, page, info);
@@ -26,13 +28,7 @@ test('老虎机滚轮和三种奖励动画', async ({ context, page }, info) => 
     const clip = await fixedArea(page, panel, 0);
     await freeze(page);
     for (const [index, currency] of ['coin', 'currency_diamond', 'energy'].entries()) {
-      await selectScenario(context, 'slot', { phase: currency });
-      await press(page, 'spin-button');
-      await expect.poll(async () => {
-        // RPC 准备阶段保持同一虚拟时刻，避免响应快慢改变滚轮动画的起点。
-        await page.clock.runFor(0);
-        return (await scenarioStatus(context)).spins;
-      }, { message: '老虎机旋转请求必须由本轮夹具处理' }).toBe(index + 1);
+      await spinSlot(page, context, replies, currency, index + 1);
       await page.clock.runFor(16);
       await captureTimeline(page, info, `slot-${currency}`, panel,
         { clip, numericMask, times: [0, 160, 500, 1000, 1080, 1160, 1400, 2400] });

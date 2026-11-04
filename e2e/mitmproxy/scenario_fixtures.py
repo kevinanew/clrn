@@ -25,6 +25,7 @@ for name in ('launch', 'club-skeleton', 'auto-rebuy'):
 for name in ('club-error', 'hall-error'):
     PHASES[name].add('release')
 PHASES['slot'] |= {'coin', 'currency_diamond', 'energy', 'exhausted'}
+PHASES['slot'] |= {f'hold-{phase}' for phase in ('coin', 'currency_diamond', 'energy', 'exhausted')}
 
 
 def data(name):
@@ -85,6 +86,7 @@ class ScenarioFixtures:
         self.cursors = []
         self.gate = asyncio.Event()
         self.gate.set()
+        self.slot_replies = []
 
     def status(self):
         return {'requests': self.requests, 'held': self.held, 'spins': self.spins,
@@ -113,6 +115,7 @@ class ScenarioFixtures:
                     raise ValueError('This scene has no room parameter')
                 if 'userId' in body and self.user_id and self.user_id != body['userId']:
                     raise ValueError('Another user owns this proxy')
+                self.release_slot_replies(name, phase)
                 self.gate.set()
                 if self.name != name:
                     self.requests = self.held = self.spins = 0
@@ -329,15 +332,37 @@ class ScenarioFixtures:
             else:
                 self.requests += 1
             if 'id' in frame:
-                replies.append({'id': frame['id'], 'result': {'data': answer}})
+                reply = {'id': frame['id'], 'result': {'data': answer}}
+                self.queue_slot_reply(flow, reply, bool(slot and path.endswith('/spin')), replies)
         if not handled:
             return
         message.content = '\n'.join(forward).encode()
         if not any(line.strip() for line in forward):
             message.drop()
         if replies:
-            ctx.master.commands.call('inject.websocket', flow, True,
-                                     '\n'.join(json.dumps(reply) for reply in replies).encode(), True)
+            self.inject_replies(flow, replies)
+
+    def queue_slot_reply(self, flow, reply, spin, replies):
+        """暂存所属账号的旋转回复；能量、其他账号错误及其他场景立即回复。"""
+        answer = reply['result']['data']
+        if spin and answer.get('error') != 'fixture_owner_mismatch' and self.phase.startswith('hold-'):
+            self.held += 1
+            self.slot_replies.append((flow, reply, self.phase.removeprefix('hold-')))
+        else:
+            replies.append(reply)
+
+    def release_slot_replies(self, name, phase):
+        """只释放同一场景和奖励阶段的旋转；切换场景时丢弃，避免跨用例注入。"""
+        pending, self.slot_replies = self.slot_replies, []
+        for socket, reply, reward_phase in pending:
+            if name == self.name == 'slot' and phase == reward_phase:
+                self.inject_replies(socket, [reply])
+
+    @staticmethod
+    def inject_replies(flow, replies):
+        """只通过原始长连接回复，保留客户端真实的 Promise 与动画启动路径。"""
+        ctx.master.commands.call('inject.websocket', flow, True,
+                                 '\n'.join(json.dumps(reply) for reply in replies).encode(), True)
 
     def slot_reply(self, path):
         self.requests += 1
@@ -352,12 +377,13 @@ class ScenarioFixtures:
         return self.slot_result(spin)
 
     def slot_result(self, spin):
+        phase = self.phase.removeprefix('hold-')
         energy = {'user_energy': {'total_energy': 0}, 'energy_factory': {
             'capacity': 50, 'quantity': 50, 'remaining_production_time': '00:00:00'}}
-        if spin and self.phase == 'exhausted':
+        if spin and phase == 'exhausted':
             return {'ok': False, 'error': 'energy_not_enough', 'error_description': 'No energy'}
         if spin:
-            currency = self.phase if self.phase in ('coin', 'currency_diamond', 'energy') else 'coin'
+            currency = phase if phase in ('coin', 'currency_diamond', 'energy') else 'coin'
             energy = {**copy.deepcopy(energy), 'outcome': [currency] * 3, 'reward': {
                 'outcome_pattern': 'three', 'prize': {'coin': 100 if currency == 'coin' else 0,
                 'diamond': 5 if currency == 'currency_diamond' else 0, 'energy': 10 if currency == 'energy' else 0}}}
