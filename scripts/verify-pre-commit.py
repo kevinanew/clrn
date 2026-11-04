@@ -117,7 +117,7 @@ class PreCommitAcceptance(unittest.TestCase):
         cases = (
             ("hook-acceptance.mjs", "console.log(clrnHookMissing);\n", "no-undef"),
             ("hook_acceptance.py", '"""验证未定义变量会阻止提交。"""\nprint(clrn_hook_missing)\n', "F821"),
-            ("hook_python_lines.py", "# Physical line.\n" * 501, "501 行（上限 500 行）"),
+            ("hook_python_lines.py", '"""验证 Python 文件超出行数上限时阻止提交。"""\n' + "# Physical line.\n" * 500, "501 行（上限 500 行）"),
             (
                 "hook-acceptance.sh",
                 "#!/bin/sh\n# 验证未引用变量会触发 ShellCheck。\nvalue='two words'\nprintf '%s\\n' $value\n",
@@ -142,7 +142,7 @@ class PreCommitAcceptance(unittest.TestCase):
         """验证恰好 500 行的 Python 文件可以提交。"""
         name = "hook_python_lines.py"
         path = self.repository / name
-        contents = "\n" * 499 + "# No final newline."
+        contents = '"""验证 Python 文件恰好达到行数上限时允许提交。"""\n' + "\n" * 498 + "# No final newline."
         path.write_text(contents)
         self.run_command("git", "add", name)
         result = self.commit()
