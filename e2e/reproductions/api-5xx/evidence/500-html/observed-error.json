@@ -1,0 +1,7 @@
+{
+  "status": 500,
+  "format": "html",
+  "message": "Request failed with status code 500 /v10/texas_holdem/room/e2936f97-1cd1-4262-a149-a39a17db9d7c/buy_in/apply",
+  "originalMessageReproduced": false,
+  "scope": "真实 Web 的 HTTP 带入边界；不代表历史入座 RPC 的完整根因"
+}
