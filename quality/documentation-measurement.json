@@ -1,0 +1,47 @@
+{
+  "issue": 110,
+  "date": "2026-11-05",
+  "beforeRevision": "4e15d4d",
+  "tools": {
+    "node": "24.14.0",
+    "python": "3.12.12",
+    "eslint": "10.12.0",
+    "tsdoc": "0.17.1",
+    "ruff": "0.15.12"
+  },
+  "before": {
+    "javascript": { "files": 327, "missingImplementationSummaries": 1953, "parseErrors": 0, "tsdocSyntaxErrors": 0 },
+    "python": {
+      "files": 46,
+      "ruffDocumentationDiagnostics": 389,
+      "ruffByRule": { "D100": 1, "D101": 38, "D102": 297, "D103": 40, "D107": 13 },
+      "astMissingDocstrings": { "module": 1, "class": 38, "function": 304, "asyncFunction": 54 },
+      "additionalPrivateImplementations": 8,
+      "lambdasMissingPurposeComments": 6,
+      "parseErrors": 0
+    },
+    "shell": { "files": 3, "entryDiagnostics": 3, "functionDiagnostics": 2 },
+    "swift": { "files": 0 }
+  },
+  "after": {
+    "javascript": { "files": 331, "diagnostics": 0 },
+    "python": { "files": 49, "ruffDocumentationDiagnostics": 0, "astDiagnostics": 0, "lambdaDiagnostics": 0 },
+    "shell": { "files": 3, "diagnostics": 0 },
+    "swift": { "files": 0 }
+  },
+  "commands": {
+    "documentation": "npm run lint:docs",
+    "negativeProbes": "node --test scripts/documentation.test.mjs",
+    "static": "npm run lint",
+    "types": "npm run typecheck",
+    "units": "npm test",
+    "hooks": "uvx --from pre-commit==4.6.0 pre-commit run --all-files"
+  },
+  "notes": [
+    "Ruff counts modules, classes, methods and functions; its count is not a missing-function count.",
+    "The AST count overlaps Ruff and additionally covers eight private implementations; do not add the two counts.",
+    "After counts include the new checker and focused rule tests.",
+    "Documentation checks have no historical exemptions and fail on missing tools, parse errors and empty scans.",
+    "Existing complexity/network baselines only refresh coordinates; native jscpd fingerprints and counts are unchanged."
+  ]
+}

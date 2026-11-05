@@ -23,13 +23,14 @@ export async function enterTexasRoom(page: Pick<Page, 'request'>, room: RoomSess
   const response = await page.request.put(`https://api.shafayouxi.org/v10/texas_holdem/room/${room.roomId}/enter`, {
     headers: { Authorization: room.authorization }, data: { client_support: ['time_based_rules'] },
     timeout: 15_000,
-  }).catch(error => {
+  }).catch(/** 将德州入场请求错误转换为不含凭据的安全诊断。
+ * @param error - 当前操作抛出的错误。 */ error => {
     throw new Error(requestErrorSummary(error, 'texas-enter'));
   });
   try {
     await readRequestJson(response, 'texas-enter');
   } finally {
-    await response.dispose().catch(() => { throw requestFailure('texas-enter', 'body-read-failed', response.status()); });
+    await response.dispose().catch(/** 将入场响应释放失败转换为保留实际状态的诊断。 */ () => { throw requestFailure('texas-enter', 'body-read-failed', response.status()); });
   }
 }
 

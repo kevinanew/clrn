@@ -7,8 +7,11 @@ import { ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
 import { pressTarget, recordApplicationBuild } from '../../animations/appSession';
 import { CLOCK_START } from '../../animations/timeline';
 
-for (const scenario of buildScenarios().filter(item => item.group === 'launch')) {
-  test(scenario.label, async ({ page, context }, info) => {
+for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'launch'`。
+ * @param item - 当前遍历的条目。 */ item => item.group === 'launch')) {
+  test(scenario.label, /** 按场景设置视口、语言与上下文，验证完整启动页面截图。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ page, context }, info) => {
     await page.setViewportSize(scenario.viewport);
     await setupContextForScenario(context, scenario, page, { animations: 'allow',
       navigatorLocale: { 'zh-Hans': 'zh-CN', 'zh-Hant': 'zh-TW', en: 'en-US' }[scenario.locale] });
@@ -25,14 +28,14 @@ for (const scenario of buildScenarios().filter(item => item.group === 'launch'))
       const brand = page.getByTestId('launch-brand-name');
       await expect(dialog).toBeAttached({ timeout: 60_000 });
       await expect(launch).toBeVisible();
-      await page.evaluate(() => document.fonts.ready.then(() => undefined));
+      await page.evaluate(/** 在页面中读取`document.fonts.ready.then(() => undefined)`，供测试判断当前界面状态。 */ () => document.fonts.ready.then(/** 将异步结果转换为`undefined`，供后续步骤使用。 */ () => undefined));
       await ensureLocalImagesLoaded(page);
       await page.clock.runFor(800);
       await expect(brand.locator('..')).toHaveCSS('opacity', '1');
       await expect(brand).toHaveText({ 'zh-Hans': '来玩', 'zh-Hant': '來玩', en: 'GoPlay360' }[scenario.locale]);
       await expect(dialog.getByTestId('staging-dialog-title')).toBeVisible();
       if (scenario.pageLabel === 'launch_branding') {
-        await expect.poll(async () => (await scenarioStatus(context)).held, { message: '启动网络必须仍在等待响应' }).toBeGreaterThan(0);
+        await expect.poll(/** 重复读取`(await scenarioStatus(context)).held`，直到满足外层等待断言。 */ async () => (await scenarioStatus(context)).held, { message: '启动网络必须仍在等待响应' }).toBeGreaterThan(0);
         const input = dialog.locator('input').first();
         await input.fill((await input.getAttribute('placeholder'))!);
         await pressTarget(dialog.getByTestId('confirm-button'));

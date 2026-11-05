@@ -23,10 +23,13 @@ export async function installCardSpriteDiagnostics(page: Page, lifecycle: boolea
   const recording: Recording = { entries: [], dropped: 0, failed: false, total: 0, loaderCallbacks: lifecycle === 'callbacks',
     journal: info?.outputPath('card-sprite-events.jsonl') };
   recordings.set(page, recording);
-  await page.exposeBinding('__clrnCardSpriteEvent', (_source, entry: Omit<Entry, 'realTime'>) => {
+  await page.exposeBinding('__clrnCardSpriteEvent', /** 在宿主端限制诊断容量并脱敏图片路径，阻止页面敏感数据进入附件。
+ * @param _source - 当前操作使用的 _source。
+ * @param entry - 当前处理的记录条目。 */ (_source, entry: Omit<Entry, 'realTime'>) => {
     if (recording.entries.length === limit) { recording.entries.shift(); recording.dropped++; }
     // 在宿主持久化边界替换路径；浏览器不能把嵌在相对路径里的地址带进附件。
-    const cards = entry.cards.map(value => {
+    const cards = entry.cards.map(/** 保留牌面诊断字段，仅将图片资源路径替换为安全表示。
+ * @param value - 当前待转换或校验的值。 */ value => {
       const card = value as { image?: { path?: unknown } };
       return { ...card, ...(card.image ? { image: { ...card.image, path: cardSpriteResource(card.image.path) } } : {}) };
     });
@@ -130,7 +133,8 @@ export async function installCardSpriteDiagnostics(page: Page, lifecycle: boolea
  */
 export async function sampleCardSprites(page: Page, event: string): Promise<void> {
   if (!recordings.has(page)) return;
-  await page.evaluate(event => {
+  await page.evaluate(/** 在页面中调用已安装的牌面采样器，记录指定阶段状态。
+ * @param event - 当前触发的事件。 */ event => {
     const state = window as typeof window & { __clrnSampleCardSprites?: (event: string) => Promise<void> };
     return state.__clrnSampleCardSprites?.(event);
   }, event);
@@ -156,7 +160,8 @@ export async function observeCardSpriteClockControl(page: Page): Promise<void> {
   // 这些是诊断采样时刻，不是加长就绪等待；原始断言结果保持失败。
   const start = Date.now();
   for (const at of [0, 16, 80, 160, 320, 640, 1200]) {
-    await new Promise(resolve => setTimeout(resolve, Math.max(0, start + at - Date.now())));
+    await new Promise(/** 等待下一个采样时点，避免取证节奏随前次操作耗时漂移。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => setTimeout(resolve, Math.max(0, start + at - Date.now())));
     await sampleCardSprites(page, 'control-running-' + at);
   }
 }
@@ -171,8 +176,8 @@ export async function saveCardSpriteDiagnostics(page: Page, info: TestInfo, phas
   const recording = recordings.get(page);
   if (!recording) return;
   await sampleCardSprites(page, 'save');
-  const applicationBuild = await page.locator('meta[name="build-version"]').getAttribute('content').catch(() => null);
-  const lifecycle = await page.evaluate(() => {
+  const applicationBuild = await page.locator('meta[name="build-version"]').getAttribute('content').catch(/** 读取失败时返回空值，保留调用方的缺失数据处理。 */ () => null);
+  const lifecycle = await page.evaluate(/** 读取页面生命周期取证结果，未启用时返回明确状态。 */ () => {
     const state = window as typeof window & { __clrnCardSpriteLifecycle?: (node: Element) => unknown };
     return state.__clrnCardSpriteLifecycle?.(document.documentElement) ?? { status: 'not-enabled' };
   });

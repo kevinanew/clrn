@@ -9,7 +9,9 @@ from test_network_faults import source_environment
 
 
 class UIStateTests(unittest.TestCase):
+    """验证德州申请界面、设置写入及 RPC 失败场景的边界。"""
     def setUp(self):
+        """为每个用例配置隔离来源环境、控制令牌和独立代理状态。"""
         self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.addon = TexasVisualProxy()
@@ -17,16 +19,19 @@ class UIStateTests(unittest.TestCase):
         self.addon.texas.arm_created_room(ROOM, SELF)
 
     def request(self, path, method='GET', body=None, host='node-0.service.invalid'):
+        """构造请求并交给当前德州插件，返回处理后的流。"""
         request = flow(f'https://{host}{path}', method, json.dumps(body or {}).encode())
         self.addon.request(request)
         return request
 
     def control(self, body, token='test-token'):
+        """向德州界面控制入口提交认证 JSON 命令。"""
         request = flow('http://test-mitmproxy.invalid/texas/ui', 'POST', json.dumps(body).encode(), token)
         self.addon.request(request)
         return request
 
     def test_界面控制必须认证并匹配房间与有效状态(self):
+        """验证界面控制必须认证并匹配房间与有效状态。"""
         for body in ([], {'rpcError': 'unknown'}, {'applications': 'unknown'}, {'other': True}):
             self.assertEqual(self.control(body).response.status_code, 400)
         self.assertEqual(self.control({'rpcError': 'auth'}, None).response.status_code, 403)
@@ -35,6 +40,7 @@ class UIStateTests(unittest.TestCase):
         self.assertEqual(self.control({'rpcError': 'auth'}).response.status_code, 400)
 
     def test_申请行与分页仅匹配当前房间(self):
+        """验证申请行与分页仅匹配当前房间。"""
         self.control({'applications': 'more'})
         path = f'/v11/buy_in/{ROOM}/applications'
         first = json.loads(self.request(path).response.content)['result']
@@ -52,6 +58,7 @@ class UIStateTests(unittest.TestCase):
         self.assertEqual([item['status'] for item in rows], ['approve', 'reject', 'overdue'])
 
     def test_选择写入不能影响其他房间(self):
+        """验证选择写入不能影响其他房间。"""
         for suffix in ('enable_auto_rebuy', 'disable_auto_rebuy'):
             path = f'/v10/texas_holdem/room/{ROOM}/user_settings/{suffix}'
             self.assertIsNotNone(self.request(path, 'PUT').response)
@@ -64,6 +71,7 @@ class UIStateTests(unittest.TestCase):
         self.assertIsNone(self.request(path, 'POST').response)
 
     def test_支付隔离严格匹配房间方法与确切动作(self):
+        """验证支付隔离严格匹配房间方法与确切动作。"""
         frame = {'id': 9, 'method': 9, 'params': {'data': {'method': 'POST', 'path': '/v3/pay_action/do',
                  'json': {'action_url': {'room_id': ROOM, 'method': 'POST', 'path':
                  '/v10/texas_holdem/room/$room_id$/game/$game_id$/operating_time'}}}}}
@@ -76,6 +84,7 @@ class UIStateTests(unittest.TestCase):
             action[key] = original
 
     def test_调用错误注入浏览器且释放后重置(self):
+        """验证调用错误注入浏览器且释放后重置。"""
         self.control({'rpcError': 'auth'})
         socket = socket_flow()
         frame = {'id': 4, 'method': 9, 'params': {'data': {'method': 'POST',

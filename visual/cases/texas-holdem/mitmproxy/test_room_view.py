@@ -8,7 +8,9 @@ from game_log import fixture as log_fixture, GAME_ID
 
 
 class RoomViewTests(unittest.TestCase):
+    """验证房间展示模式对创建、入场与大厅读取的限定作用。"""
     def test_仅成功创建才能绑定确切房间读取(self):
+        """验证仅成功创建才能绑定确切房间读取。"""
         view = RoomView()
         view.configure('hall')
         created = flow('https://node-0.service.invalid/v3/pay_action/do', 'POST', json.dumps({
@@ -34,11 +36,13 @@ class RoomViewTests(unittest.TestCase):
         self.assertIsNone(view.fixture(f'/v10/texas_holdem/room/{ROOM}/user_settings', 'PUT', SELF))
 
     def test_其他支付失败创建与第二房间不能绑定界面(self):
+        """验证其他支付失败创建与第二房间不能绑定界面。"""
         view = RoomView()
         view.configure('hall')
         body = {'user_id': SELF, 'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
                 'action_json': {'game_type': 'texas_react_native'}}
         def created(request_body, room_id=ROOM, ok=True):
+            """构造带指定业务结果的建房响应并交给房间展示观察器。"""
             request = flow('https://node-0.service.invalid/v3/pay_action/do', 'POST', json.dumps(request_body).encode())
             request.response = http.Response.make(200, json.dumps({'ok': ok, 'result': {'room_id': room_id}}).encode())
             view.response(request, '/v3/pay_action/do')
@@ -56,6 +60,7 @@ class RoomViewTests(unittest.TestCase):
         self.assertEqual(view.room_id, ROOM)
 
     def test_房间详情不能以未验证创建者覆盖本人身份(self):
+        """验证房间详情不能以未验证创建者覆盖本人身份。"""
         view = RoomView()
         view.configure('hall')
         view.room_id, view.self_id = ROOM, SELF
@@ -67,6 +72,7 @@ class RoomViewTests(unittest.TestCase):
         self.assertEqual(view.self_id, SELF)
 
     def test_访客身份仅修改已创建房间的成功读取(self):
+        """验证访客身份仅修改已创建房间的成功读取。"""
         view = RoomView()
         view.configure('guest')
         view.room_id, view.self_id = ROOM, SELF
@@ -85,6 +91,7 @@ class RoomViewTests(unittest.TestCase):
         self.assertEqual(view.self_id, SELF)
 
     def test_记录不能替换其他房间或用户数据(self):
+        """验证记录不能替换其他房间或用户数据。"""
         path = '/v1/game_log/room/game_amount'
         self.assertIsNotNone(log_fixture(path, 'PUT', json.dumps({'room_ids': [ROOM]}).encode(), ROOM, SELF))
         self.assertIsNone(log_fixture(path, 'PUT', json.dumps({'room_ids': [OTHER, ROOM]}).encode(), ROOM, SELF))

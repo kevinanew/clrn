@@ -66,6 +66,7 @@ class ClubRoomVisualProxy:
     """只在专用场景中匹配指定俱乐部及其房间，其他请求保持原路径。"""
 
     def __init__(self):
+        """初始化俱乐部代理的控制令牌、场景、账号与请求计数。"""
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
         self.user_id = None

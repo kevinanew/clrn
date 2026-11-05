@@ -5,6 +5,7 @@ import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import quality from './scripts/quality-rules.mjs';
 import { visualSupportFiles, visualToolFiles, visualCheckFiles } from './scripts/visual-complexity-scope.mjs';
+import documentation from './scripts/documentation-rule.mjs';
 
 export default [
   { ignores: ['**/node_modules/**', '**/.venv/**', '**/test-results/**', '**/playwright-report/**', '**/blob-report/**', '.ttyctl/**', '**/snapshots/**'] },
@@ -14,12 +15,13 @@ export default [
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
     },
-    plugins: { jsdoc, tsdoc, quality },
+    plugins: { jsdoc, tsdoc, quality, documentation: { rules: { purpose: documentation } } },
     rules: {
       ...js.configs.recommended.rules,
       complexity: ['error', { max: 10, variant: 'classic' }],
       'max-depth': ['error', 3],
       'quality/no-quality-disable': 'error',
+      'documentation/purpose': 'error',
       // require-jsdoc 要求注释存在；tsdoc/syntax 再校验其遵循 TSDoc 格式。
       'jsdoc/require-jsdoc': ['error', {
         enableFixer: false,

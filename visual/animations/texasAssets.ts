@@ -16,7 +16,8 @@ import type { TableSession } from './tableSession';
 export async function texasAssets(session: TableSession, proxy: TexasProxy, info: TestInfo): Promise<void> {
   const { page, roomId, self, clip } = session;
   const loadedAssets = new Map<string, Response>();
-  page.on('response', response => {
+  page.on('response', /** 保存实际加载的 WebP 响应，供德州动画资源核验。
+ * @param response - 当前收到的接口响应。 */ response => {
     if (new URL(response.url()).pathname.endsWith('.webp')) loadedAssets.set(response.url(), response);
   });
   await restore(page, proxy, roomId, self, 'flop', true);

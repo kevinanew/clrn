@@ -5,7 +5,8 @@ export const pages: SignedInPageDef[] = [
     ['texas', 'texas_react_native'],
     ['zhajinhua', 'zhajinhua'],
     ['six_plus', 'texas_six_plus'],
-  ].map(([label, game]): SignedInPageDef => ({
+  ].map(/** 为各玩法生成建房高级选项的移动端场景配置。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([label, game]): SignedInPageDef => ({
     label: `signed_in_create_room_advanced_${label}`,
     viewports: ['mobile'],
     tabTestId: 'private-room-tab',

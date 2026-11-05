@@ -24,8 +24,8 @@ export function pipeReleaseFile(stream, response) {
   /** 客户端退出后立即释放源；destroy 也会等待尚未完成的文件打开再关闭句柄。 */
   const destroySource = () => stream.destroy();
   response.once('close', destroySource);
-  stream.once('close', () => response.removeListener('close', destroySource));
-  stream.once('error', () => response.destroy());
+  stream.once('close', /** 文件源关闭时移除响应关闭监听器，避免残留引用。 */ () => response.removeListener('close', destroySource));
+  stream.once('error', /** 文件源发生错误时销毁响应，终止不完整传输。 */ () => response.destroy());
   if (response.destroyed) { stream.destroy(); return; }
   // 取消时无 error 的 destroy 不伪造文件读取错误，响应仍记录 interrupted。
   stream.pipe(response);
@@ -49,7 +49,7 @@ export async function verifyBuildVersion(directory, expectedCommit) {
  * @param directory - 本任务独占的静态根目录。
  * @param options - 本轮日志出口与隔离自测的文件流边界。
  */
-export async function startReleaseWebServer(directory, { record = () => {}, openStream = createReadStream } = {}) {
+export async function startReleaseWebServer(directory, { record = /** 未配置诊断记录器时保持请求流程可直接运行。 */ () => {}, openStream = createReadStream } = {}) {
   const root = await realpath(directory);
   const serverId = randomUUID();
   const connections = new WeakMap();
@@ -111,7 +111,8 @@ export async function startReleaseWebServer(directory, { record = () => {}, open
       response.writeHead(404).end();
     }
   });
-  server.on('connection', socket => {
+  server.on('connection', /** 为新 TCP 连接分配标识并安装发布连接诊断监听。
+ * @param socket - 当前网络连接。 */ socket => {
     const connectionId = `connection-${++connectionSequence}`;
     connections.set(socket, connectionId);
     observeReleaseConnection(socket, { serverId, connectionId }, record);

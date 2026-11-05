@@ -40,7 +40,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     if (street === 'flop') {
       // 等待首张牌的零延迟翻转真正开始，再以该时刻采样公共牌移动。
       const firstFlip = page.locator('[data-testid="community_card"]:visible').first().getByTestId('card-flip');
-      await expect.poll(async () => {
+      await expect.poll(/** 提交独立时钟当前任务并等待首张牌进入指定翻转面。 */ async () => {
         await advanceCardSpriteClock(page, 0);
         return firstFlip.getAttribute('data-side');
       }, { message: '首张公共牌应开始翻转' }).toBe('1');
@@ -50,7 +50,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   }
   // 实时 switch_player 使用牌局 operating_seconds，而不是消息中的 remain_operating_seconds。
   await proxy.replayTexas(roomId, { scene: 'countdown' });
-  await expect.poll(async () => {
+  await expect.poll(/** 小步推进牌面时钟并读取当前玩家操作倒计时。 */ async () => {
     await advanceCardSpriteClock(page, 16);
     return page.getByTestId(`texas-holdem-player-container-${self}-operating`)
       .getByTestId('texas-holdem-active-countdown').allTextContents();
@@ -66,7 +66,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   for (const action of ['call', 'raise', 'check', 'fold'] as const) {
     // 每个独立动作从真实的“轮到该玩家”消息开始，避免复用上个动作的已完成动画节点。
     await proxy.replayTexas(roomId, { scene: 'texas-gameplay-switch_player-2' });
-    await expect.poll(async () => {
+    await expect.poll(/** 推进独立时钟，等待对手新倒计时出现且上轮操作标记消失。 */ async () => {
       await advanceCardSpriteClock(page, 16);
       const previousAction = opponentPlayer.locator('[data-testid^="texas-holdem-player-action-"]');
       return await countdown.count() === 1 && await previousAction.count() === 0;
@@ -85,7 +85,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   /** 等待牌桌连接恢复，再点击真实的精确加注入口。 */
   const openAccurateRaise = async () => {
     const reconnecting = page.getByText('Connecting...', { exact: true });
-    await expect.poll(async () => {
+    await expect.poll(/** 推进牌面时钟直至重连提示消失，确认牌桌恢复。 */ async () => {
       if (!(await reconnecting.isVisible())) return true;
       await advanceCardSpriteClock(page, 250);
       return !(await reconnecting.isVisible());
@@ -132,7 +132,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await proxy.replayTexas(roomId, restoreTable(self, 'river'));
   await advanceCardSpriteClock(page, 3200);
   await press(page, 'texas-holdem-operation-button-call');
-  await expect.poll(async () => {
+  await expect.poll(/** 推进独立时钟并等待升级标题显示完整文本。 */ async () => {
     await advanceCardSpriteClock(page, 16);
     return page.getByTestId('level-up-title').textContent();
   }).toContain('6');

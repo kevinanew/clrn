@@ -20,8 +20,11 @@ type ReportSuite = { suites?: ReportSuite[]; specs?: { tests: { results: { statu
  * @param suites - Playwright 的文件与分组结果。
  */
 function results(suites: ReportSuite[]): { status: string; retry: number }[] {
-  return suites.flatMap(suite => [
-    ...(suite.specs || []).flatMap(spec => spec.tests.flatMap(entry => entry.results)),
+  return suites.flatMap(/** 展开当前条目对应的`[ ...(suite.specs || []).flatMap(spec => spec.tests.flatMap(entry => entry.results)), ...results(suite.suites || []), ]`。
+ * @param suite - 当前操作使用的 suite。 */ suite => [
+    ...(suite.specs || []).flatMap(/** 展开当前条目对应的`spec.tests.flatMap(entry => entry.results)`。
+ * @param spec - 当前操作使用的 spec。 */ spec => spec.tests.flatMap(/** 展开当前条目对应的`entry.results`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.results)),
     ...results(suite.suites || []),
   ]);
 }
@@ -35,7 +38,7 @@ function childDiagnostic(child: ReturnType<typeof spawnSync>): string {
   return String(child.stdout) + String(child.stderr);
 }
 
-test('普通比较不写基准；显式采集也更新容差内变化；真实缺陷、尺寸和业务错误仍失败且零重试', async () => {
+test('普通比较不写基准；显式采集也更新容差内变化；真实缺陷、尺寸和业务错误仍失败且零重试', /** 验证普通比较不写基准；显式采集也更新容差内变化；真实缺陷、尺寸和业务错误仍失败且零重试。 */ async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-snapshot-policy-'));
   try {
     const config = path.join(directory, 'playwright.config.mjs');

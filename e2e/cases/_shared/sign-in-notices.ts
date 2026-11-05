@@ -18,13 +18,13 @@ export async function installSignInNoticeHandler(page: Page): Promise<void> {
   // 只订阅已知提示，让专门验证业务错误的案例仍可自行检查、关闭其他 alert。
   const knownNotice = message.filter({ hasText: reliefNotice })
     .or(message.filter({ hasText: clubNotice })).or(privacy).first();
-  await page.addLocatorHandler(knownNotice, async () => {
+  await page.addLocatorHandler(knownNotice, /** 在叠加弹窗中依次处理隐私、协议与添加到主屏提示。 */ async () => {
     for (let attempt = 0; attempt < 3; attempt++) {
       // 两个弹窗可能叠在一起；先试探隐私同意按钮是否处于最上层。
       if (!handledPrivacy && await privacy.count()) {
         const agree = page.getByTestId('privacy-popup-agree').filter({ visible: true });
         const onTop = await agree.click({ trial: true, timeout: 1_000 })
-          .then(() => true).catch(() => false);
+          .then(/** 将异步结果转换为`true`，供后续步骤使用。 */ () => true).catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
         if (onTop) {
           await expect(privacy).toHaveCount(1);
           await expect(privacy).toHaveText('用户隐私策略概要');
@@ -44,7 +44,7 @@ export async function installSignInNoticeHandler(page: Page): Promise<void> {
         await expect(cancel).toHaveCount(1);
         // 提示可能在抽奖等业务弹层下方；先让案例正常关闭上层，再处理它。
         const onTop = await cancel.click({ trial: true, timeout: 1_000 })
-          .then(() => true).catch(() => false);
+          .then(/** 将异步结果转换为`true`，供后续步骤使用。 */ () => true).catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
         if (!onTop) return;
         await cancel.click();
         handledRelief = true;
@@ -54,7 +54,7 @@ export async function installSignInNoticeHandler(page: Page): Promise<void> {
         const confirm = await unique(page, 'alert-custom-button');
         await expect(confirm).toHaveText('好的');
         const onTop = await confirm.click({ trial: true, timeout: 1_000 })
-          .then(() => true).catch(() => false);
+          .then(/** 将异步结果转换为`true`，供后续步骤使用。 */ () => true).catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
         if (!onTop) return;
         await confirm.click();
         handledClubNotice = true;
@@ -95,7 +95,7 @@ export async function clickAfterSignInNotices(page: Page, testId: string): Promi
         await expect(await unique(page, 'privacy-popup-content')).toContainText('隐私政策');
         const agree = await unique(page, 'privacy-popup-agree');
         const privacyOnTop = await agree.click({ trial: true, timeout: 1_000 })
-          .then(() => true).catch(() => false);
+          .then(/** 将异步结果转换为`true`，供后续步骤使用。 */ () => true).catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
         if (privacyOnTop) {
           await agree.click();
           await expect(privacy).not.toBeVisible();

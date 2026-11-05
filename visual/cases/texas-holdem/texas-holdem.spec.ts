@@ -66,11 +66,13 @@ async function closePopup(page: Page, button: string, marker: string): Promise<v
 async function alignGameToViewport(page: Page): Promise<void> {
   const game = visible(page, 'run-game-view');
   // 浏览器点击底部控件可能自动滚动导航祖先；牌谱内部滚动保持原位置。
-  await game.evaluate(node => {
+  await game.evaluate(/** 复位牌桌所有祖先及窗口滚动，消除截图坐标偏移。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
     for (let parent = node.parentElement; parent; parent = parent.parentElement) parent.scrollTop = 0;
     window.scrollTo(0, 0);
   });
-  const { measuredTop, declaration } = await game.evaluate(node => {
+  const { measuredTop, declaration } = await game.evaluate(/** 读取牌桌实际顶部位置和已有 translate 声明。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
     const element = node as HTMLElement;
     return {
       measuredTop: element.getBoundingClientRect().top,
@@ -78,7 +80,9 @@ async function alignGameToViewport(page: Page): Promise<void> {
     };
   });
   const correction = gameViewportCorrection(measuredTop, appliedGameTranslation(declaration));
-  await game.evaluate((node, amount) => {
+  await game.evaluate(/** 为牌桌设置指定纵向平移，校准截图中的固定位置。
+ * @param node - 当前遍历的 DOM 或语法节点。
+ * @param amount - 当前操作使用的 amount。 */ (node, amount) => {
     const element = node as HTMLElement;
     element.style.setProperty('translate', `0 ${amount}px`, 'important');
   }, correction);
@@ -89,7 +93,7 @@ async function alignGameToViewport(page: Page): Promise<void> {
  * @param page - 执行操作的 Playwright 页面。
  */
 async function waitForGameConnection(page: Page): Promise<void> {
-  await expect.poll(async () => {
+  await expect.poll(/** 等待牌桌倒计时，遇到应用连接提示时执行有限重试。 */ async () => {
     if (await visible(page, 'countdown-text').isVisible()) return true;
     const retry = visible(page, 'common-alert-button-retry');
     if (await retry.isVisible()) { recordDiagnostic(page, '点击应用重试按钮'); await retry.click(); }
@@ -114,7 +118,8 @@ async function capture(page: Page, scenario: VisualScenario, state: string): Pro
     await page.clock.runFor(16);
     await ensureLocalImagesLoaded(page);
   }
-  const nickname = scenario.fixedTexts.find(rule => rule.selector === '[data-testid="texas-holdem-nickname-text"]')?.text;
+  const nickname = scenario.fixedTexts.find(/** 查找满足以下条件的首个条目：`rule.selector === '[data-testid="texas-holdem-nickname-text"]'`。
+ * @param rule - 当前操作使用的 rule。 */ rule => rule.selector === '[data-testid="texas-holdem-nickname-text"]')?.text;
   const self = nickname ? await selfId(page) : undefined;
   const visibleNickname = self && nickname
     ? [{ selector: `[data-testid^="texas-holdem-player-container-${self}"] `
@@ -169,12 +174,14 @@ async function capturePreGame(page: Page, scenario: VisualScenario): Promise<voi
   await visible(page, 'texas-holdem-leaderboard-button').click();
   await expect(visible(page, 'public-leader-board-container')).toBeVisible({ timeout: 30_000 });
   await snapshot('leaderboard');
-  await visible(page, 'screen-mask-touch-to-close').evaluate(node => (node as HTMLElement).click());
+  await visible(page, 'screen-mask-touch-to-close').evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   await expect(visible(page, 'public-leader-board-container')).toBeHidden({ timeout: 15_000 });
   await visible(page, 'game-record-button').click();
   await expect(visible(page, 'review-board-description-text')).toBeVisible({ timeout: 30_000 });
   await snapshot('game_record');
-  await visible(page, 'screen-mask-touch-to-close').evaluate(node => (node as HTMLElement).click());
+  await visible(page, 'screen-mask-touch-to-close').evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   await expect(visible(page, 'review-board-description-text')).toBeHidden({ timeout: 15_000 });
 
   await visible(page, 'texas-holdem-chat-button').click();
@@ -206,8 +213,10 @@ async function captureOptionalPreGame(page: Page, scenario: VisualScenario): Pro
   await capture(page, scenario, OPTIONAL_PRE_GAME_STATES[1]);
 }
 
-for (const scenario of buildScenarios().filter(item => item.group === 'texas-holdem')) {
-  test(scenario.label, async ({ browser, mitmproxy }) => {
+for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'texas-holdem'`。
+ * @param item - 当前遍历的条目。 */ item => item.group === 'texas-holdem')) {
+  test(scenario.label, /** 为当前德州场景创建隔离上下文，准备真实牌桌并采集截图。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ browser, mitmproxy }) => {
     const context = await browser.newContext({
       ...texasProxyOptions(mitmproxy),
       viewport: scenario.viewport,
@@ -218,8 +227,10 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
     bindScenarioProxy(context, mitmproxy.network);
     const page = await context.newPage();
     const diagnostics = await installConnectionDiagnostics(context, page, test.info(), mitmproxy);
-    page.on('pageerror', error => console.error(`TEXAS PAGE ERROR > ${diagnosticText(error.message)}`));
-    page.on('response', response => {
+    page.on('pageerror', /** 输出脱敏的德州页面运行错误。
+ * @param error - 当前操作抛出的错误。 */ error => console.error(`TEXAS PAGE ERROR > ${diagnosticText(error.message)}`));
+    page.on('response', /** 记录失败 HTTP 响应的状态、脱敏节点与请求路径。
+ * @param response - 当前收到的接口响应。 */ response => {
       if (response.status() < 400) return;
       const url = new URL(response.url());
       console.error(`TEXAS HTTP ERROR > ${response.status()} ${diagnosticNode(url.origin)}${url.pathname}`);
@@ -238,7 +249,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
       await page.goto(scenario.path);
       await preparePage(page, scenario);
       if (scenario.pageLabel === 'signed_in_texas_records_v2') {
-        await expect.poll(() => page.evaluate(() => localStorage.getItem('use.new.game.record.key'))).toBe('true');
+        await expect.poll(/** 重复读取`page.evaluate(() => localStorage.getItem('use.new.game.record.key'))`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`localStorage.getItem('use.new.game.record.key')`，供测试判断当前界面状态。 */ () => localStorage.getItem('use.new.game.record.key'))).toBe('true');
       }
       const proxyStatus = await mitmproxy.status();
       expect(proxyStatus.proxiedRequests, '德州浏览器流量应经过 mitmproxy').toBeGreaterThan(requestsBeforeNavigation);
@@ -246,7 +257,8 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
       const optional = scenario.pageLabel === 'signed_in_texas_optional_pre_game';
       if (['signed_in_texas_hall', 'signed_in_texas_hall_variants'].includes(scenario.pageLabel)) await mitmproxy.configureHallView();
       if (scenario.pageLabel === 'signed_in_texas_table_states') await mitmproxy.configureGuestView();
-      room = await createTexasRoom(page, created => {
+      room = await createTexasRoom(page, /** 保存本次新建房间标识及安全诊断，便于失败后的清理核查。
+ * @param created - 当前操作使用的 created。 */ created => {
         room = created;
         recordDiagnostic(page, '建房成功', { roomId: created.roomId, node: diagnosticNode(created.apiOrigin) });
         console.log(`TEXAS CREATED ROOM > ${created.roomId}`);
@@ -260,7 +272,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
           await enterTexasRoom(page, room);
         }
         await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
-        await expect.poll(async () => {
+        await expect.poll(/** 等待游戏启动遮罩消失，出现重试提示时触发应用重试。 */ async () => {
           const retry = visible(page, 'common-alert-button-retry');
           if (await retry.isVisible()) { recordDiagnostic(page, '点击应用重试按钮'); await retry.click(); }
           return !(await visible(page, 'game-splash-screen-bg').isVisible());
@@ -290,8 +302,9 @@ for (const scenario of buildScenarios().filter(item => item.group === 'texas-hol
       else await capturePreGame(page, scenario);
       await diagnostics.save();
     } catch (error) {
-      await diagnostics.save(error).catch(failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
-      await page.screenshot({ path: test.info().outputPath('failure.png') }).catch(() => undefined);
+      await diagnostics.save(error).catch(/** 记录德州诊断附件保存失败，保留原始案例错误。
+ * @param failure - 当前操作使用的 failure。 */ failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
+      await page.screenshot({ path: test.info().outputPath('failure.png') }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
       if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
       throw error;
     } finally {

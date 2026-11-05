@@ -57,7 +57,9 @@ export async function expectStatementList(list: Locator, statements: Statement[]
   // FlatList 会虚拟化长列表；核对首条真实流水，限定在当前币种列表内。
   const row = rows.first();
   const statement = statements[0];
-  const date = await list.evaluate((_, value) => {
+  const date = await list.evaluate(/** 按页面本地时区将流水时间转换为用于匹配的日期文本。
+ * @param _ - 当前操作使用的 _。
+ * @param value - 当前待转换或校验的值。 */ (_, value) => {
     const date = new Date(value);
     /**
      * 将日期分量补齐为两位数字，与页面时间格式保持一致。

@@ -14,7 +14,8 @@ export function visualComplexityFiles() {
   for (const file of required) {
     if (!files.includes(file)) throw new Error(`视觉复杂度检查缺少文件：${file}`);
   }
-  return [...new Set([...required, ...files.filter(file => /^scripts\/visual-complexity.*\.mjs$/.test(file))])];
+  return [...new Set([...required, ...files.filter(/** 根据当前条目计算结果。
+ * @param file - 当前回调参数。 */ file => /^scripts\/visual-complexity.*\.mjs$/.test(file))])];
 }
 
 /**
@@ -24,7 +25,8 @@ export function visualComplexityFiles() {
  */
 export async function checkVisualComplexity(files = visualComplexityFiles()) {
   const results = await new ESLint({ cwd: repository, overrideConfig: { linterOptions: { noInlineConfig: true } } }).lintFiles(files);
-  return results.map(result => ({ ...result, messages: result.messages.filter(isGateMessage) }));
+  return results.map(/** 根据当前条目计算结果。
+ * @param result - 当前回调参数。 */ result => ({ ...result, messages: result.messages.filter(isGateMessage) }));
 }
 
 /**
@@ -68,7 +70,9 @@ export async function measureVisualComplexity() {
  */
 function functionMeasurements(result) {
   if (result.fatalErrorCount) throw new Error(`复杂度测量解析失败：${result.filePath}`);
-  return result.messages.filter(message => message.ruleId === 'complexity').map(message => ({
+  return result.messages.filter(/** 根据当前条目计算结果。
+ * @param message - 当前回调参数。 */ message => message.ruleId === 'complexity').map(/** 根据当前条目计算结果。
+ * @param message - 当前回调参数。 */ message => ({
     file: relative(repository, result.filePath), line: message.line, column: message.column,
     name: message.message.split(' has a complexity')[0], complexity: Number(message.message.match(/complexity of (\d+)/)[1]),
   }));
@@ -81,7 +85,9 @@ async function main() {
     return;
   }
   const results = await checkVisualComplexity();
-  const messages = results.flatMap(result => result.messages.map(message =>
+  const messages = results.flatMap(/** 根据当前条目计算结果。
+ * @param result - 当前回调参数。 */ result => result.messages.map(/** 根据当前条目计算结果。
+ * @param message - 当前回调参数。 */ message =>
     `${relative(repository, result.filePath)}:${message.line}:${message.column} ${message.ruleId}: ${message.message}`));
   for (const message of messages) console.error(message);
   console.log(`视觉复杂度：${results.length} 个文件，${messages.length} 个违规（测试/辅助 ≤3，工具/配置 ≤6）。`);

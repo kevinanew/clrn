@@ -6,6 +6,7 @@ export const pythonLineLimit = 500;
 
 /**
  * 统计物理行，保留空行、注释及 docstring；支持 LF、CRLF、CR 和缺少末尾换行。
+ *
  * @param source - 完整源码文本。
  * @returns 空文件为零，其余为实际物理行数。
  */
@@ -15,12 +16,14 @@ export function physicalLines(source) {
 
 /**
  * 只读扫描 Python 手写源码；Git、读取异常和空扫描必须失败。
+ *
  * @param directory - Git 仓库根目录。
  * @returns 实际扫描文件数、最长文件和全部超限位置。
  */
 export function scanPythonLines(directory = repository) {
   const measured = [];
-  for (const file of sourceFiles(directory).filter(file => file.endsWith('.py'))) {
+  for (const file of sourceFiles(directory).filter(/** 筛选 Python 源文件。
+ * @param file - 候选路径。 */ file => file.endsWith('.py'))) {
     try {
       measured.push({ file, lines: physicalLines(readFileSync(join(directory, file), 'utf8')) });
     } catch (error) {
@@ -29,8 +32,11 @@ export function scanPythonLines(directory = repository) {
     }
   }
   if (!measured.length) throw new Error('Python 行数检查没有扫描到源码。');
-  const longest = measured.reduce((maximum, item) => item.lines > maximum.lines ? item : maximum);
-  return { count: measured.length, longest, violations: measured.filter(item => item.lines > pythonLineLimit) };
+  const longest = measured.reduce(/** 保留行数最多的文件。
+ * @param maximum - 当前最大值。
+ * @param item - 当前文件。 */ (maximum, item) => item.lines > maximum.lines ? item : maximum);
+  return { count: measured.length, longest, violations: measured.filter(/** 筛选超出行数限制的文件。
+ * @param item - 当前文件。 */ item => item.lines > pythonLineLimit) };
 }
 
 /** 打印真实测量及全部超限诊断，异常和超限均非零退出。 */

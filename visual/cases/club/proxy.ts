@@ -24,7 +24,8 @@ export const test = base.extend<{ clubRoomProxy: ClubVisualProxy; clubListProxy:
     const entries = readAuthStateEntries();
     const userId: unknown = JSON.parse(entries?.['save.user.origin.data.from.server.key'] || '{}').user_id;
     if (typeof userId !== 'string' || !userId) throw new Error('俱乐部列表场景缺少本轮登录账号');
-    await withMitmproxy(async proxy => {
+    await withMitmproxy(/** 选择有成员的俱乐部列表场景，并向测试提供代理和命中状态读取。
+ * @param proxy - 当前隔离的代理控制器。 */ async proxy => {
       await proxy.command('scenario', { scenario: 'club-list-populated', userId });
       await use({ server: proxy.server, network: proxy,
         /** 读取本轮列表和资料接口的命中次数。 */
@@ -37,7 +38,8 @@ export const test = base.extend<{ clubRoomProxy: ClubVisualProxy; clubListProxy:
    * @param use - 运行使用代理的截图用例。
    */
   clubRoomProxy: async ({}, use) => {
-    await withMitmproxy(async proxy => {
+    await withMitmproxy(/** 启用俱乐部视觉夹具，在代理生命周期内执行房间场景。
+ * @param proxy - 当前隔离的代理控制器。 */ async proxy => {
       await proxy.enableVisualFixtures();
       await use({
         server: proxy.server,

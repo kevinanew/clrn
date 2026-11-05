@@ -15,8 +15,11 @@ type Collected = { file: string; title: string; project: string };
  * @param suites - 实际配置收集出的文件和嵌套套件。
  */
 function collectedTests(suites: JSONReportSuite[]): Collected[] {
-  return suites.flatMap(suite => [
-    ...suite.specs.flatMap(spec => spec.tests.map(item => ({
+  return suites.flatMap(/** 递归展开 Playwright 报告套件，整理每个项目下的测试文件与标题。
+ * @param suite - 当前操作使用的 suite。 */ suite => [
+    ...suite.specs.flatMap(/** 展开当前条目对应的`spec.tests.map(item => ({ file: path.basename(spec.file), title: spec.title, project: item.projectName, }))`。
+ * @param spec - 当前操作使用的 spec。 */ spec => spec.tests.map(/** 将当前条目映射为`{ file: path.basename(spec.file), title: spec.title, project: item.projectName, }`。
+ * @param item - 当前遍历的条目。 */ item => ({
       file: path.basename(spec.file), title: spec.title, project: item.projectName,
     }))),
     ...collectedTests(suite.suites ?? []),
@@ -58,20 +61,31 @@ const ordinary: Record<string, string[]> = {
   'zhajinhua.spec.ts': ['zhajinhua panels animations', 'zhajinhua gameplay animations'],
 };
 
-test('普通动画实际收集保留全部原用例及桌面搜索排除，双视口均不收集独立对照', () => {
+test('普通动画实际收集保留全部原用例及桌面搜索排除，双视口均不收集独立对照', /** 验证普通动画实际收集保留全部原用例及桌面搜索排除，双视口均不收集独立对照。 */ () => {
   const actual = collect('playwright.config.ts');
-  const expected = ['mobile', 'desktop'].flatMap(project => Object.entries(ordinary)
-    .filter(([file]) => project !== 'desktop' || file !== 'search-prompt.spec.ts')
-    .flatMap(([file, titles]) => titles.map(title => ({ file, title, project }))));
-  assert.deepEqual(actual.map(item => JSON.stringify(item)).sort(), expected.map(item => JSON.stringify(item)).sort());
+  const expected = ['mobile', 'desktop'].flatMap(/** 为移动端和桌面端构造普通动画案例的预期收集清单。
+ * @param project - 当前操作使用的 project。 */ project => Object.entries(ordinary)
+    .filter(/** 仅保留满足以下条件的条目：`project !== 'desktop' || file !== 'search-prompt.spec.ts'`。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([file]) => project !== 'desktop' || file !== 'search-prompt.spec.ts')
+    .flatMap(/** 展开当前条目对应的`titles.map(title => ({ file, title, project }))`。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([file, titles]) => titles.map(/** 将当前条目映射为`{ file, title, project }`。
+ * @param title - 当前操作使用的 title。 */ title => ({ file, title, project }))));
+  assert.deepEqual(actual.map(/** 将当前条目映射为`JSON.stringify(item)`。
+ * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort(), expected.map(/** 将当前条目映射为`JSON.stringify(item)`。
+ * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort());
 });
 
-test('独立配置实际收集双视口的时钟及观察器开关对照及三遍重复，不继承普通项目的对照排除', () => {
+test('独立配置实际收集双视口的时钟及观察器开关对照及三遍重复，不继承普通项目的对照排除', /** 验证独立配置实际收集双视口的时钟及观察器开关对照及三遍重复，不继承普通项目的对照排除。 */ () => {
   for (const repeats of [1, 3]) {
     const actual = collect('cardSpriteControl.config.ts', repeats);
-    const expected = ['mobile', 'desktop'].flatMap(project => Array.from({ length: repeats }, () =>
-      [false, true].flatMap(callbacks => [0, 1].map(position => ({ file: 'cardSpriteControl.spec.ts',
+    const expected = ['mobile', 'desktop'].flatMap(/** 按项目及重复次数展开独立牌面时钟测试矩阵。
+ * @param project - 当前操作使用的 project。 */ project => Array.from({ length: repeats }, /** 展开有无生命周期回调和两种位置的时钟测试组合。 */ () =>
+      [false, true].flatMap(/** 为当前回调模式生成两种牌面位置的预期测试条目。
+ * @param callbacks - 当前操作使用的 callbacks。 */ callbacks => [0, 1].map(/** 将当前条目映射为`{ file: 'cardSpriteControl.spec.ts', title: independent card sprite clock ${position} callbacks ${callbacks}, project }`。
+ * @param position - 当前操作使用的 position。 */ position => ({ file: 'cardSpriteControl.spec.ts',
         title: `independent card sprite clock ${position} callbacks ${callbacks}`, project }))))).flat();
-    assert.deepEqual(actual.map(item => JSON.stringify(item)).sort(), expected.map(item => JSON.stringify(item)).sort());
+    assert.deepEqual(actual.map(/** 将当前条目映射为`JSON.stringify(item)`。
+ * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort(), expected.map(/** 将当前条目映射为`JSON.stringify(item)`。
+ * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort());
   }
 });

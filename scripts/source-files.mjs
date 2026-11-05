@@ -13,7 +13,8 @@ export const repository = dirname(dirname(fileURLToPath(import.meta.url)));
 export function sourceFiles(directory = repository) {
   const paths = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
     { cwd: directory, encoding: 'utf8' }).split('\0').filter(Boolean);
-  return [...new Set(paths)].filter(file =>
+  return [...new Set(paths)].filter(/** 排除依赖、报告、快照与已删除路径，保留实际存在的手写源码候选。
+ * @param file - 当前源码或资源路径。 */ file =>
     !/(?:^|\/)(?:node_modules|\.venv|test-results|playwright-report|blob-report|snapshots|\.ttyctl)(?:\/|$)/.test(file)
     && lstatSync(join(directory, file), { throwIfNoEntry: false }) !== undefined).sort();
 }

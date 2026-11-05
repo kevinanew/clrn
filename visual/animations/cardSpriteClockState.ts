@@ -11,7 +11,7 @@ type Snapshot = { status: 'observed'; running: boolean; virtualTime: number; tic
  * @param page - 仍存活的原始牌桌页面。
  */
 export async function cardSpriteClockState(page: Page): Promise<Snapshot> {
-  const snapshot: Snapshot = await page.evaluate(() => {
+  const snapshot: Snapshot = await page.evaluate(/** 校验页面时钟控制器并采集虚拟时间与待执行计时器的安全快照。 */ () => {
     const state = window as typeof window & { __pwClock?: { controller?: {
       _now?: { time: number; ticks: number }; _timers?: Map<number, {
         type: string; delay: number; callAt: number; createdAt: number; func: unknown;
@@ -22,20 +22,23 @@ export async function cardSpriteClockState(page: Page): Promise<Snapshot> {
     if (!controller?._now || !(controller._timers instanceof Map)) return { status: 'unsupported' as const };
     const { time, ticks } = controller._now;
     if (!Number.isFinite(time) || !Number.isFinite(ticks)) return { status: 'unsupported' as const };
-    const valid = Array.from(controller._timers.values()).every(timer =>
+    const valid = Array.from(controller._timers.values()).every(/** 确认全部计时器的类型、时间与回调字段符合支持的结构。
+ * @param timer - 当前操作使用的 timer。 */ timer =>
       ['Timeout', 'Interval', 'AnimationFrame', 'IdleCallback'].includes(timer.type)
       && Number.isFinite(timer.delay) && Number.isFinite(timer.callAt) && Number.isFinite(timer.createdAt)
       && ['function', 'string'].includes(typeof timer.func));
     if (!valid) return { status: 'unsupported' as const };
     return { status: 'observed' as const, running: Boolean(controller._realTime), virtualTime: time, ticks,
-      timers: Array.from(controller._timers, ([id, timer]) => ({ id, type: timer.type, delay: timer.delay,
+      timers: Array.from(controller._timers, /** 将计时器转换为包含剩余时间、存活时长与回调来源的快照。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([id, timer]) => ({ id, type: timer.type, delay: timer.delay,
         remaining: timer.callAt - ticks, age: ticks - timer.createdAt,
         callback: typeof timer.func === 'function' ? Function.prototype.toString.call(timer.func) : timer.func as string,
       })) };
-  }).catch(() => ({ status: 'unavailable' as const }));
+  }).catch(/** 时钟读取异常时返回不可用状态，保留原测试结果。 */ () => ({ status: 'unavailable' as const }));
   if (snapshot.status !== 'observed') return snapshot;
   // 回调代码仅在内存中求摘要，不保存源码、闭包、堆栈、参数或连接信息。
-  return { ...snapshot, timers: snapshot.timers.map(timer => ({ ...timer,
+  return { ...snapshot, timers: snapshot.timers.map(/** 将当前条目映射为`{ ...timer, callback: 'callback-' + createHash('sha256').update(timer.callback).digest('hex').slice(0, 16), }`。
+ * @param timer - 当前操作使用的 timer。 */ timer => ({ ...timer,
     callback: 'callback-' + createHash('sha256').update(timer.callback).digest('hex').slice(0, 16),
   })) };
 }

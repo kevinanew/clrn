@@ -33,7 +33,8 @@ type SignInValidationOptions = {
  */
 async function readPersistedAuth(page: Page): Promise<PersistedAuth | null> {
   return page
-    .evaluate((storageKey: string) => {
+    .evaluate(/** 安全解析认证缓存，只返回字段完整且类型合法的持久化登录态。
+ * @param storageKey - 当前操作使用的 storageKey。 */ (storageKey: string) => {
       const raw = window.localStorage.getItem(storageKey);
       if (!raw) {
         return null;
@@ -62,7 +63,7 @@ async function readPersistedAuth(page: Page): Promise<PersistedAuth | null> {
         return null;
       }
     }, USER_ATTRIBUTE_STORAGE_KEY)
-    .catch(() => null);
+    .catch(/** 读取失败时返回空值，保留调用方的缺失数据处理。 */ () => null);
 }
 
 /**
@@ -92,13 +93,15 @@ async function waitForRestoredAppSignIn(page: Page): Promise<'signedIn' | 'signe
     const signedOut = await page
       .locator('[data-testid="hall-sign-in-button"]:visible')
       .count()
-      .then((count) => count > 0)
-      .catch(() => false);
+      .then(/** 将异步结果转换为`count > 0`，供后续步骤使用。
+ * @param count - 当前操作使用的 count。 */ (count) => count > 0)
+      .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
     const appRestoredSignedIn = await page
       .locator('[data-testid="hall-auth-state-signed-in"]:visible')
       .count()
-      .then((count) => count > 0)
-      .catch(() => false);
+      .then(/** 将异步结果转换为`count > 0`，供后续步骤使用。
+ * @param count - 当前操作使用的 count。 */ (count) => count > 0)
+      .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
 
     if (appRestoredSignedIn && !signedOut) {
       signedInSince ??= Date.now();
@@ -143,10 +146,12 @@ export async function waitForSignInState(
       },
       timeout: requestTimeoutMs,
     })
-    .then((response: APIResponse) => ({ kind: 'response' as const, response }))
-    .catch((error: unknown) => ({ kind: 'error' as const, error }));
+    .then(/** 将异步结果转换为`{ kind: 'response' as const, response }`，供后续步骤使用。
+ * @param response - 当前收到的接口响应。 */ (response: APIResponse) => ({ kind: 'response' as const, response }))
+    .catch(/** 将账号请求异常转换为显式错误分支，交给会话竞态处理。
+ * @param error - 当前操作抛出的错误。 */ (error: unknown) => ({ kind: 'error' as const, error }));
 
-  const cacheCleared = (async () => {
+  const cacheCleared = (/** 轮询认证缓存是否被清除，使登出能及时终止等待中的会话核验。 */ async () => {
     while (!stopWatchingCache) {
       const current = await readPersistedAuth(page);
       if (!current) {

@@ -1,21 +1,22 @@
 import { expect, test } from '@playwright/test';
 import { openHall, openLoginForm, prepareContext, unique } from '../_shared/page';
 
-test('AUTH-008：登录必填与密码长度校验随输入、清空即时更新', async ({ page, context }) => {
+test('AUTH-008：登录必填与密码长度校验随输入、清空即时更新', /** 验证AUTH-008：登录必填与密码长度校验随输入、清空即时更新。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, context }) => {
   await prepareContext(context);
   await openHall(page);
   await openLoginForm(page);
   const username = await unique(page, 'username-input');
   const password = await unique(page, 'password-input');
   const submit = await unique(page, 'sign-in-button');
-  await test.step('空表单和短密码不能提交', async () => {
+  await test.step('空表单和短密码不能提交', /** 执行空表单和短密码不能提交。 */ async () => {
     await expect(submit).toHaveAttribute('aria-disabled', 'true');
     await username.fill('formcheck');
     await expect(submit).toHaveAttribute('aria-disabled', 'true');
     await password.fill('123456');
     await expect(submit).toHaveAttribute('aria-disabled', 'true');
   });
-  await test.step('有效输入启用提交，清空任一必填项再次禁用', async () => {
+  await test.step('有效输入启用提交，清空任一必填项再次禁用', /** 执行有效输入启用提交，清空任一必填项再次禁用。 */ async () => {
     await password.fill('formcheck123');
     await expect(submit).not.toHaveAttribute('aria-disabled', 'true');
     await username.clear();
@@ -27,7 +28,8 @@ test('AUTH-008：登录必填与密码长度校验随输入、清空即时更新
   });
 });
 
-test('AUTH-008：找回密码拒绝空邮箱和无效格式，修改后恢复', async ({ page, context }) => {
+test('AUTH-008：找回密码拒绝空邮箱和无效格式，修改后恢复', /** 验证AUTH-008：找回密码拒绝空邮箱和无效格式，修改后恢复。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, context }) => {
   await prepareContext(context);
   await openHall(page);
   await openLoginForm(page);

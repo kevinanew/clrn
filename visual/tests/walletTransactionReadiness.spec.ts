@@ -16,7 +16,9 @@ const remarks = ['申请买入金币', '房间退款', '入座买入金币', '�
  * @param fault - 本例需要重现的错误类型。
  */
 async function renderTransactions(page: Page, fault = ''): Promise<void> {
-  const rows = records.coin.map((record, index) => transactionRow(record, index, fault)).join('');
+  const rows = records.coin.map(/** 根据当前条目计算结果。
+ * @param record - 当前回调参数。
+ * @param index - 当前回调参数。 */ (record, index) => transactionRow(record, index, fault)).join('');
   await page.setContent(transactionLists(rows, fault));
 }
 
@@ -54,7 +56,8 @@ function listPosition(fault: string): string {
 function transactionRow(record: TransactionStatement, index: number, fault: string): string {
   const date = new Date(Date.parse(record.create_at) + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
   const values = { amount: transactionAmount(record), balance: `余额: ${record.balance}`, date, memo: remarks[index], ...faultyFields[fault] };
-  const fields = Object.entries(values).map(([name, value]) => `<span data-testid="CurrencyTransactionRecordItem_${name}">${value}</span>`).join('');
+  const fields = Object.entries(values).map(/** 根据当前条目计算结果。
+ * @param root0 - 当前回调参数。 */ ([name, value]) => `<span data-testid="CurrencyTransactionRecordItem_${name}">${value}</span>`).join('');
   return `<div data-testid="CurrencyTransactionRecordItem_container" style="height:100px">${fields}${transactionIdentifier(record)}</div>`;
 }
 

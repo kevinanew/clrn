@@ -21,7 +21,7 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
       .locator('[data-testid="hall-screen"]:visible, [data-testid="hall-tab"]:visible')
       .first()
       .isVisible()
-      .catch(() => false);
+      .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
     if (appShellVisible) {
       // 大厅已挂载后仍可能有异步接口失败弹窗。它会遮住登录入口，必须先关闭，
       // 否则登录态采集会卡在点击大厅“登录”。
@@ -37,8 +37,8 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
     // LaunchScreen 的代理初始化错误使用取消/重试弹窗；取消会绕过初始化，
     // 必须点最后一个「重试」按钮。持续失败仍由整体 deadline 明确终止。
     const startupRetry = page.locator('[data-testid="alert-custom-button"]:visible').last();
-    if (await startupRetry.isVisible().catch(() => false)) {
-      await startupRetry.click({ timeout: 3000, noWaitAfter: true }).catch(() => undefined);
+    if (await startupRetry.isVisible().catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false)) {
+      await startupRetry.click({ timeout: 3000, noWaitAfter: true }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
       await page.waitForTimeout(400);
       continue;
     }
@@ -49,8 +49,8 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
   // 超时后输出现场，方便定位是白屏、报错页还是弹窗卡住
   const currentUrl = page.url();
   const bodyText = await page
-    .evaluate(() => document.body?.innerText?.slice(0, 500) || '(empty body)')
-    .catch(() => '(evaluate failed)');
+    .evaluate(/** 在页面中读取`document.body?.innerText?.slice(0, 500) || '(empty body)'`，供测试判断当前界面状态。 */ () => document.body?.innerText?.slice(0, 500) || '(empty body)')
+    .catch(/** 页面状态读取失败时返回明确的诊断占位文本。 */ () => '(evaluate failed)');
   console.log(`DEBUG URL > ${currentUrl}`);
   console.log(`DEBUG BODY > ${bodyText}`);
 
@@ -64,22 +64,27 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
  */
 export async function dumpPageState(page: any, where: string): Promise<void> {
   const state = await page
-    .evaluate(() => {
+    .evaluate(/** 收集可读叶节点、测试标记与根容器信息，定位页面就绪失败。 */ () => {
       const texts = Array.from(document.querySelectorAll('div,span,p,button'))
-        .filter((el) => el.children.length === 0 && el.textContent?.trim())
+        .filter(/** 仅保留满足以下条件的条目：`el.children.length === 0 && el.textContent?.trim()`。
+ * @param el - 当前匹配的页面元素。 */ (el) => el.children.length === 0 && el.textContent?.trim())
         .slice(0, 30)
-        .map((el) => el.textContent?.trim().slice(0, 40));
+        .map(/** 将当前条目映射为`el.textContent?.trim().slice(0, 40)`。
+ * @param el - 当前匹配的页面元素。 */ (el) => el.textContent?.trim().slice(0, 40));
       const testIds = Array.from(document.querySelectorAll('[data-testid]'))
         .slice(0, 40)
-        .map((el) => el.getAttribute('data-testid'));
+        .map(/** 将当前条目映射为`el.getAttribute('data-testid')`。
+ * @param el - 当前匹配的页面元素。 */ (el) => el.getAttribute('data-testid'));
       // modal/弹窗一般挂在 #root 末尾，取根节点最后几个子树的摘要
       const root = document.getElementById('root');
       const tailSummaries = Array.from(root?.children[0]?.children || [])
         .slice(-4)
-        .map((el) => {
+        .map(/** 提取根容器末尾子树的标记和短文本，定位遮挡或异常弹层。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
           const ids = Array.from(el.querySelectorAll('[data-testid]'))
             .slice(0, 10)
-            .map((n) => n.getAttribute('data-testid'));
+            .map(/** 将当前条目映射为`n.getAttribute('data-testid')`。
+ * @param n - 当前生成项的索引。 */ (n) => n.getAttribute('data-testid'));
           const text = (el as HTMLElement).innerText?.trim().slice(0, 120) || '';
           return { ids, text };
         });
@@ -91,7 +96,7 @@ export async function dumpPageState(page: any, where: string): Promise<void> {
         tailSummaries,
       };
     })
-    .catch(() => null);
+    .catch(/** 读取失败时返回空值，保留调用方的缺失数据处理。 */ () => null);
   console.log(`DEBUG (${where}) > ${JSON.stringify(state)}`);
 }
 
@@ -114,7 +119,8 @@ export async function fillByTestId(page: any, testId: string, value: string): Pr
 async function inputByTestId(page: any, testId: string) {
   const target = page.locator(`[data-testid="${testId}"]`).first();
   await target.waitFor({ state: 'visible', timeout: 60000 });
-  const tagName = await target.evaluate((el: Element) => el.tagName);
+  const tagName = await target.evaluate(/** 在页面中读取`el.tagName`，供测试判断当前界面状态。
+ * @param el - 当前匹配的页面元素。 */ (el: Element) => el.tagName);
   return tagName === 'INPUT' || tagName === 'TEXTAREA'
     ? target
     : target.locator('input, textarea').first();
@@ -199,7 +205,7 @@ export async function ensureSignedIn(
   await dismissSignedInPopups(page);
   await hallSignIn.waitFor({ state: 'attached', timeout: 60000 });
   // 必须显式限时：对 Playwright 误判不可见的元素该调用会无限等待
-  await hallSignIn.scrollIntoViewIfNeeded({ timeout: 5000 }).catch(() => undefined);
+  await hallSignIn.scrollIntoViewIfNeeded({ timeout: 5000 }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
   await hallSignIn.click();
 
   const usernameEntry = page.locator('[data-testid="username-or-email-sign-in-button"]').first();
@@ -215,7 +221,8 @@ export async function ensureSignedIn(
   // 判断认证是否成功。
   try {
     await page.waitForFunction(
-      (storageKey: string) => {
+      /** 等待本地存储中出现包含用户和完整令牌的有效认证缓存。
+ * @param storageKey - 当前操作使用的 storageKey。 */ (storageKey: string) => {
         const raw = window.localStorage.getItem(storageKey);
         if (!raw) {
           return false;
@@ -238,7 +245,7 @@ export async function ensureSignedIn(
   }
 
   // 等登录 modal 完全关闭（遮罩会拦截底部 tab 的点击）
-  await usernameEntry.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => undefined);
+  await usernameEntry.waitFor({ state: 'hidden', timeout: 30000 }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
   await page.waitForTimeout(1500);
 }
 
@@ -269,8 +276,8 @@ export async function dismissSignedInPopups(page: any): Promise<void> {
     let closedAny = false;
     for (const selector of closeSelectors) {
       const closeButton = page.locator(selector).first();
-      if (await closeButton.isVisible().catch(() => false)) {
-        await closeButton.click().catch(() => undefined);
+      if (await closeButton.isVisible().catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false)) {
+        await closeButton.click().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
         await page.waitForTimeout(400);
         closedAny = true;
       }

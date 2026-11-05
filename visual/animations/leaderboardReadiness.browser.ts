@@ -20,35 +20,36 @@ const markup = `<button data-testid="texas-holdem-leaderboard-button">个人排�
     };
   </script>`;
 
-test('每次打开个人排行榜面板均等待两项新读取，任一响应先到都不能提前采样', async () => {
+test('每次打开个人排行榜面板均等待两项新读取，任一响应先到都不能提前采样', /** 验证每次打开个人排行榜面板均等待两项新读取，任一响应先到都不能提前采样。 */ async () => {
   const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
     ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
   try {
     const page = await browser.newPage();
     const pending = new Map<string, Route>();
-    await page.route(`${origin}/**`, route => {
+    await page.route(`${origin}/**`, /** 提供排行榜测试页面，并按请求方法挂起数据读取。
+ * @param route - 当前拦截的网络请求。 */ route => {
       if (new URL(route.request().url()).pathname === '/') return route.fulfill({ contentType: 'text/html', body: markup });
       pending.set(route.request().method(), route);
     });
     await page.goto(origin);
     await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
     await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
-    const before = await page.evaluate(() => Date.now());
-    await page.evaluate(() => {
-      void fetch('/v10/texas_holdem/room/fixture-room/player_statistics', { method: 'PUT' }).then(() => {
+    const before = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
+    await page.evaluate(/** 发起旧的统计请求，验证它不会满足本次打开排行榜的等待。 */ () => {
+      void fetch('/v10/texas_holdem/room/fixture-room/player_statistics', { method: 'PUT' }).then(/** 标记旧统计请求已结束，供本次请求归属断言使用。 */ () => {
         (window as typeof window & { staleReadFinished: boolean }).staleReadFinished = true;
       });
     });
-    await expect.poll(() => pending.has('PUT')).toBe(true);
+    await expect.poll(/** 重复读取`pending.has('PUT')`，直到满足外层等待断言。 */ () => pending.has('PUT')).toBe(true);
     const stale = pending.get('PUT')!;
     for (const order of [['PUT', 'GET'], ['GET', 'PUT']]) {
       pending.clear();
       let ready = false;
-      const opening = openPersonalLeaderboard(page, roomId, self).then(() => { ready = true; });
-      await expect.poll(() => pending.size).toBe(2);
+      const opening = openPersonalLeaderboard(page, roomId, self).then(/** 标记排行榜本次打开操作已完成就绪等待。 */ () => { ready = true; });
+      await expect.poll(/** 重复读取`pending.size`，直到满足外层等待断言。 */ () => pending.size).toBe(2);
       if (order[0] === 'PUT') {
         await stale.fulfill({ json: { ok: true, result: {} } });
-        await expect.poll(() => page.evaluate(() =>
+        await expect.poll(/** 重复读取`page.evaluate(() => (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`(window as typeof window & { staleReadFinished?: boolean }).staleReadFinished`，供测试判断当前界面状态。 */ () =>
           (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)).toBe(true);
         assert.equal(ready, false, '本次打开前发出的旧请求即使成功也不能作为就绪依据');
       }
@@ -59,18 +60,19 @@ test('每次打开个人排行榜面板均等待两项新读取，任一响应�
       await pending.get(order[1])!.fulfill({ json: { ok: true, result: {} } });
       await opening;
       await expect(page.locator('#completed')).toHaveText('2');
-      assert.equal(await page.evaluate(() => Date.now()), before, '准备读取不得推进动画相位');
+      assert.equal(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()), before, '准备读取不得推进动画相位');
     }
   } finally { await browser.close(); }
 });
 
-test('个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连接中断均须阻止后续采样', async () => {
+test('个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连接中断均须阻止后续采样', /** 验证个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连接中断均须阻止后续采样。 */ async () => {
   const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
     ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
   try {
     for (const mode of ['http', 'business', 'json', 'abort']) {
       const page = await browser.newPage();
-      await page.route(`${origin}/**`, route => {
+      await page.route(`${origin}/**`, /** 按路径控制排行榜请求的成功、失败与延迟，验证真实错误传播。
+ * @param route - 当前拦截的网络请求。 */ route => {
         const path = new URL(route.request().url()).pathname;
         if (path === '/') return route.fulfill({ contentType: 'text/html', body: markup });
         if (!path.endsWith('/player_statistics')) return route.fulfill({ json: { ok: true, result: {} } });
@@ -81,9 +83,10 @@ test('个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连�
       });
       await page.goto(origin);
       await page.clock.install();
-      await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+      await page.clock.pauseAt(await page.evaluate(/** 在页面中读取`Date.now() + 1000`，供测试判断当前界面状态。 */ () => Date.now() + 1000));
       let sampled = false;
-      await assert.rejects(openPersonalLeaderboard(page, roomId, self).then(() => { sampled = true; }), error => {
+      await assert.rejects(openPersonalLeaderboard(page, roomId, self).then(/** 标记排行榜已采样，排除未就绪时提前返回。 */ () => { sampled = true; }), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => {
         assert.match(String(error), /个人排行榜数据准备失败：method=PUT operation=leaderboard-statistics/);
         assert.match(String(error), mode === 'http' ? /status=503/ : mode === 'abort'
           ? /source=laiwan_prd status=unavailable response=not-received/ : /status=200/);

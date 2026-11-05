@@ -25,7 +25,7 @@ type Capture = (page: Page, scenario: VisualScenario, state: string) => Promise<
  */
 export async function captureGameplay(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   roomId: string, capture: Capture): Promise<void> {
-  const self = await page.evaluate(() => JSON.parse(
+  const self = await page.evaluate(/** 在页面中读取`JSON.parse( localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(
     localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
   // 连接成功后控制页面时钟；每步只推进确定时长，固定倒计时和筹码动画。
   await freezeClock(page);
@@ -63,7 +63,8 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   await visible(page, 'texas-holdem-operation-accurate-bet-button').click();
   await expect(visible(page, 'accurate-bet-popup-container')).toBeVisible();
   await snapshot('accurate_raise');
-  await visible(page, 'screen-mask-touch-to-close').evaluate(node => (node as HTMLElement).click());
+  await visible(page, 'screen-mask-touch-to-close').evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
 
   await restore('river', true);
   // 恢复对手计时不会切换操作面板，需真实 switch_player 消息才能显示预选操作。
@@ -109,9 +110,10 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   await snapshot('statistics_help');
   await page.clock.runFor(6000);
   // Toast 退场后仍保留 DOM，用实际视口交集判断提示已经移出画面。
-  await expect.poll(async () => {
+  await expect.poll(/** 推进页面时钟并等待操作提示完全离开视口。 */ async () => {
     await page.clock.runFor(250);
-    return visible(page, 'toastText1').evaluate(node => {
+    return visible(page, 'toastText1').evaluate(/** 根据提示边界判断其是否已从视口上方或下方移出。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
       const rect = node.getBoundingClientRect();
       return rect.bottom <= 0 || rect.top >= innerHeight;
     });

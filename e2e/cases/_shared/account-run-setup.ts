@@ -8,7 +8,7 @@ export default function setupAccountRun(): () => void {
   chmodSync(directory, 0o700);
   process.env.E2E_ACCOUNT_RUN_DIR = directory;
   // 返回全局 teardown，即使测试失败也清理凭据，不放进报告目录。
-  return () => {
+  return /** 删除本轮账号运行目录并清除对应环境变量。 */ () => {
     rmSync(directory, { recursive: true, force: true });
     delete process.env.E2E_ACCOUNT_RUN_DIR;
   };

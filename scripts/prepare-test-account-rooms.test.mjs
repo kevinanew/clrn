@@ -15,7 +15,9 @@ const room = { room_id: '33333333-2222-4333-8444-555555555555', room_name: 'Test
  */
 function network(context, replies) {
   const requests = [];
-  context.mock.method(globalThis, 'fetch', async (url, options) => {
+  context.mock.method(globalThis, 'fetch', /** 记录房间清理请求，按队列返回预设结果并拒绝额外请求。
+ * @param url - 当前操作使用的 url。
+ * @param options - 当前操作使用的 options。 */ async (url, options) => {
     requests.push({ url, ...options });
     assert.ok(requests.length <= replies.length, '不得发出未预期请求');
     const reply = replies[requests.length - 1];
@@ -25,20 +27,24 @@ function network(context, replies) {
   return requests;
 }
 
-test('空私人房只检查归属及列表，不执行删除', async context => {
+test('空私人房只检查归属及列表，不执行删除', /** 验证空私人房只检查归属及列表，不执行删除。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const requests = network(context, [house, []]);
   await prepareTestAccountRooms(session);
-  assert.deepEqual(requests.map(request => request.method), ['PUT', 'PUT']);
+  assert.deepEqual(requests.map(/** 将当前条目映射为`request.method`。
+ * @param request - 当前发出的接口请求。 */ request => request.method), ['PUT', 'PUT']);
   assert.deepEqual(JSON.parse(requests[1].body), { building_ids: [house.house_id] });
 });
 
-test('本账号空闲测试房必须复查详情、删除并回读为空', async context => {
+test('本账号空闲测试房必须复查详情、删除并回读为空', /** 验证本账号空闲测试房必须复查详情、删除并回读为空。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   for (const name of ['TestRoom', 'E2E私局m123abc']) {
     const current = { ...room, room_name: name };
     // 真实列表响应省略官方标志，删除资格必须由详情里的明确 false 补齐。
     const requests = network(context, [house, [{ ...current, is_official: undefined }], current, undefined, []]);
     await prepareTestAccountRooms(session);
-    assert.deepEqual(requests.map(request => [new URL(request.url).pathname, request.method]), [
+    assert.deepEqual(requests.map(/** 将当前条目映射为`[new URL(request.url).pathname, request.method]`。
+ * @param request - 当前发出的接口请求。 */ request => [new URL(request.url).pathname, request.method]), [
       [`/v10/house/user/${session.userId}`, 'PUT'], ['/v2/building/rooms', 'PUT'],
       [`/v1/room/${room.room_id}`, 'GET'], [`/v1/room/${room.room_id}`, 'DELETE'], ['/v2/building/rooms', 'PUT'],
     ]);
@@ -53,7 +59,8 @@ test('本账号空闲测试房必须复查详情、删除并回读为空', async
   }
 });
 
-test('会话或房屋归属不符时立即停止', async context => {
+test('会话或房屋归属不符时立即停止', /** 验证会话或房屋归属不符时立即停止。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const requests = network(context, [{ ...house, user_id: house.house_id }]);
   for (const invalid of [undefined, {}, { ...session, userId: '../other' }, { ...session, authorization: 'Bearer secret\n' }]) {
     await assert.rejects(prepareTestAccountRooms(invalid), /有效账号会话/);
@@ -63,7 +70,8 @@ test('会话或房屋归属不符时立即停止', async context => {
   assert.equal(requests.length, 1);
 });
 
-test('陌生房间、其他归属、有人入座、已开局或不完整数据都不能自动删除', async context => {
+test('陌生房间、其他归属、有人入座、已开局或不完整数据都不能自动删除', /** 验证陌生房间、其他归属、有人入座、已开局或不完整数据都不能自动删除。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   for (const changes of [
     { room_name: '私人房' }, { room_name: undefined }, { room_id: '../other' },
     { creator_id: house.house_id }, { building_id: session.userId }, { building_type: 'club' },
@@ -83,7 +91,8 @@ test('陌生房间、其他归属、有人入座、已开局或不完整数据�
   }
 });
 
-test('删除前状态变化必须停止，清理后仍有房间也必须失败', async context => {
+test('删除前状态变化必须停止，清理后仍有房间也必须失败', /** 验证删除前状态变化必须停止，清理后仍有房间也必须失败。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   for (const current of [{ ...room, seat_occupied: 1 }, { ...room, room_id: house.house_id },
     { ...room, is_official: undefined }, { ...room, is_official: true }, null]) {
     const requests = network(context, [house, [room], current]);
@@ -95,13 +104,15 @@ test('删除前状态变化必须停止，清理后仍有房间也必须失败',
   await assert.rejects(prepareTestAccountRooms(session), /operation=prepare-room-verify .*status=200 .*reason=invalid-response/);
 });
 
-test('任一网络或业务失败都会停止且错误中不泄露会话', async context => {
+test('任一网络或业务失败都会停止且错误中不泄露会话', /** 验证任一网络或业务失败都会停止且错误中不泄露会话。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const replies = [house, [room], room, undefined, []];
   for (const stage of [0, 1, 2, 3, 4]) {
     for (const failure of [new Error(session.authorization), new Response(session.authorization, { status: 503 }),
       new Response(session.authorization), Response.json({ ok: false })]) {
       const requests = network(context, [...replies.slice(0, stage), failure]);
-      await assert.rejects(prepareTestAccountRooms(session), error => {
+      await assert.rejects(prepareTestAccountRooms(session), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => {
         assert.match(error.message, /失败：method=(PUT|GET|DELETE) operation=prepare-room-[a-z]+ source=laiwan_prd status=/);
         assert.match(error.message, failure instanceof Error ? /status=unavailable response=not-received/
           : new RegExp(`status=${failure.status} response=received`));

@@ -34,18 +34,19 @@ function probe(complexity) {
  * @returns 是否包含超限错误。
  */
 function hasComplexity(diagnostics) {
-  return diagnostics.some(message => message.ruleId === 'complexity');
+  return diagnostics.some(/** 根据当前条目计算结果。
+ * @param message - 当前回调参数。 */ message => message.ruleId === 'complexity');
 }
 
 for (const file of visualSupportFiles) {
-  test(`${file} 明确适用测试/辅助上限 3`, async () => {
+  test(`${file} 明确适用测试/辅助上限 3`, /** 执行当前测试或处理逻辑。 */ async () => {
     assert.equal(hasComplexity(await messages(probe(3), file)), false);
     assert.equal(hasComplexity(await messages(probe(4), file)), true);
   });
 }
 
 for (const file of [...visualToolFiles, 'eslint.config.mjs', 'scripts/visual-complexity.mjs']) {
-  test(`${file} 明确适用独立工具/配置上限 6`, async () => {
+  test(`${file} 明确适用独立工具/配置上限 6`, /** 执行当前测试或处理逻辑。 */ async () => {
     assert.equal(hasComplexity(await messages(probe(6), file)), false);
     assert.equal(hasComplexity(await messages(probe(7), file)), true);
   });
@@ -58,27 +59,29 @@ for (const source of [
   'export const probe = function(x = 0) { return x?.a?.b; };',
   'export const probe = (x = 0) => x || a && b;',
 ]) {
-  test(`嵌套回调、方法和语法分支均计数：${source}`, async () => {
+  test(`嵌套回调、方法和语法分支均计数：${source}`, /** 执行当前测试或处理逻辑。 */ async () => {
     assert.equal(hasComplexity(await messages(source, 'visual/run-visual-config.ts')), true);
   });
 }
 
 for (const directive of ['/* eslint-disable */', '/* eslint-disable complexity, quality/no-quality-disable */',
   '/* eslint complexity: ["error", 99] */']) {
-  test(`禁用注释不能绕过门禁：${directive}`, async () => {
+  test(`禁用注释不能绕过门禁：${directive}`, /** 执行当前测试或处理逻辑。 */ async () => {
     const diagnostics = await messages(`${directive}\n${probe(4)}`, 'visual/scenarios.ts');
     assert.equal(hasComplexity(diagnostics), true);
-    assert.ok(diagnostics.some(message => message.ruleId === 'quality/no-quality-disable'));
+    assert.ok(diagnostics.some(/** 根据当前条目计算结果。
+ * @param message - 当前回调参数。 */ message => message.ruleId === 'quality/no-quality-disable'));
   });
 }
 
-test('独立门禁保留解析失败和缺失文件错误', async () => {
+test('独立门禁保留解析失败和缺失文件错误', /** 执行当前测试或处理逻辑。 */ async () => {
   const diagnostics = await messages('export function (', 'visual/scenarios.ts');
-  assert.ok(diagnostics.some(message => message.fatal));
+  assert.ok(diagnostics.some(/** 根据当前条目计算结果。
+ * @param message - 当前回调参数。 */ message => message.fatal));
   await assert.rejects(checkVisualComplexity(['visual/missing-complexity-probe.ts']), /No files matching/);
 });
 
-test('检查入口缺失依赖时非零退出，lint、pre-commit 和 CI 保留调用链', () => {
+test('检查入口缺失依赖时非零退出，lint、pre-commit 和 CI 保留调用链', /** 执行当前测试或处理逻辑。 */ () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'visual-complexity-missing-dependency-'));
   try {
     const entry = path.join(directory, 'visual-complexity.mjs');

@@ -7,8 +7,9 @@ import type { VisualScenario } from '../../scenarioTypes';
  * @param page - 执行操作的 Playwright 页面。
  */
 export async function stabilizeVideos(page: Page): Promise<void> {
-  await page.evaluate(async () => {
-    document.querySelectorAll('[data-testid="video-background-image"]').forEach((el) => {
+  await page.evaluate(/** 停止背景图动画并暂停隐藏视频，消除动态背景截图差异。 */ async () => {
+    document.querySelectorAll('[data-testid="video-background-image"]').forEach(/** 清除背景图片的动画和变换，固定背景位置。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
       const htmlEl = el as HTMLElement;
       htmlEl.style.animation = 'none';
       htmlEl.style.transform = 'none';
@@ -21,8 +22,10 @@ export async function stabilizeVideos(page: Page): Promise<void> {
 
     await Promise.all(
       videos.map(
-        (video) =>
-          new Promise<void>((resolve) => {
+        /** 为当前视频等待加载并执行固定播放状态的操作。
+ * @param video - 当前操作使用的 video。 */ (video) =>
+          new Promise<void>(/** 在视频就绪、失败或等待到期时完成稳定化并解除等待。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
             /** 暂停页面视频并固定播放位置，消除动态帧造成的截图变化。 */
             const stabilize = () => {
               video.pause();
@@ -55,8 +58,9 @@ export async function stabilizeVideos(page: Page): Promise<void> {
  * @param page - 执行操作的 Playwright 页面。
  */
 export async function stabilizeBackdropFilter(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    document.querySelectorAll('*').forEach((el) => {
+  await page.evaluate(/** 遍历页面中使用背景滤镜的节点，固定其渲染样式。 */ () => {
+    document.querySelectorAll('*').forEach(/** 对当前带背景滤镜的节点应用确定性样式，消除合成差异。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
       const style = window.getComputedStyle(el);
       const backdrop =
         style.backdropFilter ||
@@ -71,9 +75,10 @@ export async function stabilizeBackdropFilter(page: Page): Promise<void> {
   });
 
   await page.evaluate(
-    () =>
-      new Promise<void>((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    /** 在页面中读取`new Promise<void>((resolve) => { requestAnimationFrame(() => requestAnimationFrame(() => resolve())); })`，供测试判断当前界面状态。 */ () =>
+      new Promise<void>(/** 等待两个浏览器动画帧，使样式修改完成布局提交。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
+        requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => resolve()));
       }),
   );
 }
@@ -86,13 +91,14 @@ export async function stabilizeBackdropFilter(page: Page): Promise<void> {
  * @param page - 执行操作的 Playwright 页面。
  */
 export async function alignPersonalHouseTitlesToDevicePixels(page: Page): Promise<void> {
-  await page.evaluate(() => {
+  await page.evaluate(/** 将私人房入口标题的布局偏移对齐到整数像素。 */ () => {
     document
       .querySelectorAll(
         '[data-testid="personal-house-create-title-container"], ' +
           '[data-testid="personal-house-join-title-container"]',
       )
-      .forEach((el) => {
+      .forEach(/** 根据当前标题位置计算像素校正量并设置平移。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
         const node = el as HTMLElement;
         const rect = node.getBoundingClientRect();
         const offsetX = Math.round(rect.x) - rect.x;
@@ -117,7 +123,8 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
   }
 
   await page.evaluate(
-    ({
+    /** 安装文本和隐藏元素稳定化逻辑，并在 DOM 更新后重新应用。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({
       fixedTexts,
       hideSelectors,
     }: {
@@ -126,8 +133,10 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
     }) => {
       /** 写入场景固定文案并隐藏动态元素，在 DOM 更新后重新应用。 */
       const apply = () => {
-        fixedTexts.forEach(({ selector, text }) => {
-          document.querySelectorAll(selector).forEach((el) => {
+        fixedTexts.forEach(/** 为当前固定文案规则查找全部目标节点并更新显示内容。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ selector, text }) => {
+          document.querySelectorAll(selector).forEach(/** 根据节点类型写入输入框值或文本内容，保留相同内容不重复更新。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
             // RN Web 单行 TextInput 渲染成 <input>，textContent 对其无视觉效果，必须改设 value
             if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
               if (el.value !== text) {
@@ -139,8 +148,10 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
           });
         });
 
-        hideSelectors.forEach((selector) => {
-          document.querySelectorAll(selector).forEach((el) => {
+        hideSelectors.forEach(/** 遍历当前隐藏规则匹配的全部节点。
+ * @param selector - 当前操作使用的 selector。 */ (selector) => {
+          document.querySelectorAll(selector).forEach(/** 为目标元素设置最高优先级隐藏样式，避免动态内容进入截图。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
             const node = el as HTMLElement;
             if (
               node.style.display !== 'none' ||
@@ -179,7 +190,7 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
  * @param page - 执行操作的 Playwright 页面。
  */
 export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
-  await page.evaluate(async () => {
+  await page.evaluate(/** 等待当前画面中的实际图片完成加载与必要重试，排除保留的隐藏页面。 */ async () => {
     /**
      * 不检查保留在页面结构中、但当前画面不可见的其他界面图片。
      * 可见牌面的图集在加载期间透明，仍须等待其实际图片。
@@ -199,7 +210,8 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
      * 等待图片请求结束，之后仍以实际解码尺寸决定是否通过。
      * @param img - 待检查的页面图片。
      */
-    const waitForImage = (img: HTMLImageElement) => new Promise<void>((resolve) => {
+    const waitForImage = (img: HTMLImageElement) => new Promise<void>(/** 临时监听图片加载和失败事件，结束或超时后移除监听器。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
       let timeout = 0;
       /** 保留应用原有的加载回调，结束等待后移除临时监听。 */
       const finish = () => {
@@ -213,9 +225,11 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
       timeout = window.setTimeout(finish, 10000);
     });
     const initialImages = currentImages();
-    await Promise.all(initialImages.filter((img) => !img.complete).map(waitForImage));
+    await Promise.all(initialImages.filter(/** 仅保留满足以下条件的条目：`!img.complete`。
+ * @param img - 当前操作使用的 img。 */ (img) => !img.complete).map(waitForImage));
     await Promise.all(currentImages()
-      .filter((img) => !initialImages.includes(img) && !img.complete)
+      .filter(/** 仅保留满足以下条件的条目：`!initialImages.includes(img) && !img.complete`。
+ * @param img - 当前操作使用的 img。 */ (img) => !initialImages.includes(img) && !img.complete)
       .map(waitForImage));
 
     // `img.complete` 在加载失败时同样为 true。远端头像允许失败，但同源构建
@@ -240,7 +254,8 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
     };
     // 本地代理偶尔会在并发取图时关闭连接。只对失败的同源图片重新请求一次；
     // 如果文件缺失或内容无法解码，第二次仍会在下面报错。
-    await Promise.all(currentImages().filter(isFailedLocalImage).map(async (img) => {
+    await Promise.all(currentImages().filter(isFailedLocalImage).map(/** 对失败的本地图片添加一次性重试参数并等待重载完成。
+ * @param img - 当前操作使用的 img。 */ async (img) => {
       const url = new URL(img.src, window.location.href);
       if (url.searchParams.has('__clrn_retry')) return;
       url.searchParams.set('__clrn_retry', '1');
@@ -252,7 +267,8 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
     if (failedLocalImages.length > 0) {
       const failedSources = failedLocalImages
         .slice(0, 5)
-        .map((img) => new URL(img.src, window.location.href).pathname);
+        .map(/** 将当前条目映射为`new URL(img.src, window.location.href).pathname`。
+ * @param img - 当前操作使用的 img。 */ (img) => new URL(img.src, window.location.href).pathname);
       throw new Error(`本地图片加载失败: ${failedSources.join(', ')}`);
     }
   });
@@ -267,7 +283,8 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
  * @param width - 预期的页面宽度，单位为像素。
  */
 export async function lockPageWidth(page: Page, width: number): Promise<void> {
-  await page.evaluate((viewportWidth: number) => {
+  await page.evaluate(/** 限制页面与可裁切节点宽度，避免水平溢出改变截图尺寸。
+ * @param viewportWidth - 当前操作使用的 viewportWidth。 */ (viewportWidth: number) => {
     /**
      * 固定元素宽度及最大宽度，防止内容溢出改变截图视口。
      * @param el - 需要固定宽度的 DOM 元素。
@@ -279,7 +296,8 @@ export async function lockPageWidth(page: Page, width: number): Promise<void> {
     };
     lock(document.documentElement);
     lock(document.body);
-    document.querySelectorAll('*').forEach((el) => {
+    document.querySelectorAll('*').forEach(/** 固定普通溢出节点宽度，保留俱乐部和钱包双页轨道的原始布局。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
       // 俱乐部通过平移双页轨道显示当前页。轨道宽度必须保留为两页之和，
       // 否则第二页会被新增的 overflow 裁掉；页面视口及应用自身容器负责裁切。
       if (el.closest('[data-testid="club-tab-screen"]')) {
@@ -341,7 +359,8 @@ export async function assertMatchingArtworkVisible(page: Page): Promise<void> {
  * @param ready - 当前可见页面的就绪标记。
  */
 export async function scrollVisualReadyElementIntoView(ready: Locator): Promise<void> {
-  const visibleLongContainer = await ready.evaluate((element) => {
+  const visibleLongContainer = await ready.evaluate(/** 判断就绪元素是否高于视口且顶部已可见，避免不必要的滚动。
+ * @param element - 当前匹配的页面元素。 */ (element) => {
     const bounds = element.getBoundingClientRect();
     return bounds.height > window.innerHeight && bounds.top >= 0 && bounds.top < window.innerHeight;
   });

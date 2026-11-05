@@ -34,20 +34,24 @@ export const test = base.extend<{ newAccount: CreationAccount }>({
         operation = 'creation-account-state';
         const state = JSON.parse(await readFile(stateFile, 'utf8')) as Awaited<ReturnType<BrowserContext['storageState']>>;
         const origin = new URL(environment.stagingUrl).origin;
-        const local = state.origins.find(entry => entry.origin === origin);
+        const local = state.origins.find(/** 查找满足以下条件的首个条目：`entry.origin === origin`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.origin === origin);
         if (!local) throw new Error('缺少 staging 创建账号状态');
-        const raw = local.localStorage.find(entry => entry.name === 'save.user.origin.data.from.server.key');
+        const raw = local.localStorage.find(/** 查找满足以下条件的首个条目：`entry.name === 'save.user.origin.data.from.server.key'`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.name === 'save.user.origin.data.from.server.key');
         const auth = raw ? JSON.parse(raw.value) : null;
         if (!auth?.user_id || !auth?.username || !auth?.api_token?.access_token || !auth?.api_token?.token_type) {
           throw new Error('创建账号状态不完整');
         }
         username = auth.username;
-        await context.addInitScript(({ origin, entries }) => {
+        await context.addInitScript(/** 仅在指定来源注入创建账号所需的本地存储项。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ origin, entries }) => {
           if (location.origin === origin) {
             for (const { name, value } of entries) localStorage.setItem(name, value);
           }
         }, { origin, entries: local.localStorage });
-        const accountResponse = page.waitForResponse(response => {
+        const accountResponse = page.waitForResponse(/** 匹配`/v11/user/${encodeURIComponent(auth.user_id)}/account` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ response => {
           const url = new URL(response.url());
           return url.protocol === 'https:' && url.hostname.endsWith('.api.staging.laiwan.shafayouxi.com')
             && url.pathname === `/v11/user/${encodeURIComponent(auth.user_id)}/account`;
@@ -73,11 +77,11 @@ export const test = base.extend<{ newAccount: CreationAccount }>({
       operation = 'creation-account-notices';
       await clickAfterSignInNotices(page, 'hall-tab');
     } catch (error) {
-      await page.close().catch(() => undefined);
+      await page.close().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
       throw accountPreparationError(error, operation);
     }
     await setCreationDiamondBalance(session, walletToken);
-    await expect.poll(() => readDiamondBalance(page, session), {
+    await expect.poll(/** 重复读取`readDiamondBalance(page, session)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, session), {
       message: '创建用例开始前应有 60 钻',
     }).toBe(60);
     const account: CreationAccount = { ...session, username, diamondBalance: 60 };

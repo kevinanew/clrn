@@ -21,7 +21,8 @@ const parts: Record<Exclude<typeof selected, 'all'>, Record<string, { files: str
     'card-sprite-control': { files: ['cardSpriteControl.spec.ts'] },
     social: { files: ['texas.spec.ts'], grep: 'texas (social|assets) animations' },
   },
-  zhajinhua: Object.fromEntries(['panels', 'gameplay'].map(part => [part,
+  zhajinhua: Object.fromEntries(['panels', 'gameplay'].map(/** 将当前条目映射为`[part, { files: ['zhajinhua.spec.ts'], grep: zhajinhua ${part} animations }]`。
+ * @param part - 当前操作使用的 part。 */ part => [part,
     { files: ['zhajinhua.spec.ts'], grep: `zhajinhua ${part} animations` }])),
 };
 const selectedPart = process.env.ANIMATION_PART || 'all';

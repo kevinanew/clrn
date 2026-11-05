@@ -13,8 +13,10 @@ import { visible } from './capture';
 import { capturePreGame } from './preGame';
 import { captureGameplay } from './gameplay';
 
-for (const scenario of buildScenarios().filter(item => item.group === 'zhajinhua')) {
-  test(scenario.label, async ({ browser, mitmproxy }) => {
+for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'zhajinhua'`。
+ * @param item - 当前遍历的条目。 */ item => item.group === 'zhajinhua')) {
+  test(scenario.label, /** 创建隔离的炸金花场景上下文，准备房间并执行截图验证。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ browser, mitmproxy }) => {
     const context = await browser.newContext({
       ...zhajinhuaProxyOptions(mitmproxy), viewport: scenario.viewport,
       locale: 'en-US', deviceScaleFactor: 1,
@@ -23,7 +25,8 @@ for (const scenario of buildScenarios().filter(item => item.group === 'zhajinhua
     bindScenarioProxy(context, mitmproxy.network);
     const page = await context.newPage();
     const diagnostics = await installConnectionDiagnostics(context, page, test.info(), mitmproxy);
-    page.on('pageerror', error => console.error(`ZHAJINHUA PAGE ERROR > ${diagnosticText(error.message)}`));
+    page.on('pageerror', /** 输出脱敏的炸金花页面运行错误。
+ * @param error - 当前操作抛出的错误。 */ error => console.error(`ZHAJINHUA PAGE ERROR > ${diagnosticText(error.message)}`));
     let room: RoomSession | undefined;
     try {
       await setupContextForScenario(context, scenario, page);
@@ -35,7 +38,8 @@ for (const scenario of buildScenarios().filter(item => item.group === 'zhajinhua
       const status = await mitmproxy.status();
       expect(status.proxiedRequests).toBeGreaterThan(0);
       console.log(`MITMPROXY > requests=${status.proxiedRequests}, stabilized=${status.stabilizedRequests}`);
-      room = await createPrivateGameRoom(page, created => {
+      room = await createPrivateGameRoom(page, /** 保存新建炸金花房间的标识与安全诊断，支持中断后的清理核查。
+ * @param created - 当前操作使用的 created。 */ created => {
         room = created;
         recordDiagnostic(page, '建房成功', { roomId: created.roomId, node: diagnosticNode(created.apiOrigin) });
         writeFileSync(test.info().outputPath('created-room.json'), JSON.stringify({
@@ -44,7 +48,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'zhajinhua
       }, 'zhajinhua');
       console.log('ZHAJINHUA > 本次私人房创建成功');
       await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
-      await expect.poll(async () => {
+      await expect.poll(/** 等待炸金花开局入口，连接失败时点击应用重试按钮。 */ async () => {
         if (await visible(page, 'zhajinhua-start-room-timer-button').isVisible()) return true;
         const retry = visible(page, 'common-alert-button-retry');
         if (await retry.isVisible()) { recordDiagnostic(page, '点击应用重试按钮'); await retry.click(); }
@@ -55,13 +59,14 @@ for (const scenario of buildScenarios().filter(item => item.group === 'zhajinhua
       await expect(visible(page, 'menu-button')).toBeVisible();
       console.log('ZHAJINHUA > 等待牌桌已就绪');
       if (gameplay) {
-        await page.clock.pauseAt(await page.evaluate(() => Date.now()) + 1000);
+        await page.clock.pauseAt(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()) + 1000);
         await captureGameplay(page, scenario, mitmproxy, room.roomId);
       } else await capturePreGame(page, scenario);
       await diagnostics.save();
     } catch (error) {
-      await diagnostics.save(error).catch(failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
-      await page.screenshot({ path: test.info().outputPath('failure.png'), timeout: 5000 }).catch(() => undefined);
+      await diagnostics.save(error).catch(/** 记录炸金花诊断附件保存失败，保留原始案例结果。
+ * @param failure - 当前操作使用的 failure。 */ failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
+      await page.screenshot({ path: test.info().outputPath('failure.png'), timeout: 5000 }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
       if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
       throw error;
     } finally {

@@ -18,9 +18,9 @@ import { zhajinhuaFeedback } from './zhajinhuaFeedback';
 export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaProxy, info: TestInfo): Promise<void> {
   const { page, roomId, self, clip } = session;
   await freeze(page);
-  await expect.poll(async () => {
+  await expect.poll(/** 推进页面时钟并尝试恢复代理牌桌，直到重放成功。 */ async () => {
     await page.clock.runFor(250);
-    return proxy.replay(roomId, restoreTable(self)).then(() => true, () => false);
+    return proxy.replay(roomId, restoreTable(self)).then(/** 将异步结果转换为`true`，供后续步骤使用。 */ () => true, /** 将异步结果转换为`false`，供后续步骤使用。 */ () => false);
   }, { timeout: 30_000, message: '拼三张房间应完成订阅并接受回放' }).toBe(true);
   await page.clock.runFor(3200);
   await expect(page.locator('[data-testid^="zhajinhua-player-container-"]:visible')).toHaveCount(5);
@@ -76,7 +76,7 @@ export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaP
   await ensureLocalImagesLoaded(page);
   for (const face of await faces.all()) await expect(face).toHaveCSS('opacity', '1');
   await captureTimeline(page, info, 'zhajinhua-showdown', page.getByTestId('run-game-view'), { clip });
-  await page.evaluate(() => {
+  await page.evaluate(/** 保存原随机函数并安装确定性粒子随机序列，保持金币轨迹各不相同。 */ () => {
     const state = window as typeof window & { animationParticleRandom?: typeof Math.random };
     state.animationParticleRandom = Math.random;
     let seed = 0x51f15e;
@@ -90,7 +90,7 @@ export async function zhajinhuaGameplay(session: TableSession, proxy: ZhajinhuaP
     await captureTimeline(page, info, 'zhajinhua-settlement', page.getByTestId('run-game-view'),
       { clip, times: [0, 160, 320, 800, 1600, 2800] });
   } finally {
-    await page.evaluate(() => {
+    await page.evaluate(/** 恢复原随机函数并清理炸金花粒子场景的临时状态。 */ () => {
       const state = window as typeof window & { animationParticleRandom?: typeof Math.random };
       if (state.animationParticleRandom) Math.random = state.animationParticleRandom;
       delete state.animationParticleRandom;

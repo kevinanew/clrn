@@ -17,7 +17,7 @@ const response = (body: unknown, ok = true) => ({
   json: async () => body }) as Response;
 
 for (const currency of ['coin', 'diamond'] as const) {
-  test(`流水响应校验：${currency} 接受有效和空数据，拒绝业务失败、错币种及无效结构`, async () => {
+  test(`流水响应校验：${currency} 接受有效和空数据，拒绝业务失败、错币种及无效结构`, /** 验证流水响应校验：$\{currency\} 接受有效和空数据，拒绝业务失败、错币种及无效结构。 */ async () => {
     const valid = { ...statement, currency_name: currency };
     const body = { ok: true, result: { currency_name: currency, statements: [valid] } };
     expect(await readStatements(response(body), currency)).toEqual([valid]);
@@ -35,7 +35,8 @@ for (const currency of ['coin', 'diamond'] as const) {
         { ...valid, currency_name: currency === 'coin' ? '钻石' : '金币' }, { ...valid, amount: 'NaN' },
         { ...valid, balance: null }, { ...valid, event: 'unknown' },
         { ...valid, create_at: 'invalid' }, { ...valid, memo: 42 }, { ...valid, memo: undefined },
-        { ...valid, statement_id: '' }].map(item => ({ ...body, result: { ...body.result, statements: [item] } })),
+        { ...valid, statement_id: '' }].map(/** 将当前条目映射为`{ ...body, result: { ...body.result, statements: [item] } }`。
+ * @param item - 当前遍历的条目。 */ item => ({ ...body, result: { ...body.result, statements: [item] } })),
     ]) {
       await expect(readStatements(response(invalid), currency)).rejects.toThrow();
     }
@@ -63,10 +64,11 @@ const row = (amount = '+12.50', balance = '余额: 101.25', date = '2026-10-09 0
   </div>`;
 
 for (const viewport of [{ width: 1280, height: 720 }, { width: 390, height: 844 }]) {
-  test.describe(`流水展示校验：${viewport.width}px`, () => {
+  test.describe(`流水展示校验：${viewport.width}px`, /** 覆盖流水展示校验：$\{viewport.width\}px。 */ () => {
     test.use({ viewport, timezoneId: 'Asia/Shanghai' });
 
-    test('正确收支、金额、余额、时区及空列表通过；其他列表的条目不混入', async ({ page }) => {
+    test('正确收支、金额、余额、时区及空列表通过；其他列表的条目不混入', /** 验证正确收支、金额、余额、时区及空列表通过；其他列表的条目不混入。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
       await page.setContent(`<div data-testid="other-list">${row('-999')}</div><div data-testid="list">${row()}</div>`);
       const list = page.getByTestId('list');
       await expectStatementList(list, [statement]);
@@ -81,13 +83,15 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 390, height: 844 
       ['错误时间', row('+12.50', '余额: 101.25', '2026-10-08 09:02:03')],
       ['预挂载空容器', ''],
     ]) {
-      test(`${name}不能通过，即使其他列表有正确条目`, async ({ page }) => {
+      test(`${name}不能通过，即使其他列表有正确条目`, /** 验证$\{name\}不能通过，即使其他列表有正确条目。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
         await page.setContent(`<div data-testid="other-list">${row()}</div><div data-testid="list" style="height:100px">${content}</div>`);
         await expect(expectStatementList(page.getByTestId('list'), [statement])).rejects.toThrow();
       });
     }
 
-    test('空响应不能接受遗留条目，离屏列表不能冒充当前页', async ({ page }) => {
+    test('空响应不能接受遗留条目，离屏列表不能冒充当前页', /** 验证空响应不能接受遗留条目，离屏列表不能冒充当前页。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
       await page.setContent(`<div data-testid="list">${row()}</div>`);
       await expect(expectStatementList(page.getByTestId('list'), [])).rejects.toThrow();
       await page.setContent(`<div data-testid="list" style="position:absolute;left:2000px">${row()}</div>`);

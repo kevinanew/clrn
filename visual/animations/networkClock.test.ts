@@ -4,7 +4,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import type { Page } from '@playwright/test';
 import { paceNetworkClock } from './networkClock';
 
-test('真实网络心跳不会被虚拟动画快进提前判为超时', async () => {
+test('真实网络心跳不会被虚拟动画快进提前判为超时', /** 验证真实网络心跳不会被虚拟动画快进提前判为超时。 */ async () => {
   let now = 0;
   let deadline = Infinity;
   let disconnected = false;
@@ -34,7 +34,7 @@ test('真实网络心跳不会被虚拟动画快进提前判为超时', async ()
   paceNetworkClock(page);
   deadline = now + 100;
   // 服务器每 20ms 发送心跳；不能因浏览器连续快进 而产生假断线。
-  const heartbeat = setInterval(() => { deadline = now + 100; }, 20);
+  const heartbeat = setInterval(/** 刷新动态期限，模拟业务周期任务持续续期。 */ () => { deadline = now + 100; }, 20);
   try {
     for (let i = 0; i < 6; i++) await page.clock.fastForward(40);
     await page.clock.runFor('00:00.040');
@@ -44,7 +44,8 @@ test('真实网络心跳不会被虚拟动画快进提前判为超时', async ()
     await page.clock.pauseAt(new Date(now + 40));
     await page.clock.runFor(0);
     assert.equal(disconnected, false);
-    assert.equal(advances.filter(ticks => ticks === 40).length, 12, "每次 fastForward 原样执行一次，不拆分定时回调");
+    assert.equal(advances.filter(/** 仅保留满足以下条件的条目：`ticks === 40`。
+ * @param ticks - 当前操作使用的 ticks。 */ ticks => ticks === 40).length, 12, "每次 fastForward 原样执行一次，不拆分定时回调");
   } finally { clearInterval(heartbeat); }
   await page.clock.runFor(120);
   assert.equal(disconnected, true, '真实停止的心跳仍须触发连接超时');

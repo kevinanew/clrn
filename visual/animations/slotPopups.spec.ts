@@ -5,20 +5,25 @@ import { selectScenario, scenarioStatus } from '../../e2e/helpers/scenario-proxy
 import { exercisePopup } from './popups';
 import { settleAnimations } from './timeline';
 
-test('slot panel and no-energy dialog enter and exit', async ({ context, page }, info) => {
-  await context.addInitScript(() => { Math.random = /** 固定背景横幅的随机图标。 */ () => 0.37; });
+test('slot panel and no-energy dialog enter and exit', /** 验证老虎机面板及能量不足提示的进入与退出动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
+  await context.addInitScript(/** 固定老虎机弹层场景的背景横幅随机图标。 */ () => { Math.random = /** 固定背景横幅的随机图标。 */ () => 0.37; });
   await selectScenario(context, 'slot');
-  const realWallet = page.waitForResponse(response => response.request().method() === 'PUT'
+  const realWallet = page.waitForResponse(/** 匹配成功的钱包 PUT 响应，确保读取本次真实余额。
+ * @param response - 当前收到的接口响应。 */ response => response.request().method() === 'PUT'
     && /\/v10\/wallet\/[^/?]+(?:\?|$)/.test(response.url()) && response.ok());
   await openApplication(context, page, info);
-  await selectScenario(context, 'slot', { userId: await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
+  await selectScenario(context, 'slot', { userId: await page.evaluate(/** 在页面中读取`JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id`，供测试判断当前界面状态。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
   const panel = page.getByTestId('slot-machine-view');
   const wallet = panel.getByTestId('top-toolbar');
   const walletNumbers = wallet.getByText(/^\d[\d,]*$/);
   const walletBody = await (await realWallet).json();
   expect(walletBody.ok, '必须使用真实钱包成功响应').toBe(true);
-  const expectedWalletBalances = ['coin', 'diamond'].map(code => {
-    const currency = walletBody.result.currencies.find((value: { code: string }) => value.code === code);
+  const expectedWalletBalances = ['coin', 'diamond'].map(/** 从真实钱包中提取金币和钻石余额，并验证值可安全转成数字。
+ * @param code - 当前操作使用的 code。 */ code => {
+    const currency = walletBody.result.currencies.find(/** 查找满足以下条件的首个条目：`value.code === code`。
+ * @param value - 当前待转换或校验的值。 */ (value: { code: string }) => value.code === code);
     expect(currency, `真实钱包必须包含 ${code}`).toBeTruthy();
     expect(Number.isFinite(Number(currency.balance))).toBe(true);
     return Number(currency.balance).toLocaleString('en-US');
@@ -34,7 +39,7 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
     numericMask: slotWalletMask(panel),
     /** 完成入场截图后验证异步余额最终来自真实业务状态。 */
     afterEntrance: async () => {
-      await expect.poll(async () => {
+      await expect.poll(/** 推进时钟并读取两种钱包余额及可见状态，等待数字显示稳定。 */ async () => {
         await page.clock.runFor(16);
         return { balances: await walletNumbers.allTextContents(), visible: await Promise.all([
           walletNumbers.nth(0).isVisible(), walletNumbers.nth(1).isVisible(),
@@ -57,7 +62,7 @@ test('slot panel and no-energy dialog enter and exit', async ({ context, page },
       await settleAnimations(page, 1600);
       const previous = (await scenarioStatus(context)).spins;
       await press(page, 'spin-button');
-      await expect.poll(async () => { await page.clock.runFor(0); return (await scenarioStatus(context)).spins; }).toBe(previous + 1);
+      await expect.poll(/** 保持虚拟时刻不变，等待本次旋转准备请求完成。 */ async () => { await page.clock.runFor(0); return (await scenarioStatus(context)).spins; }).toBe(previous + 1);
       // exercisePopup 按真实挂载逐帧推进，不能在入场采样前固定跳过 500ms。
     }, close: /** 点击提示的确认按钮。 */ () => pressTarget(dialog.getByTestId('confirm-button')) });
 });

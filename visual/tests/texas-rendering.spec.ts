@@ -32,29 +32,33 @@ function renderHandCard(name: string, content: string, side: number): string {
   </div>`;
 }
 
-test('翻牌圈等待五张精灵牌面完成加载', async ({ page }) => {
+test('翻牌圈等待五张精灵牌面完成加载', /** 验证翻牌圈等待五张精灵牌面完成加载。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   await page.setContent(`
-    ${Array.from({ length: 3 }, () => `<div data-testid="community_card">${face}</div>`).join('')}
+    ${Array.from({ length: 3 }, /** 为当前索引构造`<div data-testid="community_card">${face}</div>`。 */ () => `<div data-testid="community_card">${face}</div>`).join('')}
     ${handCard('as')}${handCard('ad', face, 1)}${handCard('')}
   `);
-  await page.getByTestId('player_card').nth(1).getByTestId('sprite-image-content').evaluate(node => {
+  await page.getByTestId('player_card').nth(1).getByTestId('sprite-image-content').evaluate(/** 暂时隐藏第二张牌的精灵内容，构造牌面异步提交。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
     (node as HTMLElement).style.opacity = '0';
-    setTimeout(() => { (node as HTMLElement).style.opacity = '1'; }, 100);
+    setTimeout(/** 延迟显示精灵内容，完成牌面资源就绪条件。 */ () => { (node as HTMLElement).style.opacity = '1'; }, 100);
   });
   await checkFlopCardFaces(page);
 });
 
-test('翻牌圈不能用文本回退代替缺失的精灵牌面', async ({ page }) => {
+test('翻牌圈不能用文本回退代替缺失的精灵牌面', /** 验证翻牌圈不能用文本回退代替缺失的精灵牌面。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   await page.setContent(`
-    ${Array.from({ length: 3 }, () => `<div data-testid="community_card">${face}</div>`).join('')}
+    ${Array.from({ length: 3 }, /** 为当前索引构造`<div data-testid="community_card">${face}</div>`。 */ () => `<div data-testid="community_card">${face}</div>`).join('')}
     ${handCard('as')}${handCard('ad', '<span>Ad</span>')}
   `);
   await expect(checkFlopCardFaces(page)).rejects.toThrow();
 });
 
-test('手牌正面未翻开时不能通过牌面检查', async ({ page }) => {
+test('手牌正面未翻开时不能通过牌面检查', /** 验证手牌正面未翻开时不能通过牌面检查。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   await page.setContent(`
-    ${Array.from({ length: 3 }, () => `<div data-testid="community_card">${face}</div>`).join('')}
+    ${Array.from({ length: 3 }, /** 为当前索引构造`<div data-testid="community_card">${face}</div>`。 */ () => `<div data-testid="community_card">${face}</div>`).join('')}
     ${handCard('as')}
     <div data-testid="player_card">
       <div data-testid="card-flip" data-side="0">
@@ -68,7 +72,8 @@ test('手牌正面未翻开时不能通过牌面检查', async ({ page }) => {
 });
 
 for (const overlap of [false, true]) {
-  test(`手机端动作提示${overlap ? '与昵称重叠时失败' : '位于昵称下方'}`, async ({ page }) => {
+  test(`手机端动作提示${overlap ? '与昵称重叠时失败' : '位于昵称下方'}`, /** 验证手机端动作提示$\{overlap ? '与昵称重叠时失败' : '位于昵称下方'\}。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
     await page.setContent(`
       <div data-testid="texas-holdem-player-container-${REPLAY_PLAYER_IDS[0]}">
         <div data-testid="adaptable-text-web" style="position:absolute;top:10px;height:20px">Player1</div>

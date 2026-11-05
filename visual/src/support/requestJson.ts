@@ -28,7 +28,8 @@ export async function readRequestJson(response: JsonResponse, operation: string)
  * @param operation - 代码固定的逻辑操作。
  */
 export async function fetchRequestJson(url: string, options: RequestInit, operation: string) {
-  const response = await fetch(url, options).catch(error => {
+  const response = await fetch(url, options).catch(/** 将 fetch 底层异常转换为不含敏感资料的请求摘要。
+ * @param error - 当前操作抛出的错误。 */ error => {
     throw new Error(requestErrorSummary(error, operation));
   });
   const body = await readRequestJson({ status: /** 读取真实状态。 */ () => response.status, ok: /** 读取真实 HTTP 结果。 */ () => response.ok,

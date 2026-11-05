@@ -30,6 +30,7 @@ CLUB_SEARCH_RESULT = {
 
 
 def json_response(flow, payload, status=200):
+    """构造带 JSON 类型及跨域响应头的故障场景响应。"""
     return http.Response.make(
         status,
         json.dumps(payload).encode(),
@@ -43,7 +44,9 @@ def json_response(flow, payload, status=200):
 
 
 class NetworkFaults:
+    """在限定接口上注入延迟、登录或俱乐部故障，并提供认证控制入口。"""
     def __init__(self):
+        """初始化token、scenario、intercepted_requests、proxied_requests、stabilized_requests等状态。"""
         self.token = os.environ["MITMPROXY_CONTROL_TOKEN"]
         self.scenario = None
         self.intercepted_requests = 0
@@ -53,6 +56,7 @@ class NetworkFaults:
         self.club_details_requests = 0
 
     def control(self, flow):
+        """验证控制令牌并切换已登记的网络故障场景。"""
         if flow.request.headers.get("X-E2E-Control-Token") != self.token:
             flow.response = http.Response.make(403, b"Forbidden")
             return
@@ -83,6 +87,7 @@ class NetworkFaults:
         })
 
     def mock_existing_username(self, flow, path):
+        """登录故障场景中保留用户名已存在分支，避免触发自动注册。"""
         if self.scenario != "login-failure" or path != "/public/v10/user/username/is_existed":
             return False
         # 保留用户名已存在的分支，避免测试账号缺失时自动注册。
@@ -90,6 +95,7 @@ class NetworkFaults:
         return True
 
     def matches_fault(self, url):
+        """按场景路径与必要查询参数判断请求是否应注入故障。"""
         if url.path != FAULT_PATHS.get(self.scenario):
             return False
         if self.scenario == "club-failure":
@@ -124,6 +130,7 @@ class NetworkFaults:
         return True
 
     async def request(self, flow: http.HTTPFlow):
+        """路由代理控制与业务请求，仅对当前匹配场景执行故障注入。"""
         if flow.response:
             return
         if flow.request.host == CONTROL_HOST:

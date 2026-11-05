@@ -9,7 +9,9 @@ from test_network_faults import flow
 
 
 class ResponseOverrideTests(unittest.TestCase):
+    """验证真实响应字段覆盖的结构校验与来源边界。"""
     def test_主机必须与明确输入逐字匹配且损坏配置默认透传(self):
+        """验证主机必须与明确输入逐字匹配且损坏配置默认透传。"""
         for configured in ('', 'null', '{}', '"api.invalid"', '[1]', '['):
             with self.subTest(configured=configured), patch.dict('os.environ', {'MITMPROXY_API_HOSTS': configured}):
                 self.assertFalse(is_staging('api.invalid'), '缺少有效来源不能启用响应夹具')
@@ -20,6 +22,7 @@ class ResponseOverrideTests(unittest.TestCase):
                 self.assertFalse(is_staging(host), '前缀、子域和相似主机不得扩大允许范围')
 
     def metadata(self, body, status=200, method='GET', host='node-0.service.invalid', path='/public/v11/game_log/available.json'):
+        """构造带指定正文、状态和来源的版本元数据响应流。"""
         request = flow(f'https://{host}{path}', method)
         request.response = http.Response.make(status, json.dumps(body).encode(), {
             'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'https://node-3.service.invalid',
@@ -28,6 +31,7 @@ class ResponseOverrideTests(unittest.TestCase):
         return request
 
     def test_字段覆盖保留压缩响应与未知字段(self):
+        """验证字段覆盖保留压缩响应与未知字段。"""
         request = self.metadata({'ok': True, 'trace': 'retained', 'result': {
             'available_url_version': 'v1', 'new_field': 42}})
         request.response.encode('gzip')
@@ -40,6 +44,7 @@ class ResponseOverrideTests(unittest.TestCase):
         self.assertEqual(int(request.response.headers['Content-Length']), len(request.response.raw_content))
 
     def test_版本覆盖保留新字段且不补造已删除字段(self):
+        """验证版本覆盖保留新字段且不补造已删除字段。"""
         request = self.metadata({'ok': True, 'result': {'available_url_version': 'v1', 'new': 42}})
         self.assertTrue(patch_version(request, 'v11'))
         self.assertEqual(request.response.json()['result'], {'available_url_version': 'v11', 'new': 42})
@@ -50,6 +55,7 @@ class ResponseOverrideTests(unittest.TestCase):
             self.assertEqual(request.response.content, original)
 
     def test_混合资料保留真实账号且只补充明确请求的虚拟玩家(self):
+        """验证混合资料保留真实账号且只补充明确请求的虚拟玩家。"""
         profiles = {'virtual': {'nickname': 'Opponent'}, 'unrequested': {'nickname': 'Other'}}
         request = flow('https://node-0.service.invalid/v10/profile/users', 'PUT',
                        b'{"users":["self","virtual"]}')

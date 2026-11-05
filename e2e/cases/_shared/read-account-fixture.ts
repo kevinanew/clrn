@@ -57,7 +57,7 @@ export async function prepareReadAccount(page: Page, context: BrowserContext): P
     return { ...session, username: environment.testUsername, diamondBalance: await readDiamondBalance(page, session) };
   } catch (error) {
     // 避免 setup 失败时保存密码表单 DOM 或带 Authorization 的请求错误。
-    await page.close().catch(() => undefined);
+    await page.close().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
     throw readAccountPreparationError(error, operation);
   }
 }

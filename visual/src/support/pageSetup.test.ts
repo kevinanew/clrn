@@ -54,7 +54,7 @@ async function serializedScript(setup: (context: BrowserContext) => Promise<void
   return source;
 }
 
-test('tsx auth collector language script runs without external compiler helpers', async () => {
+test('tsx auth collector language script runs without external compiler helpers', /** 验证 tsx 序列化的认证语言脚本无需外部编译辅助函数即可运行。 */ async () => {
   /** 提供独立的 Navigator 原型，验证语言修正脚本不会修改宿主环境。 */
   class NavigatorMock {}
   Object.defineProperty(NavigatorMock.prototype, 'language', {
@@ -66,7 +66,7 @@ test('tsx auth collector language script runs without external compiler helpers'
   assert.deepEqual(Array.from(navigator.languages), ['en-US', 'en']);
 });
 
-test('tsx auth collector animation script installs one stylesheet before and after DOM ready', async () => {
+test('tsx auth collector animation script installs one stylesheet before and after DOM ready', /** 验证认证动画脚本在 DOM 就绪前后均只安装一份样式表。 */ async () => {
   const styles: { id: string; textContent: string }[] = [];
   let onReady: (() => void) | undefined;
   const sandbox = { __VISUAL_REGRESSION__: false, document: {
@@ -80,7 +80,8 @@ test('tsx auth collector animation script installs one stylesheet before and aft
      * 在测试 DOM 中按 ID 查找已插入的样式节点。
      * @param id - 目标控件的测试标记。
      */
-    getElementById: (id: string) => styles.find(style => style.id === id),
+    getElementById: (id: string) => styles.find(/** 查找满足以下条件的首个条目：`style.id === id`。
+ * @param style - 当前操作使用的 style。 */ style => style.id === id),
     /** 创建用于动画禁用测试的空样式节点。 */
     createElement: () => ({ id: '', textContent: '' }),
     /**
@@ -103,11 +104,12 @@ test('tsx auth collector animation script installs one stylesheet before and aft
 });
 
 
-test('startup system language is initialized before the bundle for each requested locale', async () => {
+test('startup system language is initialized before the bundle for each requested locale', /** 验证各语言的系统语言设置在应用 bundle 执行前完成。 */ async () => {
   for (const locale of ['zh-CN', 'zh-TW', 'en-US']) {
     /** 每次模拟独立浏览器上下文，避免前一个语言残留。 */
     class NavigatorMock {}
-    const source = await serializedScript(context => fixNavigatorLanguage(context, locale));
+    const source = await serializedScript(/** 序列化当前语言的 navigator 修正脚本，验证跨上下文注入。
+ * @param context - 当前浏览器或测试上下文。 */ context => fixNavigatorLanguage(context, locale));
     runInNewContext(source, { Navigator: NavigatorMock });
     const navigator = new NavigatorMock() as unknown as { language: string; languages: string[] };
     assert.equal(navigator.language, locale);

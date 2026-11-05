@@ -14,23 +14,28 @@ OTHER = '22222222-2222-4222-8222-222222222222'
 
 
 class WalletStatementTests(unittest.IsolatedAsyncioTestCase):
+    """验证金币与钻石流水夹具的账号绑定、顺序及余额连续性。"""
     def setUp(self):
+        """为每个用例配置隔离来源环境、控制令牌和独立代理状态。"""
         self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.addon = ScenarioFixtures()
 
     async def control(self, body):
+        """选择当前账号的钱包流水场景。"""
         request = flow('http://fixtures-mitmproxy.invalid/fixtures/select', 'POST',
                        json.dumps(body).encode(), 'test-token')
         await self.addon.request(request)
         self.assertEqual(request.response.status_code, 200, '场景控制命令必须成功')
 
     async def request(self, path, method='GET', origin='https://node-0.service.invalid'):
+        """将指定钱包读取交给场景插件并返回处理结果。"""
         request = flow(origin + path, method)
         await self.addon.request(request)
         return request
 
     async def test_非空流水必须显式选择并绑定账号且只拦截确切只读接口(self):
+        """验证非空流水必须显式选择并绑定账号且只拦截确切只读接口。"""
         path = f'/v11/wallet/{SELF}/currency/coin/statement'
         self.assertIsNone((await self.request(path)).response, '默认场景必须透传')
         await self.control({'name': 'wallet-populated'})
@@ -47,6 +52,7 @@ class WalletStatementTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone((await self.request(path)).response, '退出场景后必须恢复透传')
 
     async def test_两种币种各含四条逆序收支且余额连续并能独立切回空态(self):
+        """验证两种币种各含四条逆序收支且余额连续并能独立切回空态。"""
         await self.control({'name': 'wallet-populated', 'userId': SELF})
         identifiers = set()
         for currency in ('coin', 'diamond'):

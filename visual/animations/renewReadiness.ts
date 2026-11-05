@@ -44,15 +44,18 @@ async function readRenewPopup(page: Page): Promise<void> {
     const reads = [
       { method: 'POST', path: /^\/v3\/pay_action\/batch\/price$/, operation: 'renewal-price' },
       { method: 'PUT', path: /^\/v10\/wallet\/[^/]+$/, operation: 'renewal-wallet' },
-    ].map(async ({ method, path, operation }) => {
+    ].map(/** 等待指定的续时读取并校验 JSON 正文。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ method, path, operation }) => {
       const response = await waitForRead(page, requests, method, path, operation);
       await readRequestJson(response, operation);
     });
     // 先安装响应等待，再点击入口；不得用上一次打开留下的控件数值判断本次请求成功。
     const results = await Promise.allSettled([...reads, press(page, 'drawer-menu-item-renew')]);
-    const failures = results.filter(result => result.status === 'rejected');
+    const failures = results.filter(/** 仅保留满足以下条件的条目：`result.status === 'rejected'`。
+ * @param result - 当前操作使用的 result。 */ result => result.status === 'rejected');
     // 同时出现业务拒绝与网络中断时，不能用恢复逻辑掩盖业务拒绝。
-    const failure = failures.find(result => !(result.reason instanceof InterruptedRenewRead)) || failures[0];
+    const failure = failures.find(/** 查找满足以下条件的首个条目：`!(result.reason instanceof InterruptedRenewRead)`。
+ * @param result - 当前操作使用的 result。 */ result => !(result.reason instanceof InterruptedRenewRead)) || failures[0];
     if (failure) throw failure.reason;
     await page.clock.runFor(0);
   } finally { page.off('request', observe); }
@@ -68,7 +71,9 @@ async function readRenewPopup(page: Page): Promise<void> {
  */
 function waitForRead(page: Page, requests: Set<Request>, method: string, path: RegExp,
   operation: string): Promise<Response> {
-  return new Promise((resolve, reject) => {
+  return new Promise(/** 监听本次续时请求的响应与中断，在截止时间内提供正确结果。
+ * @param resolve - 完成当前异步等待的通知。
+ * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
     let interrupted = false;
     /**
      * 只匹配本次打开的真实读取。
@@ -100,7 +105,7 @@ function waitForRead(page: Page, requests: Set<Request>, method: string, path: R
       // 应用可能已在另一个节点重发同一读取，旧节点失败不能抢先终止等待。
       interrupted = true;
     };
-    const timeout = setTimeout(() => {
+    const timeout = setTimeout(/** 清理监听并区分读取中断和超时，拒绝未完成的续时等待。 */ () => {
       cleanup();
       reject(interrupted
         ? new InterruptedRenewRead(requestFailure(operation, 'connection-failed').message)

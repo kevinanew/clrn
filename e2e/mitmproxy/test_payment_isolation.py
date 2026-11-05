@@ -18,12 +18,15 @@ ERROR = {'ok': False, 'error': 'fixture_payment_forbidden'}
 
 
 class PaymentIsolationTests(unittest.IsolatedAsyncioTestCase):
+    """验证视觉与商城场景中的 HTTP 和 WebSocket 支付隔离。"""
     def setUp(self):
+        """为每个用例配置隔离来源环境、控制令牌和独立代理状态。"""
         self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.addon = ScenarioFixtures()
 
     async def test_默认透传但商城和视觉环境拒绝订单写入(self):
+        """验证默认透传但商城和视觉环境拒绝订单写入。"""
         for visual, name, blocked in ((False, 'none', False), (False, 'mall', True),
                                       (True, 'none', True), (True, 'wallet-populated', True)):
             self.addon.visual, self.addon.name = visual, name
@@ -49,6 +52,7 @@ class PaymentIsolationTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(request.response, '只在明确配置的 API 来源启用夹具')
 
     async def test_长连接订单隔离保留订阅心跳读取和回复顺序(self):
+        """验证长连接订单隔离保留订阅心跳读取和回复顺序。"""
         for scene, visual in (('none', False), ('mall', False), ('none', True)):
             self.addon.name, self.addon.visual = scene, visual
             socket = flow(HOST + '/connection/websocket')
@@ -76,6 +80,7 @@ class PaymentIsolationTests(unittest.IsolatedAsyncioTestCase):
                                      [{'id': index, 'result': {'data': ERROR}} for index in range(2, 5)])
 
     async def test_未命中长连接内容逐字透传且不处理服务端或已注入消息(self):
+        """验证未命中长连接内容逐字透传且不处理服务端或已注入消息。"""
         self.addon.visual = True
         for content, from_client, injected in (
                 ('{"id":1,"method":7}\n\n', True, False),

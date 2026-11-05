@@ -32,7 +32,9 @@ export class Mitmproxy {
    * @param timeoutMs - 控制请求的超时毫秒数。
    */
   command<T = ProxyStatus>(endpoint: string, payload?: unknown, timeoutMs = 5_000): Promise<T> {
-    return new Promise((resolve, reject) => {
+    return new Promise(/** 发送本机代理控制请求，并将响应、超时与连接错误映射到等待结果。
+ * @param resolve - 完成当前异步等待的通知。
+ * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
       const body = payload === undefined ? undefined : JSON.stringify(payload);
       const req = request({
         hostname: '127.0.0.1',
@@ -44,12 +46,14 @@ export class Mitmproxy {
           'X-E2E-Control-Token': this.token,
           'Content-Type': 'application/json',
         },
-      }, response => {
+      }, /** 收集代理控制响应正文，在流结束后检查状态并解析 JSON。
+ * @param response - 当前收到的接口响应。 */ response => {
         let data = '';
         response.setEncoding('utf8');
-        response.on('data', chunk => { data += chunk; });
+        response.on('data', /** 拼接代理控制响应的数据块。
+ * @param chunk - 本次读取的数据块。 */ chunk => { data += chunk; });
         response.on('error', reject);
-        response.on('end', () => {
+        response.on('end', /** 响应结束后校验 HTTP 状态并解析控制结果，传播无效 JSON 错误。 */ () => {
           if (response.statusCode !== 200) {
             reject(new Error(`mitmproxy 控制请求失败：HTTP ${response.statusCode}`));
             return;
@@ -62,7 +66,7 @@ export class Mitmproxy {
         });
       });
       req.on('error', reject);
-      req.setTimeout(timeoutMs, () => req.destroy(new Error('mitmproxy 控制请求超时')));
+      req.setTimeout(timeoutMs, /** 超时后销毁控制请求，终止无响应的代理等待。 */ () => req.destroy(new Error('mitmproxy 控制请求超时')));
       req.end(body);
     });
   }

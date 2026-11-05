@@ -10,7 +10,9 @@ let username;
  * @param url - 准备逻辑发出的固定 staging 请求。
  * @param options - 请求方法、正文和认证头。
  */
-globalThis.fetch = async (url, options) => {
+globalThis.fetch = /** 按账号请求地址提供本机隔离响应，并保存请求供夹具核验。
+ * @param url - 当前操作使用的 url。
+ * @param options - 当前操作使用的 options。 */ async (url, options) => {
   const body = options.body === undefined ? undefined : JSON.parse(options.body);
   const directory = dirname(process.env.GITHUB_ENV || process.env.CLRN_TEST_ACCOUNT_POOL);
   if (url.endsWith('/public/v10/user/login/username/password')) username = body.username;

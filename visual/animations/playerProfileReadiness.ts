@@ -21,10 +21,13 @@ export async function openPlayerProfile(page: Page, player: string): Promise<voi
       { path: `/v10/profile/${player}`, operation: 'player-profile' },
       { path: `/v10/wallet/${player}/currency/coin`, operation: 'player-wallet' },
       { path: `/v1/texas_statistics/player/${player}/rounds/100`, operation: 'player-statistics' },
-    ].map(async ({ path, operation }) => {
-      const response = await page.waitForResponse(response => requests.has(response.request())
+    ].map(/** 等待本次打开玩家资料触发的各项 GET 读取并校验正文。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ path, operation }) => {
+      const response = await page.waitForResponse(/** 仅匹配本次已记录的 GET 请求及指定玩家资料路径。
+ * @param response - 当前收到的接口响应。 */ response => requests.has(response.request())
         && response.request().method() === 'GET' && new URL(response.url()).pathname === path,
-      { timeout: 15_000 }).catch(error => { throw new Error(requestErrorSummary(error, operation)); });
+      { timeout: 15_000 }).catch(/** 将玩家资料读取异常转换为安全、可定位的请求摘要。
+ * @param error - 当前操作抛出的错误。 */ error => { throw new Error(requestErrorSummary(error, operation)); });
       await readRequestJson(response, operation);
     });
     // 同时等待三项读取与真实点击；任一读取失败都阻止采样，不推进动画相位。

@@ -27,20 +27,24 @@ export async function signIn(page: Page, credentials = {
   };
   try {
     // 登录表单会自动注册不存在的用户名；测试账号缺失必须失败，禁止创建新账号。
-    await page.route('**/public/v11/user/register/**', (route) => route.abort('blockedbyclient'));
+    await page.route('**/public/v11/user/register/**', /** 阻断自动注册请求，避免只读账号登录创建新账号。
+ * @param route - 当前拦截的网络请求。 */ (route) => route.abort('blockedbyclient'));
     await openLoginForm(page);
     await (await unique(page, 'username-input')).fill(credentials.username);
     await (await unique(page, 'password-input')).fill(credentials.password);
     page.on('request', observeLogin);
     waiting = true;
     const loginResponse = page.waitForResponse(
-      (response) => new URL(response.url()).pathname === '/public/v10/user/login/username/password'
+      /** 匹配POST `/public/v10/user/login/username/password` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ (response) => new URL(response.url()).pathname === '/public/v10/user/login/username/password'
         && response.request().method() === 'POST',
       { timeout: 60_000 },
-    ).then(response => {
+    ).then(/** 记录登录响应的真实状态，并向后续登录步骤传递响应。
+ * @param response - 当前收到的接口响应。 */ response => {
       status = response.status();
       return { response };
-    }, error => ({ error }));
+    }, /** 将异步结果转换为`{ error }`，供后续步骤使用。
+ * @param error - 当前操作抛出的错误。 */ error => ({ error }));
     await (await unique(page, 'sign-in-button')).click();
     const result = await loginResponse;
     if ('error' in result) throw result.error;
@@ -50,7 +54,7 @@ export async function signIn(page: Page, credentials = {
       throw requestFailure('existing-account-login', 'http-error', status);
     }
     await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible({ timeout: 60_000 });
-    const session = await page.evaluate(() => {
+    const session = await page.evaluate(/** 从页面缓存读取完整用户和访问令牌，缺失时终止登录准备。 */ () => {
       const raw = localStorage.getItem('save.user.origin.data.from.server.key');
       const auth = raw ? JSON.parse(raw) : null;
       if (!auth?.user_id || !auth?.api_token?.access_token || !auth?.api_token?.token_type) {
@@ -64,7 +68,7 @@ export async function signIn(page: Page, credentials = {
       authorization: session.authorization,
     };
   } catch (error) {
-    await page.close().catch(() => undefined);
+    await page.close().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
     const operation = status !== undefined || observed ? 'existing-account-login'
       : waiting ? 'existing-account-login-await' : 'existing-account-login-ui';
     throw requestFailure(operation, status === undefined ? requestFailureReason(error)
@@ -85,11 +89,12 @@ export async function accountStatus(page: Page, session: Session): Promise<numbe
     timeout: 15_000,
     // Playwright 只对 ECONNRESET 重试；200、401 等 HTTP 响应保持原样。
     maxRetries: 2,
-  }).catch(error => {
+  }).catch(/** 将读取会话的底层错误转成不含认证头的诊断。
+ * @param error - 当前操作抛出的错误。 */ error => {
     // APIRequestContext 的原始错误包含请求头，不能直接写入测试报告。
     throw requestFailure('existing-account-session', requestFailureReason(error));
   });
   const status = response.status();
-  await response.dispose().catch(() => { throw requestFailure('existing-account-session', 'body-read-failed', status); });
+  await response.dispose().catch(/** 将会话响应释放失败转成带真实状态的安全诊断。 */ () => { throw requestFailure('existing-account-session', 'body-read-failed', status); });
   return status;
 }

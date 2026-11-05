@@ -2,8 +2,9 @@ import { expect, test } from '../_shared/read-account-fixture';
 import { unique } from '../_shared/page';
 import { goBack } from '../_shared/navigation';
 
-test('MESSAGE-001：浏览三类消息并返回消息列表', async ({ page, signedInAccount }) => {
-  await test.step('登录并打开消息列表', async () => {
+test('MESSAGE-001：浏览三类消息并返回消息列表', /** 验证MESSAGE-001：浏览三类消息并返回消息列表。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, signedInAccount }) => {
+  await test.step('登录并打开消息列表', /** 执行登录并打开消息列表。 */ async () => {
     expect(signedInAccount.userId).toBeTruthy();
     await (await unique(page, 'message-tab')).click();
     await expect(await unique(page, 'message-top-title')).toHaveText('消息');
@@ -14,7 +15,7 @@ test('MESSAGE-001：浏览三类消息并返回消息列表', async ({ page, sig
     ['system', '系统通知', 'system-notification-screen-root', 'no-notification-text', '还没有收到系统通知'],
   ];
   for (const [kind, label, screen, content, emptyText] of branches) {
-    await test.step(`打开${label}、确认空态并返回`, async () => {
+    await test.step(`打开${label}、确认空态并返回`, /** 执行打开$\{label\}、确认空态并返回。 */ async () => {
       const entry = await unique(page, `message-notification-item-${kind}`);
       await expect(entry).toHaveText(label);
       await entry.click();
@@ -25,7 +26,7 @@ test('MESSAGE-001：浏览三类消息并返回消息列表', async ({ page, sig
       await expect(await unique(page, `message-notification-item-${kind}`)).toBeVisible();
     });
   }
-  await test.step('从我的再次进入俱乐部消息并返回', async () => {
+  await test.step('从我的再次进入俱乐部消息并返回', /** 执行从我的再次进入俱乐部消息并返回。 */ async () => {
     await (await unique(page, 'settings-tab')).click();
     await (await unique(page, 'club-notifications')).click();
     await expect(await unique(page, 'no-notification-text')).toHaveText('还没有收到俱乐部通知');

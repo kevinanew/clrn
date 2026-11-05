@@ -13,7 +13,7 @@ test('横向手势切换申请标签，触底按游标追加且末页停止请�
   isMobile,
 }, info) => {
   await openApp(page);
-  const userId = await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id as string);
+  const userId = await page.evaluate(/** 在页面中读取`JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id as string);
   await selectScenario(context, 'pagination', { userId });
   await page.getByTestId('message-tab').click();
   const diagnostics = await observePaginationGesture(page);
@@ -45,7 +45,7 @@ test('横向手势切换申请标签，触底按游标追加且末页停止请�
     await expect(read).toHaveAttribute('aria-selected', 'true');
   } finally {
     // 保存诊断失败不能替换原始业务断言；附件只包含预先筛选的字段。
-    await diagnostics.save(info).catch(() => console.log('分页手势诊断保存失败，保留原始用例结果'));
+    await diagnostics.save(info).catch(/** 记录手势诊断保存失败，保留原始分页测试结果。 */ () => console.log('分页手势诊断保存失败，保留原始用例结果'));
   }
   const list = page.locator('[data-testid="game-buy-in-application-list"]:visible');
   await expect(page.getByText('滚动玩家1', { exact: true })).toBeVisible();

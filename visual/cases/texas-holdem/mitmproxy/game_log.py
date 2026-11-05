@@ -8,6 +8,7 @@ CARDS = ['ah', 'kd', '7c', '2s', 'qs']
 
 
 def game(self_id):
+    """构造绑定当前玩家的德州摊牌重放事件序列。"""
     players = [
         {'player_id': self_id, 'seat_number': 1, 'position': 'D', 'stack': 1000},
         {'player_id': PLAYER_IDS[0], 'seat_number': 2, 'position': 'SB', 'stack': 1000}]
@@ -29,6 +30,7 @@ def game(self_id):
 
 
 def fixture(path, method, content, room_id, self_id):
+    """根据房间、用户、路径和方法提供结算与牌局重放结果。"""
     if not room_id or not self_id:
         return None
     if method == 'GET' and path == f'/v1/game_log/room/{room_id}/settlement':

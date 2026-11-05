@@ -66,9 +66,10 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await snapshot('settings_enabled');
   await click(page, 'game-settings-close-button');
   // 预热 Chromium 虚拟麦克风；只检查授权和弹窗，不发送录音。
-  await page.evaluate(async () => {
+  await page.evaluate(/** 请求语音权限并立即停止探测音轨，准备德州语音面板。 */ async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    stream.getTracks().forEach(track => track.stop());
+    stream.getTracks().forEach(/** 停止权限探测创建的麦克风音轨。
+ * @param track - 当前操作使用的 track。 */ track => track.stop());
   });
   await click(page, 'texas-holdem-voice-button');
   await expect(visible(page, 'in-game-audio-root-container')).toBeVisible();
@@ -101,10 +102,12 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await expect(page.locator('[data-testid^="in-game-chat-phrase-"]:visible').first()).toBeVisible();
   // 弹幕每次渲染随机选择高度；等待真实五秒动画退场后再固定聊天界面。
   await page.clock.runFor(6000);
-  await expect.poll(async () => {
+  await expect.poll(/** 推进页面时钟，等待所有弹幕完全移出截图区域。 */ async () => {
     await page.clock.runFor(250);
-    return page.locator('[data-testid="barrage_container"]').evaluateAll(nodes =>
-      nodes.every(node => { const rect = node.getBoundingClientRect();
+    return page.locator('[data-testid="barrage_container"]').evaluateAll(/** 在页面中确认全部弹幕已离开视口或不再占据布局。
+ * @param nodes - 当前匹配的页面节点集合。 */ nodes =>
+      nodes.every(/** 根据当前弹幕矩形判断其是否已移出水平视口。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => { const rect = node.getBoundingClientRect();
         return rect.right <= 0 || rect.left >= innerWidth || rect.width === 0; }));
   }, { timeout: 30_000, intervals: [100, 250, 500] }).toBe(true);
   await snapshot('chat_phrases');
@@ -138,7 +141,7 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await snapshot('hand_end');
   await click(page, 'texas-holdem-show-remain-community-card-button');
   await expect(visible(page, 'view-community-cards-container')).toBeVisible();
-  await expect.poll(async () => {
+  await expect.poll(/** 推进时钟并读取公共牌名称，等待查看公共牌弹层更新。 */ async () => {
     await page.clock.runFor(250);
     return visible(page, 'view-community-cards-container')
       .locator('[data-testid="community_card_name_text"]').allTextContents();

@@ -13,11 +13,13 @@ import { sites } from './helpers/sites';
  *   - https://h5.laiwanpai.com/
  *   - https://h5.goplay360.com/
  */
-test('站点导航遇到瞬态网络错误时有限重试', async ({ page }) => {
+test('站点导航遇到瞬态网络错误时有限重试', /** 验证站点导航遇到瞬态网络错误时有限重试。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   let attempts = 0;
   let timedOutAttemptStartedAt = 0;
   let timedOutAttemptElapsed = 0;
-  await page.route('https://navigation-retry.invalid/', async (route) => {
+  await page.route('https://navigation-retry.invalid/', /** 依次注入连接关闭、超时与成功响应，验证站点导航重试。
+ * @param route - 当前拦截的网络请求。 */ async (route) => {
     attempts += 1;
     if (attempts === 1) {
       await route.abort('connectionclosed');
@@ -25,7 +27,8 @@ test('站点导航遇到瞬态网络错误时有限重试', async ({ page }) => 
     }
     if (attempts === 2) {
       timedOutAttemptStartedAt = Date.now();
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise(/** 等待短暂延迟后提供超时场景的响应。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => setTimeout(resolve, 300));
       timedOutAttemptElapsed = Date.now() - timedOutAttemptStartedAt;
       await route.abort('timedout');
       return;
@@ -40,7 +43,7 @@ test('站点导航遇到瞬态网络错误时有限重试', async ({ page }) => 
   expect(timedOutAttemptElapsed).toBeGreaterThanOrEqual(250);
 });
 
-test('站点导航在退避后重试可恢复的网络错误', async () => {
+test('站点导航在退避后重试可恢复的网络错误', /** 验证站点导航在退避后重试可恢复的网络错误。 */ async () => {
   let attempts = 0;
   const attemptStartedAt: number[] = [];
   const page = {
@@ -70,13 +73,16 @@ test('站点导航在退避后重试可恢复的网络错误', async () => {
   expect(attemptStartedAt[2] - attemptStartedAt[1]).toBeGreaterThanOrEqual(1_900);
 });
 
-test('站点导航自身超时时重试三次后终止', async ({ page }) => {
+test('站点导航自身超时时重试三次后终止', /** 验证站点导航自身超时时重试三次后终止。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   const navigationAttemptTimeoutMs = 100;
   page.setDefaultNavigationTimeout(navigationAttemptTimeoutMs);
   let attempts = 0;
-  await page.route('https://navigation-timeout.invalid/', async (route) => {
+  await page.route('https://navigation-timeout.invalid/', /** 延迟返回页面，使导航触发指定的超时失败。
+ * @param route - 当前拦截的网络请求。 */ async (route) => {
     attempts += 1;
-    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    await new Promise(/** 延迟一秒，模拟超过导航期限的慢响应。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => setTimeout(resolve, 1_000));
     await route.fulfill({ contentType: 'text/html', body: '<main>too late</main>' });
   });
 
@@ -93,7 +99,8 @@ test('站点导航自身超时时重试三次后终止', async ({ page }) => {
 });
 
 for (const site of sites) {
-  test(`${site.name} 网站可用 (${site.url})`, async ({ page }) => {
+  test(`${site.name} 网站可用 (${site.url})`, /** 验证$\{site.name\} 网站可用 ($\{site.url\})。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
     const response = await gotoDeployedSite(page, site.url);
 
     expect(response, `应收到 HTTP 响应: ${site.url}`).not.toBeNull();

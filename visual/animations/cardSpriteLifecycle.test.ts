@@ -30,7 +30,7 @@ async function observation(existingHook = false) {
   return window;
 }
 
-test('提交观察关联同一组件与替换组件，不调用回调且不保存 props 或任意 hook 值', async () => {
+test('提交观察关联同一组件与替换组件，不调用回调且不保存 props 或任意 hook 值', /** 验证提交观察关联同一组件与替换组件，不调用回调且不保存 props 或任意 hook 值。 */ async () => {
   const window = await observation();
   const hook = window.__REACT_DEVTOOLS_GLOBAL_HOOK__;
   hook.inject({});
@@ -62,7 +62,7 @@ test('提交观察关联同一组件与替换组件，不调用回调且不保�
   assert.equal(callbackInvoked, false);
 });
 
-test('已有 hook 保持不变；不支持的组件结构明确标为未观察', async () => {
+test('已有 hook 保持不变；不支持的组件结构明确标为未观察', /** 验证已有 hook 保持不变；不支持的组件结构明确标为未观察。 */ async () => {
   const existing = await observation(true);
   assert.deepEqual(Object.keys(existing.__REACT_DEVTOOLS_GLOBAL_HOOK__), []);
   assert.equal(existing.__clrnCardSpriteLifecycle(new SpriteNode()).status, 'existing-hook-unobserved');

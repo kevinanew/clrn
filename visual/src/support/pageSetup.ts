@@ -26,7 +26,8 @@ type AuthStateArgs = {
  */
 function injectAuthState(args: AuthStateArgs): void {
   const { entries, langKey } = args;
-  Object.entries(entries).forEach(([key, value]) => {
+  Object.entries(entries).forEach(/** 注入保存的登录态存储项，同时保留本次场景选择的语言。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([key, value]) => {
     if (key !== langKey) {
       window.localStorage.setItem(key, value);
     }
@@ -63,7 +64,8 @@ export function readAuthStateEntries(): Record<string, string> | null {
  * @param locale - 浏览器语言，启动品牌按系统语言显示，缺省沿用英语。
  */
 export async function fixNavigatorLanguage(context: BrowserContext, locale = 'en-US'): Promise<void> {
-  await context.addInitScript((language: string) => {
+  await context.addInitScript(/** 固定 navigator 的单语言及语言列表，避免平台语言后缀改变界面。
+ * @param language - 当前操作使用的 language。 */ (language: string) => {
     try {
       Object.defineProperty(Navigator.prototype, 'language', {
         /** 返回固定浏览器语言值，避免平台语言后缀影响国际化组件。 */
@@ -124,7 +126,8 @@ export function buildStorageStateForScenario(
   if (scenario.signIn && authEntries) {
     Object.assign(entries, authEntries);
   } else if (!scenario.signIn && authEntries) {
-    SAFE_CACHE_KEYS.forEach((key) => {
+    SAFE_CACHE_KEYS.forEach(/** 仅复制允许复用的认证缓存项，避免跨场景带入任意状态。
+ * @param key - 当前操作使用的 key。 */ (key) => {
       if (authEntries[key] !== undefined) {
         entries[key] = authEntries[key];
       }
@@ -141,7 +144,8 @@ export function buildStorageStateForScenario(
     origins: [
       {
         origin: new URL(baseUrl).origin,
-        localStorage: Object.entries(entries).map(([name, value]) => ({ name, value })),
+        localStorage: Object.entries(entries).map(/** 将当前条目映射为`{ name, value }`。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([name, value]) => ({ name, value })),
       },
     ],
   };
@@ -177,7 +181,8 @@ export async function setupContextForScenario(
   }
 
   await context.addInitScript(
-    ({ locale, langKey, deviceId }: { locale: string; langKey: string; deviceId: string }) => {
+    /** 在新上下文中写入场景语言和固定设备 ID，稳定启动导航。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ locale, langKey, deviceId }: { locale: string; langKey: string; deviceId: string }) => {
       window.localStorage.setItem(langKey, locale);
       // 固定 deviceId（所有场景，含未登录）：随机 deviceId 会让启动期设备注册
       // 回调在点击后触发导航重置，杀掉刚打开的登录 modal
@@ -202,14 +207,18 @@ export async function setupContextForScenario(
   } else if (authEntries) {
     // 未登录场景也复用与登录无关的安全缓存键（主题等）
     const safeEntries = Object.fromEntries(
-      SAFE_CACHE_KEYS.filter((key) => authEntries[key] !== undefined).map((key) => [
+      SAFE_CACHE_KEYS.filter(/** 仅保留满足以下条件的条目：`authEntries[key] !== undefined`。
+ * @param key - 当前操作使用的 key。 */ (key) => authEntries[key] !== undefined).map(/** 将当前条目映射为`[ key, authEntries[key], ]`。
+ * @param key - 当前操作使用的 key。 */ (key) => [
         key,
         authEntries[key],
       ]),
     );
     if (Object.keys(safeEntries).length > 0) {
-      await context.addInitScript((entries: Record<string, string>) => {
-        Object.entries(entries).forEach(([key, value]) => {
+      await context.addInitScript(/** 在页面启动前注入本次场景需要的本地存储项。
+ * @param entries - 当前操作使用的 entries。 */ (entries: Record<string, string>) => {
+        Object.entries(entries).forEach(/** 将当前存储键值写入浏览器本地存储。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([key, value]) => {
           window.localStorage.setItem(key, value);
         });
       }, safeEntries);

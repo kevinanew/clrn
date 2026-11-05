@@ -16,6 +16,7 @@ SPECS = [
 
 
 def records():
+    """构造覆盖私人房、俱乐部、空态与不同输赢结果的战绩记录。"""
     return [{
         'play_session_id': PREFIX + key,
         'create_at': f'2026-01-0{2 if index < 3 else 1}T12:00:00Z',
@@ -31,6 +32,7 @@ def records():
 
 def all_records():
     # 分页首屏使用二十条，避免短列表同时触发自动补页与滚动加载。
+    """扩展固定战绩列表为足够长的分页数据，避免首屏自动补页。"""
     base = records()
     extra = []
     for index in range(17):
@@ -42,6 +44,7 @@ def all_records():
 
 
 def rooms():
+    """将战绩会话转换为按房间 ID 索引的房间资料。"""
     return {record['play_session_id']: {
         'room_id': record['play_session_id'], 'room_name': record['name'],
         'created_at': record['create_at'], 'creator_id': HOUSE,
@@ -63,6 +66,7 @@ def rooms():
 
 
 def settlements(user_id, room_id):
+    """为非空战绩房间构造各玩家的结算明细。"""
     record = next(record for record in all_records() if record['play_session_id'] == room_id)
     if not record['all_round_count']:
         return []
@@ -72,6 +76,7 @@ def settlements(user_id, room_id):
 
 
 def detail(user_id, session):
+    """按战绩会话构造详情入口、轮次和玩法资料。"""
     record = next(record for record in all_records() if record['play_session_id'] == session)
     return {'all_round_id': [] if session.endswith('empty') else [session + '-round'],
             'game_profile': {'#settings': {'small_blind': 1, 'big_blind': 2, 'boot': 5}},
@@ -84,6 +89,7 @@ def detail(user_id, session):
 
 
 def round_data(user_id, session):
+    """为指定战绩会话生成对应玩法的座位与公开牌面数据。"""
     zjh = session.endswith('club')
     return {'game_type': 'zhajinhua' if zjh else 'texas_holdem',
             'seats': {'1': user_id, '2': PLAYER},
@@ -108,6 +114,7 @@ def round_data(user_id, session):
 
 
 def replay(user_id, index=1, session=PREFIX + 'private'):
+    """构造绑定当前用户的指定轮次牌局重放结果。"""
     net = (180, -90, 0)[index - 1]
     zjh = session.endswith('club')
     players = [{'player_id': user_id, 'seat_number': 1, 'position': 'D', 'stack': 1000},

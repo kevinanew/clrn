@@ -16,7 +16,8 @@ export const visible = (page: Page, id: string) => page.getByTestId(id).filter({
  * @param hold - 是否暂缓接口响应以截取加载状态。
  */
 export async function holdListDeadline(page: Page, hold: boolean): Promise<void> {
-  await page.evaluate(enabled => {
+  await page.evaluate(/** 安装战绩请求期限控制，挂起场景中的读取不受普通超时打断。
+ * @param enabled - 当前操作使用的 enabled。 */ enabled => {
     const state = window as typeof window & { recordListHeld?: boolean; recordDeadlineInstalled?: boolean };
     state.recordListHeld = enabled;
     if (state.recordDeadlineInstalled) return;
@@ -30,7 +31,10 @@ export async function holdListDeadline(page: Page, hold: boolean): Promise<void>
      * @param url - 原始请求地址。
      * @param args - async、用户名和密码等剩余 open 参数。
      */
-    XMLHttpRequest.prototype.open = function(method, url, ...args: unknown[]) {
+    XMLHttpRequest.prototype.open = /** 记录每个 XHR 的目标地址并按原接收者调用打开接口。
+ * @param method - 当前操作使用的 method。
+ * @param url - 当前操作使用的 url。
+ * @param args - 当前操作使用的 args。 */ function(method, url, ...args: unknown[]) {
       requests.set(this, String(url));
       return Reflect.apply(open, this, [method, url, ...args]);
     };
@@ -38,7 +42,8 @@ export async function holdListDeadline(page: Page, hold: boolean): Promise<void>
      * 仅在代理挂起战绩列表时取消 XHR 截止时间，其他请求保持原行为。
      * @param body - 原始请求正文。
      */
-    XMLHttpRequest.prototype.send = function(body) {
+    XMLHttpRequest.prototype.send = /** 对当前挂起的战绩列表请求取消超时，其余请求保持原发送行为。
+ * @param body - 当前操作使用的 body。 */ function(body) {
       const url = requests.get(this) ?? '';
       if (state.recordListHeld && /\/v(?:10\/texas_holdem\/user\/[^/]+\/game_records|11\/game_log\/[^/]+\/play_session_record\/recent)(?:\?|$)/.test(url)) {
         this.timeout = 0;
@@ -87,7 +92,9 @@ export async function reopen(page: Page): Promise<void> {
  * @param end - 是否滚动到列表末尾；否则回到开头。
  */
 export async function scrollList(page: Page, end: boolean): Promise<void> {
-  await visible(page, 'my-game-record-list').evaluate((node, atEnd) => {
+  await visible(page, 'my-game-record-list').evaluate(/** 将可见战绩列表滚动到首尾并派发滚动事件，触发虚拟化更新。
+ * @param node - 当前遍历的 DOM 或语法节点。
+ * @param atEnd - 当前操作使用的 atEnd。 */ (node, atEnd) => {
     const element = node as HTMLElement;
     element.scrollTop = atEnd ? element.scrollHeight : 0;
     element.dispatchEvent(new Event('scroll', { bubbles: true }));

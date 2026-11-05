@@ -35,7 +35,7 @@ function requestWithResources(resources: Map<string, string>): APIRequestContext
   } as unknown as APIRequestContext;
 }
 
-test('CSS 和 Service Worker 的内嵌源码映射均使公开资源检查失败', async () => {
+test('CSS 和 Service Worker 的内嵌源码映射均使公开资源检查失败', /** 验证CSS 和 Service Worker 的内嵌源码映射均使公开资源检查失败。 */ async () => {
   const originalResources = new Map([
     [scriptAddress, '__DEV__=false;'],
     [styleAddress, 'body{color:red}'],

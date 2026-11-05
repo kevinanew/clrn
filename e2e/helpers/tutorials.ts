@@ -21,7 +21,7 @@ const installed = new WeakSet<TutorialPage>();
 export async function installTutorialHandler(page: TutorialPage): Promise<void> {
   if (installed.has(page)) return;
   const description = page.getByTestId('stepDescription').filter({ visible: true });
-  await page.addLocatorHandler(description, async () => {
+  await page.addLocatorHandler(description, /** 找到当前引导提示所属容器并点击可见的跳过或完成按钮。 */ async () => {
     // react-native-copilot 3.3.3 的说明和按钮是同一 tooltip 下的两个子容器。
     const tooltip = description.locator('../..');
     await tooltip.locator('[data-testid="tooltip-skip-button"], [data-testid="tooltip-finish-button"]')

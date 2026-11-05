@@ -31,11 +31,13 @@ export async function readDiamondBalance(page: Page, account: Session): Promise<
       headers: { Authorization: account.authorization },
       data: { currencies: ['diamond'] },
     },
-  ).catch(error => { throw requestFailure('existing-account-wallet', requestFailureReason(error)); });
+  ).catch(/** 将钱包读取失败转成不含凭据的业务诊断。
+ * @param error - 当前操作抛出的错误。 */ error => { throw requestFailure('existing-account-wallet', requestFailureReason(error)); });
   try {
     const body = await readRequestJson(response, 'existing-account-wallet');
     const currencies = body.result?.currencies;
-    const diamond = Array.isArray(currencies) ? currencies.find(asset => asset?.code === 'diamond') : undefined;
+    const diamond = Array.isArray(currencies) ? currencies.find(/** 查找满足以下条件的首个条目：`asset?.code === 'diamond'`。
+ * @param asset - 当前操作使用的 asset。 */ asset => asset?.code === 'diamond') : undefined;
     if (!diamond) throw requestFailure('existing-account-wallet', 'invalid-response', response.status());
     let balance: number;
     try { balance = Number(diamond.balance); }
@@ -43,7 +45,7 @@ export async function readDiamondBalance(page: Page, account: Session): Promise<
     if (!Number.isFinite(balance)) throw requestFailure('existing-account-wallet', 'invalid-response', response.status());
     return balance;
   } finally {
-    await response.dispose().catch(() => { throw requestFailure('existing-account-wallet', 'body-read-failed', response.status()); });
+    await response.dispose().catch(/** 将钱包响应释放失败转成带实际状态的诊断。 */ () => { throw requestFailure('existing-account-wallet', 'body-read-failed', response.status()); });
   }
 }
 
@@ -56,7 +58,7 @@ export async function registerAccount(page: Page): Promise<ProvisionedAccount> {
     return await registerOnStaging(page);
   } catch (error) {
     // 连初始化失败也不能让报告保存用户名/密码输入框的 DOM 快照。
-    await page.close().catch(() => undefined);
+    await page.close().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
     const failure = accountPreparationError(error, 'register-account-setup');
     throw error instanceof RegistrationRejectedError ? new RegistrationRejectedError(failure.message) : failure;
   }

@@ -34,7 +34,9 @@ function fixture(response: Response) {
         /** 读取模拟接口的响应头。 */
         headers: () => {
           const headers: Record<string, string> = {};
-          response.headers.forEach((value, name) => { headers[name] = value; });
+          response.headers.forEach(/** 将响应头复制为普通对象，供入场请求断言比较。
+ * @param value - 当前待转换或校验的值。
+ * @param name - 当前操作使用的 name。 */ (value, name) => { headers[name] = value; });
           return headers;
         },
         /** 记录响应释放次数。 */
@@ -51,7 +53,7 @@ function fixture(response: Response) {
   };
 }
 
-test('观察者连接错误页保留实际状态与操作，任意响应头和正文均不传播', async () => {
+test('观察者连接错误页保留实际状态与操作，任意响应头和正文均不传播', /** 验证观察者连接错误页保留实际状态与操作，任意响应头和正文均不传播。 */ async () => {
   for (const [status, contentType] of [
     [502, 'text/html; charset=utf-8'],
     [200, 'application/json'],
@@ -66,7 +68,7 @@ test('观察者连接错误页保留实际状态与操作，任意响应头和�
   }
 });
 
-test('观察者连接继续要求 HTTP 和业务结果同时成功，并释放每种结果的响应', async () => {
+test('观察者连接继续要求 HTTP 和业务结果同时成功，并释放每种结果的响应', /** 验证观察者连接继续要求 HTTP 和业务结果同时成功，并释放每种结果的响应。 */ async () => {
   for (const [status, ok] of [[200, true], [200, false], [503, true]] as const) {
     const { page, verify } = fixture(Response.json({ ok }, { status }));
     if (status === 200 && ok) await enterTexasRoom(page, room);

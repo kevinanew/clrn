@@ -26,7 +26,8 @@ export async function runVisualScenario(
   browser: Browser,
   options: { network?: Mitmproxy } = {},
 ): Promise<void> {
-  if (!options.network) return withMitmproxy(network => runVisualScenario(scenario, browser, { network }));
+  if (!options.network) return withMitmproxy(/** 在已启动的网络代理范围内运行当前视觉场景。
+ * @param network - 当前代理网络配置。 */ network => runVisualScenario(scenario, browser, { network }));
   const context = await browser.newContext({
     viewport: { width: scenario.viewport.width, height: scenario.viewport.height },
     locale: 'en-US',

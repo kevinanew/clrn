@@ -30,8 +30,9 @@ function isBlockedAbort(body) {
     && ts.isStringLiteral(reason) && reason.text === 'blockedbyclient';
 }
 
-test('应用集成与视觉场景不能重新引入 TypeScript 响应路由或后备服务器', () => {
-  const files = sourceFiles().filter(file => file.endsWith('.ts') && !file.endsWith('.test.ts')
+test('应用集成与视觉场景不能重新引入 TypeScript 响应路由或后备服务器', /** 验证应用集成与视觉场景不能重新引入 TypeScript 响应路由或后备服务器。 */ () => {
+  const files = sourceFiles().filter(/** 选择受网络夹具边界约束的业务 TypeScript，保留独立浏览器工具测试。
+ * @param file - 当前源码或资源路径。 */ file => file.endsWith('.ts') && !file.endsWith('.test.ts')
     && /^(?:visual\/(?:cases|animations|src)\/|e2e\/(?:cases|interactions|helpers)\/)/.test(file)
     && !file.endsWith('.browser.ts'));
   assert.ok(files.length > 100, '必须扫描实际场景及公共辅助代码');

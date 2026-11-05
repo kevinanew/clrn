@@ -22,7 +22,8 @@ export async function unique(page: Page, testId: string): Promise<Locator> {
  * @param deviceId - 本轮浏览器使用的设备标识。
  */
 export async function prepareContext(context: BrowserContext, deviceId = randomUUID()): Promise<void> {
-  await context.addInitScript((device) => {
+  await context.addInitScript(/** 初始化新浏览器上下文的默认语言与设备 ID，保留已有语言选择。
+ * @param device - 当前操作使用的 device。 */ (device) => {
     // 仅初始化新上下文；刷新时不能覆盖用户刚选择的语言，否则会掩盖持久化回归。
     if (!localStorage.getItem('app.language.code.key')) {
       localStorage.setItem('app.language.code.key', 'zh-Hans');
@@ -36,7 +37,8 @@ export async function prepareContext(context: BrowserContext, deviceId = randomU
  * @param page - 执行操作的 Playwright 页面。
  */
 export async function openHall(page: Page): Promise<void> {
-  const response = await page.goto('/', { waitUntil: 'domcontentloaded' }).catch(error => {
+  const response = await page.goto('/', { waitUntil: 'domcontentloaded' }).catch(/** 将大厅导航失败转成可定位且脱敏的请求诊断。
+ * @param error - 当前操作抛出的错误。 */ error => {
     throw requestFailure('functional-open-hall', requestFailureReason(error));
   });
   if (!response) throw requestFailure('functional-open-hall', 'invalid-response');

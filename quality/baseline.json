@@ -25,7 +25,7 @@
     {
       "file": "e2e/cases/_shared/auth.test.ts",
       "rule": "quality/no-network-response",
-      "line": 16,
+      "line": 17,
       "column": 20,
       "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "34a8b5bc10731473b308aea89fba4146c18cf335b50c57e358de634131fd2c57",
@@ -55,7 +55,7 @@
     {
       "file": "e2e/cases/_shared/creation-account-fixture.ts",
       "rule": "complexity",
-      "line": 19,
+      "line": 20,
       "column": 3,
       "message": "Async method 'newAccount' has a complexity of 20. Maximum allowed is 10.",
       "anchor": "2d242c655cc268ae8c3633c2492081605c7b173c9be942ce2afc005d6a3f476a",
@@ -65,8 +65,8 @@
     {
       "file": "e2e/cases/_shared/read-account-diagnostics.test.ts",
       "rule": "complexity",
-      "line": 186,
-      "column": 42,
+      "line": 192,
+      "column": 39,
       "message": "Arrow function has a complexity of 14. Maximum allowed is 10.",
       "anchor": "a8ff554b1dcf1a357b4682bd0162cf92d236cfcc8b6b32505db0599a8662cf1f",
       "kind": "migration",
@@ -76,7 +76,7 @@
       "file": "e2e/cases/_shared/sign-in-notices.ts",
       "rule": "complexity",
       "line": 21,
-      "column": 54,
+      "column": 86,
       "message": "Async arrow function has a complexity of 14. Maximum allowed is 10.",
       "anchor": "0eadc3d76ab520afa02e4ef9393a9b6aa417c951a4cb5442108a925df1694c27",
       "kind": "migration",
@@ -125,7 +125,7 @@
     {
       "file": "e2e/cases/club-005-join-approval-invite/test.spec.ts",
       "rule": "max-depth",
-      "line": 193,
+      "line": 204,
       "column": 9,
       "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
       "anchor": "d1987c64d2485fc21ea0e81b1907e12ff84047cf55ab3ce8a8c4021219ded238",
@@ -135,7 +135,7 @@
     {
       "file": "e2e/cases/club-005-join-approval-invite/test.spec.ts",
       "rule": "max-depth",
-      "line": 201,
+      "line": 212,
       "column": 9,
       "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
       "anchor": "b76f342754f1bf92c02ffb85f6fa6fa52d02c28b6294a419a93c179e8e6eb0be",
@@ -145,7 +145,7 @@
     {
       "file": "e2e/cases/private-001-create-and-dismiss/test.spec.ts",
       "rule": "max-depth",
-      "line": 80,
+      "line": 83,
       "column": 9,
       "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
       "anchor": "d438f0dd6fb1c1b7e3a473e66c1c590b34670fca1bf19805c19f752d711c5eb7",
@@ -155,7 +155,7 @@
     {
       "file": "e2e/cases/private-001-create-and-dismiss/test.spec.ts",
       "rule": "max-depth",
-      "line": 83,
+      "line": 86,
       "column": 11,
       "message": "Blocks are nested too deeply (5). Maximum allowed is 3.",
       "anchor": "03d9aba6351173e5f8c479f3e786247afca28bd814dd42e6477fa51b48c9fe36",
@@ -185,7 +185,7 @@
     {
       "file": "e2e/helpers/diagnostic-privacy.ts",
       "rule": "complexity",
-      "line": 60,
+      "line": 65,
       "column": 8,
       "message": "Function 'diagnosticFields' has a complexity of 22. Maximum allowed is 10.",
       "anchor": "201ec5b8b22955a56334f436541bd167e2c33a800f8f754edb7808aae96e8544",
@@ -195,7 +195,7 @@
     {
       "file": "e2e/helpers/diagnostic-recorder.ts",
       "rule": "complexity",
-      "line": 52,
+      "line": 57,
       "column": 3,
       "message": "Method 'markdown' has a complexity of 20. Maximum allowed is 10.",
       "anchor": "578d6324de4d9a2ce0e54d1e8c481427fcbee174d63142a2696cd662bb27fce0",
@@ -215,7 +215,7 @@
     {
       "file": "e2e/helpers/mitmproxy-sources.test.ts",
       "rule": "quality/no-network-response",
-      "line": 37,
+      "line": 39,
       "column": 5,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d66fe9c582139f6454279c1a0667e0374c66cd973e70472bf454e60d68d81613",
@@ -225,7 +225,7 @@
     {
       "file": "e2e/helpers/mitmproxy-sources.test.ts",
       "rule": "quality/no-network-response",
-      "line": 55,
+      "line": 57,
       "column": 7,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "b3a33678b11a31e0be85f4eca4556ce4de0ecc7ba32cac128ea05874e36544c5",
@@ -235,7 +235,7 @@
     {
       "file": "e2e/helpers/mitmproxy-sources.test.ts",
       "rule": "quality/no-network-response",
-      "line": 60,
+      "line": 62,
       "column": 5,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "bcd0ef37328c37b9ee8e3a79731c752c5f09104d3b1b01259dbb9ee1c5066597",
@@ -245,7 +245,7 @@
     {
       "file": "e2e/helpers/mitmproxy-sources.test.ts",
       "rule": "quality/no-network-response",
-      "line": 63,
+      "line": 65,
       "column": 15,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "5714d8b4abdaf73a1f43693e3115faf6397e971815396b0982de5d9bf4408a26",
@@ -255,7 +255,7 @@
     {
       "file": "e2e/helpers/mitmproxy-sources.test.ts",
       "rule": "quality/no-network-response",
-      "line": 72,
+      "line": 74,
       "column": 5,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "f040959015ac87492380714d6bdeb185d7455d0951916d8d4d97da622dcd1190",
@@ -265,7 +265,7 @@
     {
       "file": "e2e/helpers/mitmproxy-sources.test.ts",
       "rule": "quality/no-network-response",
-      "line": 86,
+      "line": 89,
       "column": 15,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "5714d8b4abdaf73a1f43693e3115faf6397e971815396b0982de5d9bf4408a26",
@@ -275,7 +275,7 @@
     {
       "file": "e2e/helpers/mitmproxy-sources.ts",
       "rule": "complexity",
-      "line": 43,
+      "line": 44,
       "column": 1,
       "message": "Async function 'metadataHosts' has a complexity of 14. Maximum allowed is 10.",
       "anchor": "ec6be07f760edeeb8f9572450f68687a9cb16caf4a1e19e9fee02b417eb2189d",
@@ -305,7 +305,7 @@
     {
       "file": "e2e/mitmproxy.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 6,
+      "line": 7,
       "column": 20,
       "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "1099f57475793911c7f63891d2476726ad097af408bc3ca440ba8e9e47f3f1e1",
@@ -315,8 +315,8 @@
     {
       "file": "e2e/public-artifacts.spec.ts",
       "rule": "complexity",
-      "line": 18,
-      "column": 60,
+      "line": 19,
+      "column": 67,
       "message": "Async arrow function has a complexity of 12. Maximum allowed is 10.",
       "anchor": "4d868a4c81c005ec8b9cb336bc4a40ab66cbb7bf6a3f6f2f711d9dcf1ad9d835",
       "kind": "migration",
@@ -325,7 +325,7 @@
     {
       "file": "e2e/sites-availability.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 20,
+      "line": 21,
       "column": 9,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "b57c92264682b7cded7432be95ee41973be20d7eadf77b02466a1638bb57235d",
@@ -335,7 +335,7 @@
     {
       "file": "e2e/sites-availability.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 33,
+      "line": 36,
       "column": 11,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "3565dea4a2f5c32db22cebc74fb643f8a4f1456074ef091ca6ff33a8f129495a",
@@ -345,7 +345,7 @@
     {
       "file": "e2e/sites-availability.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 77,
+      "line": 81,
       "column": 9,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "e34f95019a541d863493e754d6ae221ca2651b4aaaeb70feac57b03550cb1c39",
@@ -355,7 +355,7 @@
     {
       "file": "e2e/sites-availability.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 80,
+      "line": 86,
       "column": 11,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d373cd00a1cb7633f76a8a105040df053c7a85cd2e8713a381fb8a3fe6d8daa1",
@@ -365,8 +365,8 @@
     {
       "file": "e2e/test-user.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 8,
-      "column": 24,
+      "line": 9,
+      "column": 57,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "1795bf3d36d83f8ff6ef680dd0ed9453e5f025c2b33dddecaf4472a9061a786e",
       "kind": "migration",
@@ -375,7 +375,7 @@
     {
       "file": "e2e/test-user.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 16,
+      "line": 17,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "b189f4399122fcb007ff7069aa4e6ae36df478cbd8b903f51cb5976fcc7a313e",
@@ -385,7 +385,7 @@
     {
       "file": "e2e/test-user.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 30,
+      "line": 33,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d26d34840c5fbde7092259d9f111dc97933010c5a5b077ccb8fa1e224cd190f8",
@@ -395,7 +395,7 @@
     {
       "file": "e2e/test-user.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 39,
+      "line": 42,
       "column": 5,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "f528ea64f445cbc59fb87123c824e604ee57fc4c46d8440d364dccb31ababa17",
@@ -405,20 +405,10 @@
     {
       "file": "e2e/test-user.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 52,
+      "line": 55,
       "column": 5,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "ed06f548431905a12b74b1c3fb50711ac0c8bd25198969ca3eafad72b4df8813",
-      "kind": "migration",
-      "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
-    },
-    {
-      "file": "e2e/test-user.spec.ts",
-      "rule": "quality/no-network-response",
-      "line": 56,
-      "column": 3,
-      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
-      "anchor": "4ef0ba451cd3b8a0fa9f91c6c55791f7764f340e9c500ba9c926dfa03989959f",
       "kind": "migration",
       "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
     },
@@ -428,6 +418,16 @@
       "line": 59,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "4ef0ba451cd3b8a0fa9f91c6c55791f7764f340e9c500ba9c926dfa03989959f",
+      "kind": "migration",
+      "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "rule": "quality/no-network-response",
+      "line": 62,
+      "column": 3,
+      "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "e2bf702008255bbb006d11186bb7eb9dbbe88148def3e6c80ab6cc31aca65dcc",
       "kind": "migration",
       "reason": "既有账号辅助函数的 fetch 边界单测及恢复操作；保留验证，不允许扩张普通集成伪造。"
@@ -435,7 +435,7 @@
     {
       "file": "e2e/test-wallet.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 15,
+      "line": 16,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "a51c2b36289fc9b39c88263b6a0f2c2aa1b03e60ccf531db022efc523180b21e",
@@ -445,7 +445,7 @@
     {
       "file": "e2e/test-wallet.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 32,
+      "line": 33,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "9a984cb7ce458eece4f3f6303cc6f26947e6f8e964536572c9b33a01cd189dcf",
@@ -455,7 +455,7 @@
     {
       "file": "e2e/test-wallet.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 50,
+      "line": 51,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "b189f4399122fcb007ff7069aa4e6ae36df478cbd8b903f51cb5976fcc7a313e",
@@ -465,7 +465,7 @@
     {
       "file": "e2e/test-wallet.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 65,
+      "line": 68,
       "column": 5,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "bbb496a1122a6787bdf069ff9261bfb9c1162ee9b20e455713dd701f83167031",
@@ -475,7 +475,7 @@
     {
       "file": "e2e/test-wallet.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 79,
+      "line": 82,
       "column": 5,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "ed06f548431905a12b74b1c3fb50711ac0c8bd25198969ca3eafad72b4df8813",
@@ -485,7 +485,7 @@
     {
       "file": "e2e/test-wallet.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 83,
+      "line": 86,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "4ef0ba451cd3b8a0fa9f91c6c55791f7764f340e9c500ba9c926dfa03989959f",
@@ -495,7 +495,7 @@
     {
       "file": "e2e/test-wallet.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 89,
+      "line": 92,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "e2bf702008255bbb006d11186bb7eb9dbbe88148def3e6c80ab6cc31aca65dcc",
@@ -505,8 +505,8 @@
     {
       "file": "scripts/account-network-fixture.mjs",
       "rule": "complexity",
-      "line": 13,
-      "column": 41,
+      "line": 15,
+      "column": 62,
       "message": "Async arrow function has a complexity of 12. Maximum allowed is 10.",
       "anchor": "b189f4399122fcb007ff7069aa4e6ae36df478cbd8b903f51cb5976fcc7a313e",
       "kind": "migration",
@@ -515,7 +515,7 @@
     {
       "file": "scripts/ci-accounts.mjs",
       "rule": "complexity",
-      "line": 70,
+      "line": 79,
       "column": 8,
       "message": "Function 'ciAccountCredentials' has a complexity of 17. Maximum allowed is 10.",
       "anchor": "0b56601bc061257548e625dea36961bad1048a48ae5b8f0f074980c0b25b9dc2",
@@ -545,7 +545,7 @@
     {
       "file": "scripts/prepare-test-account-rooms.mjs",
       "rule": "complexity",
-      "line": 37,
+      "line": 38,
       "column": 1,
       "message": "Function 'recoverable' has a complexity of 15. Maximum allowed is 10.",
       "anchor": "3e1aed4e9616c5c711fdefb090377e88c50c47df1ba4fe6b2b5f32f59cac40f6",
@@ -555,7 +555,7 @@
     {
       "file": "scripts/prepare-test-account-rooms.mjs",
       "rule": "complexity",
-      "line": 49,
+      "line": 50,
       "column": 8,
       "message": "Async function 'prepareTestAccountRooms' has a complexity of 17. Maximum allowed is 10.",
       "anchor": "17790954b6f02a3fd95df1be85600f5b230118539ecbbb3aa0fceb138d1ec6c2",
@@ -575,7 +575,7 @@
     {
       "file": "scripts/prepare-test-account.mjs",
       "rule": "complexity",
-      "line": 68,
+      "line": 69,
       "column": 8,
       "message": "Async function 'prepareTestAccountCoins' has a complexity of 26. Maximum allowed is 10.",
       "anchor": "3b93cdce439a44efbe0e6fe76eb9c47ef0e535ff5546a283586f5ffb3f6f76db",
@@ -595,7 +595,7 @@
     {
       "file": "scripts/request-failure.cjs",
       "rule": "complexity",
-      "line": 52,
+      "line": 60,
       "column": 1,
       "message": "Function 'requestFailureReason' has a complexity of 15. Maximum allowed is 10.",
       "anchor": "5e839a9b238f22bea0ee482fe49dd33265dcd11fe2f5bfd9b9be8a46d855700b",
@@ -605,7 +605,7 @@
     {
       "file": "scripts/request-failure.cjs",
       "rule": "complexity",
-      "line": 75,
+      "line": 83,
       "column": 1,
       "message": "Function 'requestFailure' has a complexity of 11. Maximum allowed is 10.",
       "anchor": "4e2a83ee0473ecb09a9194d223a059ee046ea6c1bba3ea56242b9a32568d9f11",
@@ -615,7 +615,7 @@
     {
       "file": "scripts/request-failure.cjs",
       "rule": "complexity",
-      "line": 99,
+      "line": 107,
       "column": 1,
       "message": "Function 'safeDiagnosticReason' has a complexity of 13. Maximum allowed is 10.",
       "anchor": "38ea8a638578d5e4e40b60e17f5c13194386ff425ac81af52460e0a20440d928",
@@ -635,7 +635,7 @@
     {
       "file": "scripts/staging-deployment.mjs",
       "rule": "complexity",
-      "line": 84,
+      "line": 86,
       "column": 8,
       "message": "Async function 'waitForDeployment' has a complexity of 21. Maximum allowed is 10.",
       "anchor": "6135bfc819e65aa87145d72112c8a64267b1d261e8a4beb5c864ddc18b39075a",
@@ -655,8 +655,8 @@
     {
       "file": "visual/animations/cardSpriteReadiness.ts",
       "rule": "complexity",
-      "line": 42,
-      "column": 67,
+      "line": 48,
+      "column": 54,
       "message": "Arrow function has a complexity of 40. Maximum allowed is 10.",
       "anchor": "55821e14b241893c86e318c5fbce53eb9bcad7b78ae03277cbadefa5badff19f",
       "kind": "migration",
@@ -675,7 +675,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 30,
+      "line": 31,
       "column": 67,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "382a1e6a0cb0006f36eb6f8280a6310deda3f7ae2de50387ed60fc49b5c930de",
@@ -685,7 +685,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 50,
+      "line": 51,
       "column": 15,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "81d80e2ba685b176920f9ea0ca67d5a381365167cda4ec8543668c122a39bd86",
@@ -695,7 +695,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 56,
+      "line": 57,
       "column": 13,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d4d828e013ec2ca50c7f466b973ba15fa25892abf5fb628188691af684adfa74",
@@ -705,7 +705,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 59,
+      "line": 60,
       "column": 13,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "020b14c0456145954b4e8a83fe5c9f3dbc6939973f8bdf14dc071e808fdc1848",
@@ -715,7 +715,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 73,
+      "line": 74,
       "column": 13,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
@@ -725,7 +725,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 75,
+      "line": 77,
       "column": 34,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "76bc73f671060b1dcc56a650a9cd2adac8fe5ab318f22a17aad8d42f27e42260",
@@ -735,7 +735,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 76,
+      "line": 78,
       "column": 58,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "05d7b60dbdc4ca74ef9188e38ede2fabf8fd67270afc4700736bbefe68893c17",
@@ -745,7 +745,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 78,
+      "line": 80,
       "column": 37,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "f5dc65689a16ec7b959575cd14443061166bd1de9ab3a278293d807d3a2c7539",
@@ -755,7 +755,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 79,
+      "line": 81,
       "column": 41,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d90d36e4ca8fd87d2e6a9e256d996e0c27efda679000d9194391041da214471d",
@@ -765,7 +765,7 @@
     {
       "file": "visual/animations/leaderboardReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 80,
+      "line": 82,
       "column": 16,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "9b599b70a98c8a4b4eb7a6612897dc1af03ece83d2cfef2d122ba91ea6be480e",
@@ -775,7 +775,7 @@
     {
       "file": "visual/animations/playerAnimationAsset.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 18,
+      "line": 49,
       "column": 11,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "2d870b690f75b5aee40a39f897c0957a44e9d5554270902dd277e419a915dfb7",
@@ -785,7 +785,7 @@
     {
       "file": "visual/animations/playerAnimationAsset.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 19,
+      "line": 51,
       "column": 9,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "9c2bfeeebad9ed902a79adba9a039e24c530d419e6c2b86e7d22e28fadf1e9c0",
@@ -795,7 +795,7 @@
     {
       "file": "visual/animations/playerAnimationAsset.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 19,
+      "line": 51,
       "column": 52,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "9c2bfeeebad9ed902a79adba9a039e24c530d419e6c2b86e7d22e28fadf1e9c0",
@@ -815,7 +815,7 @@
     {
       "file": "visual/animations/playerProfileReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 32,
+      "line": 33,
       "column": 32,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "76bc73f671060b1dcc56a650a9cd2adac8fe5ab318f22a17aad8d42f27e42260",
@@ -825,7 +825,7 @@
     {
       "file": "visual/animations/playerProfileReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 50,
+      "line": 52,
       "column": 15,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "81d80e2ba685b176920f9ea0ca67d5a381365167cda4ec8543668c122a39bd86",
@@ -835,7 +835,7 @@
     {
       "file": "visual/animations/playerProfileReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 57,
+      "line": 59,
       "column": 15,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "53f1fe573c7224d280fdde758dbcce08fede46e46072ab86c9be3ad422363923",
@@ -845,7 +845,7 @@
     {
       "file": "visual/animations/playerProfileReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 73,
+      "line": 75,
       "column": 15,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
@@ -855,7 +855,7 @@
     {
       "file": "visual/animations/playerProfileReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 75,
+      "line": 78,
       "column": 36,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "76bc73f671060b1dcc56a650a9cd2adac8fe5ab318f22a17aad8d42f27e42260",
@@ -865,7 +865,7 @@
     {
       "file": "visual/animations/playerProfileReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 76,
+      "line": 79,
       "column": 45,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "92d193526e3d2ab448c167e6148d92db98132385e7108e810c0f4369355ef344",
@@ -875,7 +875,7 @@
     {
       "file": "visual/animations/playerProfileReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 77,
+      "line": 80,
       "column": 39,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "f5dc65689a16ec7b959575cd14443061166bd1de9ab3a278293d807d3a2c7539",
@@ -885,7 +885,7 @@
     {
       "file": "visual/animations/playerProfileReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 78,
+      "line": 81,
       "column": 43,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d90d36e4ca8fd87d2e6a9e256d996e0c27efda679000d9194391041da214471d",
@@ -895,7 +895,7 @@
     {
       "file": "visual/animations/playerProfileReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 79,
+      "line": 82,
       "column": 18,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "9b599b70a98c8a4b4eb7a6612897dc1af03ece83d2cfef2d122ba91ea6be480e",
@@ -905,7 +905,57 @@
     {
       "file": "visual/animations/renewReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 27,
+      "line": 54,
+      "column": 9,
+      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 56,
+      "column": 65,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "382a1e6a0cb0006f36eb6f8280a6310deda3f7ae2de50387ed60fc49b5c930de",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 75,
+      "column": 13,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "81d80e2ba685b176920f9ea0ca67d5a381365167cda4ec8543668c122a39bd86",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 112,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "d4d828e013ec2ca50c7f466b973ba15fa25892abf5fb628188691af684adfa74",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 116,
+      "column": 11,
+      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
+      "anchor": "020b14c0456145954b4e8a83fe5c9f3dbc6939973f8bdf14dc071e808fdc1848",
+      "kind": "migration",
+      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
+    },
+    {
+      "file": "visual/animations/renewReadiness.browser.ts",
+      "rule": "quality/no-network-response",
+      "line": 131,
       "column": 11,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
@@ -915,58 +965,8 @@
     {
       "file": "visual/animations/renewReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 28,
-      "column": 67,
-      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
-      "anchor": "382a1e6a0cb0006f36eb6f8280a6310deda3f7ae2de50387ed60fc49b5c930de",
-      "kind": "migration",
-      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
-    },
-    {
-      "file": "visual/animations/renewReadiness.browser.ts",
-      "rule": "quality/no-network-response",
-      "line": 48,
-      "column": 15,
-      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
-      "anchor": "81d80e2ba685b176920f9ea0ca67d5a381365167cda4ec8543668c122a39bd86",
-      "kind": "migration",
-      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
-    },
-    {
-      "file": "visual/animations/renewReadiness.browser.ts",
-      "rule": "quality/no-network-response",
-      "line": 54,
-      "column": 13,
-      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
-      "anchor": "d4d828e013ec2ca50c7f466b973ba15fa25892abf5fb628188691af684adfa74",
-      "kind": "migration",
-      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
-    },
-    {
-      "file": "visual/animations/renewReadiness.browser.ts",
-      "rule": "quality/no-network-response",
-      "line": 57,
-      "column": 13,
-      "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
-      "anchor": "020b14c0456145954b4e8a83fe5c9f3dbc6939973f8bdf14dc071e808fdc1848",
-      "kind": "migration",
-      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
-    },
-    {
-      "file": "visual/animations/renewReadiness.browser.ts",
-      "rule": "quality/no-network-response",
-      "line": 71,
-      "column": 13,
-      "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
-      "anchor": "d126efa3dab1272eb6d3291772bb4bdde008a301f2b99c87649751ba457c6a7d",
-      "kind": "migration",
-      "reason": "既有续费就绪辅助函数离线浏览器测试：验证新旧请求和失败边界，保留原验证。"
-    },
-    {
-      "file": "visual/animations/renewReadiness.browser.ts",
-      "rule": "quality/no-network-response",
-      "line": 73,
-      "column": 34,
+      "line": 134,
+      "column": 32,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "76bc73f671060b1dcc56a650a9cd2adac8fe5ab318f22a17aad8d42f27e42260",
       "kind": "migration",
@@ -975,8 +975,8 @@
     {
       "file": "visual/animations/renewReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 74,
-      "column": 46,
+      "line": 136,
+      "column": 44,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "a67c206c6ab795a1a9badcbb51d297fd6a289c29bf0821d2f1386dfaeb8b4e0c",
       "kind": "migration",
@@ -985,8 +985,8 @@
     {
       "file": "visual/animations/renewReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 76,
-      "column": 37,
+      "line": 138,
+      "column": 35,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "f5dc65689a16ec7b959575cd14443061166bd1de9ab3a278293d807d3a2c7539",
       "kind": "migration",
@@ -995,8 +995,8 @@
     {
       "file": "visual/animations/renewReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 77,
-      "column": 41,
+      "line": 139,
+      "column": 39,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d90d36e4ca8fd87d2e6a9e256d996e0c27efda679000d9194391041da214471d",
       "kind": "migration",
@@ -1005,8 +1005,8 @@
     {
       "file": "visual/animations/renewReadiness.browser.ts",
       "rule": "quality/no-network-response",
-      "line": 78,
-      "column": 16,
+      "line": 140,
+      "column": 14,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "9b599b70a98c8a4b4eb7a6612897dc1af03ece83d2cfef2d122ba91ea6be480e",
       "kind": "migration",
@@ -1015,7 +1015,7 @@
     {
       "file": "visual/animations/timeline.ts",
       "rule": "complexity",
-      "line": 22,
+      "line": 30,
       "column": 1,
       "message": "Async function 'unmaskedPixelCount' has a complexity of 13. Maximum allowed is 10.",
       "anchor": "c64648bbedb59448bcb03ffa7f522d054efd26c46908febd28c63c8caf6ba2d3",
@@ -1025,7 +1025,7 @@
     {
       "file": "visual/cases/_shared/room.test.ts",
       "rule": "quality/no-network-response",
-      "line": 10,
+      "line": 11,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "6eb64313baf6bf17424dc2505dc4250a1c3a6a3d2b7b8e21c9075c1f51a41fe8",
@@ -1035,7 +1035,7 @@
     {
       "file": "visual/cases/_shared/room.test.ts",
       "rule": "quality/no-network-response",
-      "line": 27,
+      "line": 31,
       "column": 5,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "e05b5798f352cbeb6692796c4c7f86e5a06cd032956c651169e11c5763ec3d94",
@@ -1055,7 +1055,7 @@
     {
       "file": "visual/cases/_shared/room.ts",
       "rule": "complexity",
-      "line": 63,
+      "line": 66,
       "column": 8,
       "message": "Async function 'ensureRoomBalance' has a complexity of 11. Maximum allowed is 10.",
       "anchor": "4616960966d424ce18da05c7bdf26928cc39a4c76e5dba7a85b1dee0295e119c",
@@ -1065,8 +1065,8 @@
     {
       "file": "visual/cases/game-record/game-record.spec.ts",
       "rule": "complexity",
-      "line": 164,
-      "column": 57,
+      "line": 168,
+      "column": 74,
       "message": "Async arrow function has a complexity of 13. Maximum allowed is 10.",
       "anchor": "26458cdb283a643f3324ecc23af0775d7ecb59c30942d07dc9fc423f51e1f312",
       "kind": "migration",
@@ -1085,7 +1085,7 @@
     {
       "file": "visual/cases/texas-holdem/roomCleanup.test.ts",
       "rule": "quality/no-network-response",
-      "line": 12,
+      "line": 13,
       "column": 18,
       "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "a179948d4d869125162b37946ce30fe60d58804a1e226dc375831801e06a4ea3",
@@ -1095,7 +1095,7 @@
     {
       "file": "visual/cases/texas-holdem/roomCleanup.test.ts",
       "rule": "quality/no-network-response",
-      "line": 24,
+      "line": 27,
       "column": 3,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "40c632cb362ca705d26addb9c84e77351bdfed3b5bc42e09d60bae8c4b0adce9",
@@ -1105,8 +1105,8 @@
     {
       "file": "visual/cases/texas-holdem/texas-holdem.spec.ts",
       "rule": "complexity",
-      "line": 210,
-      "column": 55,
+      "line": 219,
+      "column": 72,
       "message": "Async arrow function has a complexity of 18. Maximum allowed is 10.",
       "anchor": "6cecd1c7550cb79d4d4c6088de4f2d16acaace5ae71a21b898216d0bbaa7751f",
       "kind": "migration",
@@ -1115,7 +1115,7 @@
     {
       "file": "visual/cases/texas-holdem/texas-holdem.spec.ts",
       "rule": "max-depth",
-      "line": 300,
+      "line": 313,
       "column": 11,
       "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
       "anchor": "10b28023ecc4f370d422fd0b653bd13e91bb11c489ec6606c6137feed167085e",
@@ -1125,7 +1125,7 @@
     {
       "file": "visual/cases/zhajinhua/zhajinhua.spec.ts",
       "rule": "max-depth",
-      "line": 69,
+      "line": 74,
       "column": 15,
       "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
       "anchor": "f44c6284e02b36fdea89c73994d760544139e5c4ded46e151fd06988f5b723d6",
@@ -1135,8 +1135,8 @@
     {
       "file": "visual/src/support/authValidation.ts",
       "rule": "complexity",
-      "line": 36,
-      "column": 36,
+      "line": 37,
+      "column": 68,
       "message": "Arrow function has a complexity of 14. Maximum allowed is 10.",
       "anchor": "50b0a614eac9f99a033024d147dd75a02a5573165c4cfd8efa648e4358150a29",
       "kind": "migration",
@@ -1145,7 +1145,7 @@
     {
       "file": "visual/src/support/authValidation.ts",
       "rule": "complexity",
-      "line": 124,
+      "line": 127,
       "column": 8,
       "message": "Async function 'waitForSignInState' has a complexity of 16. Maximum allowed is 10.",
       "anchor": "c49813d9686c5d7be33ce3782919ba2489196e8a8564b8138a32e47fdcd941ef",
@@ -1155,7 +1155,7 @@
     {
       "file": "visual/src/support/pageSetup.ts",
       "rule": "complexity",
-      "line": 160,
+      "line": 161,
       "column": 8,
       "message": "Async function 'setupContextForScenario' has a complexity of 12. Maximum allowed is 10.",
       "anchor": "7c7529c806e29b2b9cd25f1e0183205bfe9fb2a02ffb45026807d585fb4d793d",
@@ -1165,7 +1165,7 @@
     {
       "file": "visual/src/support/preparePage.ts",
       "rule": "complexity",
-      "line": 243,
+      "line": 252,
       "column": 8,
       "message": "Async function 'preparePage' has a complexity of 22. Maximum allowed is 10.",
       "anchor": "d8ebe90bd927b9abfa03d1d92263834291c1f4d966e8685b85684652e0776359",
@@ -1175,7 +1175,7 @@
     {
       "file": "visual/src/support/requestError.test.ts",
       "rule": "quality/no-network-response",
-      "line": 59,
+      "line": 62,
       "column": 5,
       "message": "TypeScript 网络响应入口 fetch 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "4c9a03aceb07ac8f544128970bbb9803711c3cbad67d8f646bed2c2ea8d151c9",
@@ -1185,7 +1185,7 @@
     {
       "file": "visual/tests/accountPresentation.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 7,
+      "line": 8,
       "column": 9,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "11cec95f4ab62afc5f6bbf1c95b3421c475c0d86b6d09b69e04efd5060ffc531",
@@ -1195,8 +1195,8 @@
     {
       "file": "visual/tests/accountPresentation.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 7,
-      "column": 70,
+      "line": 9,
+      "column": 42,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "11cec95f4ab62afc5f6bbf1c95b3421c475c0d86b6d09b69e04efd5060ffc531",
       "kind": "migration",
@@ -1215,7 +1215,7 @@
     {
       "file": "visual/tests/authValidation.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 41,
+      "line": 38,
       "column": 18,
       "message": "TypeScript 网络响应入口 createServer 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "84e7bfa3cf209e020004fc932d90bfc1eb9cc97b0b1b444af511ba9aa7ed6549",
@@ -1225,7 +1225,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 7,
+      "line": 9,
       "column": 9,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "1995fad5d8b6efc31c7de6e8bbfae2ce2e78742a8a8120ba47657bc814cd8ee0",
@@ -1235,7 +1235,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 9,
+      "line": 12,
       "column": 13,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d716e63641e3c4a1f8775615eb4465bab72ecdc5b4226c7796ce0f91a28b348a",
@@ -1245,7 +1245,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 14,
+      "line": 17,
       "column": 11,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "b70d836dbcf90a88e60d51bf230ce670d50b04a8beb81a5924df9c0ae8058429",
@@ -1255,7 +1255,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 33,
+      "line": 38,
       "column": 9,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "1995fad5d8b6efc31c7de6e8bbfae2ce2e78742a8a8120ba47657bc814cd8ee0",
@@ -1265,7 +1265,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 35,
+      "line": 41,
       "column": 13,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d716e63641e3c4a1f8775615eb4465bab72ecdc5b4226c7796ce0f91a28b348a",
@@ -1275,7 +1275,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 40,
+      "line": 46,
       "column": 11,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "17d672c799dee41ee84a6d92f3e6f098c739cb5de3bbcfac1d6b46600e5509f8",
@@ -1285,7 +1285,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 59,
+      "line": 66,
       "column": 9,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "1995fad5d8b6efc31c7de6e8bbfae2ce2e78742a8a8120ba47657bc814cd8ee0",
@@ -1295,7 +1295,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 61,
+      "line": 69,
       "column": 13,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d716e63641e3c4a1f8775615eb4465bab72ecdc5b4226c7796ce0f91a28b348a",
@@ -1305,7 +1305,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 65,
+      "line": 73,
       "column": 11,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "20ae24e48cf2bcc6288129baee291f7b6924b8c0aa5e10b8a4dd63f03e931274",
@@ -1315,7 +1315,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 75,
+      "line": 85,
       "column": 9,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "1995fad5d8b6efc31c7de6e8bbfae2ce2e78742a8a8120ba47657bc814cd8ee0",
@@ -1325,7 +1325,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 77,
+      "line": 88,
       "column": 13,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "d716e63641e3c4a1f8775615eb4465bab72ecdc5b4226c7796ce0f91a28b348a",
@@ -1335,7 +1335,7 @@
     {
       "file": "visual/tests/localImages.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 84,
+      "line": 95,
       "column": 11,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "20ae24e48cf2bcc6288129baee291f7b6924b8c0aa5e10b8a4dd63f03e931274",
@@ -1345,7 +1345,7 @@
     {
       "file": "visual/tests/preparePage.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 324,
+      "line": 336,
       "column": 9,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "1dae4ac30bf5ee7a4544506ac8f7fa8db4547b145437f23e4788748a952988d1",
@@ -1355,7 +1355,7 @@
     {
       "file": "visual/tests/preparePage.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 327,
+      "line": 340,
       "column": 13,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "14a0c2bd83b5200129ea5a5832c99cb1f9380e41819bf28398324e9f8c03ca3a",
@@ -1365,7 +1365,7 @@
     {
       "file": "visual/tests/preparePage.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 333,
+      "line": 346,
       "column": 11,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "17d672c799dee41ee84a6d92f3e6f098c739cb5de3bbcfac1d6b46600e5509f8",
@@ -1375,7 +1375,7 @@
     {
       "file": "visual/tests/preparePage.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 347,
+      "line": 360,
       "column": 9,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "1dae4ac30bf5ee7a4544506ac8f7fa8db4547b145437f23e4788748a952988d1",
@@ -1385,7 +1385,7 @@
     {
       "file": "visual/tests/preparePage.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 349,
+      "line": 363,
       "column": 13,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "59706d59ed11220b4577d3d012ebb70d49771271be902e2d999e97cfbb8a34f4",
@@ -1395,7 +1395,7 @@
     {
       "file": "visual/tests/preparePage.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 354,
+      "line": 368,
       "column": 16,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "9037d65e4d95198cc59ca7a6760f924f13ff1d014513ada9b0c94eba2a682515",
@@ -1405,7 +1405,7 @@
     {
       "file": "visual/tests/preparePage.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 369,
+      "line": 383,
       "column": 11,
       "message": "TypeScript 网络响应入口 route 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "1dae4ac30bf5ee7a4544506ac8f7fa8db4547b145437f23e4788748a952988d1",
@@ -1415,7 +1415,7 @@
     {
       "file": "visual/tests/preparePage.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 372,
+      "line": 387,
       "column": 15,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "14a0c2bd83b5200129ea5a5832c99cb1f9380e41819bf28398324e9f8c03ca3a",
@@ -1425,7 +1425,7 @@
     {
       "file": "visual/tests/preparePage.spec.ts",
       "rule": "quality/no-network-response",
-      "line": 378,
+      "line": 393,
       "column": 13,
       "message": "TypeScript 网络响应入口 fulfill 必须迁往 Python 代理；本机适配器单测须逐位置记录理由。",
       "anchor": "c253bea0e0065212def7f0e038b25709fe51da0bdcaeffa4446af2fa84881ba3",
@@ -1435,7 +1435,7 @@
     {
       "file": "e2e/mitmproxy/replay_scenes.py",
       "rule": "C901",
-      "line": 20,
+      "line": 21,
       "column": 5,
       "message": "`table` is too complex (19 > 10)",
       "anchor": "c5e11bd297c20c7f3d2cb58cb9d69f60b0c35d4c2a5616688d369a9744a14bfc",
@@ -1445,7 +1445,7 @@
     {
       "file": "e2e/mitmproxy/replay_scenes.py",
       "rule": "C901",
-      "line": 108,
+      "line": 111,
       "column": 5,
       "message": "`replay_scene` is too complex (17 > 10)",
       "anchor": "4a083deb0e62aa50b45254c08a7292fe2a9d569b3a15d949c8db13885ac2e9d5",
@@ -1455,7 +1455,7 @@
     {
       "file": "e2e/mitmproxy/scenario_fixtures.py",
       "rule": "C901",
-      "line": 79,
+      "line": 101,
       "column": 9,
       "message": "`control` is too complex (17 > 10)",
       "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
@@ -1465,7 +1465,7 @@
     {
       "file": "e2e/mitmproxy/scenario_fixtures.py",
       "rule": "C901",
-      "line": 143,
+      "line": 180,
       "column": 15,
       "message": "`request` is too complex (32 > 10)",
       "anchor": "5495d068f027d1ec83e09f501f1be125b14aae8391f9ee0df71ac0fd3835da87",
@@ -1475,7 +1475,7 @@
     {
       "file": "e2e/mitmproxy/scenario_fixtures.py",
       "rule": "C901",
-      "line": 239,
+      "line": 277,
       "column": 9,
       "message": "`response` is too complex (13 > 10)",
       "anchor": "0b36d16cf8f925acd7a2b362e677c7c28d83808393d2e568f2ebefc6f734a0b0",
@@ -1485,7 +1485,7 @@
     {
       "file": "e2e/mitmproxy/scenario_fixtures.py",
       "rule": "C901",
-      "line": 276,
+      "line": 316,
       "column": 9,
       "message": "`websocket_message` is too complex (12 > 10)",
       "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
@@ -1495,7 +1495,7 @@
     {
       "file": "visual/cases/club/mitmproxy/addon.py",
       "rule": "C901",
-      "line": 139,
+      "line": 140,
       "column": 9,
       "message": "`joined_clubs_fixture` is too complex (11 > 10)",
       "anchor": "c7780985da79e73f84a6039eec771da8baad6c61a18e900129d7ebb1dad184d4",
@@ -1505,7 +1505,7 @@
     {
       "file": "visual/cases/game-record/mitmproxy/addon.py",
       "rule": "C901",
-      "line": 52,
+      "line": 50,
       "column": 9,
       "message": "`control` is too complex (12 > 10)",
       "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
@@ -1515,7 +1515,7 @@
     {
       "file": "visual/cases/game-record/mitmproxy/addon.py",
       "rule": "C901",
-      "line": 91,
+      "line": 90,
       "column": 9,
       "message": "`fixture` is too complex (29 > 10)",
       "anchor": "7de657de29b3eaf426a39d572478423df92353b81965ce44ec896cdeb93fe75b",
@@ -1525,7 +1525,7 @@
     {
       "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
       "rule": "C901",
-      "line": 61,
+      "line": 67,
       "column": 9,
       "message": "`websocket_message` is too complex (20 > 10)",
       "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
@@ -1535,7 +1535,7 @@
     {
       "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
       "rule": "C901",
-      "line": 60,
+      "line": 66,
       "column": 9,
       "message": "`websocket_message` is too complex (20 > 10)",
       "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",

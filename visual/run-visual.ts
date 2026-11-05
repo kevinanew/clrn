@@ -219,7 +219,8 @@ function runScenarioBatches(locale: string, playwrightArgs: string[]): boolean {
   }
 
   const scenarioArgs = selectedScenarioArgs(playwrightArgs, selectedScenarios);
-  const needsAuthState = selectedScenarios.some((scenario) => scenario.signIn);
+  const needsAuthState = selectedScenarios.some(/** 根据当前条目计算结果。
+ * @param scenario - 当前回调参数。 */ (scenario) => scenario.signIn);
   const { count: shardCount, start: startShard } = getVisualShardConfig(
     action,
     selectedScenarios.length,
@@ -236,7 +237,8 @@ function runScenarioBatches(locale: string, playwrightArgs: string[]): boolean {
  */
 function selectedScenarioArgs(args: string[], scenarios: ReturnType<typeof buildScenarios>): string[] {
   if (!process.env.VISUAL_FILTER) return args;
-  return [...args, `--grep=${exactScenarioGrep(scenarios.map(scenario => scenario.label))}`];
+  return [...args, `--grep=${exactScenarioGrep(scenarios.map(/** 根据当前条目计算结果。
+ * @param scenario - 当前回调参数。 */ scenario => scenario.label))}`];
 }
 
 /**
@@ -285,8 +287,10 @@ function runLocale(locale: string, args: string[]): boolean {
  */
 function runSelectedLocales(playwrightArgs: string[]): void {
   const requestedLocales = process.env.VISUAL_LOCALES;
-  const selectedLocales = getActiveLocales().map((locale) => locale.code);
-  const ranVisualScenario = selectedLocales.map(locale => runLocale(locale, playwrightArgs)).some(Boolean);
+  const selectedLocales = getActiveLocales().map(/** 根据当前条目计算结果。
+ * @param locale - 当前回调参数。 */ (locale) => locale.code);
+  const ranVisualScenario = selectedLocales.map(/** 根据当前条目计算结果。
+ * @param locale - 当前回调参数。 */ locale => runLocale(locale, playwrightArgs)).some(Boolean);
 
   restoreLocales(requestedLocales);
 
@@ -331,7 +335,8 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((error: Error) => {
+main().catch(/** 输出视觉运行器错误并以失败状态退出。
+ * @param error - 当前操作抛出的错误。 */ (error: Error) => {
   console.error(error.message);
   process.exit(1);
 });

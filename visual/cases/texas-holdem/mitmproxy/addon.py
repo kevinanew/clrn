@@ -25,7 +25,9 @@ diagnostics = ConnectionDiagnostics()
 
 
 class TexasVisualProxy:
+    """管理德州视觉场景、房间资料缓存、重放与界面状态夹具。"""
     def __init__(self):
+        """初始化token、scenario、proxied_requests、stabilized_requests、texas等状态。"""
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
         self.proxied_requests = 0
@@ -37,9 +39,11 @@ class TexasVisualProxy:
         self.room_profile = RoomProfile()
 
     def control(self, flow):
+        """通过共用认证入口分发德州代理控制请求。"""
         control(self, flow, respond, self.command, self.status)
 
     def command(self, path, body):
+        """执行德州场景、重放、房间展示与界面状态控制命令。"""
         if path == '/scenario' and body.get('scenario') in (None, 'visual-stable'):
             self.scenario = body['scenario']
             self.texas.release()
@@ -70,6 +74,7 @@ class TexasVisualProxy:
             raise ValueError('Unknown command')
 
     def status(self):
+        """返回德州场景、代理请求及重放消息的观测计数。"""
         return {
             'scenario': self.scenario, 'interceptedRequests': 0,
             'proxiedRequests': self.proxied_requests, 'stabilizedRequests': self.stabilized_requests,
@@ -77,13 +82,16 @@ class TexasVisualProxy:
         }
 
     def websocket_message(self, flow):
+        """在有效德州场景中处理 staging WebSocket 消息。"""
         if self.scenario == 'visual-stable' and is_staging(flow.request.host):
             self.texas.websocket_message(flow)
 
     def websocket_end(self, flow):
+        """连接关闭时清理德州重放订阅状态。"""
         self.texas.websocket_end(flow)
 
     def response(self, flow):
+        """记录真实房间资料并按当前视觉场景覆盖限定响应字段。"""
         if self.scenario == 'visual-stable' and is_staging(flow.request.host):
             self.room_profile.observe(flow, self.texas.room_id, self.texas.self_id)
             path = urlsplit(flow.request.path).path
@@ -104,6 +112,7 @@ class TexasVisualProxy:
                 self.texas.self_id = self.view.self_id
 
     def prepare_read(self, flow):
+        """优先复用当前房间的真实资料缓存，否则准备限定的展示读取。"""
         profile = self.room_profile.read(flow, self.texas.room_id, self.texas.self_id)
         if profile is not None:
             respond(flow, profile)
@@ -112,6 +121,7 @@ class TexasVisualProxy:
         return self.texas.room_id and prepare_profiles(flow, self.texas.self_id, TABLE_PLAYER_IDS)
 
     def request(self, flow):
+        """路由德州控制、虚拟玩家预检和当前场景业务请求。"""
         if not route_request(self, flow, diagnostics, is_staging):
             return
         if respond_virtual_player_preflight(flow, self.texas.room_id):
@@ -147,6 +157,7 @@ class TexasVisualProxy:
         self.respond_replay(flow, path)
 
     def respond_replay(self, flow, path):
+        """仅为当前重放房间返回限定的黑名单、战绩及读取夹具。"""
         if self.texas.room_id and path == '/v1/hall_matching/blacklist' and flow.request.method in ('POST', 'DELETE'):
             try:
                 player_id = json.loads(flow.request.content).get('black_user_id')

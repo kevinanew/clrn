@@ -16,7 +16,9 @@ export async function maskNumericFields(frame: Buffer, masks: NumericTextMask[],
   const excluded: ExcludedPixelRectangle[] = [];
   for (const mask of masks) {
     if (await mask.container.count() === 0) continue;
-    const boxes = await mask.locator.evaluateAll(nodes => nodes.map(node => {
+    const boxes = await mask.locator.evaluateAll(/** 在页面中读取数字遮罩元素的实际样式、边界与累计透明度。
+ * @param nodes - 当前匹配的页面节点集合。 */ nodes => nodes.map(/** 汇总当前节点及祖先的可见性、透明度与布局，供遮罩断言使用。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
       const style = getComputedStyle(node);
       const rect = node.getBoundingClientRect();
       let opacity = 1;

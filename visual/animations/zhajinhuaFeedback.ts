@@ -36,7 +36,7 @@ export async function zhajinhuaFeedback(session: TableSession, proxy: ZhajinhuaP
   try {
     await press(page, 'zhajinhua-operation-button-call');
     const title = page.getByTestId('zhajinhua-level-up-level-text');
-    await expect.poll(async () => {
+    await expect.poll(/** 推进页面时钟并等待炸金花反馈标题完成显示。 */ async () => {
       await page.clock.runFor(16);
       return title.textContent();
     }).toContain('6');

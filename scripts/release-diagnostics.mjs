@@ -7,8 +7,10 @@ import path from 'node:path';
  * @param command - 原测试命令及参数。
  */
 export function releaseDiagnosticDirectory(command) {
-  if (command.some(part => part.startsWith('test:animations'))) return 'test-results/animations/release-server';
-  if (command.some(part => part.startsWith('test:functional'))) return 'test-results/cases/release-server';
+  if (command.some(/** 判断是否存在满足以下条件的条目：`part.startsWith('test:animations')`。
+ * @param part - 当前操作使用的 part。 */ part => part.startsWith('test:animations'))) return 'test-results/animations/release-server';
+  if (command.some(/** 判断是否存在满足以下条件的条目：`part.startsWith('test:functional')`。
+ * @param part - 当前操作使用的 part。 */ part => part.startsWith('test:functional'))) return 'test-results/cases/release-server';
   if (command.includes('test:interactions')) return 'test-results/interactions/release-server';
   if (command.includes('test:freshchat')) return 'test-results/freshchat/release-server';
   return 'test-results/release-server';
@@ -52,10 +54,11 @@ export function observeReleaseConnection(socket, identifiers, record) {
     source: 'release-static', operation: 'release-static-connect', ...identifiers,
     elapsedMs: Date.now() - start, outcome });
   emit('release.tcp-open');
-  socket.once('end', () => emit('release.tcp-end'));
-  socket.on('timeout', () => emit('release.tcp-timeout'));
-  socket.on('error', () => emit('release.tcp-error'));
-  socket.once('close', hadError => emit('release.tcp-close', hadError ? 'error' : 'closed'));
+  socket.once('end', /** 记录 TCP 对端结束事件，定位发布连接生命周期。 */ () => emit('release.tcp-end'));
+  socket.on('timeout', /** 记录 TCP 超时事件，保留连接诊断时间线。 */ () => emit('release.tcp-timeout'));
+  socket.on('error', /** 记录 TCP 错误事件，避免输出底层敏感资料。 */ () => emit('release.tcp-error'));
+  socket.once('close', /** 按是否出错记录 TCP 连接关闭的原因。
+ * @param hadError - 当前操作使用的 hadError。 */ hadError => emit('release.tcp-close', hadError ? 'error' : 'closed'));
 }
 
 /**
@@ -77,9 +80,9 @@ export function observeReleaseResponse(request, response, identifiers, record) {
     status: response.headersSent ? response.statusCode : 'unavailable',
     response: response.headersSent ? 'sent' : 'not-sent' });
   emit('release.request');
-  response.on('finish', () => emit('release.finish'));
-  response.on('close', () => emit(response.writableFinished ? 'release.close' : 'release.interrupted'));
-  response.on('error', () => emit('release.response-error'));
+  response.on('finish', /** 记录响应写入完成事件。 */ () => emit('release.finish'));
+  response.on('close', /** 区分完整响应关闭与传输中断，记录对应诊断事件。 */ () => emit(response.writableFinished ? 'release.close' : 'release.interrupted'));
+  response.on('error', /** 记录响应流错误，供发布链路排查。 */ () => emit('release.response-error'));
   return {
     emit,
     /**
@@ -88,9 +91,9 @@ export function observeReleaseResponse(request, response, identifiers, record) {
      */
     stream(stream) {
       emit('release.stream-open');
-      stream.on('end', () => emit('release.stream-end'));
-      stream.on('error', () => emit('release.stream-error'));
-      stream.on('close', () => emit('release.stream-close'));
+      stream.on('end', /** 记录发布资源文件源读取完毕事件。 */ () => emit('release.stream-end'));
+      stream.on('error', /** 记录发布资源文件源读取失败事件。 */ () => emit('release.stream-error'));
+      stream.on('close', /** 记录发布资源文件源关闭事件。 */ () => emit('release.stream-close'));
     },
   };
 }

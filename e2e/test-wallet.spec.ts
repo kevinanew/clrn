@@ -12,7 +12,7 @@ const originalFetch = globalThis.fetch;
 const originalToken = process.env.TESTING_API_TOKEN;
 const originalCI = process.env.CI;
 
-test.afterEach(() => {
+test.afterEach(/** 恢复 fetch 与测试令牌、CI 环境，防止钱包用例互相污染。 */ () => {
   globalThis.fetch = originalFetch;
   for (const [name, value] of [['TESTING_API_TOKEN', originalToken], ['CI', originalCI]]) {
     if (value === undefined) delete process.env[name!];
@@ -20,7 +20,7 @@ test.afterEach(() => {
   }
 });
 
-test('CI 未配置 token 时明确失败，配置后使用环境变量', async () => {
+test('CI 未配置 token 时明确失败，配置后使用环境变量', /** 验证CI 未配置 token 时明确失败，配置后使用环境变量。 */ async () => {
   process.env.CI = 'true';
   delete process.env.TESTING_API_TOKEN;
   await expect(readTestApiToken()).rejects.toThrow('缺少 TESTING_API_TOKEN');
@@ -28,9 +28,9 @@ test('CI 未配置 token 时明确失败，配置后使用环境变量', async (
   expect(await readTestApiToken()).toBe('test-only-token');
 });
 
-test('生产域名、伪造 staging 后缀及不匹配钱包在发送请求前被拒绝', async () => {
+test('生产域名、伪造 staging 后缀及不匹配钱包在发送请求前被拒绝', /** 验证生产域名、伪造 staging 后缀及不匹配钱包在发送请求前被拒绝。 */ async () => {
   /** 记录意外网络调用并抛错，验证无效配置会在请求前被拒绝。 */
-  globalThis.fetch = async () => { throw new Error('不应发出请求'); };
+  globalThis.fetch = /** 若缺少必要配置仍发出钱包请求则立即失败。 */ async () => { throw new Error('不应发出请求'); };
   for (const accountUrl of [
     `https://api.laiwan.life/v11/user/${userId}/account`,
     `https://foo.api.staging.laiwan.shafayouxi.com.evil.test/v11/user/${userId}/account`,
@@ -41,14 +41,16 @@ test('生产域名、伪造 staging 后缀及不匹配钱包在发送请求前�
   }
 });
 
-test('设置固定余额使用 X-Testing-Api-Token 请求头，禁止重定向且不发送用户登录凭据', async () => {
+test('设置固定余额使用 X-Testing-Api-Token 请求头，禁止重定向且不发送用户登录凭据', /** 验证设置固定余额使用 X-Testing-Api-Token 请求头，禁止重定向且不发送用户登录凭据。 */ async () => {
   let captured: RequestInit | undefined;
   /**
    * 校验测试接口请求地址与参数，并返回预设成功响应。
    * @param url - 要访问的站点或本机服务地址。
    * @param options - 本次操作的可选配置。
    */
-  globalThis.fetch = async (url, options) => {
+  globalThis.fetch = /** 核对钱包设置请求并保存参数，返回合成钻石余额。
+ * @param url - 当前操作使用的 url。
+ * @param options - 当前操作使用的 options。 */ async (url, options) => {
     expect(url).toBe(`https://api.shafayouxi.org/public/v1/wallet/${userId}/set_balance/testing`);
     captured = options;
     return Response.json({ ok: true, result: { wallet_id: userId, currency_name: 'diamond', balance: '60' } });
@@ -61,15 +63,15 @@ test('设置固定余额使用 X-Testing-Api-Token 请求头，禁止重定向�
 });
 
 for (const status of [401, 404, 500]) {
-  test(`余额接口 HTTP ${status} 不可被当作成功，响应内容不进入错误`, async () => {
+  test(`余额接口 HTTP ${status} 不可被当作成功，响应内容不进入错误`, /** 验证余额接口 HTTP $\{status\} 不可被当作成功，响应内容不进入错误。 */ async () => {
     /** 返回预设 HTTP 或业务响应，验证失败场景不重试且不泄露正文。 */
-    globalThis.fetch = async () => new Response('sensitive-response', { status });
+    globalThis.fetch = /** 返回含敏感正文的失败状态，验证钱包诊断不泄露响应内容。 */ async () => new Response('sensitive-response', { status });
     await expect(setCreationDiamondBalance(account, 'test-only-token'))
       .rejects.toThrow(requestFailure('set-creation-diamonds', 'http-error', status).message);
   });
 }
 
-test('业务失败、错误钱包、币种、余额和非法 JSON 都失败', async () => {
+test('业务失败、错误钱包、币种、余额和非法 JSON 都失败', /** 验证业务失败、错误钱包、币种、余额和非法 JSON 都失败。 */ async () => {
   for (const [body, reason] of [
     [{ ok: false }, 'business-rejected'],
     [{ ok: true, result: { wallet_id: 'other', currency_name: 'diamond', balance: '60' } }, 'invalid-response'],
@@ -77,17 +79,17 @@ test('业务失败、错误钱包、币种、余额和非法 JSON 都失败', as
     [{ ok: true, result: { wallet_id: userId, currency_name: 'diamond', balance: '0' } }, 'invalid-response'],
   ] as const) {
     /** 返回预设 HTTP 或业务响应，验证失败场景不重试且不泄露正文。 */
-    globalThis.fetch = async () => Response.json(body);
+    globalThis.fetch = /** 返回预设钱包业务响应，覆盖成功及异常结构。 */ async () => Response.json(body);
     await expect(setCreationDiamondBalance(account, 'test-only-token')).rejects.toThrow(requestFailure('set-creation-diamonds', reason, 200).message);
   }
   /** 返回无法解析的 JSON，验证接口格式错误会明确失败。 */
-  globalThis.fetch = async () => new Response('invalid-json');
+  globalThis.fetch = /** 提供无法解析的钱包响应，验证 JSON 错误处理。 */ async () => new Response('invalid-json');
   await expect(setCreationDiamondBalance(account, 'test-only-token')).rejects.toThrow(requestFailure('set-creation-diamonds', 'invalid-json', 200).message);
 });
 
-test('网络错误不泄露底层错误里的 token', async () => {
+test('网络错误不泄露底层错误里的 token', /** 验证网络错误不泄露底层错误里的 token。 */ async () => {
   /** 模拟携带敏感信息的请求异常，验证对外错误不会泄露凭据。 */
-  globalThis.fetch = async () => { throw new Error('sensitive-token'); };
+  globalThis.fetch = /** 注入含敏感令牌的网络错误，验证钱包失败信息脱敏。 */ async () => { throw new Error('sensitive-token'); };
   await expect(setCreationDiamondBalance(account, 'test-only-token'))
     .rejects.toThrow(requestFailure('set-creation-diamonds', 'request-failed').message);
 });

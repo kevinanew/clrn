@@ -28,5 +28,6 @@ function parseVisualSuite(raw: string | undefined): VisualSuite {
 export function selectVisualSuite<T extends { group: string }>(scenarios: T[], suite: VisualSuite): T[] {
   if (suite === 'all') return scenarios;
   const groups = { texas: ['texas-holdem'], zhajinhua: ['zhajinhua'], app: ['texas-holdem', 'zhajinhua'] }[suite];
-  return scenarios.filter(scenario => groups.includes(scenario.group) !== (suite === 'app'));
+  return scenarios.filter(/** 根据当前条目计算结果。
+ * @param scenario - 当前回调参数。 */ scenario => groups.includes(scenario.group) !== (suite === 'app'));
 }

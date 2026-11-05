@@ -16,11 +16,15 @@ import { slotWalletMask } from './slotWallet';
  * @param suites - 子进程 JSON 报告。
  */
 function results(suites: JSONReportSuite[]): { title: string; result: JSONReportSuite['specs'][number]['tests'][number]['results'][number] }[] {
-  return suites.flatMap(suite => [...suite.specs.flatMap(spec => spec.tests.flatMap(item =>
-    item.results.map(result => ({ title: spec.title, result })))), ...results(suite.suites || [])]);
+  return suites.flatMap(/** 递归汇总钱包遮罩浏览器测试的标题及运行结果。
+ * @param suite - 当前操作使用的 suite。 */ suite => [...suite.specs.flatMap(/** 展开当前条目对应的`spec.tests.flatMap(item => item.results.map(result => ({ title: spec.title, result })))`。
+ * @param spec - 当前操作使用的 spec。 */ spec => spec.tests.flatMap(/** 展开当前条目对应的`item.results.map(result => ({ title: spec.title, result }))`。
+ * @param item - 当前遍历的条目。 */ item =>
+    item.results.map(/** 将当前条目映射为`{ title: spec.title, result }`。
+ * @param result - 当前操作使用的 result。 */ result => ({ title: spec.title, result })))), ...results(suite.suites || [])]);
 }
 
-test('双视口全部入退场与奖励帧忽略余额变化，布局、动画、节点缺失和错误数据仍失败', async () => {
+test('双视口全部入退场与奖励帧忽略余额变化，布局、动画、节点缺失和错误数据仍失败', /** 验证双视口全部入退场与奖励帧忽略余额变化，布局、动画、节点缺失和错误数据仍失败。 */ async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-wallet-mask-'));
   try {
     const snapshots = path.join(directory, 'snapshots');
@@ -54,7 +58,8 @@ test('双视口全部入退场与奖励帧忽略余额变化，布局、动画�
     assert.ok(!updated.equals(unmasked), '显式更新必须替换小于整图 0.5% 的桌面余额区');
     const bitmap = PNG.sync.read(updated);
     assertSmallMask(bitmap);
-    const before = new Map(await Promise.all((await readdir(snapshots)).map(async name =>
+    const before = new Map(await Promise.all((await readdir(snapshots)).map(/** 将当前条目映射为`[name, await readFile(path.join(snapshots, name))] as const`。
+ * @param name - 当前操作使用的 name。 */ async name =>
       [name, await readFile(path.join(snapshots, name))] as const)));
     const comparison = run(true);
     assert.equal(comparison.status, 1, comparison.error?.message || comparison.stdout + comparison.stderr);
@@ -67,7 +72,7 @@ test('双视口全部入退场与奖励帧忽略余额变化，布局、动画�
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
-test('数字遮罩保留图标像素，支持裁切和缩放，透明、移出视口或卸载后没有残留', async () => {
+test('数字遮罩保留图标像素，支持裁切和缩放，透明、移出视口或卸载后没有残留', /** 验证数字遮罩保留图标像素，支持裁切和缩放，透明、移出视口或卸载后没有残留。 */ async () => {
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ viewport: { width: 375, height: 812 }, deviceScaleFactor: 1 });
@@ -86,29 +91,42 @@ test('数字遮罩保留图标像素，支持裁切和缩放，透明、移出�
     const masks = slotWalletMask(panel);
     const clip = { x: 5, y: 20, width: 360, height: 120 };
     for (const scale of [1, 0.65]) {
-      await panel.evaluate((node, scale) => { (node as HTMLElement).style.transform = `scale(${scale})`; }, scale);
+      await panel.evaluate(/** 缩放钱包面板，验证数字遮罩的坐标换算。
+ * @param node - 当前遍历的 DOM 或语法节点。
+ * @param scale - 当前操作使用的 scale。 */ (node, scale) => { (node as HTMLElement).style.transform = `scale(${scale})`; }, scale);
       let first: Buffer | undefined;
       for (const texts of [['0', '0'], ['7', '9'], ['999,999,999', '99,999'], ['123', '456']]) {
-        await panel.locator('.number').evaluateAll((nodes, texts) => nodes.forEach((node, index) => { node.textContent = texts[index]; }), texts);
+        await panel.locator('.number').evaluateAll(/** 将测试数字写入钱包节点，构造不同长度的余额内容。
+ * @param nodes - 当前匹配的页面节点集合。
+ * @param texts - 当前操作使用的 texts。 */ (nodes, texts) => nodes.forEach(/** 按索引设置当前钱包数字的显示文本。
+ * @param node - 当前遍历的 DOM 或语法节点。
+ * @param index - 当前条目在集合中的位置。 */ (node, index) => { node.textContent = texts[index]; }), texts);
         const original = await page.screenshot({ clip, scale: 'css' });
         const masked = await maskNumericFields(original, masks, clip);
         const actual = PNG.sync.read(masked.png);
         const before = PNG.sync.read(original);
-        const boxes = await panel.locator('.number').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().toJSON()));
+        const boxes = await panel.locator('.number').evaluateAll(/** 读取钱包数字节点的真实边界，用于核对遮罩区域。
+ * @param nodes - 当前匹配的页面节点集合。 */ nodes => nodes.map(/** 将当前条目映射为`node.getBoundingClientRect().toJSON()`。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.getBoundingClientRect().toJSON()));
         assertOutsideMaskUnchanged(actual, before, boxes, scale, clip);
         assert.deepEqual(actual.data, first ?? actual.data, '不同位数的余额必须得到完全相同的遮罩图');
         first = actual.data;
       }
     }
     for (const style of ['opacity:0', 'transform:translateY(1000px)', 'display:none']) {
-      await panel.evaluate((node, style) => { (node as HTMLElement).style.cssText += `;${style}`; }, style);
+      await panel.evaluate(/** 应用当前测试样式，制造面板位移或变换场景。
+ * @param node - 当前遍历的 DOM 或语法节点。
+ * @param style - 当前操作使用的 style。 */ (node, style) => { (node as HTMLElement).style.cssText += `;${style}`; }, style);
       const original = await page.screenshot({ clip });
       assert.deepEqual(PNG.sync.read((await maskNumericFields(original, masks, clip)).png).data, PNG.sync.read(original).data);
-      await panel.evaluate(node => { (node as HTMLElement).style.cssText = ''; });
+      await panel.evaluate(/** 清除钱包面板测试样式，恢复下一项检查的初始布局。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => { (node as HTMLElement).style.cssText = ''; });
     }
-    await panel.locator('.number').first().evaluate(node => node.remove());
+    await panel.locator('.number').first().evaluate(/** 在页面中读取`node.remove()`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.remove());
     await assert.rejects(maskNumericFields(await page.screenshot({ clip }), masks, clip), /数字节点必须完整/);
-    await panel.evaluate(node => node.remove());
+    await panel.evaluate(/** 在页面中读取`node.remove()`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.remove());
     const original = await page.screenshot({ clip });
     assert.deepEqual(PNG.sync.read((await maskNumericFields(original, masks, clip)).png).data, PNG.sync.read(original).data);
   } finally { await browser.close(); }
@@ -126,7 +144,8 @@ function assertOutsideMaskUnchanged(actual: PNG, before: PNG,
   boxes: { x: number; y: number; right: number; bottom: number }[], scale: number, clip: { x: number; y: number }) {
   for (let y = 0; y < actual.height; y++) {
     for (let x = 0; x < actual.width; x++) {
-      if (boxes.some(box => x >= Math.floor(box.x - 4 * scale - clip.x)
+      if (boxes.some(/** 判断像素是否落在考虑缩放、边距和截图裁切后的数字遮罩内。
+ * @param box - 当前操作使用的 box。 */ box => x >= Math.floor(box.x - 4 * scale - clip.x)
         && x < Math.ceil(box.right + 4 * scale - clip.x) && y >= Math.floor(box.y - 4 * scale - clip.y)
         && y < Math.ceil(box.bottom + 4 * scale - clip.y))) continue;
       const offset = (y * actual.width + x) * 4;
@@ -143,18 +162,24 @@ function assertOutsideMaskUnchanged(actual: PNG, before: PNG,
 function assertComparisonResults(entries: ReturnType<typeof results>) {
   for (const { title, result } of entries) {
     assert.equal(result.status, title === 'wallet mask balance' ? 'passed' : 'failed',
-      `${title}: ${result.errors.map(error => error.message).join('\n')}`);
+      `${title}: ${result.errors.map(/** 将当前条目映射为`error.message`。
+ * @param error - 当前操作抛出的错误。 */ error => error.message).join('\n')}`);
     if (title === 'wallet mask balance') {
-      assert.ok(result.attachments.some(item => item.name === 'wallet-complete'));
-      const originals = result.attachments.filter(item => item.name.endsWith('-unmasked'));
+      assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`item.name === 'wallet-complete'`。
+ * @param item - 当前遍历的条目。 */ item => item.name === 'wallet-complete'));
+      const originals = result.attachments.filter(/** 仅保留满足以下条件的条目：`item.name.endsWith('-unmasked')`。
+ * @param item - 当前遍历的条目。 */ item => item.name.endsWith('-unmasked'));
       assert.equal(originals.length, 16, '全部入场、退场与奖励帧保留未遮罩证据');
     }
     if (title === 'wallet mask layout' || title === 'wallet mask animation') {
-      assert.ok(result.attachments.some(item => item.name.includes('-diff')), '真实变化须报告像素差异');
-      assert.ok(result.attachments.some(item => item.name === 'wallet-complete'), '像素差异仍采集完整时间线');
+      assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`item.name.includes('-diff')`。
+ * @param item - 当前遍历的条目。 */ item => item.name.includes('-diff')), '真实变化须报告像素差异');
+      assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`item.name === 'wallet-complete'`。
+ * @param item - 当前遍历的条目。 */ item => item.name === 'wallet-complete'), '像素差异仍采集完整时间线');
     }
     if (title === 'wallet mask missing' || title === 'wallet mask data') {
-      assert.ok(!result.attachments.some(item => item.name === 'wallet-complete'), '控件和数据断言仍立即中止');
+      assert.ok(!result.attachments.some(/** 判断是否存在满足以下条件的条目：`item.name === 'wallet-complete'`。
+ * @param item - 当前遍历的条目。 */ item => item.name === 'wallet-complete'), '控件和数据断言仍立即中止');
     }
   }
 }

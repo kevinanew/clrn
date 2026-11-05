@@ -10,7 +10,9 @@ from test_network_faults import flow
 
 
 class DiagnosticTests(unittest.TestCase):
+    """验证连接诊断的路径语义、来源关联、容量与脱敏边界。"""
     def test_共用路径登记保留操作语义且重复清理不改变实体模板(self):
+        """验证共用路径登记保留操作语义且重复清理不改变实体模板。"""
         for path, segments in PATH_TEMPLATES:
             with self.subTest(path=path):
                 self.assertEqual(safe_path(path), path)
@@ -21,6 +23,7 @@ class DiagnosticTests(unittest.TestCase):
             self.assertEqual(safe_path(path), '[未知接口]')
 
     def test_相对路径与事件名不保留任意连接资料或凭据(self):
+        """验证相对路径与事件名不保留任意连接资料或凭据。"""
         diagnostics = ConnectionDiagnostics()
         inputs = ('api.fixture.invalid', '192.0.2.10:8443', '[2001:db8::10]:9443',
                   'token=synthetic-secret', 'Bearer synthetic-secret', 'synthetic-secret',
@@ -48,6 +51,7 @@ class DiagnosticTests(unittest.TestCase):
         self.assertTrue(any(event.get('status') == 503 for event in diagnostics.events))
 
     def test_原因只识别已知错误首部而不扫描地址凭据或后续诊断(self):
+        """验证原因只识别已知错误首部而不扫描地址凭据或后续诊断。"""
         known = [
             ('server closed connection', 'connection-failed'),
             ('connection cancelled', 'connection-failed'),
@@ -84,6 +88,7 @@ class DiagnosticTests(unittest.TestCase):
                     self.assertNotIn(value, json.dumps(diagnostics.snapshot()))
 
     def test_错误中的连接地址与主机不进入公开诊断(self):
+        """验证错误中的连接地址与主机不进入公开诊断。"""
         diagnostics = ConnectionDiagnostics()
         request = flow('https://api.invalid/node/v1/status')
         diagnostics.record('proxy.error', request,
@@ -101,6 +106,7 @@ class DiagnosticTests(unittest.TestCase):
         self.assertNotIn('secret', json.dumps(diagnostics.snapshot()))
 
     def test_严格来源匹配包含协议和端口且响应编号只能来自本轮服务(self):
+        """验证严格来源匹配包含协议和端口且响应编号只能来自本轮服务。"""
         server_id = '12345678-1234-4234-8234-123456789012'
         with patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': 'http://127.0.0.1:18080/',
                                       'CLRN_RELEASE_SERVER_ID': server_id}):
@@ -135,6 +141,7 @@ class DiagnosticTests(unittest.TestCase):
                 self.assertNotIn(value, output)
 
     def test_错误与服务端关闭文本不记录未知凭据或任意业务正文(self):
+        """验证错误与服务端关闭文本不记录未知凭据或任意业务正文。"""
         diagnostics = ConnectionDiagnostics()
         request = flow('https://error.invalid/node/v1/status')
         secret = 'Cookie: sid=synthetic-cookie X-Testing-Api-Token: synthetic-token https://error.invalid/private'
@@ -148,6 +155,7 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(diagnostics.events[0]['reason'], 'detail-withheld')
 
     def test_请求地址实际连接及模拟响应分别核验且不猜测无响应状态(self):
+        """验证请求地址实际连接及模拟响应分别核验且不猜测无响应状态。"""
         server_id = '12345678-1234-4234-8234-123456789012'
         with patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': 'http://127.0.0.1:18080/',
                                       'CLRN_RELEASE_SERVER_ID': server_id}):
@@ -193,6 +201,7 @@ class DiagnosticTests(unittest.TestCase):
                 self.assertNotIn(value, output)
 
     def test_两个认证控制入口不进入业务请求响应或错误诊断(self):
+        """验证两个认证控制入口不进入业务请求响应或错误诊断。"""
         diagnostics = ConnectionDiagnostics()
         for host in ('test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'):
             request = flow(f'http://{host}/fixtures/environment', 'POST', b'{}')
@@ -204,6 +213,7 @@ class DiagnosticTests(unittest.TestCase):
                          '控制流量不能混入真实选线和健康探测的诊断')
 
     def test_来源分类与主机脱敏(self):
+        """验证来源分类与主机脱敏。"""
         diagnostics = ConnectionDiagnostics()
         for source in ('upstream', 'fixture'):
             request = flow('https://node-4.service.invalid/node/v1/status?token=secret')
@@ -220,6 +230,7 @@ class DiagnosticTests(unittest.TestCase):
         self.assertIn(node_name('node-4.service.invalid'), result)
 
     def test_节点资料不保存地址或其他响应字段(self):
+        """验证节点资料不保存地址或其他响应字段。"""
         diagnostics = ConnectionDiagnostics()
         request = flow('https://node-0.service.invalid/public/v13/metadata/servers')
         diagnostics.request(request)
@@ -234,6 +245,7 @@ class DiagnosticTests(unittest.TestCase):
         self.assertNotIn('private-address', json.dumps(diagnostics.snapshot()))
 
     def test_订阅确认与关闭仍可关联(self):
+        """验证订阅确认与关闭仍可关联。"""
         diagnostics = ConnectionDiagnostics()
         request = flow('https://node-12.service.invalid/socket?access_token=secret')
         request.websocket = WebSocketData()
@@ -255,6 +267,7 @@ class DiagnosticTests(unittest.TestCase):
         self.assertNotIn(request.id, diagnostics.pending_commands)
 
     def test_容量边界与错误脱敏(self):
+        """验证容量边界与错误脱敏。"""
         diagnostics = ConnectionDiagnostics()
         request = flow('https://node-12.service.invalid/node/v1/status')
         for _ in range(5001):

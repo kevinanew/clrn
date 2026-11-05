@@ -35,9 +35,10 @@ export async function runWithReleaseWebServer(command, environment = process.env
   process.once('SIGTERM', shutdown);
   try {
     const response = await fetch(baseUrl, { signal: AbortSignal.timeout(5000) })
-      .catch(error => { throw requestFailure('release-readiness', requestFailureReason(error)); });
+      .catch(/** 将发布资源就绪探测失败转换为安全的请求诊断。
+ * @param error - 当前操作抛出的错误。 */ error => { throw requestFailure('release-readiness', requestFailureReason(error)); });
     if (!response.ok) throw requestFailure('release-readiness', 'http-error', response.status);
-    await response.body.cancel().catch(() => { throw requestFailure('release-readiness', 'body-read-failed', response.status); });
+    await response.body.cancel().catch(/** 将就绪响应取消失败转换为带实际状态的正文读取诊断。 */ () => { throw requestFailure('release-readiness', 'body-read-failed', response.status); });
     child = spawn(command[0], command.slice(1), { stdio: 'inherit', detached: true,
       env: { ...environment, CLRN_RELEASE_WEB_URL: baseUrl, CLRN_RELEASE_SERVER_ID: serverId, VISUAL_BASE_URL: baseUrl,
         E2E_STAGING_URL: baseUrl, E2E_INTERACTION_BASE_URL: baseUrl,

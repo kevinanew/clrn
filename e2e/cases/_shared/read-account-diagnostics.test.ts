@@ -56,7 +56,7 @@ class Locator {
   async click() {}
 }
 
-test('入口健康检查仍拒绝500和无响应；收到200后的页面错误不能丢失实际导航状态', async () => {
+test('入口健康检查仍拒绝500和无响应；收到200后的页面错误不能丢失实际导航状态', /** 验证入口健康检查仍拒绝500和无响应；收到200后的页面错误不能丢失实际导航状态。 */ async () => {
   for (const [status, brokenUi, reason] of [[500, false, 'http-error'],
     [undefined, false, 'timeout'], [200, true, 'invalid-response'], [200, false, null]] as const) {
     const page = {
@@ -71,13 +71,14 @@ test('入口健康检查仍拒绝500和无响应；收到200后的页面错误�
         return new Locator();
       },
     } as unknown as Page;
-    if (reason) await assert.rejects(openHall(page), error => checkFailure(error,
+    if (reason) await assert.rejects(openHall(page), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => checkFailure(error,
       '打开功能测试大厅', 'GET', 'functional-open-hall', status ?? 'unavailable', reason, 'web-entry'));
     else await openHall(page);
   }
 });
 
-test('已有账号登录失败保留真实定位；200和完整缓存成功时仍返回原会话', async () => {
+test('已有账号登录失败保留真实定位；200和完整缓存成功时仍返回原会话', /** 验证已有账号登录失败保留真实定位；200和完整缓存成功时仍返回原会话。 */ async () => {
   for (const [status, failure, reason] of [
     [500, null, 'http-error'],
     [undefined, new Error(`apiRequestContext.post: socket hang up\nCall log:\n - ${secret}`), 'connection-failed'],
@@ -111,14 +112,15 @@ test('已有账号登录失败保留真实定位；200和完整缓存成功时�
     } as unknown as Page;
     const login = signIn(page, { username: 'synthetic-user', password: 'synthetic-password' });
     if (reason) await assert.rejects(login,
-      error => checkFailure(error, '已有只读账号登录', 'POST', 'existing-account-login', status ?? 'unavailable', reason));
+      /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => checkFailure(error, '已有只读账号登录', 'POST', 'existing-account-login', status ?? 'unavailable', reason));
     else assert.deepEqual(await login, { ...session, accountUrl: 'https://account.invalid/v11/user/synthetic-user/account' });
     assert.equal(closed, Boolean(reason));
     assert.ok(registrationBlocked);
   }
 });
 
-test('表单准备失败或未观察到登录请求不能虚构POST；观察到请求后才记录POST及无响应', async () => {
+test('表单准备失败或未观察到登录请求不能虚构POST；观察到请求后才记录POST及无响应', /** 验证表单准备失败或未观察到登录请求不能虚构POST；观察到请求后才记录POST及无响应。 */ async () => {
   for (const phase of ['form', 'waiting', 'request'] as const) {
     let closed = false;
     let detached = false;
@@ -144,14 +146,15 @@ test('表单准备失败或未观察到登录请求不能虚构POST；观察到�
     const stage = phase === 'form' ? '准备已有只读账号登录表单'
       : phase === 'waiting' ? '等待已有只读账号登录响应（请求未观察到）' : '已有只读账号登录';
     await assert.rejects(signIn(page, { username: 'synthetic-user', password: 'synthetic-password' }),
-      error => checkFailure(error, stage, phase === 'form' ? 'LOCAL' : phase === 'waiting' ? 'UNKNOWN' : 'POST',
+      /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => checkFailure(error, stage, phase === 'form' ? 'LOCAL' : phase === 'waiting' ? 'UNKNOWN' : 'POST',
         operation, 'unavailable', 'timeout', phase === 'request' ? 'laiwan_prd' : 'browser-ui'));
     assert.ok(closed);
     assert.ok(detached);
   }
 });
 
-test('实际只读fixture准备链保留本地阶段与真实会话状态，仍要求200并关闭失败页面', async () => {
+test('实际只读fixture准备链保留本地阶段与真实会话状态，仍要求200并关闭失败页面', /** 验证实际只读fixture准备链保留本地阶段与真实会话状态，仍要求200并关闭失败页面。 */ async () => {
   for (const phase of ['context', 'origin', 'session-401', 'session-503', 'session-201', 'success'] as const) {
     let closed = false;
     let walletReads = 0;
@@ -185,7 +188,8 @@ test('实际只读fixture准备链保留本地阶段与真实会话状态，仍�
       assert.equal(walletReads, 1);
       assert.equal(closed, false);
     } else {
-      await assert.rejects(result, error => checkFailure(error,
+      await assert.rejects(result, /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => checkFailure(error,
         phase === 'context' ? '准备已有只读账号页面' : phase === 'origin' ? '核对只读账号页面来源' : '核对已有只读账号会话',
         phase === 'context' || phase === 'origin' ? 'LOCAL' : 'GET',
         phase === 'context' ? 'existing-account-setup' : phase === 'origin' ? 'existing-account-origin' : 'existing-account-session',
@@ -198,7 +202,7 @@ test('实际只读fixture准备链保留本地阶段与真实会话状态，仍�
   }
 });
 
-test('会话网络错误传播保留无响应；200、401及503仍返回实际状态且不改变原重试配置', async () => {
+test('会话网络错误传播保留无响应；200、401及503仍返回实际状态且不改变原重试配置', /** 验证会话网络错误传播保留无响应；200、401及503仍返回实际状态且不改变原重试配置。 */ async () => {
   for (const status of [undefined, 200, 401, 503]) {
     let disposed = false;
     const page = { request: { get: /** 保留原请求及有限连接重置重试。
@@ -214,7 +218,8 @@ test('会话网络错误传播保留无响应；200、401及503仍返回实际�
         dispose: /** 记录响应释放。 */ async () => { disposed = true; } };
     } } } as unknown as Page;
     if (status === undefined) {
-      await assert.rejects(accountStatus(page, session), error => checkFailure(error,
+      await assert.rejects(accountStatus(page, session), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => checkFailure(error,
         '核对已有只读账号会话', 'GET', 'existing-account-session', 'unavailable', 'connection-failed'));
     } else {
       assert.equal(await accountStatus(page, session), status);
@@ -223,7 +228,7 @@ test('会话网络错误传播保留无响应；200、401及503仍返回实际�
   }
 });
 
-test('钱包HTTP500、解析失败、业务拒绝及契约损坏仍失败，成功时返回真实余额', async () => {
+test('钱包HTTP500、解析失败、业务拒绝及契约损坏仍失败，成功时返回真实余额', /** 验证钱包HTTP500、解析失败、业务拒绝及契约损坏仍失败，成功时返回真实余额。 */ async () => {
   for (const [status, body, reason] of [[500, secret, 'http-error'], [201, secret, 'invalid-json'],
     [200, { ok: false, reason: secret, errors: { detail: secret } }, 'business-rejected'],
     [200, { ok: true, result: { currencies: secret } }, 'invalid-response'],
@@ -237,23 +242,27 @@ test('钱包HTTP500、解析失败、业务拒绝及契约损坏仍失败，成�
       json: /** 注入正文或解析失败。 */ async () => { if (typeof body === 'string') throw new SyntaxError(body); return body; },
       dispose: /** 保持释放失败响应。 */ async () => { disposed = true; },
     }) } } as unknown as Page;
-    if (reason) await assert.rejects(readDiamondBalance(page, session), error => checkFailure(error,
+    if (reason) await assert.rejects(readDiamondBalance(page, session), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => checkFailure(error,
       '读取已有只读账号钱包', 'PUT', 'existing-account-wallet', status, reason));
     else assert.equal(await readDiamondBalance(page, session), 73);
     assert.ok(disposed);
   }
   const page = { request: { put: /** 注入未收到响应的未知错误。 */ async () => { throw new Error(secret, { cause: new Error(secret) }); } } } as unknown as Page;
-  await assert.rejects(readDiamondBalance(page, session), error => checkFailure(error,
+  await assert.rejects(readDiamondBalance(page, session), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => checkFailure(error,
     '读取已有只读账号钱包', 'PUT', 'existing-account-wallet', 'unavailable', 'request-failed'));
 });
 
-test('只读账号上层持久化不保存包装文本，未知页面错误仍保留准备阶段而不推断HTTP状态', async context => {
+test('只读账号上层持久化不保存包装文本，未知页面错误仍保留准备阶段而不推断HTTP状态', /** 验证只读账号上层持久化不保存包装文本，未知页面错误仍保留准备阶段而不推断HTTP状态。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const directory = await mkdtemp(join(tmpdir(), 'clrn-read-account-diagnostics-'));
-  context.after(() => rm(directory, { recursive: true, force: true }));
+  context.after(/** 测试结束后删除诊断产物的临时目录。 */ () => rm(directory, { recursive: true, force: true }));
   const error = readAccountPreparationError(new Error(`HTTP 503 ${secret}`, { cause: new Error(secret) }));
   assert.equal(error.message, '准备已有只读账号页面失败：method=LOCAL operation=existing-account-setup source=browser-ui status=unavailable response=not-received reason=request-failed');
   const outputs: string[] = [];
-  context.mock.method(console, 'error', (value: string) => outputs.push(value));
+  context.mock.method(console, 'error', /** 收集日志输出，供断言检查诊断内容与脱敏结果。
+ * @param value - 当前待转换或校验的值。 */ (value: string) => outputs.push(value));
   console.error(error.message);
   const report = join(directory, 'failure.json');
   await writeFile(report, JSON.stringify({ error: error.message, detail: inspect(error) }));
@@ -265,7 +274,8 @@ test('只读账号上层持久化不保存包装文本，未知页面错误仍�
   const page = { request: { get: /** 注入无顶层code的真实断连形态。 */ async () => {
     throw new Error(`apiRequestContext.get: socket hang up\nCall log:\n - ${secret}`);
   } } } as unknown as Page;
-  const failure = await accountStatus(page, session).catch(error => readAccountPreparationError(new Error(secret, { cause: error })));
+  const failure = await accountStatus(page, session).catch(/** 从嵌套错误中提取账号准备失败的安全诊断。
+ * @param error - 当前操作抛出的错误。 */ error => readAccountPreparationError(new Error(secret, { cause: error })));
   assert.ok(failure instanceof Error);
   await writeFile(report, JSON.stringify({ error: failure.message, detail: inspect(failure) }));
   console.error(failure.message);

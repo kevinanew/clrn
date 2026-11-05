@@ -42,12 +42,12 @@ export function sequence(page: Page, scenario: VisualScenario, states: readonly 
  */
 export async function table(page: Page, proxy: TexasProxy, room: string, self: string,
   options: TableLayout = 'standard', opponent = false) {
-  await expect.poll(async () => {
+  await expect.poll(/** 推进页面时钟并重放指定玩法的河牌状态，直到恢复成功。 */ async () => {
     await page.clock.runFor(250);
-    return proxy.replayTexas(room, restoreTable(self, 'river', opponent, options)).then(() => true, () => false);
+    return proxy.replayTexas(room, restoreTable(self, 'river', opponent, options)).then(/** 将异步结果转换为`true`，供后续步骤使用。 */ () => true, /** 将异步结果转换为`false`，供后续步骤使用。 */ () => false);
   }, { timeout: 30_000, message: '等待本房间实际订阅后再发送视觉状态' }).toBe(true);
   await page.clock.runFor(3000);
-  await expect.poll(async () => {
+  await expect.poll(/** 推进页面时钟并读取公共牌文字，等待变体场景就绪。 */ async () => {
     await page.clock.runFor(250);
     return page.locator('[data-testid="community_card_name_text"]').allTextContents();
   }).toEqual(['ah', 'kd', '7c', '2s', 'qs']);

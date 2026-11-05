@@ -49,7 +49,9 @@ export async function installCardSpriteLoader(page: Page, info: TestInfo): Promi
     scriptSha256: createHash('sha256').update(source).digest('hex'),
     limitations: '回调参数被包装，观察可能影响调度；resource 仅关联同一资源，不证明多个 DOM 中的某一个身份。'
       + 'enter/return 是实际 ImageLoader 成功回调的同步边界，不等于 React 已提交。' }) + '\n');
-  await page.exposeBinding('__clrnImageLoaderEvent', (_binding, event: LoaderEvent) => {
+  await page.exposeBinding('__clrnImageLoaderEvent', /** 将白名单内的图片加载事件脱敏后追加到宿主诊断日志。
+ * @param _binding - 当前操作使用的 _binding。
+ * @param event - 当前触发的事件。 */ (_binding, event: LoaderEvent) => {
     // 白名单输出，不保存异常正文、回调参数或任意浏览器对象。
     appendFileSync(journal, JSON.stringify({ sequence: ++sequence, realTime: Date.now(),
       virtualTime: event.virtualTime, request: event.request, phase: event.phase,
@@ -95,9 +97,9 @@ export async function installCardSpriteLoader(page: Page, info: TestInfo): Promi
   const session: CDPSession = await page.context().newCDPSession(page);
   await session.send('Debugger.enable');
   const breakpoints = await installLoaderBreakpoints(session, filename, source);
-  return async () => {
+  return /** 刷新页面加载器事件并检查日志记录是否存在，完成最终取证。 */ async () => {
     try {
-      await page.evaluate(async () => {
+      await page.evaluate(/** 等待页面中尚未落盘的图片加载事件全部提交。 */ async () => {
         const state = window as typeof window & { __clrnFlushImageLoader: () => Promise<void> };
         await state.__clrnFlushImageLoader();
       });

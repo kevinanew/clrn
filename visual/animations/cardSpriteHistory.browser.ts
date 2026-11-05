@@ -9,7 +9,7 @@ import test from 'node:test';
 
 const resolve = createRequire(path.join(__dirname, 'cardSpriteHistory.browser.ts')).resolve;
 
-test('正常和冻结时间的独立完整历史采样均保留运动断言，且不访问基准', async () => {
+test('正常和冻结时间的独立完整历史采样均保留运动断言，且不访问基准', /** 验证正常和冻结时间的独立完整历史采样均保留运动断言，且不访问基准。 */ async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-card-history-'));
   try {
     const snapshots = path.join(directory, 'snapshots');
@@ -25,6 +25,6 @@ test('正常和冻结时间的独立完整历史采样均保留运动断言，�
     assert.ifError(execution.error);
     assert.equal(execution.status, 0, execution.stdout + execution.stderr);
     assert.match(execution.stdout, /2 passed/);
-    assert.deepEqual(await readdir(snapshots).catch(() => []), [], '取证不得生成任何基准');
+    assert.deepEqual(await readdir(snapshots).catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []), [], '取证不得生成任何基准');
   } finally { await rm(directory, { recursive: true, force: true }); }
 });

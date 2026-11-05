@@ -27,7 +27,9 @@ ROOM = '11111111-1111-4111-8111-111111111111'
 
 
 class Upstream(BaseHTTPRequestHandler):
+    """为响应覆盖集成测试提供可控元数据、健康检查与业务响应。"""
     def do_GET(self):
+        """按路径提供节点列表、健康状态和场景上游响应。"""
         address = urlsplit(self.path)
         hostname = address.hostname or self.headers['Host']
         if address.path in METADATA_PATHS:
@@ -60,25 +62,31 @@ class Upstream(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
     def do_POST(self):
+        """记录订单写入请求后复用本机响应路由。"""
         if urlsplit(self.path).path.endswith('/order'):
             self.server.order_writes.append(self.path)
         self.do_GET()
 
     def do_PUT(self):
+        """使用共用响应路由处理 PUT 读取。"""
         self.do_GET()
 
     def do_OPTIONS(self):
+        """返回带上游标识的真实跨域预检响应。"""
         self.send_response(204)
         self.send_header('X-Upstream', 'real-preflight')
         self.send_header('Access-Control-Allow-Headers', 'authorization')
         self.end_headers()
 
     def log_message(self, *_arguments):
+        """关闭本机测试服务器的默认访问日志，避免干扰诊断断言。"""
         pass
 
 
 class LiveOverrideTests(unittest.TestCase):
+    """通过真实代理验证响应覆盖、透传、预检与控制认证。"""
     def test_五个代理保留全部候选节点及真实健康结果(self):
+        """验证五个代理保留全部候选节点及真实健康结果。"""
         upstream = ThreadingHTTPServer(('127.0.0.1', 0), Upstream)
         upstream.order_writes = []
         worker = threading.Thread(target=upstream.serve_forever, daemon=True)
@@ -98,6 +106,7 @@ class LiveOverrideTests(unittest.TestCase):
             worker.join(timeout=5)
 
     def check_addon(self, upstream_port, addon):
+        """启动指定代理插件并执行元数据、场景及诊断边界核验。"""
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', 0))
             port = probe.getsockname()[1]
@@ -143,6 +152,7 @@ class LiveOverrideTests(unittest.TestCase):
                     process.wait(timeout=5)
 
     def check_metadata(self, port):
+        """核验各版本节点元数据的数组、字典、压缩与失败响应契约。"""
         for path in METADATA_PATHS:
             metadata = 'http://node-0.service.invalid' + path
             for method in ('GET', 'POST'):
@@ -164,6 +174,7 @@ class LiveOverrideTests(unittest.TestCase):
             self.check_preflight(port, metadata)
 
     def check_scenes(self, port):
+        """切换夹具场景并核验对应业务接口的拦截和透传。"""
         control = 'http://fixtures-mitmproxy.invalid/fixtures/select'
         goods = 'http://node-0.service.invalid/v1/alipay_order/goods'
         self.assertEqual(self.fetch(port, control, 'POST', {'name': 'mall'})[0], 200)
@@ -189,6 +200,7 @@ class LiveOverrideTests(unittest.TestCase):
         self.assertEqual(self.fetch(port, control, 'POST', {'name': 'none'})[0], 200)
 
     def check_health(self, port):
+        """核验各候选主机的真实健康状态、负载与延迟。"""
         for host, status, load, delay in zip(SERVER_HOSTS, (200, 200, 503),
                                             ('normal', 'normal', 'offline'), (1065, 100, 9999)):
             address = f'http://{host}/node/v1/status'
@@ -199,6 +211,7 @@ class LiveOverrideTests(unittest.TestCase):
             self.check_preflight(port, address)
 
     def check_club_boundaries(self, port):
+        """验证俱乐部夹具仅影响限定列表，保留其他业务请求。"""
         api = 'http://node-0.service.invalid'
         control = 'http://fixtures-mitmproxy.invalid/fixtures/select'
         for name, count in (('club-empty', 0), ('club-skeleton', 2)):
@@ -231,6 +244,7 @@ class LiveOverrideTests(unittest.TestCase):
         self.assertEqual(self.fetch(port, fault_control, 'POST', {'scenario': 'visual-stable'})[0], 200)
 
     def check_game_hold(self, port):
+        """验证游戏挂起场景可由控制入口释放且不影响无关请求。"""
         control = 'http://fixtures-mitmproxy.invalid/fixtures/'
         api = 'http://node-0.service.invalid'
         self.assertEqual(self.fetch(port, control + 'select', 'POST', {'name': 'none'})[0], 200)
@@ -261,12 +275,14 @@ class LiveOverrideTests(unittest.TestCase):
         self.assertNotIn('x-upstream', self.fetch(port, path, 'PUT')[1])
 
     def check_preflight(self, port, address):
+        """核对预检仍返回真实上游状态与响应头。"""
         status, headers, _ = self.fetch(port, address, 'OPTIONS')
         self.assertEqual(status, 204)
         self.assertEqual(headers['x-upstream'], 'real-preflight')
         self.assertEqual(headers['access-control-allow-headers'], 'authorization')
 
     def check_diagnostics(self, port):
+        """核验诊断入口认证及事件内容的安全边界。"""
         status, _, diagnostic = self.fetch(port, 'http://test-mitmproxy.invalid/diagnostics')
         self.assertEqual(status, 200)
         self.assertEqual(self.fetch(port, 'http://test-mitmproxy.invalid/diagnostics', token='wrong')[0], 403)
@@ -282,6 +298,7 @@ class LiveOverrideTests(unittest.TestCase):
         self.assertNotIn('offline-token', json.dumps(diagnostic))
 
     def fetch(self, port, url, method='GET', body=None, token='offline-token'):
+        """通过本机代理发送带可选 JSON 正文的请求并读取完整响应。"""
         client = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
         try:
             client.request(method, url, None if body is None else json.dumps(body),

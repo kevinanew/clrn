@@ -16,7 +16,7 @@ type Report = { failed: boolean; dropped: number; entries: {
 }[] };
 
 for (const recovers of [true, false]) {
-  test(`图集诊断保留原始失败、DOM 身份及对照结果：定时回调恢复=${recovers}`, async () => {
+  test(`图集诊断保留原始失败、DOM 身份及对照结果：定时回调恢复=${recovers}`, /** 验证图集诊断保留原始失败、DOM 身份及对照结果：定时回调恢复=$\{recovers\}。 */ async () => {
     const directory = await mkdtemp(path.join(tmpdir(), 'clrn-card-diagnostics-'));
     const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
       ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
@@ -53,7 +53,7 @@ for (const recovers of [true, false]) {
           </div>
         </div>`);
       await sampleCardSprites(page, 'fixture-mounted');
-      await page.evaluate(async () => {
+      await page.evaluate(/** 注入包含域名与 IP 路径的图片事件，验证附件中的资源地址脱敏。 */ async () => {
         const state = window as typeof window & { __clrnCardSpriteEvent: (entry: unknown) => Promise<void> };
         for (const path of ['/assets/probe.example.invalid/card.png', '/assets/192.0.2.7/card.png',
           '/assets/[2001:db8::7]/card.png', '/assets/probe%2eexample%2einvalid/token=fixture-secret']) {
@@ -61,46 +61,60 @@ for (const recovers of [true, false]) {
             cards: [{ id: 9000, connected: false, image: { path } }] });
         }
       });
-      await page.evaluate(recovers => {
-        if (recovers) setTimeout(() => {
+      await page.evaluate(/** 按测试条件安排牌面从后备图恢复为精灵内容。
+ * @param recovers - 当前操作使用的 recovers。 */ recovers => {
+        if (recovers) setTimeout(/** 完成牌面图片恢复的 DOM 提交，触发就绪条件。 */ () => {
           document.querySelector<HTMLElement>('[data-testid="sprite-image-fallback"]')!.style.display = 'none';
           document.querySelector<HTMLElement>('[data-testid="sprite-image-content"]')!.style.opacity = '1';
         }, 16);
       }, recovers);
-      const time = await page.evaluate(() => Date.now());
+      const time = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
       await assert.rejects(waitForTexasCardSprites(page, '[data-testid="community_card"]'),
         /德州可见牌面应显示完整图集/);
-      assert.equal(await page.evaluate(() => Date.now()), time, '原始等待不得推进动画');
+      assert.equal(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()), time, '原始等待不得推进动画');
       await saveCardSpriteDiagnostics(page, info, 'frozen');
       const frozenContents = await readFile(path.join(directory, 'card-sprite-diagnostics-frozen.json'), 'utf8');
       const frozen: Report = JSON.parse(frozenContents);
       assert.ok(frozen.failed);
-      assert.ok(frozen.entries.some(entry => entry.event === 'wait-failed'));
-      assert.ok(frozen.entries.some(entry => entry.cards.some(card => card.image?.decode === 'fulfilled')));
+      assert.ok(frozen.entries.some(/** 判断是否存在满足以下条件的条目：`entry.event === 'wait-failed'`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.event === 'wait-failed'));
+      assert.ok(frozen.entries.some(/** 判断是否存在满足以下条件的条目：`entry.cards.some(card => card.image?.decode === 'fulfilled')`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.cards.some(/** 判断是否存在满足以下条件的条目：`card.image?.decode === 'fulfilled'`。
+ * @param card - 当前操作使用的 card。 */ card => card.image?.decode === 'fulfilled')));
       assert.doesNotMatch(frozenContents, /probe\.example|192\.0\.2\.7|2001:db8|probe%2e|fixture-secret/);
       assert.match(frozenContents, /asset-[a-f0-9]{16}/, '冻结附件必须使用逻辑资源指纹');
-      const original = frozen.entries.flatMap(entry => entry.cards).find(card => card.connected)!;
+      const original = frozen.entries.flatMap(/** 展开当前条目对应的`entry.cards`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.cards).find(/** 查找满足以下条件的首个条目：`card.connected`。
+ * @param card - 当前操作使用的 card。 */ card => card.connected)!;
       await observeCardSpriteClockControl(page);
-      assert.equal(await page.locator('[data-testid="sprite-image-fallback"]').evaluate(node => getComputedStyle(node).display),
+      assert.equal(await page.locator('[data-testid="sprite-image-fallback"]').evaluate(/** 在页面中读取`getComputedStyle(node).display`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => getComputedStyle(node).display),
         recovers ? 'none' : 'flex', '诊断不能自行隐藏持续回退的牌面');
-      await page.locator('[data-testid="sprite-image-container"]').evaluate(node => node.remove());
+      await page.locator('[data-testid="sprite-image-container"]').evaluate(/** 在页面中读取`node.remove()`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.remove());
       await sampleCardSprites(page, 'fixture-removed');
       await saveCardSpriteDiagnostics(page, info);
       const contents = await readFile(path.join(directory, 'card-sprite-diagnostics.json'), 'utf8');
       const report: Report = JSON.parse(contents);
       assert.ok(report.failed, '对照恢复也必须保留原始失败');
-      assert.ok(report.entries.some(entry => entry.cards.some(card => card.id === original.id && !card.connected)));
-      assert.ok(report.entries.some(entry => entry.event.startsWith('control-running-')));
-      const control = report.entries.filter(entry => entry.event.startsWith('control-running-'));
+      assert.ok(report.entries.some(/** 判断是否存在满足以下条件的条目：`entry.cards.some(card => card.id === original.id && !card.connected)`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.cards.some(/** 判断是否存在满足以下条件的条目：`card.id === original.id && !card.connected`。
+ * @param card - 当前操作使用的 card。 */ card => card.id === original.id && !card.connected)));
+      assert.ok(report.entries.some(/** 判断是否存在满足以下条件的条目：`entry.event.startsWith('control-running-')`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.event.startsWith('control-running-')));
+      const control = report.entries.filter(/** 仅保留满足以下条件的条目：`entry.event.startsWith('control-running-')`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.event.startsWith('control-running-'));
       assert.ok(control.at(-1)!.virtualTime > control[0].virtualTime, '对照时钟须以正常速度前进');
       assert.ok(control.at(-1)!.realTime > control[0].realTime);
-      assert.ok(control.some(entry => entry.cards.some(card => card.id === original.id
+      assert.ok(control.some(/** 判断是否存在满足以下条件的条目：`entry.cards.some(card => card.id === original.id && card.opacity === (recovers ? '1' : '0'))`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.cards.some(/** 判断是否存在满足以下条件的条目：`card.id === original.id && card.opacity === (recovers ? '1' : '0')`。
+ * @param card - 当前操作使用的 card。 */ card => card.id === original.id
         && card.opacity === (recovers ? '1' : '0'))), '对照须关联原始 DOM 节点');
       assert.doesNotMatch(contents, /private-player-id|private-token|private-text|base64/);
       assert.doesNotMatch(contents, /probe\.example|192\.0\.2\.7|2001:db8|probe%2e|fixture-secret/);
       assert.equal(await readFile(path.join(directory, 'card-sprite-diagnostics-frozen.json'), 'utf8'), frozenContents,
         '对照附件不能覆盖原始冻结现场');
-      await page.evaluate(async () => {
+      await page.evaluate(/** 连续采样超过容量上限，验证诊断记录的截断与丢弃计数。 */ async () => {
         const state = window as typeof window & { __clrnSampleCardSprites: (event: string) => Promise<void> };
         for (let index = 0; index < 1005; index++) await state.__clrnSampleCardSprites('capacity');
       });
@@ -110,11 +124,17 @@ for (const recovers of [true, false]) {
       assert.ok(bounded.dropped > 0, '历史被截断必须明确计数');
       assert.equal(bounded.entries.at(-1)!.event, 'save', '容量满时仍须保留最新现场');
       const journalContents = await readFile(path.join(directory, 'card-sprite-events.jsonl'), 'utf8');
-      const journal = journalContents.trim().split('\n').map(line => JSON.parse(line));
+      const journal = journalContents.trim().split('\n').map(/** 将当前条目映射为`JSON.parse(line)`。
+ * @param line - 当前操作使用的 line。 */ line => JSON.parse(line));
       assert.ok(journal.length > 1000, '完整事件文件不得采用内存截断策略');
-      assert.ok(journal.some(entry => entry.event === 'fixture-mounted'), '保留从挂载开始的早期证据');
-      assert.ok(journal.some(entry => entry.event === 'wait-failed'), '保留原始失败');
-      assert.deepEqual(journal.map(entry => entry.sequence), journal.map((_entry, index) => index + 1));
+      assert.ok(journal.some(/** 判断是否存在满足以下条件的条目：`entry.event === 'fixture-mounted'`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.event === 'fixture-mounted'), '保留从挂载开始的早期证据');
+      assert.ok(journal.some(/** 判断是否存在满足以下条件的条目：`entry.event === 'wait-failed'`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.event === 'wait-failed'), '保留原始失败');
+      assert.deepEqual(journal.map(/** 将当前条目映射为`entry.sequence`。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.sequence), journal.map(/** 将当前条目映射为`index + 1`。
+ * @param _entry - 当前操作使用的 _entry。
+ * @param index - 当前条目在集合中的位置。 */ (_entry, index) => index + 1));
       assert.doesNotMatch(journalContents, /probe\.example|192\.0\.2\.7|2001:db8|fixture-secret|private-player-id|base64/);
     } finally {
       await browser.close();

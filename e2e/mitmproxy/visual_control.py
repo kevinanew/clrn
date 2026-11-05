@@ -8,6 +8,7 @@ CONTROL_HOST = 'test-mitmproxy.invalid'
 
 
 def respond(flow, data, status=200):
+    """向视觉控制流写入 JSON 结果及跨域响应头。"""
     flow.response = http.Response.make(status, json.dumps(data).encode(), {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': flow.request.headers.get('Origin', '*'),
@@ -18,6 +19,7 @@ def respond(flow, data, status=200):
 
 
 def control(proxy, flow, respond, command, status):
+    """验证视觉代理控制令牌并分发命令或状态读取。"""
     if flow.request.headers.get('X-E2E-Control-Token') != proxy.token:
         respond(flow, {'error': 'Forbidden'}, 403)
         return
@@ -34,6 +36,7 @@ def control(proxy, flow, respond, command, status):
 
 
 def route_request(proxy, flow, diagnostics, is_staging):
+    """优先处理控制及诊断流量，判断业务请求是否属于可处理来源。"""
     if flow.response:
         return False
     if flow.request.host == CONTROL_HOST:

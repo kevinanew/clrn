@@ -37,7 +37,7 @@ function imageOwner(imageState = 'LOADING') {
     source: 'https://probe.example.invalid/fixture-secret', onLoad: dispatch } } };
 }
 
-test('将同一牌面关联到实际加载器请求，读取 effect 后变化的 ref，不调用 setter 或保存私有值', () => {
+test('将同一牌面关联到实际加载器请求，读取 effect 后变化的 ref，不调用 setter 或保存私有值', /** 验证将同一牌面关联到实际加载器请求，读取 effect 后变化的 ref，不调用 setter 或保存私有值。 */ () => {
   const tracker = observer();
   const node = new ImageNode();
   const owner = imageOwner();
@@ -57,7 +57,7 @@ test('将同一牌面关联到实际加载器请求，读取 effect 后变化的
   assert.doesNotMatch(JSON.stringify(tracker.readImageOwner(node)), /private|secret|example|source|onLoad|dispatch/);
 });
 
-test('未知 hook 结构与枚举明确失败，不把任意 hook 值解释为 Image 状态', () => {
+test('未知 hook 结构与枚举明确失败，不把任意 hook 值解释为 Image 状态', /** 验证未知 hook 结构与枚举明确失败，不把任意 hook 值解释为 Image 状态。 */ () => {
   const tracker = observer();
   const node = new ImageNode();
   const owner = imageOwner('fixture-private-state');
