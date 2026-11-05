@@ -1,16 +1,12 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import {
-  BIO_INPUT_FIXED_TEXT,
-  buildScenarios,
-  LOCALES,
+  BIO_INPUT_FIXED_TEXT, buildScenarios, LOCALES,
   LOGIN_FORGOT_PASSWORD_SMS_SCENARIO,
   LOGIN_PHONE_SCENARIO,
   LOGIN_PICK_COUNTRY_CODE_SCENARIO,
-  LOGIN_USER_AGREEMENT_SCENARIO,
-  LOGIN_USER_PRIVACY_SCENARIO,
-  NICKNAME_INPUT_FIXED_TEXT,
-  pageCountForViewport,
+  LOGIN_USER_AGREEMENT_SCENARIO, LOGIN_USER_PRIVACY_SCENARIO,
+  NICKNAME_INPUT_FIXED_TEXT, pageCountForViewport,
   SIGNED_IN_PAGES,
   scenarioLabel,
   VIEWPORTS,
@@ -57,10 +53,12 @@ describe('visual scenarios', /** 核对视觉场景的生成数量、页面范�
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.pageLabel === sideScenario.labelSuffix,
       );
       assert.equal(matched.length, 1, `缺少场景 ${sideScenario.labelSuffix}`);
-      assert.equal(matched[0]?.viewport.label, 'mobile');
-      assert.equal(matched[0]?.signIn, false);
-      assert.deepEqual(matched[0]?.navClickTestIds, sideScenario.navClickTestIds);
-      assert.equal(matched[0]?.visualReadySelector, sideScenario.visualReadySelector);
+      const [scenario] = matched;
+      assert.ok(scenario);
+      assert.equal(scenario.viewport.label, 'mobile');
+      assert.equal(scenario.signIn, false);
+      assert.deepEqual(scenario.navClickTestIds, sideScenario.navClickTestIds);
+      assert.equal(scenario.visualReadySelector, sideScenario.visualReadySelector);
     });
   });
   test('易变文本场景带 fixedTexts 固定填充', /** 验证易变文本场景带 fixedTexts 固定填充。 */ () => {
@@ -208,11 +206,13 @@ describe('visual scenarios', /** 核对视觉场景的生成数量、页面范�
       const matched = scenarios.filter(/** 仅保留满足以下条件的条目：`scenario.pageLabel === pageLabel`。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.pageLabel === pageLabel);
       assert.equal(matched.length, 1, `缺少场景 ${pageLabel}`);
-      assert.equal(matched[0]?.viewport.label, 'mobile');
-      assert.equal(matched[0]?.signIn, true);
-      assert.equal(matched[0]?.tabTestId, 'settings-tab');
-      assert.deepEqual(matched[0]?.navClickTestIds, navClickTestIds);
-      assert.equal(matched[0]?.visualReadySelector, visualReadySelector);
+      const [scenario] = matched;
+      assert.ok(scenario);
+      assert.equal(scenario.viewport.label, 'mobile');
+      assert.equal(scenario.signIn, true);
+      assert.equal(scenario.tabTestId, 'settings-tab');
+      assert.deepEqual(scenario.navClickTestIds, navClickTestIds);
+      assert.equal(scenario.visualReadySelector, visualReadySelector);
     });
   });
   test('商城截图等待首个商品行而不是仅等待外层容器', /** 验证商城截图等待首个商品行而不是仅等待外层容器。 */ () => {

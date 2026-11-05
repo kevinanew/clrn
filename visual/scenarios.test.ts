@@ -29,15 +29,9 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   });
 
   afterEach(/** 恢复场景生成测试修改的语言和范围环境变量。 */ () => {
-    if (originalLocales === undefined) {
-      delete process.env.VISUAL_LOCALES;
-    } else {
-      process.env.VISUAL_LOCALES = originalLocales;
-    }
-    if (originalScope === undefined) {
-      delete process.env.VISUAL_SCOPE;
-    } else {
-      process.env.VISUAL_SCOPE = originalScope;
+    for (const [key, value] of [['VISUAL_LOCALES', originalLocales], ['VISUAL_SCOPE', originalScope]] as const) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
     }
   });
 
@@ -101,7 +95,8 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   test('新增业务页面有对应导航与就绪定位，签到日期固定且不提交业务', /** 验证新增业务页面有对应导航与就绪定位，签到日期固定且不提交业务。 */ () => {
     process.env.VISUAL_LOCALES = 'all';
     const scenarios = buildScenarios();
-    for (const locale of LOCALES) {
+    LOCALES.forEach(/** 执行当前测试或处理逻辑。
+ * @param locale - 当前回调参数。 */ locale => {
       for (const label of ['guest_message', 'guest_me', 'login_language', 'login_phone_password',
         'signed_in_slot', 'signed_in_daily_bonus', 'signed_in_hall_search',
         'signed_in_create_room_advanced_texas', 'signed_in_create_room_advanced_zhajinhua',
@@ -115,7 +110,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
         assert.ok(!scenario.navClickTestIds.includes('spin-button'), '截图不能发起抽奖');
         assert.ok(!scenario.navClickTestIds.includes('daily-bonus-check-in'), '截图不能领取奖励');
       }
-    }
+    });
     const bonus = SIGNED_IN_PAGES.find(/** 查找满足以下条件的首个条目：`page.label === 'signed_in_daily_bonus'`。
  * @param page - 当前 Playwright 页面。 */ page => page.label === 'signed_in_daily_bonus');
     assert.deepEqual(bonus?.fixedTexts, [{
@@ -163,18 +158,19 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
       /** 仅保留满足以下条件的条目：`scenario.locale === 'zh-Hans' && scenario.viewport.label === 'desktop'`。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.locale === 'zh-Hans' && scenario.viewport.label === 'desktop',
     );
-    assert.equal(zhDesktop[0]?.label, 'zh-Hans_desktop_hall');
-    assert.equal(zhDesktop[1]?.label, 'zh-Hans_desktop_guest_game_sign_in_prompt');
-    assert.equal(zhDesktop[2]?.label, 'zh-Hans_desktop_guest_private_room');
-    assert.equal(zhDesktop[3]?.label, 'zh-Hans_desktop_login');
-    assert.equal(zhDesktop[4]?.label, 'zh-Hans_desktop_login_username');
-    assert.equal(zhDesktop[5]?.label, 'zh-Hans_desktop_guest_club');
-    assert.equal(zhDesktop[6]?.label, 'zh-Hans_desktop_search_sign_in_prompt');
+    assert.ok(zhDesktop.length >= 9);
+    assert.equal(zhDesktop[0].label, 'zh-Hans_desktop_hall');
+    assert.equal(zhDesktop[1].label, 'zh-Hans_desktop_guest_game_sign_in_prompt');
+    assert.equal(zhDesktop[2].label, 'zh-Hans_desktop_guest_private_room');
+    assert.equal(zhDesktop[3].label, 'zh-Hans_desktop_login');
+    assert.equal(zhDesktop[4].label, 'zh-Hans_desktop_login_username');
+    assert.equal(zhDesktop[5].label, 'zh-Hans_desktop_guest_club');
+    assert.equal(zhDesktop[6].label, 'zh-Hans_desktop_search_sign_in_prompt');
     // 忘记密码相关页仅 mobile，desktop 随后进入登录后页面
-    assert.equal(zhDesktop[7]?.label, 'zh-Hans_desktop_guest_message');
-    assert.equal(zhDesktop[8]?.label, 'zh-Hans_desktop_guest_me');
-    assert.ok(zhDesktop.some(/** 判断是否存在满足以下条件的条目：`scenario.pageLabel === 'signed_in_hall'`。
- * @param scenario - 当前测试场景配置。 */ scenario => scenario.pageLabel === 'signed_in_hall'));
+    assert.equal(zhDesktop[7].label, 'zh-Hans_desktop_guest_message');
+    assert.equal(zhDesktop[8].label, 'zh-Hans_desktop_guest_me');
+    assert.ok(zhDesktop.some(/** 根据当前条目计算结果。
+ * @param scenario - 当前回调参数。 */ scenario => scenario.pageLabel === 'signed_in_hall'));
   });
 
   test('每个场景都包含语言标识与就绪条件，label 为 locale_viewport_page', /** 验证每个场景都包含语言标识与就绪条件，label 为 locale_viewport_page。 */ () => {
@@ -348,16 +344,18 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
     );
 
     assert.equal(emailScenarios.length, 1);
-    assert.equal(emailScenarios[0]?.viewport.label, 'mobile');
+    const [emailScenario] = emailScenarios;
+    assert.ok(emailScenario);
+    assert.equal(emailScenario.viewport.label, 'mobile');
     assert.deepEqual(
-      emailScenarios[0]?.navClickTestIds,
+      emailScenario.navClickTestIds,
       LOGIN_FORGOT_PASSWORD_EMAIL_SCENARIO.navClickTestIds,
     );
     assert.equal(
-      emailScenarios[0]?.visualReadySelector,
+      emailScenario.visualReadySelector,
       LOGIN_FORGOT_PASSWORD_EMAIL_SCENARIO.visualReadySelector,
     );
-    assert.equal(emailScenarios[0]?.signIn, false);
+    assert.equal(emailScenario.signIn, false);
   });
 
 });

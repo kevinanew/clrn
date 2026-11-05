@@ -53,32 +53,65 @@ export function getVisualShardConfig(
   scenarioCount: number,
   env: NodeJS.ProcessEnv = process.env,
 ): VisualShardConfig {
-  if (!Number.isInteger(scenarioCount) || scenarioCount < 0) {
-    throw new Error(`scenarioCount 必须是非负整数，当前值: ${String(scenarioCount)}`);
-  }
-
+  assertScenarioCount(scenarioCount);
   const countEnv = action === 'reference' ? 'VISUAL_REFERENCE_SHARDS' : 'VISUAL_TEST_SHARDS';
-  const configuredCount = env[countEnv];
-  const requestedCount = Number(
-    configuredCount || Math.max(1, Math.ceil(scenarioCount / DEFAULT_MAX_SCENARIOS_PER_SHARD)),
-  );
-  if (!Number.isInteger(requestedCount) || requestedCount < 1 || requestedCount > MAX_SHARD_COUNT) {
-    throw new Error(
-      `${countEnv} 必须是 1 到 ${MAX_SHARD_COUNT} 的整数，当前值: ${String(env[countEnv])}`,
-    );
-  }
-  // Playwright 默认把“没有匹配测试”视为失败。分片数不能超过选中场景数，
-  // 否则过滤或冒烟轮次末尾会产生必然为空的 shard。
+  const requestedCount = requestedShardCount(env[countEnv], scenarioCount);
+  assertShardRange(requestedCount, MAX_SHARD_COUNT,
+    `${countEnv} 必须是 1 到 ${MAX_SHARD_COUNT} 的整数，当前值: ${String(env[countEnv])}`);
+  // 避免生成空 shard，同时保留空场景时至少一片的原有约定。
   const count = Math.min(requestedCount, Math.max(1, scenarioCount));
-
-  const start = action === 'reference' ? Number(env.VISUAL_REFERENCE_START_SHARD || 1) : 1;
-  if (!Number.isInteger(start) || start < 1 || start > count) {
-    throw new Error(
-      `VISUAL_REFERENCE_START_SHARD 必须是 1 到 ${count} 的整数，当前值: ${String(
-        env.VISUAL_REFERENCE_START_SHARD,
-      )}`,
-    );
-  }
-
+  const start = referenceStartShard(action, env);
+  assertShardRange(start, count,
+    `VISUAL_REFERENCE_START_SHARD 必须是 1 到 ${count} 的整数，当前值: ${String(env.VISUAL_REFERENCE_START_SHARD)}`);
   return { countEnv, count, start };
+}
+
+/**
+ * 拒绝无效场景数量，零场景仍由运行入口处理。
+ * @param count - 待运行场景数量。
+ */
+function assertScenarioCount(count: number): void {
+  if (!Number.isInteger(count) || count < 0) {
+    throw new Error(`scenarioCount 必须是非负整数，当前值: ${String(count)}`);
+  }
+}
+
+/**
+ * 沿用空字符串使用自动分片数的约定。
+ * @param configured - 显式分片数。
+ * @param scenarioCount - 当前场景数量。
+ */
+function requestedShardCount(configured: string | undefined, scenarioCount: number): number {
+  return Number(configured || Math.max(1, Math.ceil(scenarioCount / DEFAULT_MAX_SCENARIOS_PER_SHARD)));
+}
+
+/**
+ * 普通比较始终从第一片执行，采集允许断点续跑。
+ * @param action - 运行操作。
+ * @param env - 当前环境。
+ */
+function referenceStartShard(action: VisualRunAction, env: NodeJS.ProcessEnv): number {
+  if (action !== 'reference') return 1;
+  return Number(env.VISUAL_REFERENCE_START_SHARD || 1);
+}
+
+/**
+ * 校验整数及闭区间，分别保留调用方的错误诊断。
+ * @param value - 待校验的片号或片数。
+ * @param maximum - 允许的最大值。
+ * @param message - 对应环境配置的诊断。
+ */
+function assertShardRange(value: number, maximum: number, message: string): void {
+  if (!Number.isInteger(value)) throw new Error(message);
+  assertShardBounds(value, maximum, message);
+}
+
+/**
+ * 检查整数片号的上下界。
+ * @param value - 已确认的整数。
+ * @param maximum - 允许的最大值。
+ * @param message - 配置诊断。
+ */
+function assertShardBounds(value: number, maximum: number, message: string): void {
+  if (value < 1 || value > maximum) throw new Error(message);
 }

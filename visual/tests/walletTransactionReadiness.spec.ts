@@ -16,28 +16,74 @@ const remarks = ['申请买入金币', '房间退款', '入座买入金币', '�
  * @param fault - 本例需要重现的错误类型。
  */
 async function renderTransactions(page: Page, fault = ''): Promise<void> {
-  const rows = records.coin.map(
-    /**
-     * 创建带真实金额、余额、日期和备注节点的单条流水。
-     * @param record - Python 夹具中的固定流水。
-     * @param index - 倒序流水的位置。
-     */
-    (record, index) => {
-      const date = new Date(Date.parse(record.create_at) + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
-      const identifier = record.memo?.match(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/i)?.[0];
-      return `<div data-testid="CurrencyTransactionRecordItem_container" style="height:100px">
-        <span data-testid="CurrencyTransactionRecordItem_amount">${fault === '金额错误' ? '-999' : `${record.event === 'deposit' ? '+' : '-'}${record.amount}`}</span>
-        <span data-testid="CurrencyTransactionRecordItem_balance">余额: ${fault === '余额错误' ? '999' : record.balance}</span>
-        <span data-testid="CurrencyTransactionRecordItem_date">${fault === '日期错误' ? '2000-01-01 00:00:00' : date}</span>
-        <span data-testid="CurrencyTransactionRecordItem_memo">${fault === '备注错误' ? '错误备注' : remarks[index]}</span>
-        ${identifier ? `<span data-testid="CurrencyTransactionRecordItem_uuidText">${identifier}</span>` : ''}
-      </div>`;
-    },
-  ).join('');
-  await page.setContent(`<div data-testid="other-list">${fault === '其他列表有数据' ? rows : ''}</div>
-    <div data-testid="coin-transaction-record-view" style="height:600px;${fault === '离屏列表' ? 'position:absolute;left:2000px' : ''}">
-      ${['空容器', '其他列表有数据'].includes(fault) ? '' : rows}
-    </div>`);
+  const rows = records.coin.map(/** 根据当前条目计算结果。
+ * @param record - 当前回调参数。
+ * @param index - 当前回调参数。 */ (record, index) => transactionRow(record, index, fault)).join('');
+  await page.setContent(transactionLists(rows, fault));
+}
+
+const faultyFields: Record<string, Record<string, string>> = {
+  金额错误: { amount: '-999' }, 余额错误: { balance: '余额: 999' },
+  日期错误: { date: '2000-01-01 00:00:00' }, 备注错误: { memo: '错误备注' },
+};
+
+/**
+ * 构造当前列表与其他页签残留列表。
+ * @param rows - 固定流水 HTML。
+ * @param fault - 故障类型。
+ */
+function transactionLists(rows: string, fault: string): string {
+  const otherRows = fault === '其他列表有数据' ? rows : '';
+  const activeRows = ['空容器', '其他列表有数据'].includes(fault) ? '' : rows;
+  return `<div data-testid="other-list">${otherRows}</div>
+    <div data-testid="coin-transaction-record-view" style="height:600px;${listPosition(fault)}">${activeRows}</div>`;
+}
+
+/**
+ * 保留离屏故障的实际布局。
+ * @param fault - 故障类型。
+ */
+function listPosition(fault: string): string {
+  return fault === '离屏列表' ? 'position:absolute;left:2000px' : '';
+}
+
+/**
+ * 按数据字段只替换当前故障对应值，其余断言继续读取真实夹具。
+ * @param record - Python 固定流水。
+ * @param index - 流水位置。
+ * @param fault - 故障类型。
+ */
+function transactionRow(record: TransactionStatement, index: number, fault: string): string {
+  const date = new Date(Date.parse(record.create_at) + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+  const values = { amount: transactionAmount(record), balance: `余额: ${record.balance}`, date, memo: remarks[index], ...faultyFields[fault] };
+  const fields = Object.entries(values).map(/** 根据当前条目计算结果。
+ * @param root0 - 当前回调参数。 */ ([name, value]) => `<span data-testid="CurrencyTransactionRecordItem_${name}">${value}</span>`).join('');
+  return `<div data-testid="CurrencyTransactionRecordItem_container" style="height:100px">${fields}${transactionIdentifier(record)}</div>`;
+}
+
+/**
+ * 金额仍根据入账或出账保留正负号。
+ * @param record - 固定流水。
+ */
+function transactionAmount(record: TransactionStatement): string {
+  return `${record.event === 'deposit' ? '+' : '-'}${record.amount}`;
+}
+
+/**
+ * 从原始备注中提取 UUID，不存在时不生成节点。
+ * @param record - 固定流水。
+ */
+function transactionIdentifier(record: TransactionStatement): string {
+  const identifier = record.memo?.match(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/i)?.[0];
+  return identifierMarkup(identifier);
+}
+
+/**
+ * 仅在夹具带 UUID 时展示该字段。
+ * @param identifier - 原始备注中的 UUID。
+ */
+function identifierMarkup(identifier: string | undefined): string {
+  return identifier ? `<span data-testid="CurrencyTransactionRecordItem_uuidText">${identifier}</span>` : '';
 }
 
 test.use({ viewport: { width: 375, height: 812 } });

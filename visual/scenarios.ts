@@ -8,13 +8,6 @@ import { GUEST_CLUB_SCENARIO } from './cases/club/guest';
 import {
   LOGIN_OPEN_SCENARIO,
   LOGIN_USERNAME_SCENARIO,
-  LOGIN_FORGOT_PASSWORD_SCENARIO,
-  LOGIN_FORGOT_PASSWORD_EMAIL_SCENARIO,
-  LOGIN_PHONE_SCENARIO,
-  LOGIN_FORGOT_PASSWORD_SMS_SCENARIO,
-  LOGIN_PICK_COUNTRY_CODE_SCENARIO,
-  LOGIN_USER_AGREEMENT_SCENARIO,
-  LOGIN_USER_PRIVACY_SCENARIO,
 } from './cases/auth/scenarios';
 export * from './cases/hall/guest';
 export * from './cases/club/guest';
@@ -44,51 +37,11 @@ import { pages as gameRecordPages } from './cases/game-record/scenarios';
 import { pages as helpPages } from './cases/help/scenarios';
 import { getVisualSuite, selectVisualSuite } from './visual-suite';
 
-/** 本地定向检查的核心范围（VISUAL_SCOPE=core）；CI 始终运行完整场景。 */
-export const CORE_PAGE_LABELS = new Set([
-  // 本地按核心范围检查时也覆盖新增场景。
-  'launch_staging_notice',
-  'launch_branding',
-  'guest_message',
-  'guest_me',
-  'login_language',
-  'login_phone_password',
-  'signed_in_slot',
-  'signed_in_daily_bonus',
-  'signed_in_hall_search',
-  'signed_in_club_search_result',
-  'signed_in_create_room_advanced_texas',
-  'signed_in_create_room_advanced_zhajinhua',
-  'signed_in_create_room_advanced_six_plus',
-  'signed_in_zhajinhua_pre_game',
-  'signed_in_zhajinhua_game',
-  'signed_in_texas_pre_game',
-  'signed_in_texas_optional_pre_game',
-  'signed_in_texas_game',
-  'signed_in_texas_panels',
-  'signed_in_texas_hall',
-  'signed_in_texas_records_v2',
-  'signed_in_game_records_legacy',
-  'signed_in_game_records_v2',
-  'signed_in_texas_controls',
-  'signed_in_texas_table_states',
-  'signed_in_texas_panel_variants',
-  'signed_in_texas_hall_variants',
-  'hall',
-  'search_sign_in_prompt',
-  'guest_private_room',
-  'login',
-  'login_username',
-  'guest_club',
-  'guest_game_sign_in_prompt',
-  'signed_in_hall',
-  'signed_in_message',
-  'signed_in_private_room',
-  'signed_in_club',
-  'signed_in_me',
-  'signed_in_mall',
-]);
-/** 为一组页面定义统一添加场景分类。
+import { CORE_PAGE_LABELS, mobileLoginSideScenarios } from './scenarioScope';
+export { CORE_PAGE_LABELS } from './scenarioScope';
+
+/**
+ * 为一组页面定义统一添加场景分类。
  * @param group - 该组页面所属的场景分类。
  * @param pages - 待处理的页面定义或截图元数据清单。 */
 function withGroup(group: ScenarioGroup, pages: SignedInPageDef[]): GroupedPageDef[] {
@@ -115,8 +68,8 @@ export const SIGNED_IN_PAGES: GroupedPageDef[] = [
 /** 解析语言筛选配置，拒绝不支持的语言代码。
  * @param raw - 原始语言筛选配置。 */
 function parseLocaleFilter(raw: string | undefined): LocaleCode[] | 'all' {
-  const value = (raw || 'zh-Hans').trim();
-  if (!value || value === 'all') {
+  const value = localeFilterValue(raw);
+  if (['', 'all'].includes(value)) {
     return 'all';
   }
 
@@ -139,8 +92,18 @@ function parseLocaleFilter(raw: string | undefined): LocaleCode[] | 'all' {
   return selected;
 }
 
-/** 根据环境配置选出本轮使用的语言，支持全量语言模式。
- * @param env - 环境配置，默认读取当前进程。 */
+/**
+ * 空环境值沿用简体默认值，纯空白值仍选择全部语言。
+ * @param raw - 原始语言配置。
+ */
+function localeFilterValue(raw: string | undefined): string {
+  return (raw || 'zh-Hans').trim();
+}
+
+/**
+ * 根据环境配置选出本轮使用的语言，支持全量语言模式。
+ * @param env - 环境配置，默认读取当前进程。
+ */
 export function getActiveLocales(env: NodeJS.ProcessEnv = process.env): LocaleDef[] {
   const filter = parseLocaleFilter(env.VISUAL_LOCALES);
   if (filter === 'all') {
@@ -177,10 +140,10 @@ function buildScenario(
   overrides: Partial<VisualScenario> & { label?: string; pageLabel?: string } = {},
 ): VisualScenario {
   return {
-    label: overrides.label ?? scenarioLabel(locale, viewport, page.label),
+    label: scenarioLabel(locale, viewport, page.label),
     group: 'hall',
-    path: overrides.path ?? page.path,
-    pageLabel: overrides.pageLabel ?? page.label,
+    path: page.path,
+    pageLabel: page.label,
     locale: locale.code,
     viewport,
     readyText: page.readyText?.[locale.code],
@@ -272,28 +235,47 @@ function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef):
     }),
   );
 
-  // 登录支线纯静态表单/文档页，仅 mobile（desktop 只差左右留白）
+  appendMobileLoginScenarios(scenarios, hallPage, locale, viewport);
+
+  for (const [pageLabel, tabTestId, readyId, group] of [
+    ['guest_message', 'message-tab', 'not-sign-in-container', 'message'],
+    ['guest_me', 'settings-tab', 'after-sign-in-see-asset-text', 'account'],
+  ] as const) {
+    scenarios.push(buildScenario(hallPage, locale, viewport, {
+      label: scenarioLabel(locale, viewport, pageLabel),
+      group,
+      pageLabel,
+      tabTestId,
+      visualReadySelector: `[data-testid="${readyId}"]`,
+      readyText: undefined,
+    }));
+  }
+
+  const signedInPages = SIGNED_IN_PAGES.filter(/** 根据当前条目计算结果。
+ * @param page - 当前回调参数。 */ page => supportsViewport(page, viewport.label));
+  scenarios.push(...signedInPages.map(/** 根据当前条目计算结果。
+ * @param page - 当前回调参数。 */ page => buildSignedInScenario(page, hallPage, locale, viewport)));
+
+  ['launch_staging_notice', 'launch_branding'].forEach(/** 执行当前测试或处理逻辑。
+ * @param pageLabel - 当前回调参数。 */ pageLabel => {
+    scenarios.push(buildScenario(hallPage, locale, viewport, {
+      label: scenarioLabel(locale, viewport, pageLabel), group: 'launch', pageLabel,
+      visualReadySelector: '[data-testid="launch-screen-container"]', readyText: undefined,
+    }));
+  });
+  return scenarios;
+}
+
+/**
+ * 添加仅在手机视口展示的静态登录支线。
+ * @param scenarios - 按导航顺序追加的场景。
+ * @param hallPage - 大厅页面定义。
+ * @param locale - 场景语言。
+ * @param viewport - 当前视口。
+ */
+function appendMobileLoginScenarios(scenarios: VisualScenario[], hallPage: PageDef, locale: LocaleDef, viewport: ViewportDef): void {
   if (viewport.label === 'mobile') {
-    const mobileLoginSideScenarios = [
-      LOGIN_FORGOT_PASSWORD_SCENARIO,
-      LOGIN_FORGOT_PASSWORD_EMAIL_SCENARIO,
-      LOGIN_PHONE_SCENARIO,
-      LOGIN_FORGOT_PASSWORD_SMS_SCENARIO,
-      LOGIN_PICK_COUNTRY_CODE_SCENARIO,
-      LOGIN_USER_AGREEMENT_SCENARIO,
-      LOGIN_USER_PRIVACY_SCENARIO,
-      {
-        labelSuffix: 'login_language',
-        navClickTestIds: ['hall-sign-in-button', 'switch-language-button'],
-        visualReadySelector: '[data-testid="switch-language-container"]',
-      },
-      {
-        labelSuffix: 'login_phone_password',
-        navClickTestIds: [...LOGIN_PHONE_SCENARIO.navClickTestIds, 'password-sign-in-button'],
-        visualReadySelector: '[data-testid="password-input"] input',
-      },
-    ];
-    for (const sideScenario of mobileLoginSideScenarios) {
+    for (const sideScenario of mobileLoginSideScenarios()) {
       scenarios.push(
         buildScenario(hallPage, locale, viewport, {
           label: scenarioLabel(locale, viewport, sideScenario.labelSuffix),
@@ -306,52 +288,58 @@ function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef):
       );
     }
   }
+}
 
-  for (const [pageLabel, tabTestId, readyId] of [
-    ['guest_message', 'message-tab', 'not-sign-in-container'],
-    ['guest_me', 'settings-tab', 'after-sign-in-see-asset-text'],
-  ]) {
-    scenarios.push(buildScenario(hallPage, locale, viewport, {
-      label: scenarioLabel(locale, viewport, pageLabel),
-      group: pageLabel === 'guest_message' ? 'message' : 'account',
-      pageLabel,
-      tabTestId,
-      visualReadySelector: `[data-testid="${readyId}"]`,
-      readyText: undefined,
-    }));
-  }
+/**
+ * 判断页面允许的视口，未限定时覆盖全部视口。
+ * @param page - 登录后页面。
+ * @param viewportLabel - 当前视口名称。
+ */
+function supportsViewport(page: SignedInPageDef, viewportLabel: ViewportLabel): boolean {
+  return !page.viewports || page.viewports.includes(viewportLabel);
+}
 
-  for (const signedInPage of SIGNED_IN_PAGES) {
-    if (signedInPage.viewports && !signedInPage.viewports.includes(viewport.label)) {
-      continue;
-    }
-    scenarios.push(
-      buildScenario(hallPage, locale, viewport, {
-        label: scenarioLabel(locale, viewport, signedInPage.label),
-        group: signedInPage.group,
-        pageLabel: signedInPage.label,
-        signIn: true,
-        tabTestId: signedInPage.tabTestId,
-        navClickTestIds: signedInPage.navClickTestIds ?? [],
-        fixedTexts: signedInPage.fixedTexts ?? [],
-        hideSelectors: signedInPage.hideSelectors ?? [],
-        snapshotStates: signedInPage.snapshotStates,
-        visualReadySelector: signedInPage.visualReadySelector,
-        resetScrollSelector: signedInPage.resetScrollSelector,
-        visualGoneSelector: signedInPage.visualGoneSelector,
-        // 登录后页面用选择器判定就绪，不再依赖大厅未登录文案
-        readyText: undefined,
-      }),
-    );
-  }
+/**
+ * 补齐登录页面的导航和固定文本默认值。
+ * @param page - 登录后页面。
+ */
+function signedInNavigation(page: SignedInPageDef) {
+  return { navClickTestIds: page.navClickTestIds ?? [], fixedTexts: page.fixedTexts ?? [] };
+}
 
-  for (const pageLabel of ['launch_staging_notice', 'launch_branding']) {
-    scenarios.push(buildScenario(hallPage, locale, viewport, {
-      label: scenarioLabel(locale, viewport, pageLabel), group: 'launch', pageLabel,
-      visualReadySelector: '[data-testid="launch-screen-container"]', readyText: undefined,
-    }));
-  }
-  return scenarios;
+/**
+ * 未配置隐藏节点时保持空列表。
+ * @param page - 登录后页面。
+ */
+function hiddenSelectors(page: SignedInPageDef): string[] {
+  return page.hideSelectors ?? [];
+}
+
+/**
+ * 展开一个已登录页面，保留选择器、快照状态和稳定化规则。
+ * @param signedInPage - 带分类的登录页面。
+ * @param hallPage - 大厅页面定义。
+ * @param locale - 场景语言。
+ * @param viewport - 当前视口。
+ */
+function buildSignedInScenario(signedInPage: GroupedPageDef, hallPage: PageDef, locale: LocaleDef, viewport: ViewportDef): VisualScenario {
+  const navigation = signedInNavigation(signedInPage);
+  return buildScenario(hallPage, locale, viewport, {
+    label: scenarioLabel(locale, viewport, signedInPage.label),
+    group: signedInPage.group,
+    pageLabel: signedInPage.label,
+    signIn: true,
+    tabTestId: signedInPage.tabTestId,
+    navClickTestIds: navigation.navClickTestIds,
+    fixedTexts: navigation.fixedTexts,
+    hideSelectors: hiddenSelectors(signedInPage),
+    snapshotStates: signedInPage.snapshotStates,
+    visualReadySelector: signedInPage.visualReadySelector,
+    resetScrollSelector: signedInPage.resetScrollSelector,
+    visualGoneSelector: signedInPage.visualGoneSelector,
+    // 登录后页面用选择器判定就绪，不再依赖大厅未登录文案
+    readyText: undefined,
+  });
 }
 
 /** 根据语言、范围和套件环境配置构建本轮视觉场景清单。
@@ -378,8 +366,8 @@ export function pageCountForViewport(viewportLabel: ViewportLabel): number {
   // 游客主页面 9 页及启动页 2 页；登录支线 9 页仅 mobile。
   const unauthenticated = viewportLabel === 'mobile' ? 20 : 11;
   const signedIn = SIGNED_IN_PAGES.filter(
-    /** 仅保留满足以下条件的条目：`!page.viewports || page.viewports.includes(viewportLabel)`。
- * @param page - 当前 Playwright 页面。 */ (page) => !page.viewports || page.viewports.includes(viewportLabel),
+    /** 根据当前条目计算结果。
+ * @param page - 当前回调参数。 */ (page) => supportsViewport(page, viewportLabel),
   ).length;
   return unauthenticated + signedIn;
 }

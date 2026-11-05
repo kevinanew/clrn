@@ -24,6 +24,13 @@ async function expectValidationFailure(
   expect(error.message).toBe(`账户接口校验失败：method=GET operation=validate-account source=laiwan_prd status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}`);
   expect(error.cause).toBeUndefined();
   const output = inspect(error, { depth: 20 });
+  assertNoSecrets(output);
+}
+/**
+ * 检查错误序列化后仍不泄露请求细节。
+ * @param output - 完整错误诊断。
+ */
+function assertNoSecrets(output: string): void {
   for (const secret of ['fixture.invalid', '127.0.0.1', '192.0.2.40', '9443', '/private',
     'synthetic-', 'Authorization', 'Cookie', 'Call log', COMPLETE_AUTH.api_token.access_token]) {
     expect(output).not.toContain(secret);
@@ -132,8 +139,7 @@ test('account validation waits past three seconds for a 200 response', /** 验�
       response.end('<div id="root"></div>');
       return;
     }
-    requestedPath = request.url || '';
-    authorization = request.headers.authorization || '';
+    ({ requestedPath, authorization } = requestDetails(request));
     setTimeout(/** 延迟返回有效账号 JSON，构造会话核验等待中的状态。 */ () => {
       response.writeHead(200, { 'Content-Type': 'application/json' });
       response.end(JSON.stringify({ ok: true, result: {} }));
@@ -175,11 +181,9 @@ test('account validation also waits for the app login state to remain stable whe
       '<div data-testid="hall-auth-state-signed-in">signed in</div><button data-testid="hall-sign-in-button" style="display: none">sign in</button>',
     );
     const startedAt = Date.now();
-
     await expect(
       waitForSignInState(page, { apiBaseUrl: server.origin, requireAppState: true }),
     ).resolves.toBe('signedIn');
-
     expect(Date.now() - startedAt).toBeGreaterThanOrEqual(2800);
   } finally {
     await server.close();
@@ -282,7 +286,6 @@ test('clearing auth cache while account validation is pending returns signed out
     await server.close();
   }
 });
-
 test('a failing optional level request does not affect successful account validation', /** 验证可选等级请求失败不影响成功的账号会话校验。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({
   page,
@@ -303,33 +306,32 @@ test('a failing optional level request does not affect successful account valida
     response.writeHead(200, { 'Content-Type': 'application/json' });
     response.end(JSON.stringify({ ok: true, result: {} }));
   });
-
   try {
     await openAuthFixture(page, server.origin);
     await setPersistedAuth(page);
     const levelResponseStatus = page.evaluate(
       /** 在页面中读取`(await fetch('/v10/profile/visual-user')).status`，供测试判断当前界面状态。 */ async () => (await fetch('/v10/profile/visual-user')).status,
     );
-
     await expect(levelResponseStatus).resolves.toBe(503);
     await expect(waitForSignInState(page, { apiBaseUrl: server.origin })).resolves.toBe('signedIn');
   } finally {
     await server.close();
   }
 });
-
 for (const failureStatus of [429, 503]) {
-  test(`account validation fails explicitly on HTTP ${failureStatus}`, /** 验证当前 HTTP 失败状态会明确终止账号核验。
- * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
-    const server = await startTestServer(/** 按当前失败状态返回含私有正文的账号响应，验证安全诊断。
- * @param request - 当前发出的接口请求。
- * @param response - 当前收到的接口响应。 */ (request, response) => {
-      response.writeHead(request.url === '/' ? 200 : failureStatus, {
-        'Content-Type': request.url === '/' ? 'text/html' : 'application/json',
-      });
-      response.end(request.url === '/' ? '<div id="root"></div>' : PRIVATE_DIAGNOSTIC);
+  test(`account validation fails explicitly on HTTP ${failureStatus}`, /** 执行当前测试或处理逻辑。
+ * @param root0 - 当前回调参数。 */ async ({ page }) => {
+    const server = await startTestServer(/** 执行当前测试或处理逻辑。
+ * @param request - 当前回调参数。
+ * @param response - 当前回调参数。 */ (request, response) => {
+      if (request.url === '/') {
+        response.writeHead(200, { 'Content-Type': 'text/html' });
+        response.end('<div id="root"></div>');
+        return;
+      }
+      response.writeHead(failureStatus, { 'Content-Type': 'application/json' });
+      response.end(PRIVATE_DIAGNOSTIC);
     });
-
     try {
       await openAuthFixture(page, server.origin);
       await setPersistedAuth(page);
@@ -341,7 +343,6 @@ for (const failureStatus of [429, 503]) {
     }
   });
 }
-
 test('account validation fails explicitly on a network error', /** 验证真实网络错误会明确终止账号核验。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   const server = await startTestServer(/** 页面正常返回，账号接口主动断开连接以制造真实网络错误。
@@ -354,7 +355,6 @@ test('account validation fails explicitly on a network error', /** 验证真实�
     }
     response.socket?.destroy();
   });
-
   try {
     await openAuthFixture(page, server.origin);
     await setPersistedAuth(page);
@@ -365,7 +365,6 @@ test('account validation fails explicitly on a network error', /** 验证真实�
     await server.close();
   }
 });
-
 test('account validation fails explicitly on request timeout', /** 验证请求超时会明确终止账号核验。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   const server = await startTestServer(/** 页面正常返回，账号接口延迟响应以覆盖超时诊断。
@@ -381,7 +380,6 @@ test('account validation fails explicitly on request timeout', /** 验证请求�
       response.end('{}');
     }, 500);
   });
-
   try {
     await openAuthFixture(page, server.origin);
     await setPersistedAuth(page);
@@ -392,3 +390,10 @@ test('account validation fails explicitly on request timeout', /** 验证请求�
     await server.close();
   }
 });
+/**
+ * 记录本机请求定位及认证头，无值时仍使用空字符串。
+ * @param request - 实际收到的请求。
+ */
+function requestDetails(request: IncomingMessage) {
+  return { requestedPath: request.url || '', authorization: request.headers.authorization || '' };
+}

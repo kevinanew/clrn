@@ -1,0 +1,36 @@
+/** Issue 105 的测试与辅助实现；独立工具单列，避免按文件后缀放宽预算。 */
+export const visualSupportFiles = [
+  'visual/scenarioScope.ts',
+  'visual/docker-env.test.ts',
+  'visual/run-visual-config.test.ts',
+  'visual/run-visual-config.ts',
+  'visual/run-visual-isolation.test.ts',
+  'visual/run-visual.ts',
+  'visual/scenarioPages.test.ts',
+  'visual/scenarioTypes.ts',
+  'visual/scenarios.test.ts',
+  'visual/scenarios.ts',
+  'visual/screenshotComparisonConfiguration.test.ts',
+  'visual/screenshotComparisonConfiguration.ts',
+  'visual/snapshotLocations.test.ts',
+  'visual/snapshotPolicy.browser.ts',
+  'visual/target.test.ts',
+  'visual/target.ts',
+  'visual/test-account.test.ts',
+  'visual/test-account.ts',
+  'visual/visual-suite.test.ts',
+  'visual/visual-suite.ts',
+  'visual/tests/accountPresentation.spec.ts',
+  'visual/tests/authValidation.spec.ts',
+  'visual/tests/cardSpriteReadiness.spec.ts',
+  'visual/tests/guestClubReadiness.spec.ts',
+  'visual/tests/localImages.spec.ts',
+  'visual/tests/preparePage.spec.ts',
+  'visual/tests/privateRoomPresentation.spec.ts',
+  'visual/tests/texas-rendering.spec.ts',
+  'visual/tests/tutorials.spec.ts',
+  'visual/tests/walletTransactionReadiness.spec.ts',
+];
+
+export const visualToolFiles = ['visual/open-report.ts', 'visual/playwright.config.ts'];
+export const visualCheckFiles = ['scripts/visual-complexity*.mjs'];

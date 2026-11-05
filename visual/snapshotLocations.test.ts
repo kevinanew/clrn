@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
-import { buildScenarios } from './scenarios';
+import { buildScenarios, type VisualScenario } from './scenarios';
 
 test('every active scenario has one baseline beside its feature spec', /** 验证每个活动场景都有位于所属功能目录的截图基准。 */ () => {
   const scenarios = buildScenarios({ VISUAL_LOCALES: 'all' });
@@ -11,8 +11,7 @@ test('every active scenario has one baseline beside its feature spec', /** 验�
   for (const scenario of scenarios) {
     const directory = path.join(__dirname, 'cases', scenario.group);
     assert.ok(existsSync(path.join(directory, `${scenario.group}.spec.ts`)), scenario.group);
-    for (const label of scenario.snapshotStates?.map(/** 将当前条目映射为`${scenario.label}_${state}`。
- * @param state - 当前操作使用的 state。 */ state => `${scenario.label}_${state}`) ?? [scenario.label]) {
+    for (const label of snapshotLabels(scenario)) {
       const png = path.join(directory, 'snapshots', `${label.replace(/_/g, '-')}.png`);
       assert.ok(existsSync(png), label);
       expected.add(png);
@@ -33,3 +32,12 @@ test('every active scenario has one baseline beside its feature spec', /** 验�
  * @param scenario - 当前测试场景配置。 */ (sum, scenario) => sum + (scenario.snapshotStates?.length ?? 1), 0));
   assert.deepEqual(new Set(actual), expected);
 });
+
+/**
+ * 返回场景全部状态的基准标签，无状态时使用场景自身。
+ * @param scenario - 当前场景。
+ */
+function snapshotLabels(scenario: VisualScenario): string[] {
+  return scenario.snapshotStates?.map(/** 根据当前条目计算结果。
+ * @param state - 当前回调参数。 */ state => `${scenario.label}_${state}`) ?? [scenario.label];
+}

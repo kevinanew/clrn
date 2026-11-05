@@ -49,16 +49,19 @@ function ensureDockerOrCi(): void {
     return;
   }
 
-  const inDocker = fs.existsSync('/.dockerenv');
-  const inCi = Boolean(process.env.CI) || Boolean(process.env.WOODPECKER_CI);
-
-  if (!inDocker && !inCi) {
+  if (!isDockerOrCi()) {
     console.error('视觉回归必须在 Docker 容器中运行，禁止在宿主机直接执行 Playwright。');
     console.error('');
     console.error('请使用以下命令之一：');
     console.error('  cd visual && pnpm run test');
     process.exit(1);
   }
+}
+
+/** 检查运行环境标记，保留两个 CI 入口。 */
+function isDockerOrCi(): boolean {
+  if (fs.existsSync('/.dockerenv')) return true;
+  return Boolean(process.env.CI) || Boolean(process.env.WOODPECKER_CI);
 }
 
 /** 确保基准更新使用 Linux 渲染环境，避免不同平台字体污染截图。 */
@@ -92,8 +95,40 @@ function runPnpm(args: string[], cwd = VISUAL_DIR): void {
   });
 
   if (result.status !== 0) {
-    throw new Error(`测试命令失败：pnpm ${args.join(' ')}（退出码 ${result.status ?? 1}）`);
+    throw new Error(`测试命令失败：pnpm ${args.join(' ')}（退出码 ${exitStatus(result.status)}）`);
   }
+}
+
+/**
+ * 为未取得退出码的子进程保留失败状态。
+ * @param status - 子进程退出码。
+ */
+function exitStatus(status: number | null): number {
+  return status ?? 1;
+}
+
+/** 构造登录采集环境，与场景运行使用相同账号和设备。 */
+function authEnvironment(): NodeJS.ProcessEnv {
+  return { ...process.env, VISUAL_BASE_URL: visualBaseUrl,
+    VISUAL_USERNAME: process.env.VISUAL_USERNAME || VISUAL_TEST_USERNAME,
+    VISUAL_PASSWORD: process.env.VISUAL_PASSWORD || VISUAL_TEST_PASSWORD, VISUAL_DEVICE_ID };
+}
+
+/**
+ * 确认采集进程成功且实际写出了认证状态。
+ * @param status - 子进程退出码。
+ * @param authStatePath - 预期认证文件。
+ */
+function capturedAuthState(status: number | null, authStatePath: string): boolean {
+  return status === 0 && fs.existsSync(authStatePath);
+}
+
+/**
+ * 保留子进程错误诊断，无错误对象时使用原占位值。
+ * @param error - 子进程启动或超时错误。
+ */
+function processErrorMessage(error: Error | undefined): string {
+  return error?.message || 'none';
 }
 
 /**
@@ -115,24 +150,18 @@ function captureAuthState(): void {
     const result = spawnSync('pnpm', ['exec', 'tsx', 'src/captureAuthState.ts'], {
       stdio: 'inherit',
       cwd: VISUAL_DIR,
-      env: {
-        ...process.env,
-        VISUAL_BASE_URL: visualBaseUrl,
-        VISUAL_USERNAME: process.env.VISUAL_USERNAME || VISUAL_TEST_USERNAME,
-        VISUAL_PASSWORD: process.env.VISUAL_PASSWORD || VISUAL_TEST_PASSWORD,
-        VISUAL_DEVICE_ID,
-      },
+      env: authEnvironment(),
       timeout: 600000,
     });
 
-    if (result.status === 0 && fs.existsSync(authStatePath)) {
+    if (capturedAuthState(result.status, authStatePath)) {
       return;
     }
 
     console.error(
       `AUTH STATE PROCESS > 第 ${processAttempt} 次退出异常：status=${String(
         result.status,
-      )}, signal=${String(result.signal)}, error=${result.error?.message || 'none'}`,
+      )}, signal=${String(result.signal)}, error=${processErrorMessage(result.error)}`,
     );
   }
 
@@ -146,21 +175,34 @@ function getSelectedScenarios(): ReturnType<typeof buildScenarios> {
 
 /** 各套件使用独立进程与登录态，过滤为空的套件不启动代理。 */
 function runAllSuites(): void {
-  let ranSuite = false;
-  for (const suite of ['app', 'texas', 'zhajinhua'] as const) {
-    const selected = selectScenariosByLabel(
-      buildScenarios({ ...process.env, VISUAL_SUITE: suite }), process.env.VISUAL_FILTER,
-    );
-    if (selected.length === 0) continue;
-    ranSuite = true;
-    const result = spawnSync('pnpm', ['exec', 'tsx', 'run-visual.ts', action], {
-      stdio: 'inherit', cwd: VISUAL_DIR,
-      env: { ...process.env, VISUAL_SUITE: suite, VISUAL_SKIP_VISUAL_INSTALL: 'true',
-        VISUAL_SKIP_SUPPORT_TESTS: suite !== 'app' ? 'true' : process.env.VISUAL_SKIP_SUPPORT_TESTS },
-    });
-    if (result.status !== 0) throw new Error(`${suite} 视觉测试失败（退出码 ${result.status ?? 1}）`);
-  }
+  const ranSuite = ['app', 'texas', 'zhajinhua'].map(runSuite).some(Boolean);
   if (!ranSuite) throw new Error('VISUAL_FILTER 没有匹配任何场景');
+}
+
+/**
+ * 子套件仅由 App 执行公共支持测试。
+ * @param suite - 当前独立套件。
+ */
+function supportTestsSetting(suite: string): string | undefined {
+  return suite !== 'app' ? 'true' : process.env.VISUAL_SKIP_SUPPORT_TESTS;
+}
+
+/**
+ * 跳过空套件并同步传播每个独立进程的失败。
+ * @param suite - 要运行的独立套件。
+ */
+function runSuite(suite: string): boolean {
+  const selected = selectScenariosByLabel(
+    buildScenarios({ ...process.env, VISUAL_SUITE: suite }), process.env.VISUAL_FILTER,
+  );
+  if (selected.length === 0) return false;
+  const result = spawnSync('pnpm', ['exec', 'tsx', 'run-visual.ts', action], {
+    stdio: 'inherit', cwd: VISUAL_DIR,
+    env: { ...process.env, VISUAL_SUITE: suite, VISUAL_SKIP_VISUAL_INSTALL: 'true',
+      VISUAL_SKIP_SUPPORT_TESTS: supportTestsSetting(suite) },
+  });
+  if (result.status !== 0) throw new Error(`${suite} 视觉测试失败（退出码 ${exitStatus(result.status)}）`);
+  return true;
 }
 
 /**
@@ -176,17 +218,39 @@ function runScenarioBatches(locale: string, playwrightArgs: string[]): boolean {
     return false;
   }
 
-  const scenarioArgs = process.env.VISUAL_FILTER
-    ? [...playwrightArgs, `--grep=${exactScenarioGrep(selectedScenarios.map(/** 将当前条目映射为`scenario.label`。
- * @param scenario - 当前测试场景配置。 */ scenario => scenario.label))}`]
-    : playwrightArgs;
-  const needsAuthState = selectedScenarios.some(/** 判断是否存在满足以下条件的条目：`scenario.signIn`。
- * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.signIn);
+  const scenarioArgs = selectedScenarioArgs(playwrightArgs, selectedScenarios);
+  const needsAuthState = selectedScenarios.some(/** 根据当前条目计算结果。
+ * @param scenario - 当前回调参数。 */ (scenario) => scenario.signIn);
   const { count: shardCount, start: startShard } = getVisualShardConfig(
     action,
     selectedScenarios.length,
   );
 
+  runShards(locale, scenarioArgs, needsAuthState, startShard, shardCount);
+  return true;
+}
+
+/**
+ * 可选标签筛选只作用于场景，不传给支持用例。
+ * @param args - 原 Playwright 参数。
+ * @param scenarios - 已选场景。
+ */
+function selectedScenarioArgs(args: string[], scenarios: ReturnType<typeof buildScenarios>): string[] {
+  if (!process.env.VISUAL_FILTER) return args;
+  return [...args, `--grep=${exactScenarioGrep(scenarios.map(/** 根据当前条目计算结果。
+ * @param scenario - 当前回调参数。 */ scenario => scenario.label))}`];
+}
+
+/**
+ * 在上一片退出之后、下一片启动之前刷新登录态。
+ * @param locale - 当前语言。
+ * @param scenarioArgs - 场景执行参数。
+ * @param needsAuthState - 是否需要登录态。
+ * @param startShard - 开始片号。
+ * @param shardCount - 总片数。
+ */
+function runShards(locale: string, scenarioArgs: string[], needsAuthState: boolean, startShard: number, shardCount: number): void {
+  const batchLabel = action.toUpperCase();
   for (let shard = startShard; shard <= shardCount; shard += 1) {
     console.log(`${batchLabel} BATCH > VISUAL_LOCALES=${locale}, SHARD=${shard}/${shardCount}`);
     if (needsAuthState) {
@@ -196,17 +260,58 @@ function runScenarioBatches(locale: string, playwrightArgs: string[]): boolean {
     }
     runPnpm([...scenarioArgs, 'cases', `--shard=${shard}/${shardCount}`]);
   }
-  return true;
+}
+
+/**
+ * 完成本轮后恢复原语言配置。
+ * @param requested - 进入逐语言运行前的环境值。
+ */
+function restoreLocales(requested: string | undefined): void {
+  if (requested === undefined) delete process.env.VISUAL_LOCALES;
+  else process.env.VISUAL_LOCALES = requested;
+}
+
+/**
+ * 将当前语言传给场景规划和所有子进程。
+ * @param locale - 要运行的语言。
+ * @param args - Playwright 参数。
+ */
+function runLocale(locale: string, args: string[]): boolean {
+  process.env.VISUAL_LOCALES = locale;
+  return runScenarioBatches(locale, args);
+}
+
+/**
+ * 执行全部选中语言，空筛选仍交由 Playwright 返回失败。
+ * @param playwrightArgs - 比较或采集参数。
+ */
+function runSelectedLocales(playwrightArgs: string[]): void {
+  const requestedLocales = process.env.VISUAL_LOCALES;
+  const selectedLocales = getActiveLocales().map(/** 根据当前条目计算结果。
+ * @param locale - 当前回调参数。 */ (locale) => locale.code);
+  const ranVisualScenario = selectedLocales.map(/** 根据当前条目计算结果。
+ * @param locale - 当前回调参数。 */ locale => runLocale(locale, playwrightArgs)).some(Boolean);
+
+  restoreLocales(requestedLocales);
+
+  if (!ranVisualScenario) {
+    // 与 Playwright 一样将无匹配 filter 视为错误，而不是静默成功。
+    runPnpm([...playwrightArgs, `--grep=${exactScenarioGrep([])}`, 'cases']);
+  }
+}
+
+/** 按原开关安装锁定依赖。 */
+function installVisualDependencies(): void {
+  if (isEnvTrue('VISUAL_SKIP_VISUAL_INSTALL')) return;
+  console.log('正在安装视觉回归测试依赖...');
+  runPnpm(['install', '--frozen-lockfile']);
 }
 
 /** 按套件和分片启动视觉任务，为每批场景采集登录态并传递失败结果。 */
 async function main(): Promise<void> {
   console.log(`VISUAL_LOCALES=${process.env.VISUAL_LOCALES}`);
 
-  if (!isEnvTrue('VISUAL_SKIP_VISUAL_INSTALL')) {
-    console.log('正在安装视觉回归测试依赖...');
-    runPnpm(['install', '--frozen-lockfile']);
-  }
+  installVisualDependencies();
 
   if (getVisualSuite() === 'all') return runAllSuites();
 
@@ -224,26 +329,7 @@ async function main(): Promise<void> {
       runPnpm(['exec', 'playwright', 'test', 'tests']);
     }
 
-    const requestedLocales = process.env.VISUAL_LOCALES;
-    const selectedLocales = getActiveLocales().map(/** 将当前条目映射为`locale.code`。
- * @param locale - 当前测试使用的语言。 */ (locale) => locale.code);
-    let ranVisualScenario = false;
-
-    for (const locale of selectedLocales) {
-      process.env.VISUAL_LOCALES = locale;
-      if (runScenarioBatches(locale, playwrightArgs)) ranVisualScenario = true;
-    }
-
-    if (requestedLocales === undefined) {
-      delete process.env.VISUAL_LOCALES;
-    } else {
-      process.env.VISUAL_LOCALES = requestedLocales;
-    }
-
-    if (!ranVisualScenario) {
-      // 与 Playwright 一样将无匹配 filter 视为错误，而不是静默成功。
-      runPnpm([...playwrightArgs, `--grep=${exactScenarioGrep([])}`, 'cases']);
-    }
+    runSelectedLocales(playwrightArgs);
   } finally {
     fs.rmSync(path.join(VISUAL_DIR, 'auth-state.json'), { force: true });
   }
