@@ -1,13 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { openHall, openLoginForm, prepareContext, unique } from '../_shared/page';
 
-test('AUTH-001：打开用户名登录表单，密码输入被遮蔽', async ({ page, context }) => {
-  await test.step('从游客大厅打开用户名登录', async () => {
+test('AUTH-001：打开用户名登录表单，密码输入被遮蔽', /** 验证AUTH-001：打开用户名登录表单，密码输入被遮蔽。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, context }) => {
+  await test.step('从游客大厅打开用户名登录', /** 执行从游客大厅打开用户名登录。 */ async () => {
     await prepareContext(context);
     await openHall(page);
     await openLoginForm(page);
   });
-  await test.step('填写表单并检查密码遮蔽，不提交凭据', async () => {
+  await test.step('填写表单并检查密码遮蔽，不提交凭据', /** 执行填写表单并检查密码遮蔽，不提交凭据。 */ async () => {
     const username = await unique(page, 'username-input');
     const password = await unique(page, 'password-input');
     await username.fill('formcheck');

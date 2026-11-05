@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 // 仅维护本仓库的 Web 账号；凭据由 CLRN_CI_TEST_ACCOUNTS_V3 Secret 单独维护。
 export const ciAccounts = JSON.parse(readFileSync(new URL('./ci-test-accounts.json', import.meta.url), 'utf8')).accounts;
 if (!Array.isArray(ciAccounts) || ciAccounts.length !== 100
-  || ciAccounts.some(name => typeof name !== 'string' || !/^[a-z0-9]{6,30}$/.test(name))
+  || ciAccounts.some(/** 判断是否存在满足以下条件的条目：`typeof name !== 'string' || !/^[a-z0-9]{6,30}$/.test(name)`。
+ * @param name - 当前操作使用的 name。 */ name => typeof name !== 'string' || !/^[a-z0-9]{6,30}$/.test(name))
   || new Set(ciAccounts).size !== 100) {
   throw new Error('Web CI 账号清单必须包含 100 个不同账号');
 }
@@ -33,11 +34,16 @@ export function allocateCiAccount(runId, offset = 0) {
 export function visualAccountMatrix(runId, suite = 'all', full = false) {
   // 保留账号槽位顺序；只将耗时较长的牌桌任务提前创建。
   const suites = ['app', 'texas', 'zhajinhua'];
-  const executionOrder = ['texas', 'zhajinhua', ...suites.filter(item => item !== 'texas' && item !== 'zhajinhua')];
+  const executionOrder = ['texas', 'zhajinhua', ...suites.filter(/** 仅保留满足以下条件的条目：`item !== 'texas' && item !== 'zhajinhua'`。
+ * @param item - 当前遍历的条目。 */ item => item !== 'texas' && item !== 'zhajinhua')];
   if (suite !== 'all' && !suites.includes(suite)) throw new Error('不支持的视觉套件。');
   const locales = full ? ['zh-Hans', 'zh-Hant', 'en'] : ['zh-Hans'];
-  return { include: executionOrder.filter(item => suite === 'all' || item === suite).flatMap(item =>
-    locales.map((locale, index) => ({ suite: item, locale,
+  return { include: executionOrder.filter(/** 仅保留满足以下条件的条目：`suite === 'all' || item === suite`。
+ * @param item - 当前遍历的条目。 */ item => suite === 'all' || item === suite).flatMap(/** 为当前套件的各语言分配固定槽位的 CI 账号。
+ * @param item - 当前遍历的条目。 */ item =>
+    locales.map(/** 将当前条目映射为`{ suite: item, locale, account: allocateCiAccount(runId, suites.indexOf(item) * 3 + index) }`。
+ * @param locale - 当前测试使用的语言。
+ * @param index - 当前条目在集合中的位置。 */ (locale, index) => ({ suite: item, locale,
       account: allocateCiAccount(runId, suites.indexOf(item) * 3 + index) }))) };
 }
 
@@ -56,9 +62,12 @@ export function animationAccountMatrix(runId, suite = 'all') {
     zhajinhua: ['panels', 'gameplay'],
   };
   let offset = 12;
-  return { include: suites.flatMap(item => parts[item].map(part => ({
+  return { include: suites.flatMap(/** 展开当前条目对应的`parts[item].map(part => ({ suite: item, part, account: allocateCiAccount(runId, offset++), }))`。
+ * @param item - 当前遍历的条目。 */ item => parts[item].map(/** 将当前条目映射为`{ suite: item, part, account: allocateCiAccount(runId, offset++), }`。
+ * @param part - 当前操作使用的 part。 */ part => ({
     suite: item, part, account: allocateCiAccount(runId, offset++),
-  }))).filter(item => suite === 'all' || item.suite === suite) };
+  }))).filter(/** 仅保留满足以下条件的条目：`suite === 'all' || item.suite === suite`。
+ * @param item - 当前遍历的条目。 */ item => suite === 'all' || item.suite === suite) };
 }
 
 /**
@@ -82,10 +91,12 @@ export function ciAccountCredentials(serialized, username) {
     }
     seen.add(account.username);
   }
-  if (!ciAccounts.every(name => seen.has(name)) || !ciAccounts.includes(username)) {
+  if (!ciAccounts.every(/** 确认所有条目均满足：`seen.has(name)`。
+ * @param name - 当前操作使用的 name。 */ name => seen.has(name)) || !ciAccounts.includes(username)) {
     throw new Error('所选账号或 Secret 不属于本仓库的 Web 专用账号池。');
   }
-  const selected = pool.accounts.find(account => account.username === username);
+  const selected = pool.accounts.find(/** 查找满足以下条件的首个条目：`account.username === username`。
+ * @param account - 当前操作使用的 account。 */ account => account.username === username);
   if (!selected) throw new Error('所选账号不属于 CI 专用池。');
   return { username: selected.username, password: selected.password };
 }

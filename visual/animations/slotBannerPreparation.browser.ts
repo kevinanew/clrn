@@ -4,7 +4,7 @@ import test from 'node:test';
 import { chromium } from '@playwright/test';
 import { prepareSlotBannerTimeline } from './slotBannerPreparation';
 
-test('当前旋转处于不同阶段时，下一轮首帧、运动和重复周期均保持一致', async () => {
+test('当前旋转处于不同阶段时，下一轮首帧、运动和重复周期均保持一致', /** 验证当前旋转处于不同阶段时，下一轮首帧、运动和重复周期均保持一致。 */ async () => {
   const browser = await chromium.launch();
   try {
     for (const offset of [0, 16, 160, 640, 992, 1200]) {
@@ -34,7 +34,8 @@ test('当前旋转处于不同阶段时，下一轮首帧、运动和重复周�
       const reel = page.locator('#reel');
       assert.equal(await reel.getAttribute('style'), 'transform: translateY(-300px);', `准备阶段偏移 ${offset}ms`);
       await page.clock.runFor(160);
-      const translation = await reel.evaluate(node => new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
+      const translation = await reel.evaluate(/** 在页面中读取`new DOMMatrixReadOnly(getComputedStyle(node).transform).m42`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
       assert.ok(translation > -300 && translation < 0, '160ms 必须处于运动中，不能停在首帧或直接跳到终帧');
       await page.clock.runFor(1040);
       assert.equal(await reel.getAttribute('style'), 'transform: translateY(0px);', '旋转必须完整结束');

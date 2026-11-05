@@ -1,3 +1,5 @@
+"""验证网络故障场景的认证、来源限制与异步延迟行为。"""
+
 import asyncio
 import json
 import os
@@ -11,6 +13,7 @@ with patch.dict(os.environ, {"MITMPROXY_CONTROL_TOKEN": "test-token"}):
 
 
 def flow(url, method="GET", body=b"", token=None):
+    """构造可供网络故障插件处理的独立 HTTP 流。"""
     result = http.HTTPFlow(
         connection.Client(peername=("127.0.0.1", 12345), sockname=("127.0.0.1", 8080)),
         connection.Server(address=("node-0.service.invalid", 443)),
@@ -29,12 +32,15 @@ def source_environment():
 
 
 class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
+    """验证故障场景切换、透传与来源边界。"""
     def setUp(self):
+        """为每个用例配置隔离来源环境、控制令牌和独立代理状态。"""
         self.enterContext(source_environment())
         with patch.dict(os.environ, {"MITMPROXY_CONTROL_TOKEN": "test-token"}):
             self.addon = NetworkFaults()
 
     async def configure(self, scenario, token="test-token"):
+        """向故障插件发送带控制令牌的场景切换请求。"""
         request = flow(
             "http://test-mitmproxy.invalid/scenario", "POST",
             json.dumps({"scenario": scenario}).encode(), token,
@@ -43,6 +49,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         return request
 
     async def test_控制命令必须认证并匹配有效场景(self):
+        """验证控制命令必须认证并匹配有效场景。"""
         self.assertEqual((await self.configure("hall-timeout", "wrong")).response.status_code, 403)
         self.assertIsNone(self.addon.scenario)
         self.assertEqual((await self.configure("unknown")).response.status_code, 400)
@@ -52,6 +59,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(malformed.response.status_code, 400)
 
     async def test_大厅只延迟首次请求且关闭场景后恢复透传(self):
+        """验证大厅只延迟首次请求且关闭场景后恢复透传。"""
         await self.configure("hall-timeout")
         url = "https://node-4.service.invalid/public/v1/hall_matching/available.json"
         with patch("network_faults.asyncio.sleep", new_callable=AsyncMock) as delay:
@@ -68,11 +76,13 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.addon.intercepted_requests, 2)
 
     async def test_延迟不阻塞控制或无关请求(self):
+        """验证延迟不阻塞控制或无关请求。"""
         await self.configure("hall-timeout")
         entered = asyncio.Event()
         release = asyncio.Event()
 
         async def delay(_seconds):
+            """通知延迟已开始，并由测试闸门决定何时放行。"""
             entered.set()
             await release.wait()
 
@@ -91,6 +101,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
                 await pending
 
     async def test_登录和俱乐部故障严格限定来源与路径(self):
+        """验证登录和俱乐部故障严格限定来源与路径。"""
         for scenario, api_path in (
             ("login-failure", "/public/v10/user/login/username/password"),
             ("club-failure", "/v10/club?user_id=42"),
@@ -111,6 +122,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(self.addon.intercepted_requests, 1)
 
     async def test_登录保留既有用户分支且不计为故障(self):
+        """验证登录保留既有用户分支且不计为故障。"""
         url = "https://node-0.service.invalid/public/v10/user/username/is_existed"
         unrelated = flow(url)
         await self.addon.request(unrelated)
@@ -128,6 +140,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(preflight.response)
 
     async def test_俱乐部搜索只返回指定的固定俱乐部(self):
+        """验证俱乐部搜索只返回指定的固定俱乐部。"""
         await self.configure("club-search-result")
         origin = "https://node-5.service.invalid"
         search = flow("https://node-0.service.invalid/v10/club/search?keyword=VisualClubSearch")
@@ -164,6 +177,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.addon.club_search_requests, 1)
 
     async def test_搜索未命中流量及预检均透传(self):
+        """验证搜索未命中流量及预检均透传。"""
         await self.configure('club-search-result')
         for path in ('/v10/club/search?keyword=other', '/v10/club/search',
                      '/v10/club/search?keyword=',
@@ -181,6 +195,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.addon.club_search_requests, 0)
 
     async def test_正常视觉模式不拦截任何候选节点或元数据(self):
+        """验证正常视觉模式不拦截任何候选节点或元数据。"""
         await self.configure("visual-stable")
         urls = ["https://node-0.service.invalid/public/v13/metadata/servers",
                 "https://node-0.service.invalid/public/v12/metadata/servers"]

@@ -21,7 +21,7 @@ export const advance = (page: Page) => advanceCardSpriteClock(page, 1200);
  * @param page - 执行操作的 Playwright 页面。
  */
 export async function freezeClock(page: Page): Promise<void> {
-  const now = await page.evaluate(() => Date.now());
+  const now = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
   // CDP 在繁忙的 Linux runner 上可能排队数秒，给暂停命令保留足够提前量。
   // pauseAt 跳过期间仅触发一次到期计时器；随后恢复消息重设牌局倒计时。
   await page.clock.pauseAt(now + 60_000);
@@ -47,7 +47,8 @@ export async function closeMask(page: Page, marker?: string): Promise<void> {
     .locator('xpath=ancestor::*[*[@data-testid="screen-mask-touch-to-close"]][1]')
     .locator(':scope > [data-testid="screen-mask-touch-to-close"]')
     : visible(page, 'screen-mask-touch-to-close');
-  await mask.evaluate(node => (node as HTMLElement).click());
+  await mask.evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   await advance(page);
 }
 
@@ -62,23 +63,25 @@ export async function closeMask(page: Page, marker?: string): Promise<void> {
  */
 export async function restore(page: Page, proxy: TexasProxy, roomId: string, self: string,
   street: Street, opponent = false): Promise<void> {
-  await expect.poll(async () => {
+  await expect.poll(/** 推进独立牌面时钟并重放指定街道的牌桌，直到恢复成功。 */ async () => {
     await advanceCardSpriteClock(page, 250);
     return proxy.replayTexas(roomId, restoreTable(self, street, opponent))
-      .then(() => true, () => false);
+      .then(/** 将异步结果转换为`true`，供后续步骤使用。 */ () => true, /** 将异步结果转换为`false`，供后续步骤使用。 */ () => false);
   }, { timeout: 30_000, message: '德州房间应完成 WebSocket 订阅并接受回放' }).toBe(true);
   // 恢复消息经过队列、翻牌与数字动效；先推进固定时间再断言完成状态。
   await advanceCardSpriteClock(page, 3000);
-  const expectedCards = ['ah', 'kd', '7c', '2s', 'qs'].map((card, position) =>
+  const expectedCards = ['ah', 'kd', '7c', '2s', 'qs'].map(/** 将当前条目映射为`position < { preflop: 0, flop: 3, turn: 4, river: 5 }[street] ? card : 'back'`。
+ * @param card - 当前操作使用的 card。
+ * @param position - 当前操作使用的 position。 */ (card, position) =>
     position < { preflop: 0, flop: 3, turn: 4, river: 5 }[street] ? card : 'back');
-  await expect.poll(async () => {
+  await expect.poll(/** 推进独立时钟并读取公共牌文字，等待重放结果提交。 */ async () => {
     await advanceCardSpriteClock(page, 250);
     return page.locator('[data-testid="community_card_name_text"]').allTextContents();
   }, { timeout: 30_000, intervals: [100, 250, 500] }).toEqual(expectedCards);
   await expect(page.locator('[data-testid^="texas-holdem-player-container-"]:visible')).toHaveCount(5);
   await expect(visible(page, 'texas-holdem-self-seated-marker')).toBeVisible();
   if (!opponent) {
-    await expect.poll(async () => {
+    await expect.poll(/** 推进独立时钟并等待加注按钮可见，确认操作区就绪。 */ async () => {
       await advanceCardSpriteClock(page, 250);
       return visible(page, 'texas-holdem-operation-button-raise').isVisible();
     }, { timeout: 30_000, intervals: [100, 250, 500] }).toBe(true);
@@ -90,6 +93,6 @@ export async function restore(page: Page, proxy: TexasProxy, roomId: string, sel
  * @param page - 执行操作的 Playwright 页面。
  */
 export function selfId(page: Page): Promise<string> {
-  return page.evaluate(() => JSON.parse(
+  return page.evaluate(/** 在页面中读取`JSON.parse( localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(
     localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
 }

@@ -14,7 +14,8 @@ type PartialComparisonOptions = {
  * @param locator - 原有前景或背景定位器。
  */
 async function locatorRectangle(locator: Locator): Promise<Rectangle | null> {
-  return locator.evaluateAll(nodes => {
+  return locator.evaluateAll(/** 返回首个匹配元素的矩形，未挂载时明确返回空值。
+ * @param nodes - 当前匹配的页面节点集合。 */ nodes => {
     if (!nodes[0]) return null;
     const rect = nodes[0].getBoundingClientRect();
     return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };

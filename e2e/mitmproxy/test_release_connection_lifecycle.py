@@ -9,7 +9,9 @@ from test_network_faults import flow
 
 
 class ReleaseConnectionTests(unittest.TestCase):
+    """验证发布资源请求与实际上游连接事件的关联。"""
     def setUp(self):
+        """准备本用例的独立对象、来源配置与请求记录，避免状态跨用例共享。"""
         self.enterContext(patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': 'http://127.0.0.1:18080/'}))
         self.diagnostics = ConnectionDiagnostics()
         self.request = flow('http://127.0.0.1:18080/asset.webp?token=synthetic-secret')
@@ -18,6 +20,7 @@ class ReleaseConnectionTests(unittest.TestCase):
         self.data = ServerConnectionHookData(server=self.request.server_conn, client=self.request.client_conn)
 
     def test_真实钩子类型记录连接及断开且同一连接的多请求可以关联(self):
+        """验证真实钩子类型记录连接及断开且同一连接的多请求可以关联。"""
         self.diagnostics.server_connect(self.data)
         self.assertEqual(self.diagnostics.events[-1]['upstreamMatch'], 'unavailable')
         self.data.server.peername = ('127.0.0.1', 18080)
@@ -45,6 +48,7 @@ class ReleaseConnectionTests(unittest.TestCase):
             self.assertNotIn(value, output)
 
     def test_未连接及连接到不同peer不猜测响应或实际来源(self):
+        """验证未连接及连接到不同peer不猜测响应或实际来源。"""
         self.diagnostics.server_connect_error(self.data)
         self.assertEqual(self.diagnostics.events[-1]['upstreamMatch'], 'unavailable')
         for peer in [('192.0.2.40', 18080), ('127.0.0.1', 18081)]:
@@ -56,6 +60,7 @@ class ReleaseConnectionTests(unittest.TestCase):
         self.assertNotIn('synthetic-secret', json.dumps(self.diagnostics.snapshot()))
 
     def test_其他目标和无效配置不收集也不改变真实连接(self):
+        """验证其他目标和无效配置不收集也不改变真实连接。"""
         original_error = self.data.server.error
         for target in [('other.invalid', 18080), ('127.0.0.1', 18081)]:
             self.data.server.address = target
@@ -70,6 +75,7 @@ class ReleaseConnectionTests(unittest.TestCase):
         self.assertIsNone(self.data.server.timestamp_tcp_setup)
 
     def test_连接事件共用有界时间线且超限可见(self):
+        """验证连接事件共用有界时间线且超限可见。"""
         for _ in range(5001):
             self.diagnostics.server_connect(self.data)
         self.assertEqual(len(self.diagnostics.events), 5000)

@@ -46,7 +46,8 @@ export class ZhajinhuaProxy {
  * @param task - 在已准备好的上下文或代理上执行的异步任务。
  */
 export function withZhajinhuaProxy<T>(task: (proxy: ZhajinhuaProxy) => Promise<T>): Promise<T> {
-  return withMitmproxy(async proxy => {
+  return withMitmproxy(/** 启用炸金花视觉夹具后向任务提供代理控制器。
+ * @param proxy - 当前隔离的代理控制器。 */ async proxy => {
     await proxy.enableVisualFixtures();
     return task(new ZhajinhuaProxy(proxy));
   }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });

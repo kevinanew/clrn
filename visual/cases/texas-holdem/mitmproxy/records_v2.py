@@ -8,20 +8,25 @@ ROUND = 'visual-fixed-round-v2'
 
 
 class RecordsV2:
+    """管理新版本战绩会话标识及空态或非空详情夹具。"""
     def __init__(self):
+        """初始化界面或缓存状态，确保首次使用从默认配置开始。"""
         self.release()
 
     def release(self):
+        """清除新版本战绩开关、空态标记和已绑定会话。"""
         self.enabled = False
         self.empty = True
         self.session_id = None
 
     def configure(self, empty):
+        """校验空态选项并启用对应的新版本战绩模式。"""
         if not isinstance(empty, bool):
             raise ValueError('Invalid records mode')
         self.enabled, self.empty = True, empty
 
     def response(self, flow, path, room_id):
+        """从当前房间成功入场响应中记录真实战绩会话标识。"""
         if not self.enabled or not room_id or flow.request.method != 'PUT' or (
             path != f'/v10/texas_holdem/room/{room_id}/enter') or not flow.response:
             return
@@ -31,6 +36,7 @@ class RecordsV2:
             self.session_id = session
 
     def fixture(self, path, method, self_id):
+        """仅为已启用且绑定当前用户和会话的 GET 读取提供战绩夹具。"""
         if not self.enabled or method != 'GET':
             return None
         if not self_id or not self.session_id:
@@ -43,6 +49,7 @@ class RecordsV2:
 
 
 def round_data(self_id):
+    """构造新版本德州战绩所需的座位、位置与公开手牌数据。"""
     return {
         'game_type': 'texas_holdem', 'seats': {'1': self_id, '2': PLAYER_IDS[0]},
         'all_seat_public': {'1': {'position': 'BTN', 'public_hole_card': 'as,ad'},

@@ -26,8 +26,9 @@ export async function pressTarget(target: Locator): Promise<void> {
   await expect(target).toBeEnabled();
   let point: { x: number; y: number } | null = null;
   try {
-    await expect.poll(async () => {
-      point = await target.evaluate(node => {
+    await expect.poll(/** 轮询目标遮罩的真实可点击区域，等待遮挡消失。 */ async () => {
+      point = await target.evaluate(/** 计算目标在视口内的可命中点，避开被面板遮住的区域。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
         const box = node.getBoundingClientRect();
         const left = Math.max(0, box.left), right = Math.min(innerWidth, box.right);
         const top = Math.max(0, box.top), bottom = Math.min(innerHeight, box.bottom);
@@ -46,14 +47,15 @@ export async function pressTarget(target: Locator): Promise<void> {
       return Boolean(point);
     }, { message: `入口必须在视口内且未被遮罩拦截：${target}` }).toBe(true);
   } catch (error) {
-    const details = await target.evaluate(node => {
+    const details = await target.evaluate(/** 检查元素中心处的命中节点，判断点击是否会被其他元素拦截。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
       const rect = node.getBoundingClientRect();
       const hit = document.elementFromPoint(Math.max(0, Math.min(innerWidth - 1, rect.x + rect.width / 2)),
         Math.max(0, Math.min(innerHeight - 1, rect.y + rect.height / 2)));
       return { rect: rect.toJSON(), viewport: { width: innerWidth, height: innerHeight },
         hit: hit?.closest('[data-testid]')?.getAttribute('data-testid') || hit?.tagName,
         pointerEvents: getComputedStyle(node).pointerEvents };
-    }).catch(() => ({ unavailable: true }));
+    }).catch(/** 命中测试失败时返回不可用标记，由上层决定后续处理。 */ () => ({ unavailable: true }));
     recordBlockedTarget(page, String(target), details);
     throw error;
   }
@@ -93,7 +95,8 @@ export async function recordApplicationBuild(page: Page, info: TestInfo): Promis
 export async function openApplication(context: BrowserContext, page: Page, info: TestInfo,
   pageLabel = 'signed_in_hall') {
   const scenario = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SUITE: 'all' })
-    .find(item => item.pageLabel === pageLabel && item.viewport.label === info.project.name);
+    .find(/** 查找满足以下条件的首个条目：`item.pageLabel === pageLabel && item.viewport.label === info.project.name`。
+ * @param item - 当前遍历的条目。 */ item => item.pageLabel === pageLabel && item.viewport.label === info.project.name);
   if (!scenario) throw new Error(`缺少动画基础场景 ${pageLabel}/${info.project.name}`);
   await setupContextForScenario(context, scenario, page, { animations: 'allow' });
   if (!hasNormalCardSpriteClock(page)) await page.clock.install({ time: CLOCK_START });

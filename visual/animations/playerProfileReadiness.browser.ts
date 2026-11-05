@@ -21,13 +21,14 @@ const markup = `<button data-testid="texas-holdem-player-container-${player}">�
     };
   </script>`;
 
-test('每次打开玩家资料都等待本次三项成功读取，旧响应和部分数据不能提前采样', async () => {
+test('每次打开玩家资料都等待本次三项成功读取，旧响应和部分数据不能提前采样', /** 验证每次打开玩家资料都等待本次三项成功读取，旧响应和部分数据不能提前采样。 */ async () => {
   const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
     ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
   try {
     const page = await browser.newPage();
     const pending = new Map<string, Route>();
-    await page.route(`${origin}/**`, route => {
+    await page.route(`${origin}/**`, /** 提供玩家资料测试页面，并按路径挂起真实读取。
+ * @param route - 当前拦截的网络请求。 */ route => {
       const path = new URL(route.request().url()).pathname;
       if (path === '/') return route.fulfill({ contentType: 'text/html', body: markup });
       pending.set(path, route);
@@ -35,20 +36,21 @@ test('每次打开玩家资料都等待本次三项成功读取，旧响应和�
     await page.goto(origin);
     await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
     await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
-    const before = await page.evaluate(() => Date.now());
-    await page.evaluate(path => { void fetch(path).then(() => {
+    const before = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
+    await page.evaluate(/** 发起本次操作之前的资料请求，验证请求归属判断。
+ * @param path - 当前操作使用的 path。 */ path => { void fetch(path).then(/** 标记旧资料请求已结束，供后续就绪断言使用。 */ () => {
       (window as typeof window & { staleReadFinished: boolean }).staleReadFinished = true;
     }); }, paths[0]);
-    await expect.poll(() => pending.has(paths[0])).toBe(true);
+    await expect.poll(/** 重复读取`pending.has(paths[0])`，直到满足外层等待断言。 */ () => pending.has(paths[0])).toBe(true);
     const stale = pending.get(paths[0])!;
     for (const order of [[0, 1, 2], [2, 1, 0], [1, 0, 2]]) {
       pending.clear();
       let ready = false;
-      const opening = openPlayerProfile(page, player).then(() => { ready = true; });
-      await expect.poll(() => pending.size).toBe(3);
+      const opening = openPlayerProfile(page, player).then(/** 标记本次玩家资料打开操作已通过就绪检查。 */ () => { ready = true; });
+      await expect.poll(/** 重复读取`pending.size`，直到满足外层等待断言。 */ () => pending.size).toBe(3);
       if (order[0] === 0) {
         await stale.fulfill({ json: { ok: true, result: {} } });
-        await expect.poll(() => page.evaluate(() =>
+        await expect.poll(/** 重复读取`page.evaluate(() => (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`(window as typeof window & { staleReadFinished?: boolean }).staleReadFinished`，供测试判断当前界面状态。 */ () =>
           (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)).toBe(true);
         assert.equal(ready, false, '打开前发出的旧请求不能作为本次就绪依据');
       }
@@ -58,19 +60,20 @@ test('每次打开玩家资料都等待本次三项成功读取，旧响应和�
         await expect(page.locator('output')).toHaveText(String(index + 1));
       }
       await opening;
-      assert.equal(await page.evaluate(() => Date.now()), before, '准备读取不得推进动画相位');
+      assert.equal(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()), before, '准备读取不得推进动画相位');
     }
   } finally { await browser.close(); }
 });
 
-test('玩家资料任一读取失败都阻止采样并保留真实状态，错误正文不得进入诊断', async () => {
+test('玩家资料任一读取失败都阻止采样并保留真实状态，错误正文不得进入诊断', /** 验证玩家资料任一读取失败都阻止采样并保留真实状态，错误正文不得进入诊断。 */ async () => {
   const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
     ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
   try {
     for (const [index, operation] of ['player-profile', 'player-wallet', 'player-statistics'].entries()) {
       for (const mode of ['http', 'business', 'json']) {
         const page = await browser.newPage();
-        await page.route(`${origin}/**`, route => {
+        await page.route(`${origin}/**`, /** 按预设路径注入玩家资料响应失败，其余接口正常返回。
+ * @param route - 当前拦截的网络请求。 */ route => {
           const path = new URL(route.request().url()).pathname;
           if (path === '/') return route.fulfill({ contentType: 'text/html', body: markup });
           if (path !== paths[index]) return route.fulfill({ json: { ok: true, result: {} } });
@@ -80,8 +83,9 @@ test('玩家资料任一读取失败都阻止采样并保留真实状态，错�
         });
         await page.goto(origin);
         await page.clock.install();
-        await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
-        await assert.rejects(openPlayerProfile(page, player), error => {
+        await page.clock.pauseAt(await page.evaluate(/** 在页面中读取`Date.now() + 1000`，供测试判断当前界面状态。 */ () => Date.now() + 1000));
+        await assert.rejects(openPlayerProfile(page, player), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => {
           assert.match(String(error), new RegExp(`玩家资料准备失败：method=GET operation=${operation}`));
           assert.match(String(error), mode === 'http' ? /status=503/ : /status=200/);
           assert.doesNotMatch(String(error), /不得传播的响应正文|player-profile\.invalid/);

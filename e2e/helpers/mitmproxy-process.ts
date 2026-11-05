@@ -28,8 +28,10 @@ export class MitmdumpProcess {
     };
     child.stdout?.on('data', captureOutput);
     child.stderr?.on('data', captureOutput);
-    child.on('error', error => { this.startupError = error; });
-    this.exited = new Promise(resolve => child.once('close', () => resolve()));
+    child.on('error', /** 保存代理子进程启动错误，供就绪检查报告。
+ * @param error - 当前操作抛出的错误。 */ error => { this.startupError = error; });
+    this.exited = new Promise(/** 将代理进程关闭事件转换为可等待的完成通知。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => child.once('close', /** 代理进程关闭后解除清理等待。 */ () => resolve()));
   }
 
   /** 判断代理子进程是否尚未退出或被信号结束。 */
@@ -67,7 +69,8 @@ export class MitmdumpProcess {
     try {
       await Promise.race([
         this.exited,
-        new Promise<void>(resolve => { timer = setTimeout(resolve, SHUTDOWN_TIMEOUT_MS); }),
+        new Promise<void>(/** 为代理关闭设置等待上限，防止清理无限阻塞。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => { timer = setTimeout(resolve, SHUTDOWN_TIMEOUT_MS); }),
       ]);
     } finally {
       clearTimeout(timer);

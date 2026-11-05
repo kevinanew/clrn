@@ -4,18 +4,20 @@ import { openApplication, navigate, press } from './appSession';
 import { captureTimeline, fixedArea, freeze } from './timeline';
 import { selectScenario, scenarioStatus } from '../../e2e/helpers/scenario-proxy';
 
-test('老虎机滚轮和三种奖励动画', async ({ context, page }, info) => {
+test('老虎机滚轮和三种奖励动画', /** 验证老虎机滚轮和三种奖励动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   test.setTimeout(600_000);
   await selectScenario(context, 'slot');
   try {
     await openApplication(context, page, info);
-    await selectScenario(context, 'slot', { userId: await page.evaluate(() => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
+    await selectScenario(context, 'slot', { userId: await page.evaluate(/** 在页面中读取`JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id`，供测试判断当前界面状态。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
     const previousEnergyReads = (await scenarioStatus(context)).energyReads;
     await navigate(page, 'slot-banner');
     const panel = page.getByTestId('slot-machine-view');
     await expect(panel.getByTestId('energy-bar-text')).toHaveText('50 / 50');
     // 默认文字不能证明连接就绪；冻结前必须观察本次面板读取，而非大厅的历史读取。
-    await expect.poll(async () => {
+    await expect.poll(/** 小步推进页面时钟并等待老虎机能量读取完成。 */ async () => {
       await page.clock.runFor(16);
       return (await scenarioStatus(context)).energyReads;
     }, { message: '本次打开老虎机必须完成所属账号的能量读取' }).toBeGreaterThan(previousEnergyReads);
@@ -28,7 +30,7 @@ test('老虎机滚轮和三种奖励动画', async ({ context, page }, info) => 
     for (const [index, currency] of ['coin', 'currency_diamond', 'energy'].entries()) {
       await selectScenario(context, 'slot', { phase: currency });
       await press(page, 'spin-button');
-      await expect.poll(async () => {
+      await expect.poll(/** 提交当前时刻的异步任务并等待旋转 RPC 准备完成，保持动画起点一致。 */ async () => {
         // RPC 准备阶段保持同一虚拟时刻，避免响应快慢改变滚轮动画的起点。
         await page.clock.runFor(0);
         return (await scenarioStatus(context)).spins;

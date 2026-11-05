@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 运行动画回归检查。
 set -euo pipefail
 
 cd /repo/visual

@@ -7,8 +7,9 @@ import { advanceCardSpriteClock } from './cardSpriteClock';
  */
 export async function settleLayout(page: Page): Promise<void> {
   for (let pass = 0; pass < 2; pass++) {
-    await page.evaluate(() => new Promise<void>(resolve => {
-      const observer = new ResizeObserver(() => { observer.disconnect(); resolve(); });
+    await page.evaluate(/** 在页面中等待一次根节点布局观测，确保渲染提交已发生。 */ () => new Promise<void>(/** 观察文档根节点的下一次尺寸提交并转换为等待结果。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => {
+      const observer = new ResizeObserver(/** 收到布局观测后移除观察器并解除渲染等待。 */ () => { observer.disconnect(); resolve(); });
       observer.observe(document.documentElement);
     }));
     // RN Web 的 onLayout 经 ResizeObserver、零延迟回调和界面更新后才生效。
@@ -21,6 +22,6 @@ export async function settleLayout(page: Page): Promise<void> {
  * @param page - 时钟已暂停且弹层已挂载的页面。
  */
 export async function resetViewportScroll(page: Page): Promise<void> {
-  await page.evaluate(() => window.scrollTo({ left: 0, top: 0, behavior: 'instant' }));
+  await page.evaluate(/** 在页面中读取`window.scrollTo({ left: 0, top: 0, behavior: 'instant' })`，供测试判断当前界面状态。 */ () => window.scrollTo({ left: 0, top: 0, behavior: 'instant' }));
   await settleLayout(page);
 }

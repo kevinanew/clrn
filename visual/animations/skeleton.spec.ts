@@ -4,13 +4,15 @@ import { openApplication, press } from './appSession';
 import { captureTimeline, fixedArea, freeze } from './timeline';
 import { readAuthStateEntries } from '../src/support/pageSetup';
 
-test('club list placeholders pulse while details are pending', async ({ context, page }, info) => {
+test('club list placeholders pulse while details are pending', /** 验证俱乐部详情挂起期间列表占位的脉冲动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   const userId: unknown = JSON.parse(readAuthStateEntries()?.['save.user.origin.data.from.server.key'] || '{}').user_id;
   expect(typeof userId === 'string' && userId.length > 0, '骨架夹具必须绑定本轮真实登录账号').toBe(true);
   await selectScenario(context, 'club-skeleton', { userId: userId as string });
   try {
     await openApplication(context, page, info);
-    await expect.poll(async () => (await scenarioStatus(context)).requests, { timeout: 60_000, message: '等待大厅首次加载俱乐部详情，再暂缓下一次响应' }).toBeGreaterThan(0);
+    await expect.poll(/** 重复读取`(await scenarioStatus(context)).requests`，直到满足外层等待断言。 */ async () => (await scenarioStatus(context)).requests, { timeout: 60_000, message: '等待大厅首次加载俱乐部详情，再暂缓下一次响应' }).toBeGreaterThan(0);
     await selectScenario(context, 'club-skeleton', { phase: 'hold' });
     await freeze(page);
     await press(page, 'club-tab');

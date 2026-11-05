@@ -8,7 +8,7 @@ import path from 'node:path';
  */
 async function summaries(directory) {
   const result = [];
-  const entries = await readdir(directory, { withFileTypes: true }).catch(() => []);
+  const entries = await readdir(directory, { withFileTypes: true }).catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []);
   for (const entry of entries) {
     const location = path.join(directory, entry.name);
     if (entry.isDirectory()) result.push(...await summaries(location));
@@ -19,7 +19,8 @@ async function summaries(directory) {
 
 if (process.env.GITHUB_STEP_SUMMARY) {
   const reports = await summaries('visual/test-results');
-  const failures = reports.filter(report => report.includes('test.failure'));
+  const failures = reports.filter(/** 仅保留满足以下条件的条目：`report.includes('test.failure')`。
+ * @param report - 当前操作使用的 report。 */ report => report.includes('test.failure'));
   const selected = failures.length ? failures : reports;
   let size = 0;
   for (const report of selected) {

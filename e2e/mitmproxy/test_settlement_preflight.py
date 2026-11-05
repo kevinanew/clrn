@@ -90,7 +90,9 @@ def browser_failure_diagnostic(stderr):
 
 
 class Upstream(BaseHTTPRequestHandler):
+    """为结算预检测试提供可挂起的真实上游预检及业务失败响应。"""
     def do_OPTIONS(self):
+        """记录 OPTIONS 请求，按测试条件挂起或返回真实预检响应。"""
         self.server.requests.append(('OPTIONS', urlsplit(self.path).path))
         if self.server.block_preflight:
             self.server.release_preflight.wait(4)
@@ -103,6 +105,7 @@ class Upstream(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        """为测试页面返回 HTML，为真实业务读取返回 503。"""
         path = urlsplit(self.path).path
         self.server.requests.append(('GET', path))
         self.send_response(200 if path == '/' else 503)
@@ -115,6 +118,7 @@ class Upstream(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
     def do_POST(self):
+        """记录建房 POST 并返回有效的合成房间标识。"""
         path = urlsplit(self.path).path
         self.server.requests.append(('POST', path))
         content = json.dumps({'ok': True, 'result': {'room_id': ROOM}}).encode()
@@ -124,11 +128,14 @@ class Upstream(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
     def log_message(self, *_arguments):
+        """抑制本机上游访问日志，保持预检诊断输出可断言。"""
         pass
 
 
 class SettlementPreflightTests(unittest.TestCase):
+    """通过真实浏览器与代理验证结算空榜预检的来源边界。"""
     def setUp(self):
+        """启动可控上游与真实代理，准备结算预检的浏览器测试环境。"""
         self.upstream = ThreadingHTTPServer(('127.0.0.1', 0), Upstream)
         self.upstream.requests = []
         self.upstream.block_preflight = True
@@ -167,11 +174,13 @@ class SettlementPreflightTests(unittest.TestCase):
         })
 
     def stop_upstream(self):
+        """释放挂起的预检并关闭本机上游服务。"""
         self.upstream.release_preflight.set()
         self.upstream.shutdown()
         self.upstream.server_close()
 
     def stop_proxy(self):
+        """终止结算测试代理，超时后强制回收。"""
         self.proxy.terminate()
         try:
             self.proxy.wait(timeout=5)
@@ -180,6 +189,7 @@ class SettlementPreflightTests(unittest.TestCase):
             self.proxy.wait(timeout=5)
 
     def request(self, address, method='GET', body=None):
+        """通过本机代理请求目标地址并读取状态及响应正文。"""
         connection = http.client.HTTPConnection('127.0.0.1', self.port, timeout=3)
         try:
             connection.request(method, address, None if body is None else json.dumps(body),
@@ -190,9 +200,11 @@ class SettlementPreflightTests(unittest.TestCase):
             connection.close()
 
     def control(self, path, body=None):
+        """向代理控制入口发送读取或 JSON 控制命令。"""
         return self.request('http://test-mitmproxy.invalid' + path, 'GET' if body is None else 'POST', body)
 
     def browse(self, path=SETTLEMENT, **options):
+        """启动真实浏览器访问指定结算地址并解析观察结果。"""
         configuration = {'proxy': f'http://127.0.0.1:{self.port}', 'origin': self.origin,
                          'target': 'http://node-0.service.invalid' + path, **options}
         directory = browser_working_directory()
@@ -206,6 +218,7 @@ class SettlementPreflightTests(unittest.TestCase):
         return json.loads(completed.stdout)
 
     def test_独立依赖布局均能启动真实浏览器并保留预检负例(self):
+        """验证独立依赖布局均能启动真实浏览器并保留预检负例。"""
         modules = browser_working_directory() / 'node_modules'
         for project in ('visual', 'e2e', ''):
             with self.subTest(project=project), tempfile.TemporaryDirectory() as temporary:
@@ -222,6 +235,7 @@ class SettlementPreflightTests(unittest.TestCase):
                                      '不同启动布局不能跳过未知请求头的真实浏览器负例')
 
     def test_上游预检无响应时当前房间仍通过本地预检读取空榜(self):
+        """验证上游预检无响应时当前房间仍通过本地预检读取空榜。"""
         observed = self.browse()
         self.assertEqual(observed, {'outcome': 'response', 'status': 200,
                                    'body': {'ok': True, 'result': {'settlements': []}}})
@@ -233,6 +247,7 @@ class SettlementPreflightTests(unittest.TestCase):
         self.assertEqual({event['method'] for event in responses}, {'GET', 'OPTIONS'})
 
     def test_不匹配预检仍依赖上游且真实业务失败保持失败(self):
+        """验证不匹配预检仍依赖上游且真实业务失败保持失败。"""
         other = f'/v1/game_log/room/{OTHER}/settlement'
         for path, options in ((other, {}), (SETTLEMENT, {'extraHeaders': {'X-Unknown': 'offline'}}),
                               (SETTLEMENT, {'method': 'POST'})):

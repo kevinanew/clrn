@@ -69,7 +69,9 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
   const pendingMetadata = new Set<Promise<unknown>>();
   let sequence = 0;
   let applicationEvents = 0;
-  await context.exposeBinding('__clrnConnectionDiagnostic', (_source, fields: unknown) => {
+  await context.exposeBinding('__clrnConnectionDiagnostic', /** 限量接收页面诊断事件并附加来源与宿主观测时间。
+ * @param _source - 当前操作使用的 _source。
+ * @param fields - 当前操作使用的 fields。 */ (_source, fields: unknown) => {
     if (applicationEvents++ < 10000) recorder.record(String(diagnosticFields(fields).event || 'application.event'),
       { ...diagnosticFields(fields), source: 'application', observedAt: Date.now() });
   });
@@ -77,7 +79,8 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
   await context.addInitScript(`window.addEventListener('laiwan:connection-diagnostic', event => {
     window.__clrnConnectionDiagnostic(event.detail).catch(() => {});
   });`);
-  page.on('request', request => {
+  page.on('request', /** 为页面请求分配标识，记录脱敏节点、路径与开始时间。
+ * @param request - 当前发出的接口请求。 */ request => {
     const url = new URL(request.url());
     const entry = { requestId: `http-${++sequence}`, node: diagnosticNode(url.origin), path: /^(xhr|fetch|document)$/.test(request.resourceType()) ? url.pathname : '',
       operation: /^(xhr|fetch)$/.test(request.resourceType()) ? 'browser-api-request' : 'browser-resource-read',
@@ -85,7 +88,8 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
     requests.set(request, entry);
     recorder.record('http.start', { ...entry, status: 'unavailable', response: 'not-received' });
   });
-  page.on('response', response => {
+  page.on('response', /** 关联响应与原始请求，记录真实状态及耗时。
+ * @param response - 当前收到的接口响应。 */ response => {
     const entry = requests.get(response.request());
     if (!entry) return;
     entry.status = response.status();
@@ -93,39 +97,46 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
       source: response.fromServiceWorker() ? 'service-worker' : 'browser' });
     // 仅读取节点列表响应；从不收集登录、钱包或游戏请求的正文。
     if (/^\/public\/v1[23]\/metadata\/servers$/.test(entry.path)) {
-      const reading = response.json().then(body => {
+      const reading = response.json().then(/** 从元数据响应中提取候选节点并记录脱敏节点发现信息。
+ * @param body - 当前操作使用的 body。 */ body => {
         const servers = body?.result?.servers;
         if (!servers || typeof servers !== 'object') return;
         const names = Array.isArray(servers) ? servers : Object.keys(servers);
-        recorder.record('nodes.received', { ...entry, candidates: names.filter(name => typeof name === 'string').map(diagnosticNode) });
-      }).catch(() => recorder.record('nodes.unreadable', entry));
+        recorder.record('nodes.received', { ...entry, candidates: names.filter(/** 仅保留满足以下条件的条目：`typeof name === 'string'`。
+ * @param name - 当前操作使用的 name。 */ name => typeof name === 'string').map(diagnosticNode) });
+      }).catch(/** 元数据正文不可读时记录明确事件，保留请求定位信息。 */ () => recorder.record('nodes.unreadable', entry));
       pendingMetadata.add(reading);
-      void reading.finally(() => pendingMetadata.delete(reading));
+      void reading.finally(/** 元数据处理结束后从待处理集合移除该任务。 */ () => pendingMetadata.delete(reading));
     }
   });
-  page.on('requestfinished', request => {
+  page.on('requestfinished', /** 请求正常结束时记录最终状态、响应接收情况与总耗时。
+ * @param request - 当前发出的接口请求。 */ request => {
     const entry = requests.get(request);
     if (entry) recorder.record('http.finished', { ...entry, status: entry.status ?? 'unavailable',
       response: entry.status === undefined ? 'not-received' : 'received', elapsedMs: Date.now() - entry.start });
     requests.delete(request);
   });
-  page.on('requestfailed', request => {
+  page.on('requestfailed', /** 请求失败时关联原始请求，记录安全原因、实际状态和耗时。
+ * @param request - 当前发出的接口请求。 */ request => {
     const entry = requests.get(request);
     if (entry) recorder.record('http.failed', { ...entry, status: entry.status ?? 'unavailable',
       response: entry.status === undefined ? 'not-received' : 'received', elapsedMs: Date.now() - entry.start,
       reason: request.failure()?.errorText || 'unknown' });
     requests.delete(request);
   });
-  page.on('websocket', socket => {
+  page.on('websocket', /** 为 WebSocket 分配连接标识并监听错误与关闭事件。
+ * @param socket - 当前网络连接。 */ socket => {
     const url = new URL(socket.url());
     const connection = { connectionId: `socket-${++sequence}`, node: diagnosticNode(url.origin), path: url.pathname };
     recorder.record('websocket.start', connection);
-    socket.on('socketerror', reason => recorder.record('websocket.error', { ...connection, reason }));
-    socket.on('close', () => recorder.record('websocket.closed', connection));
+    socket.on('socketerror', /** 记录当前 WebSocket 的失败原因和安全连接定位信息。
+ * @param reason - 当前操作使用的 reason。 */ reason => recorder.record('websocket.error', { ...connection, reason }));
+    socket.on('close', /** 记录当前 WebSocket 连接关闭事件。 */ () => recorder.record('websocket.closed', connection));
     // 不保存原始消息：认证与业务正文可能包含凭据；订阅及 RPC 概要由应用/代理提供。
   });
-  page.on('pageerror', error => recorder.record('page.error', { reason: safeDiagnosticReason(error.message) }));
-  page.on('crash', () => recorder.record('page.crash'));
+  page.on('pageerror', /** 将页面错误原因脱敏后加入诊断时间线。
+ * @param error - 当前操作抛出的错误。 */ error => recorder.record('page.error', { reason: safeDiagnosticReason(error.message) }));
+  page.on('crash', /** 记录浏览器页面崩溃事件。 */ () => recorder.record('page.crash'));
   return {
     recorder,
     /**
@@ -134,7 +145,8 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
      */
     async save(failure?: unknown): Promise<void> {
       let timer: ReturnType<typeof setTimeout> | undefined;
-      await Promise.race([Promise.allSettled([...pendingMetadata]), new Promise<void>(resolve => {
+      await Promise.race([Promise.allSettled([...pendingMetadata]), new Promise<void>(/** 为未完成的元数据诊断设置最长两秒的收尾等待。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => {
         timer = setTimeout(resolve, 2000);
       })]);
       clearTimeout(timer);

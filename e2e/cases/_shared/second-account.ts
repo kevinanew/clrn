@@ -36,7 +36,7 @@ export async function createSecondAccount(browser: Browser, viewport: { width: n
     await clickAfterSignInNotices(page, 'hall-tab');
     return { ...session, page, context, username };
   } catch (error) {
-    await context.close().catch(() => undefined);
+    await context.close().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
     throw accountPreparationError(error, 'second-account-setup');
   }
 }

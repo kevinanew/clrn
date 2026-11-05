@@ -16,7 +16,8 @@ const clubId = '12f2cb6e-9045-4910-b58a-7d3903f56a39';
  * @param browser - 用于创建隔离上下文的浏览器。
  */
 export async function runClubSearchResultScenario(scenario: VisualScenario, browser: Browser): Promise<void> {
-  await withMitmproxy(async proxy => {
+  await withMitmproxy(/** 通过独立代理上下文准备账号与搜索结果，完成俱乐部搜索截图。
+ * @param proxy - 当前隔离的代理控制器。 */ async proxy => {
     const context = await browser.newContext({
       proxy: { server: proxy.server, bypass: '<-loopback>' },
       ignoreHTTPSErrors: true,
@@ -32,7 +33,8 @@ export async function runClubSearchResultScenario(scenario: VisualScenario, brow
       await page.goto(scenario.path);
       await preparePage(page, scenario);
       await proxy.inject('club-search-result');
-      const searchResponse = page.waitForResponse(response => {
+      const searchResponse = page.waitForResponse(/** 匹配GET `/v10/club/search` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ response => {
         const url = new URL(response.url());
         return response.request().method() === 'GET' && url.pathname === '/v10/club/search'
           && url.searchParams.get('keyword') === keyword;

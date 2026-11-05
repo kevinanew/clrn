@@ -6,9 +6,12 @@ import { navigate, openApplication, press, pressTarget, recordApplicationBuild, 
 import { exercisePopup } from './popups';
 import { appearance, captureTimeline, CLOCK_START } from './timeline';
 
-test('staging notice fades and scales in on launch', async ({ context, page }, info) => {
+test('staging notice fades and scales in on launch', /** 验证启动时 staging 提示的淡入与缩放动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   const scenario = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SUITE: 'app' })
-    .find(item => item.pageLabel === 'hall' && item.viewport.label === info.project.name)!;
+    .find(/** 查找满足以下条件的首个条目：`item.pageLabel === 'hall' && item.viewport.label === info.project.name`。
+ * @param item - 当前遍历的条目。 */ item => item.pageLabel === 'hall' && item.viewport.label === info.project.name)!;
   await setupContextForScenario(context, scenario, page, { animations: 'allow' });
   await page.clock.install({ time: CLOCK_START });
   await page.clock.pauseAt(new Date(CLOCK_START.getTime() + 60_000));
@@ -17,7 +20,7 @@ test('staging notice fades and scales in on launch', async ({ context, page }, i
   const dialog = page.getByTestId('staging-dialog');
   const title = page.getByTestId('staging-dialog-title');
   await expect(title).toBeAttached({ timeout: 60_000 });
-  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  await page.evaluate(/** 在页面中读取`document.fonts.ready.then(() => undefined)`，供测试判断当前界面状态。 */ () => document.fonts.ready.then(/** 将异步结果转换为`undefined`，供后续步骤使用。 */ () => undefined));
   await ensureLocalImagesLoaded(page);
   expect((await appearance(title))[0].opacity).toBe(0);
   await captureTimeline(page, info, 'staging-notice-enter', title,
@@ -32,7 +35,9 @@ test('staging notice fades and scales in on launch', async ({ context, page }, i
   await expect(page.getByTestId('hall-screen')).toBeVisible({ timeout: 60_000 });
 });
 
-test('share link confirmation dialog enter and exit', async ({ context, page }, info) => {
+test('share link confirmation dialog enter and exit', /** 验证分享链接确认弹窗的进入与退出动画。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   await openApplication(context, page, info);
   await navigate(page, 'settings-tab');
   // “分享来玩”在设置列表下方，准备阶段用正常点击自动滚动到入口。

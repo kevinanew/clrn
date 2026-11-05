@@ -3,14 +3,15 @@ import { unique } from '../_shared/page';
 import { clickWithBackgroundClubNotice } from '../_shared/navigation';
 import { readDiamondBalance } from '../_shared/provision';
 
-test('真实创建俱乐部并核实详情、归属和服务端持久化', { tag: '@creates-data' }, async ({ page, newAccount }) => {
+test('真实创建俱乐部并核实详情、归属和服务端持久化', { tag: '@creates-data' }, /** 验证真实创建俱乐部并核实详情、归属和服务端持久化。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, newAccount }) => {
   const name = `E2E俱乐部${Date.now().toString(36)}`;
   const region = 'E2E测试地区';
   const before = await readDiamondBalance(page, newAccount);
   let profileUrl: string;
   let createdClubId: string;
 
-  await test.step('进入创建表单，验证必填校验与50钻费用', async () => {
+  await test.step('进入创建表单，验证必填校验与50钻费用', /** 执行进入创建表单，验证必填校验与50钻费用。 */ async () => {
     expect(before, '创建俱乐部至少需要50钻').toBeGreaterThanOrEqual(50);
     await clickWithBackgroundClubNotice(page, 'settings-tab', 3);
     await clickWithBackgroundClubNotice(page, 'create-club', 3);
@@ -22,8 +23,9 @@ test('真实创建俱乐部并核实详情、归属和服务端持久化', { tag
     await expect(await unique(page, 'edit-club-header-right-complete')).not.toHaveAttribute('aria-disabled', 'true');
   });
 
-  await test.step('提交真实创建，验证详情与50钻扣除', async () => {
-    const creatingClub = page.waitForResponse(response =>
+  await test.step('提交真实创建，验证详情与50钻扣除', /** 执行提交真实创建，验证详情与50钻扣除。 */ async () => {
+    const creatingClub = page.waitForResponse(/** 匹配POST `/v3/pay_action/do` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ response =>
       response.request().method() === 'POST'
       && new URL(response.url()).pathname === '/v3/pay_action/do');
     const [clubResponse] = await Promise.all([creatingClub, clickWithBackgroundClubNotice(page, 'edit-club-header-right-complete', 3)]);
@@ -41,10 +43,10 @@ test('真实创建俱乐部并核实详情、归属和服务端持久化', { tag
     await expect(await unique(page, 'club-info-member-count')).toHaveText('1');
     await expect(await unique(page, 'club-profile-item-content-club_id')).toHaveText(/^\d{9}$/);
     await expect(await unique(page, 'club-rooms-empty-card')).toBeVisible();
-    await expect.poll(() => readDiamondBalance(page, newAccount)).toBe(before - 50);
+    await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
   });
 
-  await test.step('独立读取刚创建的俱乐部，验证服务端持久化与创建人归属', async () => {
+  await test.step('独立读取刚创建的俱乐部，验证服务端持久化与创建人归属', /** 执行独立读取刚创建的俱乐部，验证服务端持久化与创建人归属。 */ async () => {
     let response;
     try {
       response = await page.request.get(profileUrl, {

@@ -18,13 +18,14 @@ async function openSetting(page: Page, id: string) {
   await (await unique(page, id)).click();
 }
 
-test('SETTINGS-004：客服、常见问题与各平台下载帮助浏览', async ({ page, signedInAccount }) => {
+test('SETTINGS-004：客服、常见问题与各平台下载帮助浏览', /** 验证SETTINGS-004：客服、常见问题与各平台下载帮助浏览。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, signedInAccount }) => {
   test.setTimeout(180_000);
-  await test.step('登录并打开我的', async () => {
+  await test.step('登录并打开我的', /** 执行登录并打开我的。 */ async () => {
     expect(signedInAccount.userId).toBeTruthy();
     await (await unique(page, 'settings-tab')).click();
   });
-  await test.step('从联系客服进入常见问题，并查看分享图文说明', async () => {
+  await test.step('从联系客服进入常见问题，并查看分享图文说明', /** 执行从联系客服进入常见问题，并查看分享图文说明。 */ async () => {
     await openSetting(page, 'contact-us');
     await expect(await unique(page, 'online-service-button')).toHaveText('在线客服');
     await expect(await unique(page, 'feedback-button')).toHaveText('问题反馈');
@@ -40,7 +41,7 @@ test('SETTINGS-004：客服、常见问题与各平台下载帮助浏览', async
     await expect(await unique(page, 'online-service-button')).toHaveText('在线客服');
     await goBack(page);
   });
-  await test.step('浏览苹果下载帮助后返回平台列表', async () => {
+  await test.step('浏览苹果下载帮助后返回平台列表', /** 执行浏览苹果下载帮助后返回平台列表。 */ async () => {
     await openSetting(page, 'download-help');
     await expect(await unique(page, 'download-help-list')).toContainText('苹果下载帮助');
     await (await unique(page, 'apple-button')).click();
@@ -54,7 +55,7 @@ test('SETTINGS-004：客服、常见问题与各平台下载帮助浏览', async
     ['h5-button', 'h5-version-help-view', '链接在任何电脑、手机、平板上都可以使用'],
     ['official_website-button', 'download-official-website-help-view', '找到本地下载按钮'],
   ]) {
-    await test.step(`浏览${button}说明并返回`, async () => {
+    await test.step(`浏览${button}说明并返回`, /** 执行浏览$\{button\}说明并返回。 */ async () => {
       await (await unique(page, button)).click();
       await expect(await unique(page, screen)).toContainText(content);
       await goBack(page);

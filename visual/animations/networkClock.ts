@@ -32,7 +32,7 @@ export function paceNetworkClock(page: Page): void {
    * 先暂停再等待，防止真实运行中的时钟越过暂停点；不增加额外虚拟时间。
    * @param time - 目标虚拟时刻。
    */ async time => {
-    const before = await page.evaluate(() => Date.now());
+    const before = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
     const target = typeof time === 'number' ? time : new Date(time).getTime();
     await pauseAt(time);
     await delay(Math.max(0, target - before));
@@ -45,5 +45,7 @@ export function paceNetworkClock(page: Page): void {
  */
 function milliseconds(value: number | string): number {
   return typeof value === 'number' ? value
-    : value.split(':').reduce((total, part) => total * 60 + Number(part), 0) * 1000;
+    : value.split(':').reduce(/** 将冒号分隔的时间逐段转换为累计秒数。
+ * @param total - 当前操作使用的 total。
+ * @param part - 当前操作使用的 part。 */ (total, part) => total * 60 + Number(part), 0) * 1000;
 }

@@ -41,7 +41,7 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
   await exercisePopup(page, info, { name: `${game}-menu`, target: page.getByTestId('drawer-menu-item-exit'), clip,
     open: /** 点击真实入口。 */ () => press(page, 'menu-button'), close: /** 通过实际按钮或遮罩关闭。 */ () => closeTableMask(page, 'drawer-menu-item-exit') });
   for (const panel of menuPanels) {
-    await testStep(info, panel.name, async () => {
+    await testStep(info, panel.name, /** 打开并采样当前牌桌面板的进出动画。 */ async () => {
       await exercisePopup(page, info, { name: `${game}-${panel.name}`, target: page.getByTestId(panel.marker), clip,
         open: /** 打开菜单后点击对应入口。 */ async () => {
           await press(page, 'menu-button');
@@ -61,7 +61,7 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
       open: /** 点击真实入口；排行榜完成请求后再采样动画，避免网络快慢决定“加载中”画面。 */ async () => {
         await press(page, panel.open);
         if (panel.name === 'leaderboard') {
-          await expect.poll(async () => {
+          await expect.poll(/** 仅提交当前虚拟时刻的任务，等待排行榜数据或空态出现。 */ async () => {
             // 只提交当前时刻的异步任务，不推进弹窗动画的虚拟时间。
             await page.clock.runFor(0);
             return await page.getByTestId('public-leader-board-empty').isVisible()

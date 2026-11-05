@@ -18,7 +18,8 @@ export type PopupFlow = { name: string; target: Locator; open: () => Promise<unk
 async function isPresented(target: Locator): Promise<boolean> {
   if (!(await target.isVisible())) return false;
   const viewport = target.page().viewportSize()!;
-  return (await appearance(target)).some(state => state.opacity > 0 && state.width > 0 && state.height > 0
+  return (await appearance(target)).some(/** 判断弹层是否有非透明且与视口相交的可见部分。
+ * @param state - 当前操作使用的 state。 */ state => state.opacity > 0 && state.width > 0 && state.height > 0
     && state.x < viewport.width && state.x + state.width > 0
     && state.y < viewport.height && state.y + state.height > 0);
 }
@@ -31,7 +32,7 @@ async function isPresented(target: Locator): Promise<boolean> {
 async function waitForMount(target: Locator, requirePresentation = false): Promise<void> {
   /** 判断本次打开是否已达到所需状态。 */
   const mounted = async () => requirePresentation ? isPresented(target) : (await target.count()) > 0;
-  await expect.poll(async () => {
+  await expect.poll(/** 轮询弹层挂载状态，必要时小步推进独立牌面时钟。 */ async () => {
     if (await mounted()) return true;
     await advanceCardSpriteClock(target.page(), 16);
     return mounted();
@@ -44,10 +45,11 @@ async function waitForMount(target: Locator, requirePresentation = false): Promi
  * @param target - 弹层内容标记。
  */
 async function expectDismissed(target: Locator): Promise<void> {
-  await expect.poll(async () => {
+  await expect.poll(/** 轮询弹层是否隐藏或已完全移出视口。 */ async () => {
     if (!(await target.isVisible())) return true;
     const viewport = target.page().viewportSize()!;
-    return (await appearance(target)).every(state => state.opacity === 0 || state.y >= viewport.height
+    return (await appearance(target)).every(/** 确认当前弹层完全透明或在视口边界之外。
+ * @param state - 当前操作使用的 state。 */ state => state.opacity === 0 || state.y >= viewport.height
       || state.y + state.height <= 0 || state.x >= viewport.width || state.x + state.width <= 0);
   }, { message: '关闭后的弹层应卸载、完全透明或移出视口' }).toBe(true);
 }
@@ -57,7 +59,7 @@ async function expectDismissed(target: Locator): Promise<void> {
  * @param target - 退场后应卸载的弹层内容。
  */
 async function waitForUnmount(target: Locator): Promise<void> {
-  await expect.poll(async () => {
+  await expect.poll(/** 轮询弹层卸载状态，必要时推进独立时钟完成退出动画。 */ async () => {
     if (await target.count() === 0) return true;
     await advanceCardSpriteClock(target.page(), 16);
     return await target.count() === 0;

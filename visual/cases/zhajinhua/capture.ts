@@ -61,7 +61,8 @@ export async function closeMask(page: Page, marker: string, advanceClock = false
   await visible(page, marker)
     .locator('xpath=ancestor::*[*[@data-testid="screen-mask-touch-to-close"]][1]')
     .locator(':scope > [data-testid="screen-mask-touch-to-close"]')
-    .evaluate(node => (node as HTMLElement).click());
+    .evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   if (advanceClock) await advance(page);
   await expect(visible(page, marker)).toBeHidden();
 }
@@ -74,15 +75,19 @@ export async function closeMask(page: Page, marker: string, advanceClock = false
  */
 export async function capture(page: Page, scenario: VisualScenario, state: string): Promise<void> {
   const game = visible(page, 'run-game-view');
-  await game.evaluate(node => {
+  await game.evaluate(/** 复位炸金花牌桌祖先容器和窗口滚动，稳定截图坐标。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => {
     for (let parent = node.parentElement; parent; parent = parent.parentElement) parent.scrollTop = 0;
     window.scrollTo(0, 0);
   });
-  const { top, translate } = await game.evaluate(node => ({
+  const { top, translate } = await game.evaluate(/** 在页面中读取`{ top: node.getBoundingClientRect().top, translate: (node as HTMLElement).style.getPropertyValue('translate'), }`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => ({
     top: node.getBoundingClientRect().top, translate: (node as HTMLElement).style.getPropertyValue('translate'),
   }));
   const correction = gameViewportCorrection(top, appliedGameTranslation(translate));
-  await game.evaluate((node, amount) => {
+  await game.evaluate(/** 设置炸金花牌桌的纵向平移，校准截图布局。
+ * @param node - 当前遍历的 DOM 或语法节点。
+ * @param amount - 当前操作使用的 amount。 */ (node, amount) => {
     (node as HTMLElement).style.setProperty('translate', `0 ${amount}px`, 'important');
   }, correction);
   await ensureLocalImagesLoaded(page);

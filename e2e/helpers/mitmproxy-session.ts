@@ -10,14 +10,19 @@ import { mitmproxySources } from './mitmproxy-sources';
 /** 申请本机临时监听端口并关闭探测服务，返回可用于代理的端口号。 */
 async function unusedPort(): Promise<number> {
   const server = createServer();
-  await new Promise<void>((resolve, reject) => {
+  await new Promise<void>(/** 监听临时本机端口，向调用方传播监听失败。
+ * @param resolve - 完成当前异步等待的通知。
+ * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
     server.once('error', reject);
     server.listen(0, '127.0.0.1', resolve);
   });
   const address = server.address();
   if (!address || typeof address === 'string') throw new Error('无法分配 mitmproxy 端口');
-  await new Promise<void>((resolve, reject) => {
-    server.close(error => error ? reject(error) : resolve());
+  await new Promise<void>(/** 等待临时端口服务关闭，并传播关闭失败。
+ * @param resolve - 完成当前异步等待的通知。
+ * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
+    server.close(/** 根据关闭结果完成或拒绝端口服务清理。
+ * @param error - 当前操作抛出的错误。 */ error => error ? reject(error) : resolve());
   });
   return address.port;
 }
@@ -38,7 +43,7 @@ export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>,
     const environment = await mitmproxySources(options.environment || process.env);
     const proxyProcess = startMitmdump(port, directory, token, options.addonPath, environment);
     try {
-      await proxyProcess.waitUntilReady(async () => {
+      await proxyProcess.waitUntilReady(/** 同时探测代理状态和夹具控制入口，确认代理可以接收场景命令。 */ async () => {
         await proxy.status();
         await proxy.command('fixtures/status');
       });

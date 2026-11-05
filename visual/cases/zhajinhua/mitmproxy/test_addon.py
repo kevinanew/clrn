@@ -13,13 +13,16 @@ from test_network_faults import source_environment
 
 
 class ZhajinhuaAddonTests(unittest.TestCase):
+    """验证炸金花插件的真实建房绑定、控制认证与读取边界。"""
     def setUp(self):
+        """为每个用例配置隔离来源环境、控制令牌和独立代理状态。"""
         self.enterContext(source_environment())
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
             self.addon = ZhajinhuaVisualProxy()
         self.addon.scenario = 'visual-stable'
 
     def creation(self, game_type='zhajinhua', ok=True, room=ROOM, host='node-0.service.invalid', method='POST'):
+        """构造指定玩法和结果的真实建房响应，验证房间绑定条件。"""
         request = flow(f'https://{host}/v3/pay_action/do', method, json.dumps({
             'user_id': SELF, 'action_url': {'method': 'POST', 'path': '/v2/building/$building_id$/room'},
             'action_json': {'game_type': game_type},
@@ -28,11 +31,13 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.addon.response(request)
 
     def control(self, path, body, token='test-token'):
+        """向炸金花代理控制入口发送带指定令牌的命令。"""
         request = flow(f'http://test-mitmproxy.invalid{path}', 'POST', json.dumps(body).encode(), token)
         self.addon.request(request)
         return request
 
     def test_仅成功创建拼三张房间才能绑定回放(self):
+        """验证仅成功创建拼三张房间才能绑定回放。"""
         for kwargs in ({'game_type': 'texas_react_native'}, {'ok': False}, {'room': '123456'},
                        {'host': 'node-9.service.invalid'}, {'method': 'PUT'}):
             self.creation(**kwargs)
@@ -45,6 +50,7 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.assertIsNone(self.addon.replay.room_id)
 
     def test_回放必须绑定已创建房间且控制已认证(self):
+        """验证回放必须绑定已创建房间且控制已认证。"""
         payload = {'roomId': ROOM, 'scene': {'scene': 'restore'}}
         self.assertEqual(self.control('/zhajinhua/replay', payload).response.status_code, 400)
         self.creation()
@@ -71,6 +77,7 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.assertIsNone(self.addon.replay.room_id)
 
     def test_空排行榜仅用于已创建房间的读取(self):
+        """验证空排行榜仅用于已创建房间的读取。"""
         path = f'/v1/game_log/room/{ROOM}/settlement'
         request = flow(f'https://node-0.service.invalid{path}')
         self.addon.request(request)
@@ -92,6 +99,7 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.assertIsNone(request.response)
 
     def test_接口夹具保留写入其他用户与主机(self):
+        """验证接口夹具保留写入其他用户与主机。"""
         self.addon.replay.room_id, self.addon.replay.self_id = ROOM, SELF
         path = f'/v10/profile/{PLAYER_IDS[0]}'
         for method in ('POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'):
@@ -109,6 +117,7 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         self.assertEqual(json.loads(request.response.content)['result']['nickname'], 'Player1')
 
     def preflight(self, url=None, **headers):
+        """构造带当前页面来源与请求头的结算 OPTIONS 预检。"""
         request = flow(url or f'https://node-0.service.invalid/v1/game_log/room/{ROOM}/settlement', 'OPTIONS')
         request.request.headers.update({'Origin': 'http://127.0.0.1:43210',
             'Access-Control-Request-Method': 'GET',
@@ -117,6 +126,7 @@ class ZhajinhuaAddonTests(unittest.TestCase):
         return request
 
     def test_空榜预检只允许当前房间与本轮页面的必要读取(self):
+        """验证空榜预检只允许当前房间与本轮页面的必要读取。"""
         self.creation()
         with patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': 'http://127.0.0.1:43210/'}):
             request = self.preflight()
@@ -131,6 +141,7 @@ class ZhajinhuaAddonTests(unittest.TestCase):
                              .response.status_code, 204, '请求头名称不区分大小写')
 
     def test_其他来源方法请求头场景与未绑定房间的预检保持透传(self):
+        """验证其他来源方法请求头场景与未绑定房间的预检保持透传。"""
         with patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': 'http://127.0.0.1:43210'}):
             self.assertIsNone(self.preflight().response, '未观察到成功建房时不能放行')
             self.creation()
@@ -154,6 +165,7 @@ class ZhajinhuaAddonTests(unittest.TestCase):
             self.assertIsNone(self.preflight().response, '释放当前房间后不能沿用预检许可')
 
     def test_本轮页面来源配置缺失损坏或带凭据时预检保持透传(self):
+        """验证本轮页面来源配置缺失损坏或带凭据时预检保持透传。"""
         self.creation()
         for configured in ('', 'invalid', 'http://127.0.0.1:bad', 'http://127.0.0.1',
                            'https://page.invalid', 'http://token@127.0.0.1:43210',
@@ -162,6 +174,7 @@ class ZhajinhuaAddonTests(unittest.TestCase):
                 self.assertIsNone(self.preflight().response)
 
     def test_本人资料保持真实且混合批次仅补充虚拟对手(self):
+        """验证本人资料保持真实且混合批次仅补充虚拟对手。"""
         self.addon.replay.room_id, self.addon.replay.self_id = ROOM, SELF
         for path in (f'/v10/profile/{SELF}', f'/v10/wallet/{SELF}/currency/coin'):
             request = flow('https://node-0.service.invalid' + path)

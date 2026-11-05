@@ -7,7 +7,8 @@ test.use({ screenshot: 'off', trace: 'off' });
 // 线上代理偶发登录失败，完整认证案例最多重试一次；新旧会话断言保持不变。
 test.describe.configure({ retries: 1 });
 
-test('AUTH-003：相同设备标识再次登录的认证行为', async ({ page, context, browser, baseURL, locale }) => {
+test('AUTH-003：相同设备标识再次登录的认证行为', /** 验证AUTH-003：相同设备标识再次登录的认证行为。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, context, browser, baseURL, locale }) => {
   const deviceId = randomUUID();
   await prepareContext(context, deviceId);
   await openHall(page);
@@ -21,8 +22,8 @@ test('AUTH-003：相同设备标识再次登录的认证行为', async ({ page, 
     const second = await signIn(otherPage);
     expect(second.userId).toBe(first.userId);
     expect(await accountStatus(otherPage, second)).toBe(200);
-    await test.step('相同 deviceId 也不能保留两份有效登录凭据', async () => {
-      await expect.poll(() => accountStatus(page, first), { timeout: 10_000 }).toBe(401);
+    await test.step('相同 deviceId 也不能保留两份有效登录凭据', /** 执行相同 deviceId 也不能保留两份有效登录凭据。 */ async () => {
+      await expect.poll(/** 重复读取`accountStatus(page, first)`，直到满足外层等待断言。 */ () => accountStatus(page, first), { timeout: 10_000 }).toBe(401);
       expect(await accountStatus(otherPage, second)).toBe(200);
     });
   } finally {

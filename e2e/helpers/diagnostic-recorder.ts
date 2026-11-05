@@ -27,12 +27,15 @@ export class DiagnosticRecorder {
    * @param dropped - 代理自行截断的事件数。
    */
   merge(history: unknown[], dropped = 0): void {
-    const imported = history.map(value => {
+    const imported = history.map(/** 将导入的代理历史整理成带事件名和观测时间的诊断条目。
+ * @param value - 当前待转换或校验的值。 */ value => {
       const fields = diagnosticFields(value);
       return { ...fields, event: String(fields.event || 'proxy.event'),
         observedAt: typeof fields.observedAt === 'number' ? fields.observedAt : Date.now() };
     });
-    const combined = [...this.events, ...imported].sort((left, right) => left.observedAt - right.observedAt);
+    const combined = [...this.events, ...imported].sort(/** 按观测时间合并排序浏览器与代理诊断事件。
+ * @param left - 当前操作使用的 left。
+ * @param right - 当前操作使用的 right。 */ (left, right) => left.observedAt - right.observedAt);
     this.dropped += Math.max(0, combined.length - 5000) + dropped;
     this.events.splice(0, this.events.length, ...combined.slice(-5000));
   }
@@ -42,7 +45,9 @@ export class DiagnosticRecorder {
    */
   snapshot(): { startedAt: number; dropped: number; events: DiagnosticEvent[] } {
     return { startedAt: this.startedAt, dropped: this.dropped,
-      events: [...this.events].sort((left, right) => left.observedAt - right.observedAt) };
+      events: [...this.events].sort(/** 按观测时间排序已采集事件，生成稳定的诊断输出。
+ * @param left - 当前操作使用的 left。
+ * @param right - 当前操作使用的 right。 */ (left, right) => left.observedAt - right.observedAt) };
   }
 
   /**
@@ -69,7 +74,8 @@ export class DiagnosticRecorder {
     }
     const lines = [`### ${diagnosticText(title).replace(/[\r\n|<>]/g, ' ')}`, '',
       `事件 ${events.length} 条；截断 ${this.dropped} 条。浏览器发出请求不等于上游已收到。`,
-      events.some(item => item.source === 'application') ? '已采集应用选线与缓存决策。' :
+      events.some(/** 判断是否存在满足以下条件的条目：`item.source === 'application'`。
+ * @param item - 当前遍历的条目。 */ item => item.source === 'application') ? '已采集应用选线与缓存决策。' :
         '当前构建未提供应用决策事件：缓存命中、未尝试原因和主动线路切换无法确定。', '',
       '| 节点 | 浏览器健康探测 | 上游健康响应 | 模拟健康响应 | 缓存命中 | WebSocket 尝试 |',
       '| --- | ---: | ---: | ---: | ---: | ---: |'];

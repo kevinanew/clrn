@@ -52,17 +52,20 @@ async function run() {
     throw new Error('测试账号池不可读取，请先准备本机 staging 测试账号');
   }
   if (!Array.isArray(accounts) || !accounts.length
-    || accounts.some(account => typeof account.username !== 'string' || !account.username
+    || accounts.some(/** 检查账号池凭据是否缺失、超长或包含不支持的控制字符。
+ * @param account - 当前操作使用的 account。 */ account => typeof account.username !== 'string' || !account.username
       || typeof account.password !== 'string' || !account.password
       // H5 密码框最多接收 20 个字符；更长的密码虽然可走 API 登录，界面会截断。
       || account.password.length > 20 || /[\r\n\0]/.test(account.password)
       || typeof account.userId !== 'string' || !account.userId)
-    || new Set(accounts.map(account => account.username.toLowerCase())).size !== accounts.length) {
+    || new Set(accounts.map(/** 将当前条目映射为`account.username.toLowerCase()`。
+ * @param account - 当前操作使用的 account。 */ account => account.username.toLowerCase())).size !== accounts.length) {
     throw new Error('测试账号池为空、配置不完整、密码不兼容 H5 或包含重复用户名');
   }
 
   // 自定义账号池也使用旁边的 locks；共享账号时必须指定相同的账号池文件。
-  if (accounts.some(account => ciAccounts.includes(account.username.toLowerCase()))) {
+  if (accounts.some(/** 判断是否存在满足以下条件的条目：`ciAccounts.includes(account.username.toLowerCase())`。
+ * @param account - 当前操作使用的 account。 */ account => ciAccounts.includes(account.username.toLowerCase()))) {
     throw new Error('本机账号池禁止使用 CLRN 的 CI 专用账号，避免绕过 GitHub 账号锁');
   }
   const locks = join(dirname(poolFile), 'locks');
@@ -112,7 +115,8 @@ async function run() {
     const grouped = process.platform !== 'win32';
     const child = spawn(args[0], args.slice(1), { env, stdio: 'inherit', detached: grouped });
     const signals = ['SIGINT', 'SIGTERM', 'SIGHUP'];
-    const handlers = signals.map(signal => {
+    const handlers = signals.map(/** 为各退出信号安装转发处理器，并返回处理器供结束时移除。
+ * @param signal - 当前转发的进程终止信号。 */ signal => {
       /** 将退出信号转发给测试命令及其后代进程，避免任务结束后仍使用账号。 */
       const handler = () => {
         try {
@@ -128,12 +132,18 @@ async function run() {
     });
     try {
       // 使用测试命令的退出码，让调用者和 CI 能识别真正的测试失败。
-      process.exitCode = await new Promise((resolve, reject) => {
-        child.once('error', () => reject(new Error('测试命令启动失败')));
-        child.once('exit', (code, signal) => resolve(code ?? (signal === 'SIGINT' ? 130 : 143)));
+      process.exitCode = await new Promise(/** 等待测试命令退出，将启动失败与信号终止转换为明确结果。
+ * @param resolve - 完成当前异步等待的通知。
+ * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
+        child.once('error', /** 子进程无法启动时拒绝运行等待并提供安全错误。 */ () => reject(new Error('测试命令启动失败')));
+        child.once('exit', /** 将子进程退出状态或终止信号转换为调用方退出码。
+ * @param code - 当前操作使用的 code。
+ * @param signal - 当前转发的进程终止信号。 */ (code, signal) => resolve(code ?? (signal === 'SIGINT' ? 130 : 143)));
       });
     } finally {
-      signals.forEach((signal, index) => process.removeListener(signal, handlers[index]));
+      signals.forEach(/** 移除本轮安装的信号转发监听器。
+ * @param signal - 当前转发的进程终止信号。
+ * @param index - 当前条目在集合中的位置。 */ (signal, index) => process.removeListener(signal, handlers[index]));
     }
   } finally {
     // 6. 只有我们取得的锁会被删除，不会清理其他任务的占用记录。
@@ -141,7 +151,8 @@ async function run() {
   }
 }
 
-run().catch(error => {
+run().catch(/** 输出账号运行器的安全失败信息并设置失败退出码。
+ * @param error - 当前操作抛出的错误。 */ error => {
   console.error(error.message);
   process.exitCode = 1;
 });

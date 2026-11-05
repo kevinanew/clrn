@@ -9,7 +9,9 @@ import { back, captureStates, click, holdListDeadline, reopen, row, scrollList, 
 import { captureDetails } from './details';
 import type { Page } from '@playwright/test';
 
-const pagedRoomNames = Array.from({ length: 17 }, (_, index) =>
+const pagedRoomNames = Array.from({ length: 17 }, /** 为当前索引构造`Paged Texas ${String(index + 1).padStart(2, '0')}`。
+ * @param _ - 当前操作使用的 _。
+ * @param index - 当前条目在集合中的位置。 */ (_, index) =>
   `Paged Texas ${String(index + 1).padStart(2, '0')}`);
 
 /**
@@ -106,7 +108,7 @@ async function legacyEnd(page: Page, proxy: RecordProxy,
   await swipe(page, row(page, 'Club Cards', 'legacy'));
   await visible(page, 'delete-button').nth(1).click({ noWaitAfter: true });
   await visible(page, 'alert-custom-button').last().click({ noWaitAfter: true });
-  await expect.poll(async () => (await proxy.status()).deleted).toContain('visual-record-club');
+  await expect.poll(/** 重复读取`(await proxy.status()).deleted`，直到满足外层等待断言。 */ async () => (await proxy.status()).deleted).toContain('visual-record-club');
   await expect(row(page, 'Club Cards', 'legacy')).toHaveCount(0);
   await snapshot('delete_success');
   await proxy.mode('delete-error');
@@ -125,7 +127,7 @@ async function legacyEnd(page: Page, proxy: RecordProxy,
   await scrollList(page, true);
   await expect(visible(page, 'pull-up-activity-indicator')).toBeVisible();
   // 滚动驱动首批记录全部挂载，再贴底，避免在虚拟列表较早的高度停住。
-  await expect.poll(async () => {
+  await expect.poll(/** 滚动战绩列表并等待可用的右侧操作按钮出现。 */ async () => {
     await scrollList(page, true);
     return visible(page, 'right-content-button').count();
   }).toBe(20);
@@ -139,7 +141,7 @@ async function legacyEnd(page: Page, proxy: RecordProxy,
   await proxy.release();
   await holdListDeadline(page, false);
   await expect(visible(page, 'pull-up-activity-indicator')).toHaveCount(0);
-  await expect.poll(async () => {
+  await expect.poll(/** 再次滚动战绩列表并等待批量操作入口挂载。 */ async () => {
     await scrollList(page, true);
     return visible(page, 'right-content-button').count();
   }).toBe(22);
@@ -160,8 +162,10 @@ async function legacyEnd(page: Page, proxy: RecordProxy,
   await snapshot('reopen');
 }
 
-for (const scenario of buildScenarios().filter(item => item.group === 'game-record')) {
-  test(scenario.label, async ({ browser, recordProxy }) => {
+for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'game-record'`。
+ * @param item - 当前遍历的条目。 */ item => item.group === 'game-record')) {
+  test(scenario.label, /** 按新旧战绩版本准备代理与账号，执行编辑、删除和列表状态截图。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ browser, recordProxy }) => {
     test.setTimeout(900_000);
     const version = scenario.pageLabel.endsWith('legacy') ? 'legacy' : 'v2';
     const auth = JSON.parse(fs.readFileSync(AUTH_STATE_PATH, 'utf8'));
@@ -177,16 +181,17 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
     const page = await context.newPage();
     page.setDefaultTimeout(60_000);
     const errors: string[] = [];
-    page.on('pageerror', error => errors.push(error.message));
+    page.on('pageerror', /** 收集页面运行错误，供战绩场景结束时核验。
+ * @param error - 当前操作抛出的错误。 */ error => errors.push(error.message));
     const { snapshot, complete } = captureStates(page, scenario);
     try {
       await setupContextForScenario(context, scenario, page);
       await page.goto(scenario.path, { waitUntil: 'domcontentloaded', timeout: 120_000 });
       // 新版列表依赖俱乐部页加载的缓存；通过真实导航建立该前置状态。
       await preparePage(page, { ...scenario, tabTestId: 'club-tab', visualReadySelector: '[data-testid="club-tab-screen"]' });
-      await expect.poll(async () => (await recordProxy.status()).recordRequests['/v10/club'] ?? 0).toBeGreaterThan(0);
+      await expect.poll(/** 重复读取`(await recordProxy.status()).recordRequests['/v10/club'] ?? 0`，直到满足外层等待断言。 */ async () => (await recordProxy.status()).recordRequests['/v10/club'] ?? 0).toBeGreaterThan(0);
       await preparePage(page, scenario);
-      await expect.poll(() => page.evaluate(() => localStorage.getItem('use.new.game.record.key')))
+      await expect.poll(/** 重复读取`page.evaluate(() => localStorage.getItem('use.new.game.record.key'))`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`localStorage.getItem('use.new.game.record.key')`，供测试判断当前界面状态。 */ () => localStorage.getItem('use.new.game.record.key')))
         .toBe(String(version === 'v2'));
       await holdListDeadline(page, true);
       await click(page, 'game-record');
@@ -209,7 +214,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
         await expect(row(page, 'Paged Texas 01', version)).toBeVisible();
         await expect(visible(page, 'loading-indicator')).toHaveCount(0);
         // SectionList 可能尚未挂载末行；先滚动并随内容高度更新继续滚动。
-        await expect.poll(async () => {
+        await expect.poll(/** 滚动列表直到目标长房间名记录进入可见区域。 */ async () => {
           await scrollList(page, true);
           return row(page, 'Long Room Name', version).isVisible();
         }, { message: '滚动长列表后应挂载末条记录' }).toBe(true);
@@ -223,7 +228,8 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
       }
       await scrollList(page, true);
       if (version === 'v2') {
-        await expect.poll(() => visible(page, 'my-game-record-list').evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+        await expect.poll(/** 重复读取`visible(page, 'my-game-record-list').evaluate(node => node.scrollTop)`，直到满足外层等待断言。 */ () => visible(page, 'my-game-record-list').evaluate(/** 在页面中读取`node.scrollTop`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.scrollTop)).toBeGreaterThan(0);
         await expect(row(page, 'Long Room Name', version)).toBeInViewport();
       }
       await expect(row(page, 'Long Room Name', version)).toBeVisible();
@@ -252,7 +258,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
         const beforeRetry = (await recordProxy.status()).recordRequests[endpoint];
         await recordProxy.mode('list');
         await visible(page, 'alert-custom-button').last().click({ noWaitAfter: true });
-        await expect.poll(async () => (await recordProxy.status()).recordRequests[endpoint]).toBeGreaterThan(beforeRetry);
+        await expect.poll(/** 重复读取`(await recordProxy.status()).recordRequests[endpoint]`，直到满足外层等待断言。 */ async () => (await recordProxy.status()).recordRequests[endpoint]).toBeGreaterThan(beforeRetry);
         await expect(visible(page, 'loading-indicator')).toHaveCount(0);
         await expect(row(page, 'Private Texas', version)).toBeVisible();
         await snapshot('retry_success');
@@ -275,7 +281,7 @@ for (const scenario of buildScenarios().filter(item => item.group === 'game-reco
           `/v11/game_log/${userId}/play_session_record/visual-record-private`];
       for (const endpoint of faults) expect(status.faultRequests[endpoint] ?? 0).toBeGreaterThan(0);
     } finally {
-      const alerts = await visible(page, 'alert-message-text').allTextContents().catch(() => []);
+      const alerts = await visible(page, 'alert-message-text').allTextContents().catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []);
       if (alerts.length) console.error(`RECORD ALERT > ${JSON.stringify(alerts)}`);
       await recordProxy.release();
       console.log(`RECORD MITMPROXY > ${JSON.stringify((await recordProxy.status()).recordRequests)}`);

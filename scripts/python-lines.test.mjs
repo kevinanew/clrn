@@ -9,12 +9,13 @@ import { repository } from './source-files.mjs';
 
 /**
  * 创建临时 Git 仓库，复制真实 CLI 及其文件发现模块以隔离验证。
+ *
  * @param context - 用于注册清理的测试上下文。
  * @returns 临时仓库根目录。
  */
 function fixture(context) {
   const directory = mkdtempSync(join(tmpdir(), 'clrn-python-lines-'));
-  context.after(() => rmSync(directory, { recursive: true, force: true }));
+  context.after(/** 清理临时仓库。 */ () => rmSync(directory, { recursive: true, force: true }));
   execFileSync('git', ['init', '--quiet', directory]);
   mkdirSync(join(directory, 'scripts'));
   for (const file of ['python-lines.mjs', 'source-files.mjs']) {
@@ -25,8 +26,11 @@ function fixture(context) {
 
 /**
  * 写入任意层级的样例路径。
+ *
  * @param directory - 临时仓库根目录。
+ *
  * @param file - 相对路径。
+ *
  * @param contents - 样例源码。
  */
 function write(directory, file, contents) {
@@ -37,7 +41,9 @@ function write(directory, file, contents) {
 
 /**
  * 执行真实扫描命令并保留状态与诊断。
+ *
  * @param directory - 临时仓库根目录。
+ *
  * @param environment - 子进程环境。
  * @returns 原始命令执行结果。
  */
@@ -46,7 +52,7 @@ function cli(directory, environment = process.env) {
     { cwd: directory, env: environment, encoding: 'utf8' });
 }
 
-test('物理行包含空行、注释与 docstring，正确处理空文件和所有 Python 换行', () => {
+test('物理行包含空行、注释与 docstring，正确处理空文件和所有 Python 换行', /** 验证物理行计数。 */ () => {
   for (const [source, expected] of [['', 0], ['\n', 1], ['# comment', 1], ['\n\n', 2],
     ['"""doc\nstring"""\n\n# comment\n', 4], ['\f\v', 1]]) {
     assert.equal(physicalLines(source), expected);
@@ -59,7 +65,8 @@ test('物理行包含空行、注释与 docstring，正确处理空文件和所�
   }
 });
 
-test('CLI 的 500 行通过，501 行报告路径、实测值及上限并失败', context => {
+test('CLI 的 500 行通过，501 行报告路径、实测值及上限并失败', /** 验证扫描行为。
+ * @param context - 测试上下文。 */ context => {
   const directory = fixture(context);
   for (const newline of ['\n', '\r\n', '\r']) {
     for (const ending of ['', newline]) {
@@ -75,7 +82,8 @@ test('CLI 的 500 行通过，501 行报告路径、实测值及上限并失败'
   }
 });
 
-test('扫描跟踪、未忽略的新文件及嵌套目录；忽略删除和既有排除目录', context => {
+test('扫描跟踪、未忽略的新文件及嵌套目录；忽略删除和既有排除目录', /** 验证扫描行为。
+ * @param context - 测试上下文。 */ context => {
   const directory = fixture(context);
   write(directory, '.gitignore', '*.ignored.py\n__pycache__/\n.ruff_cache/\n');
   write(directory, 'tracked.py', '# tracked\n');
@@ -101,7 +109,8 @@ test('扫描跟踪、未忽略的新文件及嵌套目录；忽略删除和既�
   assert.deepEqual(scanPythonLines(directory).violations, []);
 });
 
-test('空文件可扫描，空扫描、读取失败、Git 缺失及非 Git 目录均失败', context => {
+test('空文件可扫描，空扫描、读取失败、Git 缺失及非 Git 目录均失败', /** 验证扫描行为。
+ * @param context - 测试上下文。 */ context => {
   const directory = fixture(context);
   assert.equal(cli(directory).status, 1);
   assert.match(cli(directory).stderr, /没有扫描到源码/);
@@ -129,7 +138,8 @@ test('空文件可扫描，空扫描、读取失败、Git 缺失及非 Git 目�
   assert.match(cli(directory).stderr, /not a git repository/);
 });
 
-test('不可读的源码不能被静默跳过', { skip: process.getuid?.() === 0 }, context => {
+test('不可读的源码不能被静默跳过', { skip: process.getuid?.() === 0 }, /** 验证扫描行为。
+ * @param context - 测试上下文。 */ context => {
   const directory = fixture(context);
   write(directory, 'unreadable.py', '# content');
   chmodSync(join(directory, 'unreadable.py'), 0o000);
@@ -138,7 +148,8 @@ test('不可读的源码不能被静默跳过', { skip: process.getuid?.() === 0
   assert.match(result.stderr, /EACCES/);
 });
 
-test('真实 Python 静态入口阻断未跟踪的 501 行 Python 文件', context => {
+test('真实 Python 静态入口阻断未跟踪的 501 行 Python 文件', /** 验证扫描行为。
+ * @param context - 测试上下文。 */ context => {
   const directory = fixture(context);
   copyFileSync(join(repository, 'package.json'), join(directory, 'package.json'));
   write(directory, 'probe.py', '# line\n'.repeat(501));

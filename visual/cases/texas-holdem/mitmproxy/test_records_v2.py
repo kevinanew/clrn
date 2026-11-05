@@ -8,16 +8,20 @@ from test_texas_replay import flow, ROOM, SELF, OTHER
 
 
 class RecordsV2Tests(unittest.TestCase):
+    """验证新版本战绩绑定真实入场会话且只影响限定读取。"""
     def setUp(self):
+        """准备本用例的独立对象、来源配置与请求记录，避免状态跨用例共享。"""
         self.records = RecordsV2()
 
     def enter(self, room=ROOM, method='PUT', ok=True, session=OTHER, status=200):
+        """构造指定状态的房间入场响应并交给战绩会话观察器。"""
         request = flow(f'https://node-0.service.invalid/v10/texas_holdem/room/{room}/enter', method)
         request.response = http.Response.make(status, json.dumps({
             'ok': ok, 'result': {'play_session_id': session}}).encode())
         self.records.response(request, request.request.path, ROOM)
 
     def test_版本覆盖必须显式启用且只读(self):
+        """验证版本覆盖必须显式启用且只读。"""
         path = '/public/v11/game_log/available.json'
         self.assertIsNone(self.records.fixture(path, 'GET', SELF))
         self.records.configure(True)
@@ -29,6 +33,7 @@ class RecordsV2Tests(unittest.TestCase):
                 self.records.configure(invalid)
 
     def test_仅成功进入已创建房间才记录会话(self):
+        """验证仅成功进入已创建房间才记录会话。"""
         self.enter()
         self.assertIsNone(self.records.session_id)
         self.records.configure(True)
@@ -42,6 +47,7 @@ class RecordsV2Tests(unittest.TestCase):
         self.assertEqual(self.records.session_id, 'session-1')
 
     def test_战绩严格匹配用户会话与局次(self):
+        """验证战绩严格匹配用户会话与局次。"""
         self.records.configure(True)
         record = f'/v11/game_log/{SELF}/play_session_record/{OTHER}'
         detail = f'/v11/game_log/{SELF}/round/{ROUND}'

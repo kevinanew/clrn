@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def stop(process):
+    """先终止被测进程，超时后强制结束并回收进程。"""
     if process.poll() is None:
         process.terminate()
         try:
@@ -25,7 +26,9 @@ def stop(process):
 
 
 class ReleaseLifecycleIntegrationTests(unittest.TestCase):
+    """通过真实发布服务与代理验证连接及文件流关闭生命周期。"""
     def wait_for(self, operation, processes, budget=15):
+        """在预算内轮询操作，并提前报告依赖进程退出。"""
         deadline = time.monotonic() + budget
         while True:
             if any(process.poll() is not None for process in processes):
@@ -41,6 +44,7 @@ class ReleaseLifecycleIntegrationTests(unittest.TestCase):
             time.sleep(0.05)
 
     def diagnostics(self, port):
+        """通过认证控制入口读取本机代理诊断并关闭客户端连接。"""
         client = http.client.HTTPConnection('127.0.0.1', port, timeout=1)
         try:
             client.request('GET', 'http://test-mitmproxy.invalid/diagnostics',
@@ -52,9 +56,11 @@ class ReleaseLifecycleIntegrationTests(unittest.TestCase):
             client.close()
 
     def server_events(self, directory):
+        """读取本轮发布服务写出的逐行 JSON 事件日志。"""
         return [json.loads(line) for line in (directory / 'events.jsonl').read_text().splitlines()]
 
     def test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态(self):
+        """验证响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态。"""
         directory = Path(self.enterContext(tempfile.TemporaryDirectory(prefix='clrn-lifecycle-')))
         contents = b'A' * (4 * 1024 * 1024)
         (directory / 'index.html').write_bytes(contents)
@@ -77,6 +83,7 @@ writeFileSync(process.argv[2] + '/ready.json', JSON.stringify({ baseUrl: result.
                                  (ROOT / 'scripts/release-web-server.mjs').as_uri(), str(directory)],
                                 stdout=logs, stderr=logs)
         self.addCleanup(stop, node)
+        # 读取服务就绪文件，等待本轮发布服务报告监听信息。
         ready = self.wait_for(lambda: json.loads((directory / 'ready.json').read_text()), [node])
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', 0))
@@ -89,6 +96,7 @@ writeFileSync(process.argv[2] + '/ready.json', JSON.stringify({ baseUrl: result.
                  'CLRN_RELEASE_WEB_URL': ready['baseUrl'], 'CLRN_RELEASE_SERVER_ID': ready['serverId']},
             stdout=logs, stderr=logs)
         self.addCleanup(stop, proxy)
+        # 探测代理诊断入口，等待代理开始接受控制请求。
         self.wait_for(lambda: self.diagnostics(port) or True, [node, proxy])
         client = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
         self.addCleanup(client.close)
@@ -107,10 +115,12 @@ writeFileSync(process.argv[2] + '/ready.json', JSON.stringify({ baseUrl: result.
         self.assertTrue(all(event['upstreamMatch'] == 'matched' for event in responses))
         upstream_ids = {event['upstreamConnectionId'] for event in responses}
         self.assertEqual(len(upstream_ids), 2, '每次响应后关闭，不能再复用等待 FIN 的旧连接')
+        # 等待两次真实上游断连事件出现。
         self.wait_for(lambda: len([event for event in self.diagnostics(port)
                                   if event['event'] == 'proxy.server-disconnected']) == 2, [node, proxy])
         events = [event for event in self.diagnostics(port) if event['event'] == 'proxy.server-disconnected']
         self.assertEqual({event['upstreamConnectionId'] for event in events}, upstream_ids)
+        # 等待发布服务记录两次 TCP 连接关闭。
         self.wait_for(lambda: sum(event['event'] == 'release.tcp-close'
                                  for event in self.server_events(directory)) == 2, [node, proxy])
         server_events = self.server_events(directory)
@@ -133,6 +143,7 @@ writeFileSync(process.argv[2] + '/ready.json', JSON.stringify({ baseUrl: result.
         self.assertEqual(read_failure['status'], 'unavailable')
         self.assertEqual(read_failure['response'], 'not-received')
         self.assertEqual(read_failure['upstreamMatch'], 'matched')
+        # 等待三个文件流关闭并确认发生过响应中断。
         self.wait_for(lambda: sum(event['event'] == 'release.stream-close'
                                  for event in self.server_events(directory)) == 3
                       and any(event['event'] == 'release.interrupted'

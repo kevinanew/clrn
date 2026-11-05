@@ -40,10 +40,10 @@ export async function ensureSelectorGone(page: Page, selector: string): Promise<
   }
 
   const backdrop = page.getByRole('button', { name: /Bottom sheet backdrop/i }).first();
-  if (await backdrop.isVisible().catch(() => false)) {
-    await backdrop.click({ force: true }).catch(() => undefined);
+  if (await backdrop.isVisible().catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false)) {
+    await backdrop.click({ force: true }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
   } else {
-    await page.keyboard.press('Escape').catch(() => undefined);
+    await page.keyboard.press('Escape').catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
   }
 
   try {
@@ -53,8 +53,10 @@ export async function ensureSelectorGone(page: Page, selector: string): Promise<
     // continue
   }
 
-  await page.evaluate((goneSelector: string) => {
-    document.querySelectorAll(goneSelector).forEach((el) => {
+  await page.evaluate(/** 隐藏残留弹层及其遮罩，避免导航后截图被透明拦截层遮挡。
+ * @param goneSelector - 当前操作使用的 goneSelector。 */ (goneSelector: string) => {
+    document.querySelectorAll(goneSelector).forEach(/** 隐藏匹配节点及所属弹层面板、弹窗背景，保留应用根节点。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
       const node = el as HTMLElement;
       node.style.setProperty('display', 'none', 'important');
 
@@ -70,7 +72,8 @@ export async function ensureSelectorGone(page: Page, selector: string): Promise<
       }
       popupBackdrop?.style.setProperty('display', 'none', 'important');
     });
-    document.querySelectorAll('[role="button"][aria-label*="backdrop" i]').forEach((el) => {
+    document.querySelectorAll('[role="button"][aria-label*="backdrop" i]').forEach(/** 隐藏仍然存在的背景按钮，解除残留遮罩的点击拦截。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
       (el as HTMLElement).style.setProperty('display', 'none', 'important');
     });
   }, selector);
@@ -98,12 +101,13 @@ export async function revealVirtualizedSettingsItem(page: Page, target: Locator)
       return;
     }
     await settingsList
-      .evaluate((el) => {
+      .evaluate(/** 分段滚动当前设置列表并派发事件，唤醒尚未挂载的虚拟列表项。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
         const node = el as HTMLElement;
         node.scrollTop += Math.max(node.clientHeight * 0.75, 240);
         node.dispatchEvent(new Event('scroll', { bubbles: true }));
       })
-      .catch(() => undefined);
+      .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
     await page.waitForTimeout(150);
   }
 }
@@ -123,15 +127,17 @@ export async function resetScrollToStart(page: Page, selector: string): Promise<
     return;
   }
 
-  await scrollContainer.evaluate((el) => {
+  await scrollContainer.evaluate(/** 复位目标容器的横纵滚动位置，并通知虚拟列表更新。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
     el.scrollTop = 0;
     el.scrollLeft = 0;
     el.dispatchEvent(new Event('scroll', { bubbles: true }));
   });
   await page.evaluate(
-    () =>
-      new Promise<void>((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    /** 在页面中读取`new Promise<void>((resolve) => { requestAnimationFrame(() => requestAnimationFrame(() => resolve())); })`，供测试判断当前界面状态。 */ () =>
+      new Promise<void>(/** 等待两个渲染帧，让滚动复位后的布局稳定。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
+        requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => resolve()));
       }),
   );
 }
@@ -145,12 +151,12 @@ async function clickByTestId(page: Page, testId: string): Promise<void> {
   // 嵌套导航会留下同 testID 的隐藏节点；点击当前可见节点可避免无意义的超时与 JS 降级。
   const target = page.locator(`[data-testid="${testId}"]:visible`).last();
   // 常规节点会立即挂载；超过短暂初始化期仍不存在时，尝试唤醒「我的」页的虚拟列表项。
-  await target.waitFor({ state: 'attached', timeout: 3000 }).catch(async () => {
+  await target.waitFor({ state: 'attached', timeout: 3000 }).catch(/** 目标首次等待失败时滚动设置列表，使虚拟化入口挂载。 */ async () => {
     await revealVirtualizedSettingsItem(page, target);
   });
   await target.waitFor({ state: 'attached', timeout: 60000 });
   // 必须显式限时：对 Playwright 误判不可见的元素该调用会无限等待
-  await target.scrollIntoViewIfNeeded({ timeout: 5000 }).catch(() => undefined);
+  await target.scrollIntoViewIfNeeded({ timeout: 5000 }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
   try {
     // 短超时即可：可点击的元素通常瞬间完成；超时基本都是误判不可见，
     // 长等无意义（之前 15s 白等），直接降级 JS click（已验证可靠）
@@ -162,11 +168,13 @@ async function clickByTestId(page: Page, testId: string): Promise<void> {
     // Playwright click 可能已经派发点击并触发导航，只是在等待过程中原节点被卸载。
     // 不能再对同一个 Locator evaluate（它会等待已消失的节点直到 actionTimeout）。
     const clicked = await page
-      .evaluate((id: string) => {
+      .evaluate(/** 在页面中查找最后一个真实可见的目标节点并派发点击。
+ * @param id - 当前操作使用的 id。 */ (id: string) => {
         const candidates = Array.from(
           document.querySelectorAll(`[data-testid="${CSS.escape(id)}"]`),
         ) as HTMLElement[];
-        const visible = candidates.filter((el) => {
+        const visible = candidates.filter(/** 根据样式和布局尺寸筛选仍在展示的目标元素。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
           const rect = el.getBoundingClientRect();
           const style = window.getComputedStyle(el);
           return (
@@ -181,17 +189,17 @@ async function clickByTestId(page: Page, testId: string): Promise<void> {
         current?.click();
         return Boolean(current);
       }, testId)
-      .catch(() => false);
+      .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
     if (!clicked) {
       console.log(`DEBUG > click "${testId}" 后节点已卸载，按已触发导航继续`);
     }
   }
   await page.waitForTimeout(250);
   await page
-    .waitForFunction(() => !document.querySelector('[role="progressbar"]'), undefined, {
+    .waitForFunction(/** 等待进度条消失，确认点击后的页面加载完成。 */ () => !document.querySelector('[role="progressbar"]'), undefined, {
       timeout: 60000,
     })
-    .catch(() => undefined);
+    .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
 }
 
 /**
@@ -205,7 +213,8 @@ async function retryCreateRoomNavigation(page: Page, scenario: VisualScenario): 
     return false;
   }
 
-  const gameTypeTestId = scenario.navClickTestIds.find((testId) =>
+  const gameTypeTestId = scenario.navClickTestIds.find(/** 查找满足以下条件的首个条目：`testId.startsWith('game-type-button-')`。
+ * @param testId - 当前操作使用的 testId。 */ (testId) =>
     testId.startsWith('game-type-button-'),
   );
   if (!gameTypeTestId) {
@@ -216,13 +225,13 @@ async function retryCreateRoomNavigation(page: Page, scenario: VisualScenario): 
     .locator('[data-testid="create-game-button"]:visible')
     .last()
     .isVisible()
-    .catch(() => false);
+    .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
   if (!createGameVisible) {
     const personalHouseCreateVisible = await page
       .locator('[data-testid="personal-house-create"]:visible')
       .last()
       .isVisible()
-      .catch(() => false);
+      .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
     if (!personalHouseCreateVisible) {
       return false;
     }
@@ -249,7 +258,7 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
   }
 
   if (scenario.waitForLoading) {
-    await page.waitForFunction(() => !document.querySelector('[role="progressbar"]'), undefined, {
+    await page.waitForFunction(/** 等待场景初始化的加载指示消失。 */ () => !document.querySelector('[role="progressbar"]'), undefined, {
       timeout: 60000,
     });
   }
@@ -298,7 +307,7 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
       }
       await ready.waitFor({ state: 'attached', timeout: 60000 });
     }
-    await scrollVisualReadyElementIntoView(ready).catch(() => undefined);
+    await scrollVisualReadyElementIntoView(ready).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
   }
 
   // 过渡弹层（如选玩法 BottomSheet）：选中后导航可能打断 dismiss，DOM 残留须主动清掉
@@ -326,12 +335,13 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
     scenario.pageLabel === 'signed_in_hall_match'
   ) {
     await page.waitForFunction(
-      () => {
+      /** 等待大厅全部可见房卡的盲注和带入文案完成真实数据填充。 */ () => {
         const nodes = Array.from(
           document.querySelectorAll(
             '[data-testid="match-game-bet-info"], [data-testid="match-game-minimum-chip"]',
           ),
-        ).filter((el) => {
+        ).filter(/** 根据样式、尺寸与视口交集筛选本次大厅可见的房卡数据节点。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
           const rect = el.getBoundingClientRect();
           const style = window.getComputedStyle(el);
           return (
@@ -348,14 +358,15 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
         });
         // 德州、炸金花各 4 张房卡，每张有盲注/带入两处动态文案，共 16 个。
         // 只等到 8 个会在第一组刚完成时提前截图，使第二组仍显示 "--"。
-        return nodes.length >= 16 && nodes.every((el) => el.textContent?.trim() !== '--');
+        return nodes.length >= 16 && nodes.every(/** 确认所有条目均满足：`el.textContent?.trim() !== '--'`。
+ * @param el - 当前匹配的页面元素。 */ (el) => el.textContent?.trim() !== '--');
       },
       undefined,
       { timeout: 60000 },
     );
   }
 
-  await page.evaluate(async () => {
+  await page.evaluate(/** 等待浏览器字体资源就绪，避免截图使用临时后备字体。 */ async () => {
     if (document.fonts && document.fonts.ready) {
       await document.fonts.ready;
     }

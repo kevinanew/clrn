@@ -21,11 +21,12 @@ async function fixture(t, usernames = ['parallel01', 'parallel02']) {
   const directory = await mkdtemp(join(tmpdir(), 'clrn-account-lock-test-'));
   const pool = join(directory, 'accounts.json');
   await writeFile(pool, JSON.stringify({
-    accounts: usernames.map(username => ({
+    accounts: usernames.map(/** 将当前条目映射为`{ username, password: 'mock-password', userId: '11111111-2222-4333-8444-555555555555', }`。
+ * @param username - 当前操作使用的 username。 */ username => ({
       username, password: 'mock-password', userId: '11111111-2222-4333-8444-555555555555',
     })),
   }), { mode: 0o600 });
-  t.after(() => rm(directory, { recursive: true, force: true }));
+  t.after(/** 账号运行器测试结束后删除临时目录。 */ () => rm(directory, { recursive: true, force: true }));
   return { directory, pool };
 }
 
@@ -44,10 +45,13 @@ function launch(t, pool, command) {
   });
   let stdout = '';
   let stderr = '';
-  child.stdout.on('data', chunk => { stdout += chunk; });
-  child.stderr.on('data', chunk => { stderr += chunk; });
-  const finished = once(child, 'exit').then(([code]) => ({ code, stdout, stderr }));
-  t.after(async () => {
+  child.stdout.on('data', /** 收集被测命令的标准输出。
+ * @param chunk - 本次读取的数据块。 */ chunk => { stdout += chunk; });
+  child.stderr.on('data', /** 收集被测命令的标准错误。
+ * @param chunk - 本次读取的数据块。 */ chunk => { stderr += chunk; });
+  const finished = once(child, 'exit').then(/** 将异步结果转换为`{ code, stdout, stderr }`，供后续步骤使用。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([code]) => ({ code, stdout, stderr }));
+  t.after(/** 用例结束时终止仍在运行的命令并等待进程退出。 */ async () => {
     if (child.exitCode === null && child.signalCode === null) child.kill('SIGTERM');
     await finished;
   });
@@ -77,7 +81,8 @@ async function hold(t, pool) {
   return { ...run, identity: JSON.parse(output.toString()) };
 }
 
-test('并发任务独占不同账号，池耗尽时失败，结束后可复用', { timeout: 10000 }, async t => {
+test('并发任务独占不同账号，池耗尽时失败，结束后可复用', { timeout: 10000 }, /** 验证并发任务独占不同账号，池耗尽时失败，结束后可复用。
+ * @param t - 当前测试的生命周期与替换接口。 */ async t => {
   const { directory, pool } = await fixture(t);
   const first = await hold(t, pool);
   const second = await hold(t, pool);
@@ -105,14 +110,16 @@ test('并发任务独占不同账号，池耗尽时失败，结束后可复用',
   assert.deepEqual(await readdir(join(directory, 'locks')), []);
 });
 
-test('测试命令失败时保留退出码并释放账号', { timeout: 10000 }, async t => {
+test('测试命令失败时保留退出码并释放账号', { timeout: 10000 }, /** 验证测试命令失败时保留退出码并释放账号。
+ * @param t - 当前测试的生命周期与替换接口。 */ async t => {
   const { directory, pool } = await fixture(t, ['parallel01']);
   const run = launch(t, pool, [process.execPath, '-e', 'process.exit(7)']);
   assert.equal((await run.finished).code, 7);
   assert.deepEqual(await readdir(join(directory, 'locks')), []);
 });
 
-test('命令无法启动时也释放账号', { timeout: 10000 }, async t => {
+test('命令无法启动时也释放账号', { timeout: 10000 }, /** 验证命令无法启动时也释放账号。
+ * @param t - 当前测试的生命周期与替换接口。 */ async t => {
   const { directory, pool } = await fixture(t, ['parallel01']);
   const run = launch(t, pool, [join(directory, 'missing-command')]);
   const result = await run.finished;
@@ -121,7 +128,8 @@ test('命令无法启动时也释放账号', { timeout: 10000 }, async t => {
   assert.deepEqual(await readdir(join(directory, 'locks')), []);
 });
 
-test('同一用户名的大小写变体不能作为两个账号分配', { timeout: 10000 }, async t => {
+test('同一用户名的大小写变体不能作为两个账号分配', { timeout: 10000 }, /** 验证同一用户名的大小写变体不能作为两个账号分配。
+ * @param t - 当前测试的生命周期与替换接口。 */ async t => {
   const { pool } = await fixture(t, ['parallel01', 'PARALLEL01']);
   const run = launch(t, pool, [process.execPath, '-e', 'process.exit(0)']);
   const result = await run.finished;
@@ -129,7 +137,8 @@ test('同一用户名的大小写变体不能作为两个账号分配', { timeou
   assert.match(result.stderr, /重复用户名/);
 });
 
-test('超过 H5 输入长度的密码在启动测试前被拒绝且不泄露', async t => {
+test('超过 H5 输入长度的密码在启动测试前被拒绝且不泄露', /** 验证超过 H5 输入长度的密码在启动测试前被拒绝且不泄露。
+ * @param t - 当前测试的生命周期与替换接口。 */ async t => {
   const { pool } = await fixture(t, ['parallel01']);
   const password = 'SensitivePasswordTooLong';
   await writeFile(pool, JSON.stringify({ accounts: [{ username: 'parallel01', password, userId: 'mock-user' }] }));
@@ -141,22 +150,29 @@ test('超过 H5 输入长度的密码在启动测试前被拒绝且不泄露', a
   assert.ok(!result.stdout.includes('SHOULD_NOT_START'));
 });
 
-test('30 个并发任务使用 30 个不同账号，第 31 个任务不能复用', { timeout: 30000 }, async t => {
-  const usernames = Array.from({ length: 30 }, (_, index) => `parallel${String(index + 1).padStart(2, '0')}`);
+test('30 个并发任务使用 30 个不同账号，第 31 个任务不能复用', { timeout: 30000 }, /** 验证30 个并发任务使用 30 个不同账号，第 31 个任务不能复用。
+ * @param t - 当前测试的生命周期与替换接口。 */ async t => {
+  const usernames = Array.from({ length: 30 }, /** 为当前索引构造`parallel${String(index + 1).padStart(2, '0')}`。
+ * @param _ - 当前操作使用的 _。
+ * @param index - 当前条目在集合中的位置。 */ (_, index) => `parallel${String(index + 1).padStart(2, '0')}`);
   const { directory, pool } = await fixture(t, usernames);
-  const runs = await Promise.all(usernames.map(() => hold(t, pool)));
-  assert.equal(new Set(runs.map(run => run.identity.username)).size, 30);
+  const runs = await Promise.all(usernames.map(/** 将当前条目映射为`hold(t, pool)`。 */ () => hold(t, pool)));
+  assert.equal(new Set(runs.map(/** 将当前条目映射为`run.identity.username`。
+ * @param run - 当前操作使用的 run。 */ run => run.identity.username)).size, 30);
   const extra = launch(t, pool, [process.execPath, '-e', 'process.exit(0)']);
   const unavailable = await extra.finished;
   assert.equal(unavailable.code, 1);
   assert.match(unavailable.stderr, /全部被占用/);
-  runs.forEach(run => run.child.kill('SIGTERM'));
-  await Promise.all(runs.map(run => run.finished));
+  runs.forEach(/** 向并行运行的测试进程发送终止信号，验证进程组清理。
+ * @param run - 当前操作使用的 run。 */ run => run.child.kill('SIGTERM'));
+  await Promise.all(runs.map(/** 将当前条目映射为`run.finished`。
+ * @param run - 当前操作使用的 run。 */ run => run.finished));
   assert.deepEqual(await readdir(join(directory, 'locks')), []);
 });
 
 
-test('本机启动器拒绝 CI 专用账号，包括大小写变体', async t => {
+test('本机启动器拒绝 CI 专用账号，包括大小写变体', /** 验证本机启动器拒绝 CI 专用账号，包括大小写变体。
+ * @param t - 当前测试的生命周期与替换接口。 */ async t => {
   for (const username of ['clrnci26100908', 'CLRNCI26100908', 'clrnci261018001', 'CLRNCI261018070']) {
     const { pool } = await fixture(t, [username]);
     const run = launch(t, pool, [process.execPath, '-e', 'console.log("SHOULD_NOT_START")']);
@@ -168,7 +184,8 @@ test('本机启动器拒绝 CI 专用账号，包括大小写变体', async t =>
 });
 
 
-test('余额准备失败不启动测试命令，并释放账号锁', async t => {
+test('余额准备失败不启动测试命令，并释放账号锁', /** 验证余额准备失败不启动测试命令，并释放账号锁。
+ * @param t - 当前测试的生命周期与替换接口。 */ async t => {
   const { directory, pool } = await fixture(t, ['parallel01']);
   await writeFile(join(directory, 'reject-wallet'), '');
   const run = launch(t, pool, [process.execPath, '-e', 'console.log("SHOULD_NOT_START")']);
@@ -181,7 +198,8 @@ test('余额准备失败不启动测试命令，并释放账号锁', async t => 
 });
 
 
-test('房间准备失败不启动测试命令，并释放账号锁', async context => {
+test('房间准备失败不启动测试命令，并释放账号锁', /** 验证房间准备失败不启动测试命令，并释放账号锁。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const { directory, pool } = await fixture(context, ['parallel01']);
   await writeFile(join(directory, 'reject-wallet'), '/v2/building/rooms');
   const result = await launch(context, pool, [process.execPath, '-e', 'console.log("SHOULD_NOT_START")']).finished;

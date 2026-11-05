@@ -23,7 +23,8 @@ export async function texasFeedback(session: TableSession, proxy: TexasProxy, in
 
   // XHR 的原生 timeout 不受 Playwright JS 时钟控制。仅延长本轮暂缓响应的真实请求，
   // 避免慢机器截图超过 10 秒后被 Axios 的墙钟超时替换为错误弹窗。
-  await page.evaluate(id => {
+  await page.evaluate(/** 包装 XHR 打开行为，为反馈场景调整网络等待期限并保存原接口。
+ * @param id - 当前操作使用的 id。 */ id => {
     const state = window as typeof window & { animationXhrOpen?: typeof XMLHttpRequest.prototype.open };
     state.animationXhrOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = new Proxy(state.animationXhrOpen, {
@@ -38,7 +39,7 @@ export async function texasFeedback(session: TableSession, proxy: TexasProxy, in
         const url = new URL(String(args[1]), location.href);
         if (url.pathname.startsWith(`/v10/texas_holdem/room/${id}/user_settings/`)
           && url.pathname.endsWith('auto_rebuy')) {
-          xhr.addEventListener('loadstart', () => { xhr.timeout = 120_000; }, { once: true });
+          xhr.addEventListener('loadstart', /** 请求进入发送阶段后延长超时，避免反馈动画被网络期限打断。 */ () => { xhr.timeout = 120_000; }, { once: true });
         }
         return result;
       },
@@ -50,7 +51,7 @@ export async function texasFeedback(session: TableSession, proxy: TexasProxy, in
     await settleAnimations(page, 1200);
     await freeze(page);
     await press(page, 'auto-rebuy-switch');
-    await expect.poll(async () => { await page.clock.runFor(16); return (await scenarioStatus(page.context())).requests > 0; }).toBe(true);
+    await expect.poll(/** 小步推进时钟并等待反馈请求实际到达代理。 */ async () => { await page.clock.runFor(16); return (await scenarioStatus(page.context())).requests > 0; }).toBe(true);
     const loading = page.locator('img[src*="icon_loading_circle"]');
     await expect(loading).toBeVisible();
     await captureTimeline(page, info, 'texas-loading-spinner', loading,
@@ -61,7 +62,7 @@ export async function texasFeedback(session: TableSession, proxy: TexasProxy, in
     await settleAnimations(page, 1200);
   } finally {
     await selectScenario(page.context(), 'auto-rebuy', { roomId, phase: 'release' });
-    await page.evaluate(() => {
+    await page.evaluate(/** 恢复反馈场景修改前的 XHR 接口并清理临时状态。 */ () => {
       const state = window as typeof window & { animationXhrOpen?: typeof XMLHttpRequest.prototype.open };
       if (state.animationXhrOpen) XMLHttpRequest.prototype.open = state.animationXhrOpen;
       delete state.animationXhrOpen;

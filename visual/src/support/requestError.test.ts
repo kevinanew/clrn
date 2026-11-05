@@ -25,7 +25,7 @@ function privateOutput(output: string) {
   }
 }
 
-test('余额和观察者上层不传播地址、任意响应头、业务文本或嵌套 cause，保留 HTTP 状态', async () => {
+test('余额和观察者上层不传播地址、任意响应头、业务文本或嵌套 cause，保留 HTTP 状态', /** 验证余额和观察者上层不传播地址、任意响应头、业务文本或嵌套 cause，保留 HTTP 状态。 */ async () => {
   for (const operation of ['room-read-diamonds', 'texas-enter']) {
     for (const [status, body, reason] of [[500, secret, 'http-error'], [201, secret, 'invalid-json'],
       [200, { ok: false, reason: secret, errors: { [secret]: secret } }, 'business-rejected']] as const) {
@@ -35,7 +35,8 @@ test('余额和观察者上层不传播地址、任意响应头、业务文本�
         json: /** 注入解析结果。 */ async () => { if (typeof body === 'string') throw new SyntaxError(body); return body; },
         dispose: /** 记录响应释放。 */ async () => { disposed = true; } };
       const request = { put: /** 返回隔离响应。 */ async () => response } as unknown as APIRequestContext;
-      await assert.rejects(operation === 'texas-enter' ? enterTexasRoom({ request }, room) : ensureRoomBalance(request, account), error => {
+      await assert.rejects(operation === 'texas-enter' ? enterTexasRoom({ request }, room) : ensureRoomBalance(request, account), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => {
         assert.ok(error instanceof Error);
         assert.match(error.message, new RegExp(`operation=${operation} source=laiwan_prd status=${status} .*reason=${reason}`));
         privateOutput(error.stack || '');
@@ -44,7 +45,8 @@ test('余额和观察者上层不传播地址、任意响应头、业务文本�
       assert.equal(disposed, true);
     }
     const request = { put: /** 注入网络失败。 */ async () => { throw new Error(secret, { cause: new Error(secret) }); } } as unknown as APIRequestContext;
-    await assert.rejects(operation === 'texas-enter' ? enterTexasRoom({ request }, room) : ensureRoomBalance(request, account), error => {
+    await assert.rejects(operation === 'texas-enter' ? enterTexasRoom({ request }, room) : ensureRoomBalance(request, account), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => {
       assert.ok(error instanceof Error);
       assert.match(error.message, /status=unavailable response=not-received/);
       privateOutput(error.stack || '');
@@ -53,11 +55,13 @@ test('余额和观察者上层不传播地址、任意响应头、业务文本�
   }
 });
 
-test('清理仍拒绝 HTTP500、业务失败、非 JSON 和无响应，不能误报成功', async context => {
+test('清理仍拒绝 HTTP500、业务失败、非 JSON 和无响应，不能误报成功', /** 验证清理仍拒绝 HTTP500、业务失败、非 JSON 和无响应，不能误报成功。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   for (const reply of [new Response(secret, { status: 500 }), new Response(secret),
     Response.json({ ok: false, reason: secret }), new Error(secret, { cause: new Error(secret) })]) {
-    context.mock.method(globalThis, 'fetch', async () => { if (reply instanceof Error) throw reply; return reply; });
-    await assert.rejects(deletePrivateGameRoom(room), error => {
+    context.mock.method(globalThis, 'fetch', /** 按预设结果返回响应或抛出错误，覆盖安全诊断的失败分类。 */ async () => { if (reply instanceof Error) throw reply; return reply; });
+    await assert.rejects(deletePrivateGameRoom(room), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => {
       assert.ok(error instanceof Error);
       assert.match(error.message, /method=DELETE operation=room-delete source=laiwan_prd status=/);
       privateOutput(error.stack || '');
@@ -67,17 +71,19 @@ test('清理仍拒绝 HTTP500、业务失败、非 JSON 和无响应，不能误
   }
 });
 
-test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告附件仍保留安全请求定位', async context => {
+test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告附件仍保留安全请求定位', /** 验证深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告附件仍保留安全请求定位。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   // 时间戳含端口数字时仍应通过；只拒绝实际端口形式，避免时钟导致偶发误报。
-  context.mock.method(Date, 'now', () => 1793649443000);
+  context.mock.method(Date, 'now', /** 固定诊断测试的当前时间，保持附件命名可重复。 */ () => 1793649443000);
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-error-report-'));
-  context.after(() => rm(directory, { force: true, recursive: true }));
+  context.after(/** 请求诊断测试结束后删除临时产物目录。 */ () => rm(directory, { force: true, recursive: true }));
   const events = new EventEmitter();
   const page = events as unknown as Page;
   const browser = { exposeBinding: /** 无浏览器绑定副作用。 */ async () => {}, addInitScript: /** 无浏览器注入副作用。 */ async () => {} } as unknown as BrowserContext;
   const attachments: string[] = [];
   const terminal: string[] = [];
-  context.mock.method(console, 'log', (value: unknown) => terminal.push(String(value)));
+  context.mock.method(console, 'log', /** 收集终端输出，检查请求错误诊断的脱敏内容。
+ * @param value - 当前待转换或校验的值。 */ (value: unknown) => terminal.push(String(value)));
   const info = { title: 'isolated-request', project: { name: 'offline' }, repeatEachIndex: 0, retry: 0,
     outputPath: /** 返回本例临时文件。
  * @param name - 输出文件名。
@@ -112,12 +118,14 @@ test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告�
     await diagnostic.save(new Error(secret, { cause: new Error(secret, { cause: failure }) }));
     const json = await readFile(path.join(directory, 'connection-diagnostics.json'), 'utf8');
     const markdown = await readFile(path.join(directory, 'connection-summary.md'), 'utf8');
-    const failed = JSON.parse(json).events.filter((event: { event: string }) => event.event === 'http.failed');
+    const failed = JSON.parse(json).events.filter(/** 仅保留满足以下条件的条目：`event.event === 'http.failed'`。
+ * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'http.failed');
     assert.equal(failed[0].status, 206, '收到响应后中断不能丢失原状态');
     assert.equal(failed[0].response, 'received');
     assert.equal(failed[1].status, 'unavailable');
     assert.equal(failed[1].response, 'not-received');
-    const proxy = JSON.parse(json).events.find((event: { event: string }) => event.event === 'proxy.response');
+    const proxy = JSON.parse(json).events.find(/** 查找满足以下条件的首个条目：`event.event === 'proxy.response'`。
+ * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'proxy.response');
     assert.equal(proxy.originMatch, 'matched');
     assert.equal(proxy.upstreamMatch, 'different');
     assert.equal(proxy.releaseRequestId, 'unverified');
@@ -135,13 +143,14 @@ test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告�
 });
 
 
-test('读取建房会话失败或包含合成凭据的损坏 JSON 不能传播原始文本', async () => {
+test('读取建房会话失败或包含合成凭据的损坏 JSON 不能传播原始文本', /** 验证读取建房会话失败或包含合成凭据的损坏 JSON 不能传播原始文本。 */ async () => {
   for (const failEvaluation of [false, true]) {
     const page = { evaluate: /** 注入缓存或底层失败。 */ async () => {
       if (failEvaluation) throw new Error(secret);
       return secret;
     } } as unknown as Page;
-    await assert.rejects(createPrivateGameRoom(page, () => {}, 'texas_react_native'), error => {
+    await assert.rejects(createPrivateGameRoom(page, /** 本用例仅验证建房失败，不执行额外的建房完成处理。 */ () => {}, 'texas_react_native'), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => {
       assert.ok(error instanceof Error);
       assert.match(error.message, /operation=room-read-session source=browser-state status=unavailable/);
       privateOutput(error.stack || '');

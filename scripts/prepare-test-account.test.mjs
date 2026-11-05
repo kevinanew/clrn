@@ -20,7 +20,9 @@ const wallet = { currencies: [{ code: 'coin', balance: '10000' }] };
  */
 function network(context, replies = [session, prepared, wallet]) {
   const calls = [];
-  context.mock.method(globalThis, 'fetch', async (url, options) => {
+  context.mock.method(globalThis, 'fetch', /** 记录账号准备请求及 JSON 正文，按预设响应队列限制网络调用。
+ * @param url - 当前操作使用的 url。
+ * @param options - 当前操作使用的 options。 */ async (url, options) => {
     calls.push({ url, ...options, body: JSON.parse(options.body) });
     const reply = replies[calls.length - 1];
     if (reply instanceof Error) throw reply;
@@ -31,11 +33,13 @@ function network(context, replies = [session, prepared, wallet]) {
   return calls;
 }
 
-test('设置固定金币后读取钱包核对，不设置钻石、不向其他接口发送管理令牌', async context => {
+test('设置固定金币后读取钱包核对，不设置钻石、不向其他接口发送管理令牌', /** 验证设置固定金币后读取钱包核对，不设置钻石、不向其他接口发送管理令牌。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const calls = network(context);
   await prepareTestAccountCoins(account, token);
   assert.equal(calls.length, 3);
-  assert.deepEqual(calls.map(call => [new URL(call.url).pathname, call.method]), [
+  assert.deepEqual(calls.map(/** 将当前条目映射为`[new URL(call.url).pathname, call.method]`。
+ * @param call - 当前操作使用的 call。 */ call => [new URL(call.url).pathname, call.method]), [
     ['/public/v10/user/login/username/password', 'POST'],
     [`/public/v1/wallet/${userId}/set_balance/testing`, 'POST'],
     [`/v10/wallet/${userId}`, 'PUT'],
@@ -57,7 +61,8 @@ test('设置固定金币后读取钱包核对，不设置钻石、不向其他�
   }
 });
 
-test('无用户 ID 的持续集成账号从登录结果取得身份，重复准备仍设置相同余额', async context => {
+test('无用户 ID 的持续集成账号从登录结果取得身份，重复准备仍设置相同余额', /** 验证无用户 ID 的持续集成账号从登录结果取得身份，重复准备仍设置相同余额。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const calls = network(context, [{ ...session, api_token: { ...session.api_token, token_type: 'bearer' } }, prepared, wallet, session, prepared, wallet]);
   for (let attempt = 0; attempt < 2; attempt++) {
     await prepareTestAccountCoins({ username: account.username, password: account.password }, token);
@@ -66,7 +71,8 @@ test('无用户 ID 的持续集成账号从登录结果取得身份，重复准�
   assert.notEqual(calls[0].body.device_id, calls[3].body.device_id);
 });
 
-test('缺少令牌或无效凭据时不发请求', async context => {
+test('缺少令牌或无效凭据时不发请求', /** 验证缺少令牌或无效凭据时不发请求。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const calls = network(context);
   for (const invalidToken of [undefined, '', '  ']) {
     await assert.rejects(prepareTestAccountCoins(account, invalidToken), /缺少 TESTING_API_TOKEN/);
@@ -78,7 +84,8 @@ test('缺少令牌或无效凭据时不发请求', async context => {
   assert.equal(calls.length, 0);
 });
 
-test('登录身份或会话异常时禁止写钱包', async context => {
+test('登录身份或会话异常时禁止写钱包', /** 验证登录身份或会话异常时禁止写钱包。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   for (const invalidSession of [
     {}, { ...session, user_id: '../wallet' }, { ...session, user_id: 123 },
     { ...session, username: 'another-account' },
@@ -94,7 +101,8 @@ test('登录身份或会话异常时禁止写钱包', async context => {
   }
 });
 
-test('写入结果错误或回读余额不符时明确失败', async context => {
+test('写入结果错误或回读余额不符时明确失败', /** 验证写入结果错误或回读余额不符时明确失败。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   for (const result of [{ ...prepared, wallet_id: 'other' }, { ...prepared, currency_name: 'diamond' },
     { ...prepared, balance: '0' }]) {
     const calls = network(context, [session, result]);
@@ -110,13 +118,15 @@ test('写入结果错误或回读余额不符时明确失败', async context => 
   }
 });
 
-test('每个阶段的网络、认证、重定向、JSON 与业务错误都会中止，错误不泄露凭据', async context => {
+test('每个阶段的网络、认证、重定向、JSON 与业务错误都会中止，错误不泄露凭据', /** 验证每个阶段的网络、认证、重定向、JSON 与业务错误都会中止，错误不泄露凭据。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   for (const stage of [0, 1, 2]) {
     for (const failure of [new Error(`network ${token}`),
       new Response(token, { status: 401 }), new Response(token, { status: 302 }), new Response(token),
       Response.json({ ok: false, error_message: token }), Response.json({ ok: true }), Response.json(null)]) {
       const calls = network(context, [...[session, prepared, wallet].slice(0, stage), failure]);
-      await assert.rejects(prepareTestAccountCoins(account, token), error => {
+      await assert.rejects(prepareTestAccountCoins(account, token), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => {
         assert.match(error.message, /失败|无效 JSON/);
         assert.ok(!error.message.includes(token));
         assert.ok(!error.message.includes(account.password));
@@ -128,16 +138,17 @@ test('每个阶段的网络、认证、重定向、JSON 与业务错误都会中
   }
 });
 
-test('令牌优先使用环境配置，持续集成缺少令牌时禁止读取本机文件', async () => {
+test('令牌优先使用环境配置，持续集成缺少令牌时禁止读取本机文件', /** 验证令牌优先使用环境配置，持续集成缺少令牌时禁止读取本机文件。 */ async () => {
   assert.equal(await readTestingApiToken({ TESTING_API_TOKEN: ' secret ' }), 'secret');
   for (const environment of [{ CI: 'true' }, { GITHUB_ACTIONS: 'true' }]) {
     await assert.rejects(readTestingApiToken(environment), /缺少 TESTING_API_TOKEN/);
   }
 });
 
-test('本机只读取指定命名空间和名称的 Secret，缺失或格式错误不泄露文件', async context => {
+test('本机只读取指定命名空间和名称的 Secret，缺失或格式错误不泄露文件', /** 验证本机只读取指定命名空间和名称的 Secret，缺失或格式错误不泄露文件。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const directory = await mkdtemp(join(tmpdir(), 'clrn-token-test-'));
-  context.after(() => rm(directory, { recursive: true, force: true }));
+  context.after(/** 账号准备测试结束后删除临时目录。 */ () => rm(directory, { recursive: true, force: true }));
   const file = join(directory, 'deploy.yaml');
   await assert.rejects(readTestingApiToken({}, file), /缺少 TESTING_API_TOKEN/);
   const secret = 'kind: Secret\nmetadata:\n  name: test-api-token\n  namespace: goplay-staging\nstringData:\n  token: test-secret\n';

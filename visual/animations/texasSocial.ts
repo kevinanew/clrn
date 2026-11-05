@@ -17,7 +17,7 @@ import type { TableSession } from './tableSession';
 export async function texasSocial(session: TableSession, proxy: TexasProxy, info: TestInfo): Promise<void> {
   const { page, roomId, self, clip } = session;
   await restore(page, proxy, roomId, self, 'flop', true);
-  await page.evaluate(() => { Math.random = /** 固定弹幕纵坐标的随机输入。 */ () => 0.37; });
+  await page.evaluate(/** 固定弹幕纵坐标的随机输入，使社交动画位置可复现。 */ () => { Math.random = /** 固定弹幕纵坐标的随机输入。 */ () => 0.37; });
   await proxy.replayTexas(roomId, { scene: 'texas-social-room_message-text' });
   await expect(page.getByTestId('barrage_text')).toHaveText('Player1: Good hand!');
   await captureTimeline(page, info, 'texas-barrage', page.getByTestId('barrage_container'),
@@ -45,9 +45,10 @@ export async function texasSocial(session: TableSession, proxy: TexasProxy, info
   await press(page, 'in-game-chat-mask');
   await page.clock.runFor(1200);
   await enableSetting(page, 'player-voice');
-  await page.evaluate(async () => {
+  await page.evaluate(/** 请求麦克风权限并立即停止音轨，完成语音场景的权限准备。 */ async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    stream.getTracks().forEach(track => track.stop());
+    stream.getTracks().forEach(/** 停止权限探测创建的音轨，避免占用麦克风资源。
+ * @param track - 当前操作使用的 track。 */ track => track.stop());
   });
   await exercisePopup(page, info, { name: 'texas-voice', target: page.getByTestId('in-game-audio-microphone-button'), clip,
     waitForUnmountBeforeReopen: true,

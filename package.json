@@ -6,7 +6,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "lint": "npm run lint:js && npm run lint:python && npm run lint:architecture && npm run lint:duplication && npm run lint:shell && npm run lint:workflows && npm run lint:lines",
+    "lint": "npm run lint:docs && npm run lint:js && npm run lint:python && npm run lint:architecture && npm run lint:duplication && npm run lint:shell && npm run lint:workflows && npm run lint:lines",
+    "lint:docs": "node scripts/documentation.mjs",
     "test": "node scripts/test-local.mjs",
     "check": "npm run lint && npm run typecheck && npm test",
     "lint:js": "node scripts/quality.mjs javascript",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@microsoft/tsdoc": "0.17.1",
     "@playwright/test": "1.61.1",
     "@types/node": "22.15.30",
     "@types/pixelmatch": "5.2.6",

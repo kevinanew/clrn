@@ -12,6 +12,7 @@ class PreCommitAcceptance(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """创建临时仓库克隆并安装依赖和 hook，用于真实提交验收。"""
         cls.temporary = tempfile.TemporaryDirectory(prefix="clrn-pre-commit-")
         cls.addClassCleanup(cls.temporary.cleanup)
         cls.repository = Path(cls.temporary.name) / "repository"
@@ -64,6 +65,7 @@ class PreCommitAcceptance(unittest.TestCase):
 
     def tearDown(self):
         # 仅对本测试创建的临时克隆清理，恢复下一场景的已提交基线。
+        """将本用例的临时克隆恢复到已提交基线，为下个场景清理状态。"""
         self.run_command("git", "reset", "--hard", "--quiet", self.baseline.strip())
         self.run_command("git", "clean", "-fd", "--quiet")
 
@@ -102,6 +104,7 @@ class PreCommitAcceptance(unittest.TestCase):
         return result
 
     def test_all_files(self):
+        """验证全文件 pre-commit 检查各入口只运行一次且工作区保持不变。"""
         before = self.snapshot()
         result = self.run_command(self.pre_commit, "run", "--all-files", "--verbose")
         self.assert_hooks_once(result.stdout)
@@ -110,13 +113,14 @@ class PreCommitAcceptance(unittest.TestCase):
         self.assertEqual(self.snapshot(), before)
 
     def test_lint_errors_block_commits(self):
+        """验证不同语言静态错误均能阻止实际 Git 提交。"""
         cases = (
             ("hook-acceptance.mjs", "console.log(clrnHookMissing);\n", "no-undef"),
-            ("hook_acceptance.py", "print(clrn_hook_missing)\n", "F821"),
-            ("hook_python_lines.py", "# Physical line.\n" * 501, "501 行（上限 500 行）"),
+            ("hook_acceptance.py", '"""验证未定义变量会阻止提交。"""\nprint(clrn_hook_missing)\n', "F821"),
+            ("hook_python_lines.py", '"""验证 Python 文件超出行数上限时阻止提交。"""\n' + "# Physical line.\n" * 500, "501 行（上限 500 行）"),
             (
                 "hook-acceptance.sh",
-                "#!/bin/sh\nvalue='two words'\nprintf '%s\\n' $value\n",
+                "#!/bin/sh\n# 验证未引用变量会触发 ShellCheck。\nvalue='two words'\nprintf '%s\\n' $value\n",
                 "SC2086",
             ),
         )
@@ -135,9 +139,10 @@ class PreCommitAcceptance(unittest.TestCase):
                 path.unlink()
 
     def test_python_500_lines_commit(self):
+        """验证恰好 500 行的 Python 文件可以提交。"""
         name = "hook_python_lines.py"
         path = self.repository / name
-        contents = "\n" * 499 + "# No final newline."
+        contents = '"""验证 Python 文件恰好达到行数上限时允许提交。"""\n' + "\n" * 498 + "# No final newline."
         path.write_text(contents)
         self.run_command("git", "add", name)
         result = self.commit()
@@ -145,6 +150,7 @@ class PreCommitAcceptance(unittest.TestCase):
         self.assertEqual(self.run_command("git", "show", f"HEAD:{name}").stdout, contents)
 
     def test_partial_staging_failure_then_success(self):
+        """验证部分暂存失败和修复成功时未暂存内容均被保留。"""
         name = "hook-acceptance.ts"
         path = self.repository / name
         invalid = 'export const hookAcceptance: number = "invalid";\n'
@@ -178,6 +184,7 @@ class PreCommitAcceptance(unittest.TestCase):
         self.assertEqual(set(committed.stdout.splitlines()), {name, "README.md"})
 
     def test_document_only_and_deletion_commits(self):
+        """验证仅文档修改与文件删除也触发全仓检查。"""
         document = self.repository / "README.md"
         document.write_text(document.read_text() + "\nHook acceptance.\n")
         self.run_command("git", "add", "README.md")

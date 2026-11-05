@@ -52,7 +52,9 @@ def respond_settlement_preflight(flow):
 
 
 class ZhajinhuaVisualProxy:
+    """管理炸金花视觉场景、真实建房绑定及牌桌回放。"""
     def __init__(self):
+        """初始化token、scenario、proxied_requests、stabilized_requests、created_room_id等状态。"""
         self.token = os.environ['MITMPROXY_CONTROL_TOKEN']
         self.scenario = None
         self.proxied_requests = 0
@@ -61,9 +63,11 @@ class ZhajinhuaVisualProxy:
         self.replay = ZhajinhuaReplay()
 
     def control(self, flow):
+        """通过共用认证入口分发炸金花代理控制请求。"""
         control(self, flow, respond, self.command, self.status)
 
     def command(self, path, body):
+        """执行炸金花场景切换、牌桌重放与操作奖励控制命令。"""
         if path == '/scenario' and body.get('scenario') in (None, 'visual-stable'):
             self.scenario = body['scenario']
             self.replay.release()
@@ -83,6 +87,7 @@ class ZhajinhuaVisualProxy:
             raise ValueError('Unknown command')
 
     def status(self):
+        """返回炸金花场景、请求命中及重放消息计数。"""
         return {
             'scenario': self.scenario, 'interceptedRequests': 0,
             'proxiedRequests': self.proxied_requests, 'stabilizedRequests': self.stabilized_requests,
@@ -90,6 +95,7 @@ class ZhajinhuaVisualProxy:
         }
 
     def response(self, flow):
+        """在有效场景中覆盖虚拟玩家资料并观察真实建房响应。"""
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
             return
         path = urlsplit(flow.request.path).path
@@ -115,13 +121,16 @@ class ZhajinhuaVisualProxy:
             return
 
     def websocket_message(self, flow):
+        """在有效炸金花场景中处理 staging WebSocket 消息。"""
         if self.scenario == 'visual-stable' and is_staging(flow.request.host):
             self.replay.websocket_message(flow)
 
     def websocket_end(self, flow):
+        """连接关闭时清理炸金花重放订阅。"""
         self.replay.websocket_end(flow)
 
     def request(self, flow):
+        """路由控制及业务请求，仅为已创建房间的限定读取提供夹具。"""
         if not route_request(self, flow, diagnostics, is_staging):
             return
         path = urlsplit(flow.request.path).path

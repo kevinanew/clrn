@@ -2,9 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { test, expect } from '../_shared/read-account-fixture';
 import { unique } from '../_shared/page';
 
-test('俱乐部切换列表、真实搜索无匹配名称并返回', async ({ page, signedInAccount }) => {
+test('俱乐部切换列表、真实搜索无匹配名称并返回', /** 验证俱乐部切换列表、真实搜索无匹配名称并返回。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, signedInAccount }) => {
   expect(signedInAccount.userId).toBeTruthy();
-  await test.step('切换我的俱乐部与牌局列表', async () => {
+  await test.step('切换我的俱乐部与牌局列表', /** 执行切换我的俱乐部与牌局列表。 */ async () => {
     await (await unique(page, 'club-tab')).click();
     await expect(await unique(page, 'club-tab-screen')).toBeVisible();
     await (await unique(page, 'club_tab_room')).click();
@@ -13,7 +14,7 @@ test('俱乐部切换列表、真实搜索无匹配名称并返回', async ({ pa
     await expect(await unique(page, 'club-list-screen')).toBeVisible();
   });
 
-  await test.step('从更多菜单打开搜索，并验证真实无匹配结果', async () => {
+  await test.step('从更多菜单打开搜索，并验证真实无匹配结果', /** 执行从更多菜单打开搜索，并验证真实无匹配结果。 */ async () => {
     await (await unique(page, 'show-more-button')).click();
     await expect(await unique(page, 'club-more-popup')).toBeVisible();
     const menu = await unique(page, 'popup-content-container');
@@ -25,7 +26,8 @@ test('俱乐部切换列表、真实搜索无匹配名称并返回', async ({ pa
     await expect(input).toHaveAttribute('placeholder', '输入俱乐部名称/ID');
     // 每次全新完整 UUID，避免依赖现有线上俱乐部数据或申请加入别人的俱乐部。
     const keyword = `E2E${randomUUID().replaceAll('-', '')}`;
-    const searched = page.waitForResponse(response => {
+    const searched = page.waitForResponse(/** 匹配GET `/v10/club/search` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ response => {
       const url = new URL(response.url());
       return response.request().method() === 'GET'
         && url.pathname === '/v10/club/search'
@@ -43,7 +45,7 @@ test('俱乐部切换列表、真实搜索无匹配名称并返回', async ({ pa
     await expect(input).toHaveValue('');
   });
 
-  await test.step('返回俱乐部列表和大厅', async () => {
+  await test.step('返回俱乐部列表和大厅', /** 执行返回俱乐部列表和大厅。 */ async () => {
     await (await unique(page, 'club-search-back-button')).click();
     await expect(await unique(page, 'club-tab-screen')).toBeVisible();
     await (await unique(page, 'hall-tab')).click();

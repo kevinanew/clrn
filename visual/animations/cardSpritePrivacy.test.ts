@@ -8,7 +8,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import type { Page, TestInfo } from '@playwright/test';
 
-test('图集资源使用逻辑指纹，路径中的连接入口、编码和凭据不会原样保留', () => {
+test('图集资源使用逻辑指纹，路径中的连接入口、编码和凭据不会原样保留', /** 验证图集资源使用逻辑指纹，路径中的连接入口、编码和凭据不会原样保留。 */ () => {
   const inputs = [
     '/assets/probe.example.invalid/card.png', '/assets/192.0.2.7/card.png',
     '/assets/[2001:db8::7]/card.png', '/assets/2001:db8::7/card.png',
@@ -27,7 +27,7 @@ test('图集资源使用逻辑指纹，路径中的连接入口、编码和凭�
   assert.equal(cardSpriteResource(null), null);
 });
 
-test('实际注入、接收及冻结／最终附件持久化边界不输出原图片路径', async () => {
+test('实际注入、接收及冻结／最终附件持久化边界不输出原图片路径', /** 验证实际注入、接收及冻结／最终附件持久化边界不输出原图片路径。 */ async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-card-privacy-'));
   try {
     let script = '';

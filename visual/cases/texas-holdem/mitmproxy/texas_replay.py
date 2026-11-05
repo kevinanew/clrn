@@ -10,7 +10,9 @@ TABLE_PLAYER_IDS = [f"00000000-0000-4000-8000-{index:012d}" for index in range(1
 
 
 class TexasReplay:
+    """为当前德州房间管理订阅、帧重放与限定读取夹具。"""
     def __init__(self):
+        """初始化subscriptions、pending_subscriptions、room_id、replayed_messages、self_id等状态。"""
         self.subscriptions = {}
         self.pending_subscriptions = {}
         self.room_id = None
@@ -20,10 +22,12 @@ class TexasReplay:
         self.ui_states = None
 
     def arm_created_room(self, room_id, self_id):
+        """将真实创建的房间及当前玩家绑定到德州重放状态。"""
         self.room_id = self.created_room_id = room_id
         self.self_id = self_id
 
     def publish(self, room_id, data):
+        """校验房间与数据后向已确认订阅该房间的浏览器发布重放。"""
         if not isinstance(room_id, str) or not re.fullmatch(UUID, room_id, re.I) or not isinstance(data, dict):
             raise ValueError("Invalid replay")
         if self.room_id and room_id != self.room_id:
@@ -45,12 +49,14 @@ class TexasReplay:
             self.replayed_messages += 1
 
     def release(self):
+        """清除活动房间、当前玩家、创建房间与界面状态绑定。"""
         self.room_id = None
         self.self_id = None
         self.created_room_id = None
         self.ui_states = None
 
     def is_replay_publication(self, frame):
+        """判断推送是否属于当前重放房间的数据流，保留无关帧。"""
         result = frame.get('result')
         if 'id' in frame or not isinstance(result, dict) or result.get('type', 0) != 0:
             return False
@@ -59,6 +65,7 @@ class TexasReplay:
             rf'texas_holdem>{self.room_id}#{UUID}', channel, re.I) is not None
 
     def websocket_message(self, flow):
+        """跟踪订阅确认与取消，只隔离当前房间的限定帧和 RPC。"""
         message = flow.websocket.messages[-1]
         if not message.is_text or message.injected:
             return
@@ -123,10 +130,12 @@ class TexasReplay:
                     message.drop()
 
     def websocket_end(self, flow):
+        """连接关闭时清除已确认及待确认的房间订阅。"""
         self.subscriptions.pop(flow.id, None)
         self.pending_subscriptions.pop(flow.id, None)
 
     def is_replay_rpc(self, frame):
+        """判断 WebSocket RPC 是否为当前重放房间支持的读取或支付动作。"""
         if frame.get("method") != 9:
             return False
         params = frame.get("params") or {}
@@ -148,6 +157,7 @@ class TexasReplay:
         return action.get('room_id') == self.room_id and (action.get('method'), action.get('path')) in allowed
 
     def rpc_result(self, frame):
+        """根据当前界面状态与 RPC 路径生成对应的重放结果。"""
         error = self.ui_states.rpc_result(frame) if self.ui_states else None
         if error is not None:
             return error
@@ -164,12 +174,14 @@ class TexasReplay:
             **props, 'community_card': ['ah', 'kd', '7c', '2s', 'qs']}}
 
     def profile(self, player_id):
+        """为本人或已登记虚拟对手构造稳定的展示资料。"""
         return {"user_id": player_id, "nickname": "TestPlayer" if player_id == self.self_id else
                 f"Player{TABLE_PLAYER_IDS.index(player_id) + 1}", "avatar_path": "", "gender": "male",
                 "bio": "TestPlayer", "user_level": {"App:coin": {"level": 5, "progress": 0.5}},
                 "last_used_nickname": ""}
 
     def http_fixture(self, path, body=b""):
+        """根据请求路径与批次只补充已登记虚拟玩家的资料和钱包读取。"""
         if not self.room_id:
             return None
         identifiers = TABLE_PLAYER_IDS

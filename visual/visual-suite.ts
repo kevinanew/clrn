@@ -19,7 +19,8 @@ export function getVisualSuite(env: NodeJS.ProcessEnv = process.env): VisualSuit
  */
 export function selectVisualSuite<T extends { group: string }>(scenarios: T[], suite: VisualSuite): T[] {
   if (suite === 'all') return scenarios;
-  return scenarios.filter(scenario => {
+  return scenarios.filter(/** 按当前套件选择德州、炸金花或其他普通视觉场景。
+ * @param scenario - 当前测试场景配置。 */ scenario => {
     if (suite === 'texas') return scenario.group === 'texas-holdem';
     if (suite === 'zhajinhua') return scenario.group === 'zhajinhua';
     return scenario.group !== 'texas-holdem' && scenario.group !== 'zhajinhua';

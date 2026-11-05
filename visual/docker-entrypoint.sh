@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 启动视觉测试容器。
 set -euo pipefail
 
 cd /repo/visual

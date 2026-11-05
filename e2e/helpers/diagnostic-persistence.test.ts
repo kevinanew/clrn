@@ -8,9 +8,10 @@ import test from 'node:test';
 import type { BrowserContext, Page, Request, TestInfo } from '@playwright/test';
 import { installConnectionDiagnostics } from '../../visual/src/support/connectionDiagnostics';
 
-test('请求、应用和代理的路径经过附件与失败终端输出仍保持脱敏', async t => {
+test('请求、应用和代理的路径经过附件与失败终端输出仍保持脱敏', /** 验证请求、应用和代理的路径经过附件与失败终端输出仍保持脱敏。
+ * @param t - 当前测试的生命周期与替换接口。 */ async t => {
   // 时间戳同时包含端口数字，确保脱敏断言只拒绝实际端口形式。
-  t.mock.method(Date, 'now', () => 1844394430000);
+  t.mock.method(Date, 'now', /** 固定当前时间，使诊断文件命名和时间字段可重复断言。 */ () => 1844394430000);
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-diagnostic-privacy-'));
   const page = new EventEmitter();
   let binding: ((_source: unknown, fields: unknown) => void) | undefined;
@@ -35,7 +36,8 @@ test('请求、应用和代理的路径经过附件与失败终端输出仍保�
     async attach(name: string) { attachments.push(name); },
   } as unknown as TestInfo;
   const terminal: unknown[] = [];
-  t.mock.method(console, 'log', (line: unknown) => terminal.push(line));
+  t.mock.method(console, 'log', /** 收集终端日志，验证持久化诊断的可定位信息。
+ * @param line - 当前操作使用的 line。 */ (line: unknown) => terminal.push(line));
   try {
     const diagnostics = await installConnectionDiagnostics(context, page as unknown as Page, info, {
       /** 模拟跨语言控制端返回的未清理历史，验证合并仍执行边界清理。 */
@@ -64,10 +66,14 @@ test('请求、应用和代理的路径经过附件与失败终端输出仍保�
         ':8443', ':9443', 'synthetic-secret', '%2561pi']) assert.ok(!output.includes(forbidden), forbidden);
     }
     const events = JSON.parse(saved).events;
-    assert.ok(events.some((event: { status: number; source: string }) => event.status === 503 && event.source === 'upstream'));
-    assert.ok(events.some((event: { event: string }) => event.event === 'http.pending'));
-    assert.ok(events.some((event: { path: string }) => event.path === '/v10/wallet/{user}'));
-    assert.ok(events.some((event: { event: string }) => event.event === 'test.failure'));
+    assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.status === 503 && event.source === 'upstream'`。
+ * @param event - 当前触发的事件。 */ (event: { status: number; source: string }) => event.status === 503 && event.source === 'upstream'));
+    assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'http.pending'`。
+ * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'http.pending'));
+    assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.path === '/v10/wallet/{user}'`。
+ * @param event - 当前触发的事件。 */ (event: { path: string }) => event.path === '/v10/wallet/{user}'));
+    assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'test.failure'`。
+ * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'test.failure'));
     assert.deepEqual(attachments, ['connection-diagnostics', 'connection-summary']);
     assert.equal(terminal.length, 1, '失败仍输出诊断摘要');
   } finally {

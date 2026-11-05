@@ -29,6 +29,7 @@ class ClubRoomVisualProxyTests(unittest.TestCase):
     """逐个验证截图场景必需的三个接口和隔离条件。"""
 
     def setUp(self):
+        """为每个俱乐部用例创建独立来源环境和代理状态。"""
         self.enterContext(source_environment())
         """每个用例使用独立代理状态。"""
         with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):

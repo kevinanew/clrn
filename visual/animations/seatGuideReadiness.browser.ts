@@ -4,7 +4,7 @@ import test from 'node:test';
 import { chromium } from '@playwright/test';
 import { waitForSeatGuideStart } from './seatGuideReadiness';
 
-test('不同初始相位都能观察到全部引导的真实复位帧，并保留后续运动', async () => {
+test('不同初始相位都能观察到全部引导的真实复位帧，并保留后续运动', /** 验证各初始相位下的复位与后续运动。 */ async () => {
   const browser = await chromium.launch();
   try {
     for (const offset of [0, 1, 7, 15, 16, 31]) {
@@ -33,10 +33,14 @@ test('不同初始相位都能观察到全部引导的真实复位帧，并保�
       await page.clock.runFor(offset);
       const arrows = page.locator('.arrow');
       await waitForSeatGuideStart(page, arrows);
-      assert.deepEqual(await arrows.evaluateAll(nodes => nodes.map(node =>
+      assert.deepEqual(await arrows.evaluateAll(/** 读取箭头位移。
+ * @param nodes - 箭头节点。 */ nodes => nodes.map(/** 读取单个箭头位移。
+ * @param node - 箭头节点。 */ node =>
         new DOMMatrixReadOnly(getComputedStyle(node).transform).m42)), Array(9).fill(0));
       await page.clock.runFor(16);
-      assert.deepEqual(await arrows.evaluateAll(nodes => nodes.map(node =>
+      assert.deepEqual(await arrows.evaluateAll(/** 读取箭头位移。
+ * @param nodes - 箭头节点。 */ nodes => nodes.map(/** 读取单个箭头位移。
+ * @param node - 箭头节点。 */ node =>
         new DOMMatrixReadOnly(getComputedStyle(node).transform).m42)), Array(9).fill(8));
       await page.close();
     }

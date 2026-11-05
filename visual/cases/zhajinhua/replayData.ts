@@ -1,5 +1,6 @@
 /** 拼三张场景选择器与断言使用的虚拟玩家标识。 */
-export const PLAYER_IDS = [1, 2, 3, 4].map(index =>
+export const PLAYER_IDS = [1, 2, 3, 4].map(/** 将当前条目映射为`00000000-0000-4000-8000-${String(index).padStart(12, '0')}`。
+ * @param index - 当前条目在集合中的位置。 */ index =>
   `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`);
 /**
  * 选择 Python 中的拼三张牌桌状态。

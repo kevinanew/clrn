@@ -22,28 +22,30 @@ function checkPrivate(error) {
   assert.equal(error.cause, undefined);
 }
 
-test('三阶段 HTTP500、超时、连接失败、解析失败及业务拒绝保留方法、操作和实际状态', async context => {
+test('三阶段 HTTP500、超时、连接失败、解析失败及业务拒绝保留方法、操作和实际状态', /** 验证三阶段 HTTP500、超时、连接失败、解析失败及业务拒绝保留方法、操作和实际状态。
+ * @param context - 当前浏览器或测试上下文。 */ async context => {
   const cases = [
-    [() => new Response(sensitive, { status: 500 }), '500', 'http-error'],
-    [() => Object.assign(new Error(sensitive, { cause: new Error(sensitive) }), { name: 'TimeoutError' }), 'unavailable', 'timeout'],
-    [() => Object.assign(new Error(sensitive, { cause: new Error(sensitive) }), { code: 'ECONNRESET' }), 'unavailable', 'connection-failed'],
-    [() => new Response(sensitive, { status: 201 }), '201', 'invalid-json'],
-    [() => new Response(new ReadableStream({ /** 注入正文读取异常。
+    [/** 提供含敏感正文的 HTTP 500，验证诊断不会附带响应原文。 */ () => new Response(sensitive, { status: 500 }), '500', 'http-error'],
+    [/** 构造带敏感嵌套原因的超时错误。 */ () => Object.assign(new Error(sensitive, { cause: new Error(sensitive) }), { name: 'TimeoutError' }), 'unavailable', 'timeout'],
+    [/** 构造带连接重置错误码的异常，验证网络失败分类。 */ () => Object.assign(new Error(sensitive, { cause: new Error(sensitive) }), { code: 'ECONNRESET' }), 'unavailable', 'connection-failed'],
+    [/** 提供含敏感正文的非预期成功状态，验证状态码保留。 */ () => new Response(sensitive, { status: 201 }), '201', 'invalid-json'],
+    [/** 提供读取正文时抛错的响应流，验证正文失败诊断。 */ () => new Response(new ReadableStream({ /** 注入正文读取异常。
  * @param controller - 隔离响应流控制器。
  */ start(controller) { controller.error(new Error(sensitive)); } }), { status: 202 }), '202', 'body-read-failed'],
-    [() => Response.json({ ok: false, reason: sensitive, errors: { [sensitive]: sensitive } }), '200', 'business-rejected'],
+    [/** 返回含敏感原因及错误字段的业务失败响应。 */ () => Response.json({ ok: false, reason: sensitive, errors: { [sensitive]: sensitive } }), '200', 'business-rejected'],
   ];
   for (const [stage, operation, method] of [[0, 'prepare-account-login', 'POST'],
     [1, 'prepare-account-set-coins', 'POST'], [2, 'prepare-account-verify-coins', 'PUT']]) {
     for (const [reply, status, reason] of cases) {
       let calls = 0;
-      context.mock.method(globalThis, 'fetch', async () => {
+      context.mock.method(globalThis, 'fetch', /** 在指定准备阶段注入错误，之前的账号步骤返回有效响应。 */ async () => {
         if (calls++ < stage) return Response.json({ ok: true, result: calls === 1 ? session : prepared });
         const response = reply();
         if (response instanceof Error) throw response;
         return response;
       });
-      await assert.rejects(prepareTestAccountCoins({ username: session.username, password: 'synthetic-password' }, 'synthetic-admin'), error => {
+      await assert.rejects(prepareTestAccountCoins({ username: session.username, password: 'synthetic-password' }, 'synthetic-admin'), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
+ * @param error - 当前操作抛出的错误。 */ error => {
         checkPrivate(error);
         assert.match(error.message, new RegExp(`method=${method} operation=${operation} source=laiwan_prd status=${status} .*reason=${reason}$`));
         assert.match(error.message, status === 'unavailable' ? /response=not-received/ : /response=received/);
@@ -56,7 +58,7 @@ test('三阶段 HTTP500、超时、连接失败、解析失败及业务拒绝保
   }
 });
 
-test('操作、原因及诊断消息均采用允许列表；不猜测未知异常中的 HTTP 状态', () => {
+test('操作、原因及诊断消息均采用允许列表；不猜测未知异常中的 HTTP 状态', /** 验证操作、原因及诊断消息均采用允许列表；不猜测未知异常中的 HTTP 状态。 */ () => {
   checkPrivate(requestFailure(sensitive, sensitive, 500));
   assert.match(requestFailure(sensitive, sensitive).message, /operation=unknown-request/);
   assert.equal(safeDiagnosticReason('接口请求失败：method=UNKNOWN operation=unknown-request source=laiwan_prd status=499 response=received reason=http-error'),
@@ -71,7 +73,7 @@ test('操作、原因及诊断消息均采用允许列表；不猜测未知异�
     requestFailure('room-create', 'http-error', 503).message);
 });
 
-test('私有接口、本地Release及UI状态使用固定逻辑来源，未知或本地阶段不能伪造HTTP状态', () => {
+test('私有接口、本地Release及UI状态使用固定逻辑来源，未知或本地阶段不能伪造HTTP状态', /** 验证私有接口、本地Release及UI状态使用固定逻辑来源，未知或本地阶段不能伪造HTTP状态。 */ () => {
   for (const operation of ['release-readiness', 'release-static-read']) {
     const error = requestFailure(operation, 'http-error', 503);
     assert.match(error.message, new RegExp(`method=GET operation=${operation} source=release-static status=503 response=received`));
@@ -96,7 +98,7 @@ test('私有接口、本地Release及UI状态使用固定逻辑来源，未知�
   checkPrivate(injected);
 });
 
-test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不回显消息或调用日志', () => {
+test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不回显消息或调用日志', /** 验证Playwright 无顶层 code 的已知连接错误只映射有限枚举，不回显消息或调用日志。 */ () => {
   for (const method of ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch']) {
     for (const ending of ['', `\nCall log:\n - ${sensitive}`, `\r\nCall log:\r\n - ${sensitive}`]) {
       const error = new Error(`apiRequestContext.${method}: socket hang up${ending}`);
@@ -133,7 +135,7 @@ test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不
   }
 });
 
-test('Playwright 重试耗尽的固定断连包装仍保留连接失败，不能从任意内部文本推断', () => {
+test('Playwright 重试耗尽的固定断连包装仍保留连接失败，不能从任意内部文本推断', /** 验证Playwright 重试耗尽的固定断连包装仍保留连接失败，不能从任意内部文本推断。 */ () => {
   for (const method of ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch']) {
     for (const ending of ['', `\nCall log:\n - ${sensitive}`, `\r\nCall log:\r\n - ${sensitive}`]) {
       const raw = new Error(`apiRequestContext.${method}: Failed after 3 attempt(s): Error: socket hang up${ending}`);

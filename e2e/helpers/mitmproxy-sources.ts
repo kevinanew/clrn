@@ -27,7 +27,8 @@ async function feedbackOrigin(environment: NodeJS.ProcessEnv): Promise<string | 
   for (const file of await readdir(directory)) {
     if (!/^index-.*\.js$/.test(file)) continue;
     const source = await readFile(path.join(directory, file), 'utf8');
-    const component = source.split('\n').find(line => line.includes('testID:"feedback-user-report-screen"'));
+    const component = source.split('\n').find(/** 查找满足以下条件的首个条目：`line.includes('testID:"feedback-user-report-screen"')`。
+ * @param line - 当前操作使用的 line。 */ line => line.includes('testID:"feedback-user-report-screen"'));
     const address = component?.match(/isStagingEnvironment\(\)\?'(https:\/\/[^']+)'/)?.[1];
     if (address) return origin(new URL(address).origin);
   }
@@ -62,7 +63,8 @@ async function metadataHosts(base: string): Promise<string[]> {
   }
   const servers = body.result.servers;
   const names = Array.isArray(servers) ? servers : Object.keys(servers);
-  if (!names.length || !names.every((name: unknown) => typeof name === 'string'
+  if (!names.length || !names.every(/** 确认所有条目均满足：`typeof name === 'string' && /^[a-zA-Z0-9.-]+$/.test(name)`。
+ * @param name - 当前操作使用的 name。 */ (name: unknown) => typeof name === 'string'
     && /^[a-zA-Z0-9.-]+$/.test(name))) throw failure('节点主机无效');
   return [...new Set([new URL(base).hostname, ...names as string[]])];
 }
@@ -77,7 +79,7 @@ export async function mitmproxySources(environment: NodeJS.ProcessEnv): Promise<
   const key = JSON.stringify([base, environment.CLRN_RELEASE_WEB_ROOT, environment.MITMPROXY_FEEDBACK_ORIGIN]);
   let pending = sources.get(key);
   if (!pending) {
-    pending = (async () => {
+    pending = (/** 汇总 API 主机及反馈来源，构造代理进程的环境变量。 */ async () => {
       const hosts = await metadataHosts(base);
       const feedback = await feedbackOrigin(environment);
       return { MITMPROXY_API_HOSTS: JSON.stringify(hosts), MITMPROXY_FEEDBACK_ORIGIN: feedback };

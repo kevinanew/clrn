@@ -3,7 +3,8 @@ import { unique } from '../_shared/page';
 import { clickWithBackgroundClubNotice } from '../_shared/navigation';
 import { readDiamondBalance } from '../_shared/provision';
 
-test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '@creates-data' }, async ({ page, newAccount }) => {
+test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '@creates-data' }, /** 验证私人德州牌局真实创建、退出、解散并退回钻石。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, newAccount }) => {
   let createdRoomId: string | undefined;
   let cleanupUrl: string | undefined;
   let removed = false;
@@ -11,7 +12,7 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
   const name = `E2E私局${Date.now().toString(36)}`;
   const before = await readDiamondBalance(page, newAccount);
 
-  await test.step('进入空私人房间，检查创建配置和实际资产', async () => {
+  await test.step('进入空私人房间，检查创建配置和实际资产', /** 执行进入空私人房间，检查创建配置和实际资产。 */ async () => {
     expect(before, '测试账号至少需要10钻；不足应补充staging测试资产').toBeGreaterThanOrEqual(10);
     await clickWithBackgroundClubNotice(page, 'private-room-tab', 3);
     await expect(await unique(page, 'copy-house-number-button')).toHaveText(/房间号:\s*\d{9}/);
@@ -24,8 +25,9 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
   });
 
   try {
-    await test.step('提交真实创建，验证桌名、房型、等待开始及扣钻', async () => {
-      const creating = page.waitForResponse(response =>
+    await test.step('提交真实创建，验证桌名、房型、等待开始及扣钻', /** 执行提交真实创建，验证桌名、房型、等待开始及扣钻。 */ async () => {
+      const creating = page.waitForResponse(/** 匹配POST `/v3/pay_action/do` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ response =>
         response.request().method() === 'POST'
         && new URL(response.url()).pathname === '/v3/pay_action/do');
       const [response] = await Promise.all([creating, clickWithBackgroundClubNotice(page, 'creat-room-button', 3)]);
@@ -42,9 +44,9 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
       await expect(await unique(page, 'texas-holdem-room-name-text')).toHaveText(name);
       await expect(await unique(page, 'texas-holdem-room-type-text')).toHaveText('私人房间');
       await expect(await unique(page, 'countdown-text')).toHaveText('等待开始');
-      await expect.poll(() => readDiamondBalance(page, newAccount)).toBe(before - 10);
+      await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 10);
     });
-    await test.step('退出桌面，验证刚创建牌局仍在私人房间', async () => {
+    await test.step('退出桌面，验证刚创建牌局仍在私人房间', /** 执行退出桌面，验证刚创建牌局仍在私人房间。 */ async () => {
       await clickWithBackgroundClubNotice(page, 'menu-button', 3);
       await clickWithBackgroundClubNotice(page, 'drawer-menu-item-exit', 3);
       const room = page.getByTestId(/^private-room-[0-9a-f-]{36}$/).filter({ visible: true });
@@ -55,7 +57,7 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
   } finally {
     if (createdRoomId && cleanupUrl) {
       try {
-        await test.step('清理本次未开始牌局，验证真实解散接口和退款', async () => {
+        await test.step('清理本次未开始牌局，验证真实解散接口和退款', /** 执行清理本次未开始牌局，验证真实解散接口和退款。 */ async () => {
           if (await page.getByTestId('run-game-view').isVisible()) {
             await clickWithBackgroundClubNotice(page, 'menu-button', 3);
             await clickWithBackgroundClubNotice(page, 'drawer-menu-item-exit', 3);
@@ -64,7 +66,8 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
           await clickWithBackgroundClubNotice(page, 'close-room-button', 3);
           const popup = await unique(page, 'private-room-confirm-popup');
           await expect(popup).toContainText('您确定要解散当前牌局吗');
-          const closed = page.waitForResponse(response =>
+          const closed = page.waitForResponse(/** 匹配DELETE `/v1/room/${createdRoomId}` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ response =>
             response.request().method() === 'DELETE'
             && new URL(response.url()).pathname === `/v1/room/${createdRoomId}`);
           await clickWithBackgroundClubNotice(page, 'confirm-button', 3);
@@ -74,7 +77,7 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
           removed = true;
           await expect(await unique(page, 'create-game-button')).toBeVisible();
           if (roomTestId) await expect(page.getByTestId(roomTestId)).toHaveCount(0);
-          await expect.poll(() => readDiamondBalance(page, newAccount)).toBe(before);
+          await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before);
         });
       } finally {
         if (!removed) {

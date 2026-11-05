@@ -40,7 +40,8 @@ export async function captureHall(page: Page, scenario: VisualScenario, proxy: T
   const menuMask = visible(page, 'drawer-menu-item-exit')
     .locator('xpath=ancestor::*[*[@data-testid="screen-mask-touch-to-close"]][1]')
     .locator(':scope > [data-testid="screen-mask-touch-to-close"]');
-  await menuMask.evaluate(node => (node as HTMLElement).click());
+  await menuMask.evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   await advance(page);
   await click(page, 'auto-rebuy-button');
   await expect(visible(page, 'auto-rebuy-popup')).toBeVisible();
@@ -52,7 +53,8 @@ export async function captureHall(page: Page, scenario: VisualScenario, proxy: T
   await snapshot('pair_play_report');
   await click(page, 'report-pair-play-close-button');
   // 资料与牌局统计分别加载；先验证真实资料，不能把空昵称接受为截图基准。
-  const profileResponsePromise = page.waitForResponse(response =>
+  const profileResponsePromise = page.waitForResponse(/** 匹配GET `/v10/profile/${self}` 的响应，避免捕获其他请求。
+ * @param response - 当前收到的接口响应。 */ response =>
     response.request().method() === 'GET'
     && new URL(response.url()).pathname === `/v10/profile/${self}`);
   await click(page, 'texas-holdem-leaderboard-button');
