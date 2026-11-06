@@ -15,7 +15,8 @@ const repository = fileURLToPath(new URL('../../../', import.meta.url));
  */
 async function execute(environment) {
   const child = spawn(process.execPath, ['scripts/with-test-account.mjs', '--', process.execPath,
-    'scripts/with-release-web-server.mjs', process.execPath, 'e2e/node_modules/playwright/cli.js',
+    'scripts/with-release-web-server.mjs', 'python3', 'e2e/reproductions/api-5xx/gateway.py', '--',
+    process.execPath, 'e2e/node_modules/playwright/cli.js',
     'test', '--config', 'e2e/reproductions/api-5xx/playwright.config.ts', ...process.argv.slice(2)],
   { cwd: repository, env: environment, stdio: 'inherit' });
   const interrupt = /** 请求既有包装器清理浏览器、代理、服务器和账号锁。 */ () => child.kill('SIGINT');
@@ -47,16 +48,18 @@ async function main() {
   try {
     await mkdir(output, { recursive: true });
     const sources = {};
-    for (const name of ['run.mjs', 'playwright.config.ts', 'fixtures.ts', 'table.ts', 'capture.ts', 'buy-in.ts', 'buy-in.scenario.ts']) {
+    for (const name of ['run.mjs', 'playwright.config.ts', 'fixtures.ts', 'table.ts', 'capture.ts', 'buy-in.ts', 'sit.scenario.ts', 'gateway.py']) {
       sources[name] = createHash('sha256').update(await readFile(new URL(name, import.meta.url))).digest('hex');
     }
     sources['server_errors.py'] = createHash('sha256')
       .update(await readFile(new URL('../../mitmproxy/server_errors.py', import.meta.url))).digest('hex');
+    sources['sit_server_errors.py'] = createHash('sha256')
+      .update(await readFile(new URL('../../mitmproxy/sit_server_errors.py', import.meta.url))).digest('hex');
     await writeFile(resolve(output, 'manifest.json'), JSON.stringify({
       runId, applicationCommit: release.commit, releaseTag: release.releaseTag, archiveSha256: release.sha256,
       clrnCommit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repository, encoding: 'utf8' }).trim(),
       sourceSha256: sources,
-      backendVersion: 'staging 实际部署版本未核实；5xx 仅在浏览器 HTTP 边界注入',
+      backendVersion: '正常请求透传 staging；入座故障经过固定原版网关与本机真实 HTTP 5xx，版本另见 gateway.json',
     }, null, 2));
     console.log(`本轮证据：e2e/test-results/api-5xx/${runId}`);
     return await execute({ ...process.env, TESTING_API_TOKEN: token, CLRN_5XX_RUN_ID: runId,

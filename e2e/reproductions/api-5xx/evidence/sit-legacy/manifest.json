@@ -1,0 +1,20 @@
+{
+  "runId": "1793983871713-59710",
+  "applicationCommit": "b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec",
+  "releaseTag": "web-staging-200001602-b20853dbe65c",
+  "archiveSha256": "ca1f1b81e9a750e5a517287a6c1209be866d9d36cd408391f10f6eb7b40fbe87",
+  "clrnCommit": "bb25359ace5b8bc6551ffcf7b40f0fc0305a5c67",
+  "sourceSha256": {
+    "run.mjs": "aa7a45cb8f400299a9b97824a2aab626692ce17261728d5b4126d17f1f6fcef3",
+    "playwright.config.ts": "37091132478e3abda38331f90fa16491a4272668f94d1a84a00672f1b6b57d26",
+    "fixtures.ts": "690991df9bbc20434e9cdca668539c76fb36402fc4c1bc4bfd6c55f796e9b87e",
+    "table.ts": "26be8c4d4b3131d81a10906cbf696d85721a695ef5437d09674ffaffeadcdd1a",
+    "capture.ts": "721873e29c0ed047aee929ceec6a0b32254b771555f518ae47b6379b68613dce",
+    "buy-in.ts": "2ef9d8da120f1bad1f08452d9997000211c6d4053eecb771a7169456a8b49bb6",
+    "sit.scenario.ts": "20b5b203b366de5fe479cfae974b020e1f85764a02c47e2f99f033e655a7ce63",
+    "gateway.py": "d5bff5ca8dce8bf66935367a4530c3b00614da8e4dd4e7127cd66895e0a2d30b",
+    "server_errors.py": "eef2277b9c163d54037212a182eacc99c135a060dee13b3071dcbfdb8ed7f7d6",
+    "sit_server_errors.py": "e3730b2403d720f411aee78c1833da0ca44186f3f79bcfad7005172973711121"
+  },
+  "backendVersion": "正常请求透传 staging；入座故障经过固定原版网关与本机真实 HTTP 5xx，版本另见 gateway.json"
+}

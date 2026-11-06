@@ -1,72 +1,103 @@
-# HTTP 5xx 定向复现（CLRN #116）
+# 入座 API 5xx 复现与修复验证（CLRN #116）
 
-只注入 HTTP 500–599。浏览器先实测 500／503 的 JSON 和非 JSON 错误页，观察是否出现
-应用 [#5159](https://github.com/kevinanew/laiwan_react_native/issues/5159) 的
-“玩家筹码不足-sit”，并记录真实错误提示及解除故障后的恢复。没有复现原提示就明确记录，
-不把注入结果当作历史根因。本入口不测试超时、断连、余额、all-in 或隔离后端服务。
+本入口只验证 `PUT /v10/texas_holdem/room/<本轮房间>/sit` 下游返回 **500–599** 时的
+错误弹窗、取消、同座位主动重试和解除故障后的正常入座。浏览器选择 500／503 × JSON／HTML，
+不扩展到余额、all-in、4xx、断连或钱包服务。
 
-## 首轮实测结果（2026-11-06）
+原反馈：[laiwan_react_native #5159](https://github.com/kevinanew/laiwan_react_native/issues/5159)。
+本轮使用未修复 master 的真实 Release 页面，不修改应用源码、组件状态或初始化流程。
+应用修复 PR 未合并时，不能把旧版测试通过当作修复完成。
 
-固定应用提交 `b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec`，四个场景全部通过。
-每例故障期间两次真实请求均收到指定 5xx；解除后收到上游 200 并入座 100 筹码。
-**没有出现“玩家筹码不足-sit”，未复现原反馈，也未确认 5xx 是其原因。**
+## 旧 master 实测结果（2026-11-07）
 
-| 状态与内容 | 页面实际提示 | 故障／恢复截图 |
+四个场景均失败，实际退出码为 1；**只有错误提示断言失败**，每例首次失败及主动重试各一次。
+正常对照、三次实际 5xx、取消、同座位重试、解除故障后的新成功回复和入座 100 筹码均完成；
+未处理页面异常为 0。没有跳过、预期失败标记或自动重跑。
+
+| API 响应 | 旧版实际提示 | 首次故障／重试／恢复 |
 | --- | --- | --- |
-| 500 JSON | Request failed with status code 500 + 接口路径 | [故障](evidence/500-json/5xx.png)／[恢复](evidence/500-json/recovered.png) |
-| 500 HTML | Request failed with status code 500 + 接口路径 | [故障](evidence/500-html/5xx.png)／[恢复](evidence/500-html/recovered.png) |
-| 503 JSON | Request failed with status code 503 | [故障](evidence/503-json/5xx.png)／[恢复](evidence/503-json/recovered.png) |
-| 503 HTML | Request failed with status code 503 | [故障](evidence/503-html/5xx.png)／[恢复](evidence/503-html/recovered.png) |
+| 500 JSON | 服务内部异常-sit | [故障](evidence/sit-legacy/500-json/sit-error-1.png)／[重试](evidence/sit-legacy/500-json/sit-error-2.png)／[恢复](evidence/sit-legacy/500-json/recovered.png) |
+| 500 HTML | Cannot destructure property 'ok' of 'i' as it is null.-sit | [故障](evidence/sit-legacy/500-html/sit-error-1.png)／[重试](evidence/sit-legacy/500-html/sit-error-2.png)／[恢复](evidence/sit-legacy/500-html/recovered.png) |
+| 503 JSON | 服务内部异常-sit | [故障](evidence/sit-legacy/503-json/sit-error-1.png)／[重试](evidence/sit-legacy/503-json/sit-error-2.png)／[恢复](evidence/sit-legacy/503-json/recovered.png) |
+| 503 HTML | Cannot destructure property 'ok' of 'i' as it is null.-sit | [故障](evidence/sit-legacy/503-html/sit-error-1.png)／[重试](evidence/sit-legacy/503-html/sit-error-2.png)／[恢复](evidence/sit-legacy/503-html/recovered.png) |
 
-[完整结果](evidence/results.json)和[构建及测试内容指纹](evidence/manifest.json)保留证据边界。
-浏览器执行 97.1 秒，含构建准备 105.84 秒；最大 RSS 615497728 字节，不是并发进程内存合计。
-静态检查、类型检查、276 项 Node 测试及 77 项代理测试通过。issue 和 PR 继续保持打开，
-不能把这轮阴性结果写成原问题已修复。后续新增场景需保持本次约定的 5xx 范围。
+应用为未修复 master `b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec`，Release
+`web-staging-200001602-b20853dbe65c`。浏览器耗时 122.4 秒，含准备 134.45 秒，
+最大 RSS 583712768 字节（非并行进程内存合计）。
+[结构化结果及证据摘要](evidence/sit-legacy/results.json)、[构建／测试指纹](evidence/sit-legacy/manifest.json)、
+[网关原版源码指纹](evidence/sit-legacy/gateway.json)和各例 `sit-events.json` 均保留。
+记录的 CLRN HEAD 是取证前提交，实际测试内容由源码 SHA256 固定，并已与本次提交文件核对。
 
-这些是修订前的原始结果：首轮未执行故障前的正常带入对照，也未断言空白提示和
-未处理页面异常，因此不能作为修订后完整场景的通过证据；保留原文件及内容指纹供核对。
-本次补齐测试约束，未修改应用或把阴性实验改写成修复前业务失败。
+**已重现原有入座错误弹窗；没有重现历史“玩家筹码不足-sit”的确切文字，也未证明那次资金事件的根因。**
+
+## 为什么之前没有出现弹窗
+
+先前测试的是 `POST .../buy_in/apply`，该 HTTP 失败走带入错误处理；原截图则来自更早的
+`PUT .../sit`，经 WebSocket RPC 和网关调用下游 API。之前遗漏了实际入座边界。
+旧 HTTP 实验的原始[结果](evidence/results.json)、[构建指纹](evidence/manifest.json)和截图保留，
+仅供核对历史，不能作为入座缺陷未出现或已修复的证据。原 HTTP 浏览器场景已由入座场景替换。
+
+## 已定位的错误链
+
+旧版入座未指定 `v2`：原网关的 `build_rpc_result` 在 legacy 分支直接返回 JSON，丢失下游
+HTTP 状态；遇到 HTML 时 `current_service_error_rpc_result` 返回空值。客户端因此分别暴露
+后端原文加 `-sit`，或对空数据解构失败的内部异常；旧版 `_sitDown` 又直接把错误消息交给弹窗。
+这说明入座 5xx 的错误展示有缺陷，但不能据此推断历史资金状态或“筹码不足”的服务端成因。
 
 ## 运行
 
-在仓库根目录安装 `npm ci` 和 `npm --prefix e2e ci`，使用既有 Chromium 和
-`e2e/.venv` 的 mitmproxy（依赖见 `e2e/mitmproxy/requirements.txt`）。
-通过环境提供 GitHub Release 读取凭据 `GITHUB_TOKEN` 和 `TESTING_API_TOKEN`，
-本机测试令牌也可从 `CLRN_TESTING_DEPLOYMENT_FILE` 指定的既有 staging 部署文件读取。
+安装 `npm ci`、`npm --prefix e2e ci`、Chromium 和 `e2e/.venv` 的 mitmproxy
+（依赖见 `e2e/mitmproxy/requirements.txt`）。提供 `GITHUB_TOKEN`、`TESTING_API_TOKEN`；
+本机也可通过 `CLRN_TESTING_DEPLOYMENT_FILE` 从既有 staging 部署文件读取测试令牌。
+
+另外准备未修改的 `kevinanew/centrifugo_gateway_flask` 源码，固定提交
+`e9be071eff77e1c767e63e36288935830b6dc6d3`，并按该仓库依赖准备 `.venv/bin/python`。
+设置 `CLRN_GATEWAY_SOURCE_ROOT` 为源码根目录；默认查找 `~/github/kevinanew/centrifugo_gateway_flask`。
+启动器校验提交和源码改动，只在本轮进程加载原始 Blueprint，退出后回收本机服务器及私有日志。
 
 ```sh
 node e2e/reproductions/api-5xx/run.mjs
 node e2e/reproductions/api-5xx/run.mjs --grep '500 json'
-e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -p test_server_errors.py -v
-node --import tsx --test e2e/reproductions/api-5xx/buy-in.test.ts e2e/reproductions/api-5xx/table.test.ts
+e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -p 'test_*server_errors.py' -v
 ```
 
-启动器校验本提交 `deployments/staging.json` 中固定的 Release，使用真实账号锁、正常
-初始化和登录。后续验收可通过既有 `CLRN_RELEASE_RECORD` 提供精确的修复版本发布记录。
-本轮输出在 `e2e/test-results/api-5xx/<run-id>/`，包含版本、实际提示、是否复现原提示、
-真实 HTTP 状态时间线、稳定截图和 Playwright 的实际退出结果。默认不录像、不保存 trace。
+默认下载并校验 `deployments/staging.json` 固定的应用 Release。后续通过既有
+`CLRN_RELEASE_RECORD` 指定精确的修复构建，用同一份测试复验。
+每轮输出 `e2e/test-results/api-5xx/<run-id>/`：应用版本和 SHA256、测试源码指纹、
+网关源码指纹、实际 RPC 时间线、页面原始提示和稳定截图。默认无 trace、录像或登录截图。
 
-## 场景与边界
+## 故障如何到达真实应用
 
-通过真实页面创建私人记分牌桌、关闭带入审核，点击座位和确认带入，实际请求
-`POST /v10/texas_holdem/room/<本轮 UUID>/buy_in/apply`。代理仅匹配该方法、准确路径、
-真实 staging 节点和当前账号指纹，其他请求及 CORS 预检透传。管理指纹不进入报告。
+Python mitmproxy 只匹配真实 staging 来源、本轮账号指纹、确切房间和 `PUT sit` 命令，
+其他请求、订阅和心跳透传。TypeScript 只驱动真实页面、控制故障与断言，不使用 Playwright route。
 
-每例先在独立对照房间，从相同座位及确认带入入口验证真实上游 2xx、入座 100 筹码、
-带入及错误状态结束，并保存 `control.png`；通过页面退出并准确清理后才创建故障房间。
-对照失败即终止实验。Python 代理在对照阶段只观察，不伪造成功数据；同一份
-`http-events.json` 按顺序保留对照、两次 5xx 和故障房间真实恢复的路径、状态和请求标识。
+故障中的原始 RPC 请求送到本机固定版本网关的真实 HTTP 入口；网关通过 `requests.request`
+访问本机目标 API，该 API 实际返回指定的 500／503 JSON 或 HTML。响应状态在实际 HTTP
+响应处观察，解析及 legacy／v2 封装均由未修改的网关源码完成，再附原命令编号交回原页面。
+不手工构造应用错误信封，不注入“筹码不足”，不直接构造 ResponseError。
+这是隔离的本机网关，不会修改共享 staging 后端或启动完整业务服务栈。
 
-故障响应只表达服务器错误，不包含“筹码不足”。每例两次操作均核对浏览器实际收到的
-500／503 和代理命中；每次保留原始提示及稳定截图，再断言去空白后非空、无 undefined
-或余额误报、带入等待已结束。解除后通过原入口取得新的真实成功回复并入座。
-完整实验收集 `pageerror`，出现任何未处理页面异常都会失败；诊断只记录数量。
-原提示是否出现单独记录，没有预期失败、跳过或自动重试。
-测试结束后解除故障、分别回收准确房间并释放代理和账号锁；清理请求、正文或响应释放
-失败均传播脱敏错误且保持失败，底层异常及其 cause 不进入终端或 JSON reporter。
+正常对照与恢复透传真实 staging。旧 RPC 协议不携带下游 HTTP 状态时记录 `null`，
+只根据真实 `ok: true` 和页面状态判定成功，不编造 HTTP 200。
 
-控制层独立覆盖 100 个 5xx 值的 JSON／HTML 返回、边界校验和准确隔离；浏览器不做
-100 次重复流程。HTTP 带入实验不能冒充 WebSocket 入座 RPC 或服务端钱包调用的复现。
+## 页面步骤与正确预期
 
-本入口使用独立 Playwright 配置，尚未加入默认套件。复现 PR 和 issue 保持打开；
-应用修复并上传构建后，用原测试复验，通过再合并并长期保留。Refs #116。
+1. 使用既有账号锁、正常初始化和登录，通过页面建私人记分桌并关闭带入审核。
+2. 无故障时从座位入口验证真实入座成功并截图；在同一房间通过菜单站起。
+3. 启用本轮入座 5xx，点击空座位，确认网关下游实际返回指定状态，保存真实弹窗截图和文字。
+4. 按正确行为断言提示为“网络有点问题，请重试”，保留旧版失败，不 skip、不 xfail、不自动重跑。
+5. 点击取消，确认没有自动重发；再次选座，再点弹窗重试，确认三次请求均为同一座位、相同 5xx。
+6. 解除故障，点击原弹窗重试，必须收到**新的**真实成功回复并正常入座，保存恢复截图。
+7. 全程捕获未处理页面异常；故障前对照异常立即终止；finally 清理准确房间、代理及账号锁。
+
+控制层覆盖全部 100 个 5xx 值的两种格式并拒绝范围外值。RPC 层验证账号／路径／方法／来源
+隔离、真实回复关联和原版网关回复透传。浏览器只执行上述四个有代表性的场景。
+
+## 修复与关闭条件
+
+CLRN 先保留红色复现测试及真实截图；然后在 laiwan_react_native 修复并上传构建；
+CLRN 使用修复构建运行**原故障、原操作和原断言**，全部通过后合并并保留长期回归。
+合并后确认实际运行结果，再关闭 #116。应用仍可能显示正常的可读网络错误；不应继续暴露
+后端原文／内部异常，也不能静默失败。
+
+本 PR 保持草稿，issue 保持打开，使用 Refs #116，避免自动关闭。

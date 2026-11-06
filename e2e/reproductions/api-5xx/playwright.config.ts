@@ -6,7 +6,7 @@ import path from 'node:path';
 const output = path.resolve(__dirname, '../../test-results/api-5xx', process.env.CLRN_5XX_RUN_ID || 'manual');
 
 export default defineConfig({
-  testDir: '.', testMatch: '*.scenario.ts', workers: 1, retries: 0,
+  testDir: '.', testMatch: 'sit.scenario.ts', workers: 1, retries: 0,
   timeout: 150_000, expect: { timeout: 15_000 },
   outputDir: path.join(output, 'browser'),
   reporter: [['list'], ['json', { outputFile: path.join(output, 'results.json') }]],

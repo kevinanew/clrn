@@ -1,0 +1,55 @@
+{
+  "enabled": false,
+  "events": [
+    {
+      "at": 1793983895.906315,
+      "commandId": 10,
+      "source": "upstream-rpc",
+      "path": "/v10/texas_holdem/room/6c2eeb8a-37cf-43da-a5b1-0add9fc258af/sit",
+      "seat": 1,
+      "gatewayVersion": "legacy",
+      "status": null,
+      "ok": true
+    },
+    {
+      "at": 1793983902.5958312,
+      "commandId": 13,
+      "source": "gateway-5xx",
+      "path": "/v10/texas_holdem/room/6c2eeb8a-37cf-43da-a5b1-0add9fc258af/sit",
+      "seat": 1,
+      "gatewayVersion": "legacy",
+      "status": 500,
+      "ok": null
+    },
+    {
+      "at": 1793983904.0397592,
+      "commandId": 14,
+      "source": "gateway-5xx",
+      "path": "/v10/texas_holdem/room/6c2eeb8a-37cf-43da-a5b1-0add9fc258af/sit",
+      "seat": 1,
+      "gatewayVersion": "legacy",
+      "status": 500,
+      "ok": null
+    },
+    {
+      "at": 1793983904.836399,
+      "commandId": 15,
+      "source": "gateway-5xx",
+      "path": "/v10/texas_holdem/room/6c2eeb8a-37cf-43da-a5b1-0add9fc258af/sit",
+      "seat": 1,
+      "gatewayVersion": "legacy",
+      "status": 500,
+      "ok": null
+    },
+    {
+      "at": 1793983906.8826041,
+      "commandId": 16,
+      "source": "upstream-rpc",
+      "path": "/v10/texas_holdem/room/6c2eeb8a-37cf-43da-a5b1-0add9fc258af/sit",
+      "seat": 1,
+      "gatewayVersion": "legacy",
+      "status": null,
+      "ok": true
+    }
+  ]
+}

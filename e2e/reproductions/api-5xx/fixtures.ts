@@ -11,7 +11,7 @@ export const test = accountTest.extend<{ serverErrors: Mitmproxy }>({
    * @param use - 执行真实页面测试。
    */
   serverErrors: async ({}, use) => {
-    await withMitmproxy(use, { addonPath: path.resolve(__dirname, '../../mitmproxy/server_errors.py') });
+    await withMitmproxy(use, { addonPath: path.resolve(__dirname, '../../mitmproxy/sit_server_errors.py') });
   },
   /**
    * 正常初始化和登录同样透传本轮代理，不替换客户端状态。
