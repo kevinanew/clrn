@@ -93,3 +93,39 @@ class ServerErrorsTest(unittest.TestCase):
         asyncio.run(self.proxy.request(flow))
         self.assertEqual(flow.response.status_code, 403)
         self.assertFalse(self.proxy.enabled)
+
+    def test_control_fault_retries_and_recovery_keep_ordered_evidence(self):
+        """正常对照透传；换准确房间注入后，证据保留正常、两次 5xx 和真实恢复。"""
+        self.proxy.set_fault({**configuration(), "enabled": False})
+        control = application_flow()
+        asyncio.run(self.proxy.request(control))
+        self.assertIsNone(control.response)
+        control.response = http.Response.make(200, b"upstream control")
+        self.proxy.response(control)
+        fault_path = PATH.replace("11111111", "22222222")
+        self.proxy.set_fault({**configuration(), "path": fault_path})
+        for _ in range(2):
+            flow = application_flow(path=fault_path)
+            asyncio.run(self.proxy.request(flow))
+            self.assertEqual(flow.response.status_code, 503)
+        self.proxy.set_fault({"enabled": False})
+        recovered = application_flow(path=fault_path)
+        asyncio.run(self.proxy.request(recovered))
+        self.assertIsNone(recovered.response)
+        recovered.response = http.Response.make(200, b"upstream recovery")
+        self.proxy.response(recovered)
+        self.assertEqual([(event["path"], event["source"], event["status"])
+                          for event in self.proxy.events], [
+            (PATH, "upstream", 200), (fault_path, "injected-5xx", 503),
+            (fault_path, "injected-5xx", 503), (fault_path, "upstream", 200),
+        ])
+        self.assertEqual(len({event["requestId"] for event in self.proxy.events}), 4)
+        self.assertNotIn("fingerprint", json.dumps(self.proxy.events))
+
+    def test_rejects_invalid_observation_switch(self):
+        """仅观察模式必须显式使用布尔值，非法配置不得改变已有故障。"""
+        self.proxy.set_fault(configuration())
+        for enabled in (None, 0, 1, "false"):
+            with self.subTest(enabled=enabled), self.assertRaises(ValueError):
+                self.proxy.set_fault({**configuration(), "enabled": enabled})
+        self.assertTrue(self.proxy.enabled)

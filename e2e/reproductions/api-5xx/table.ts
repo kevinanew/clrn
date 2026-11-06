@@ -1,7 +1,36 @@
 /** 从真实入口创建本轮私人牌桌，失败时也只清理本轮确切房间。 */
-import { expect, type Page } from '@playwright/test';
+import { expect, type APIRequestContext, type Page } from '@playwright/test';
 import type { Session } from '../../cases/_shared/auth';
 import { clickWithBackgroundClubNotice } from '../../cases/_shared/navigation';
+import { requestFailure, requestFailureReason } from '../../../scripts/request-failure.cjs';
+
+/**
+ * 清理准确房间；请求、正文和释放失败只传播固定诊断，不保留认证头或原始 cause。
+ * @param request - 本轮页面的请求上下文。
+ * @param authorization - 只用于请求的会话认证。
+ * @param roomId - 本轮创建响应返回的准确房间。
+ */
+export async function deleteTable(request: Pick<APIRequestContext, 'delete'>,
+  authorization: string, roomId: string): Promise<void> {
+  const response = await request.delete(`https://api.shafayouxi.org/v1/room/${roomId}`, {
+    headers: { Authorization: authorization }, timeout: 15_000,
+  }).catch(/** 将可能包含完整认证头的 Playwright 传输异常转换为安全诊断。
+   * @param error - 请求边界捕获的原始异常。 */ error => {
+    throw requestFailure('room-delete', requestFailureReason(error));
+  });
+  const status = response.status();
+  try {
+    if (!response.ok()) throw requestFailure('room-delete', 'http-error', status);
+    const body = await response.json().catch(/** 正文读取或解析失败不输出原始内容。 */ () => {
+      throw requestFailure('room-delete', 'body-read-failed', status);
+    });
+    if (body?.ok !== true) throw requestFailure('room-delete', 'business-rejected', status);
+  } finally {
+    await response.dispose().catch(/** 响应释放失败同样保持失败并移除底层诊断。 */ () => {
+      throw requestFailure('room-delete', 'body-read-failed', status);
+    });
+  }
+}
 
 /**
  * 通过页面建房并关闭带入审核，保证测试会发出真实带入请求。
@@ -31,14 +60,6 @@ export async function withTable(page: Page, account: Session,
     await expect(page.getByTestId('texas-holdem-room-type-text')).toHaveText('私人房间', { timeout: 30_000 });
     await task(roomId!);
   } finally {
-    if (roomId) {
-      const response = await page.request.delete(`https://api.shafayouxi.org/v1/room/${roomId}`, {
-        headers: { Authorization: account.authorization }, timeout: 15_000,
-      });
-      try {
-        expect(response.ok(), '本轮房间必须清理成功').toBe(true);
-        expect((await response.json()).ok).toBe(true);
-      } finally { await response.dispose(); }
-    }
+    if (roomId) await deleteTable(page.request, account.authorization, roomId);
   }
 }

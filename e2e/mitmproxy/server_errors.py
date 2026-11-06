@@ -40,7 +40,7 @@ class ServerErrors(NetworkFaults):
         flow.response = json_response(flow, {"enabled": self.enabled, "events": self.events})
 
     def set_fault(self, body):
-        """只接受明确接口、账号指纹和整数 500–599；清除时保留恢复观测范围。"""
+        """只接受明确范围和 500–599；允许先仅观察对照，清除时保留恢复观测范围。"""
         if body == {"enabled": False}:
             self.enabled = False
             return
@@ -55,8 +55,11 @@ class ServerErrors(NetworkFaults):
             raise ValueError("An account fingerprint is required")
         if body["method"] not in ("GET", "POST", "PUT", "PATCH", "DELETE"):
             raise ValueError("Unsupported method")
+        enabled = body.get("enabled", True)
+        if type(enabled) is not bool:
+            raise ValueError("Enabled must be a boolean")
         self.scope = dict(body)
-        self.enabled = True
+        self.enabled = enabled
 
     def matches(self, flow):
         """同时匹配真实 staging 节点、确切路径、方法及账号，放行预检。"""

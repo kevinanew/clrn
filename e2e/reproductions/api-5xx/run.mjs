@@ -47,7 +47,7 @@ async function main() {
   try {
     await mkdir(output, { recursive: true });
     const sources = {};
-    for (const name of ['run.mjs', 'playwright.config.ts', 'fixtures.ts', 'table.ts', 'capture.ts', 'buy-in.scenario.ts']) {
+    for (const name of ['run.mjs', 'playwright.config.ts', 'fixtures.ts', 'table.ts', 'capture.ts', 'buy-in.ts', 'buy-in.scenario.ts']) {
       sources[name] = createHash('sha256').update(await readFile(new URL(name, import.meta.url))).digest('hex');
     }
     sources['server_errors.py'] = createHash('sha256')

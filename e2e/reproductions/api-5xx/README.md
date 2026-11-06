@@ -23,6 +23,10 @@
 静态检查、类型检查、276 项 Node 测试及 77 项代理测试通过。issue 和 PR 继续保持打开，
 不能把这轮阴性结果写成原问题已修复。后续新增场景需保持本次约定的 5xx 范围。
 
+这些是修订前的原始结果：首轮未执行故障前的正常带入对照，也未断言空白提示和
+未处理页面异常，因此不能作为修订后完整场景的通过证据；保留原文件及内容指纹供核对。
+本次补齐测试约束，未修改应用或把阴性实验改写成修复前业务失败。
+
 ## 运行
 
 在仓库根目录安装 `npm ci` 和 `npm --prefix e2e ci`，使用既有 Chromium 和
@@ -34,6 +38,7 @@
 node e2e/reproductions/api-5xx/run.mjs
 node e2e/reproductions/api-5xx/run.mjs --grep '500 json'
 e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -p test_server_errors.py -v
+node --import tsx --test e2e/reproductions/api-5xx/buy-in.test.ts e2e/reproductions/api-5xx/table.test.ts
 ```
 
 启动器校验本提交 `deployments/staging.json` 中固定的 Release，使用真实账号锁、正常
@@ -47,10 +52,18 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -p test_server_errors
 `POST /v10/texas_holdem/room/<本轮 UUID>/buy_in/apply`。代理仅匹配该方法、准确路径、
 真实 staging 节点和当前账号指纹，其他请求及 CORS 预检透传。管理指纹不进入报告。
 
-故障响应只表达服务器错误，不包含“筹码不足”。每例核对浏览器收到的真实 500／503，
-再次操作仍命中，解除后通过原入口取得真实成功回复并入座。原提示是否出现单独记录，
-可读提示、错误分类和恢复按正确行为断言。没有预期失败、跳过或自动重试。
-测试结束后解除故障、回收准确房间并释放代理和账号锁。
+每例先在独立对照房间，从相同座位及确认带入入口验证真实上游 2xx、入座 100 筹码、
+带入及错误状态结束，并保存 `control.png`；通过页面退出并准确清理后才创建故障房间。
+对照失败即终止实验。Python 代理在对照阶段只观察，不伪造成功数据；同一份
+`http-events.json` 按顺序保留对照、两次 5xx 和故障房间真实恢复的路径、状态和请求标识。
+
+故障响应只表达服务器错误，不包含“筹码不足”。每例两次操作均核对浏览器实际收到的
+500／503 和代理命中；每次保留原始提示及稳定截图，再断言去空白后非空、无 undefined
+或余额误报、带入等待已结束。解除后通过原入口取得新的真实成功回复并入座。
+完整实验收集 `pageerror`，出现任何未处理页面异常都会失败；诊断只记录数量。
+原提示是否出现单独记录，没有预期失败、跳过或自动重试。
+测试结束后解除故障、分别回收准确房间并释放代理和账号锁；清理请求、正文或响应释放
+失败均传播脱敏错误且保持失败，底层异常及其 cause 不进入终端或 JSON reporter。
 
 控制层独立覆盖 100 个 5xx 值的 JSON／HTML 返回、边界校验和准确隔离；浏览器不做
 100 次重复流程。HTTP 带入实验不能冒充 WebSocket 入座 RPC 或服务端钱包调用的复现。
