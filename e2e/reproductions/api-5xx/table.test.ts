@@ -103,6 +103,8 @@ test('unhandled pageerror must fail', async () => {
     await writeFile(configuration, `export default ${JSON.stringify({
       testDir: directory, testMatch: 'cleanup.spec.ts', workers: 1, retries: 0, timeout: 20_000,
       outputDir: path.join(directory, 'browser'),
+      // PR 源码包含合成令牌及 Call log 样例；仅检查实际运行报告，不附带源码 diff。
+      captureGitInfo: { diff: false },
       reporter: [['list'], ['json', { outputFile: report }]],
       use: { trace: 'off', screenshot: 'off', video: 'off' },
     })};`);
