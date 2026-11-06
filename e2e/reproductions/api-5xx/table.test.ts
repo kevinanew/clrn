@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { test } from 'node:test';
 import { inspect } from 'node:util';
@@ -105,7 +106,7 @@ test('unhandled pageerror must fail', async () => {
       reporter: [['list'], ['json', { outputFile: report }]],
       use: { trace: 'off', screenshot: 'off', video: 'off' },
     })};`);
-    const result = spawnSync(process.execPath, [path.join(e2e, 'node_modules/playwright/cli.js'),
+    const result = spawnSync(process.execPath, [createRequire(import.meta.url).resolve('@playwright/test/cli'),
       'test', '--config', configuration], {
       cwd: e2e, encoding: 'utf8', timeout: 30_000,
       env: { ...process.env, CLRN_5XX_TEST_SECRET: `Bearer ${secret}` },
