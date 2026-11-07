@@ -1,0 +1,111 @@
+{
+  "outcome": "sit-error-dialog-reproduced-correct-expectation-red",
+  "applicationCommit": "b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec",
+  "scope": "真实 master 的入座 5xx 错误弹窗；不代表历史资金事件完整根因",
+  "playwright": {
+    "startTime": "2026-11-06T16:51:14.172Z",
+    "duration": 122422.691,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  },
+  "exitCode": 1,
+  "skipped": 0,
+  "retries": 0,
+  "measurements": {
+    "elapsedSecondsIncludingPreparation": 134.45,
+    "maximumResidentSetSizeBytes": 583712768,
+    "memoryScope": "maximum RSS from /usr/bin/time; not aggregate simultaneous RSS"
+  },
+  "cases": [
+    {
+      "status": 500,
+      "format": "json",
+      "playwrightStatus": "failed",
+      "failedMessageAssertions": 2,
+      "actualMessage": "服务内部异常-sit",
+      "expectedMessage": "网络有点问题，请重试",
+      "controlPassed": true,
+      "cancelAndRetryPassed": true,
+      "recoveryPassed": true,
+      "pageErrorCount": 0,
+      "evidence": "500-json",
+      "sha256": {
+        "control.png": "7b743beeca1a562a47655ca625c3c0f8f932783851b45ea8f69f465574e98ca9",
+        "recovered.png": "b261de87675927b962f76edce1b3a438295f2a0702b565f5603d44f4d7579b07",
+        "sit-error-1.json": "8822825a58ec82f31fb13620f3569ba2649b5d164b9d1ed8d8861264092e2ad2",
+        "sit-error-1.png": "a8f07d802807798fa3e593cdfc85a737f45dfe120e404c6a04cc9662d35d5729",
+        "sit-error-2.json": "8822825a58ec82f31fb13620f3569ba2649b5d164b9d1ed8d8861264092e2ad2",
+        "sit-error-2.png": "a8f07d802807798fa3e593cdfc85a737f45dfe120e404c6a04cc9662d35d5729",
+        "sit-events.json": "529067d9a53122e114cff4af2bb2ec71a461f6f0d9dfb8481fe5e0f607b036fb"
+      }
+    },
+    {
+      "status": 500,
+      "format": "html",
+      "playwrightStatus": "failed",
+      "failedMessageAssertions": 2,
+      "actualMessage": "Cannot destructure property 'ok' of 'i' as it is null.-sit",
+      "expectedMessage": "网络有点问题，请重试",
+      "controlPassed": true,
+      "cancelAndRetryPassed": true,
+      "recoveryPassed": true,
+      "pageErrorCount": 0,
+      "evidence": "500-html",
+      "sha256": {
+        "control.png": "e0e52f4f6cbb7d1488528f583f8928855a822f0276e75f34a7916143b0e98ec8",
+        "recovered.png": "81fe76c4f39873c4228821a4d84db22b1cad72f24451afff6574901074ba7805",
+        "sit-error-1.json": "9186091bdd531ab5a55e4cf8cb1b601894f672189b3a4225e477942d75eb6a5d",
+        "sit-error-1.png": "e6857e06f1a37f608dcc25a4ea205ccbbe5802b946b9df74d520989356f58083",
+        "sit-error-2.json": "9186091bdd531ab5a55e4cf8cb1b601894f672189b3a4225e477942d75eb6a5d",
+        "sit-error-2.png": "e6857e06f1a37f608dcc25a4ea205ccbbe5802b946b9df74d520989356f58083",
+        "sit-events.json": "cc275258179c12a70d949bbfe234372dc72fde41fdb0c16610faebb588243da0"
+      }
+    },
+    {
+      "status": 503,
+      "format": "json",
+      "playwrightStatus": "failed",
+      "failedMessageAssertions": 2,
+      "actualMessage": "服务内部异常-sit",
+      "expectedMessage": "网络有点问题，请重试",
+      "controlPassed": true,
+      "cancelAndRetryPassed": true,
+      "recoveryPassed": true,
+      "pageErrorCount": 0,
+      "evidence": "503-json",
+      "sha256": {
+        "control.png": "351e7cd400a751e1150de1dc5b020f8acf6a71019a45fb9ff81ed84d6a69327c",
+        "recovered.png": "830acf48c3c491c6340dd4fa1b0379b0c6ca91e617a050e402de4cda1d04516e",
+        "sit-error-1.json": "8822825a58ec82f31fb13620f3569ba2649b5d164b9d1ed8d8861264092e2ad2",
+        "sit-error-1.png": "9d3b226736d31334432257eb8d9f2c3e738916bc691ef7db2d870042d7e5e57c",
+        "sit-error-2.json": "8822825a58ec82f31fb13620f3569ba2649b5d164b9d1ed8d8861264092e2ad2",
+        "sit-error-2.png": "9d3b226736d31334432257eb8d9f2c3e738916bc691ef7db2d870042d7e5e57c",
+        "sit-events.json": "34a4f83a6276f8b4834cfdc95b875f4d411805a6dbb810cde1e2def91dfab660"
+      }
+    },
+    {
+      "status": 503,
+      "format": "html",
+      "playwrightStatus": "failed",
+      "failedMessageAssertions": 2,
+      "actualMessage": "Cannot destructure property 'ok' of 'i' as it is null.-sit",
+      "expectedMessage": "网络有点问题，请重试",
+      "controlPassed": true,
+      "cancelAndRetryPassed": true,
+      "recoveryPassed": true,
+      "pageErrorCount": 0,
+      "evidence": "503-html",
+      "sha256": {
+        "control.png": "f3b2bd0752cc77f1f074c3e23b636e74c6854e8589336cad74307fc4ace53cb3",
+        "recovered.png": "15c2fcb904457477ab22f10fde21fe315a2ddd839720916817ecbe425656dd5f",
+        "sit-error-1.json": "9186091bdd531ab5a55e4cf8cb1b601894f672189b3a4225e477942d75eb6a5d",
+        "sit-error-1.png": "0a64baf8a7a892bb8dd6e78ae53d762e616aaa53edb481d63f2ba4d60ddfa448",
+        "sit-error-2.json": "9186091bdd531ab5a55e4cf8cb1b601894f672189b3a4225e477942d75eb6a5d",
+        "sit-error-2.png": "0a64baf8a7a892bb8dd6e78ae53d762e616aaa53edb481d63f2ba4d60ddfa448",
+        "sit-events.json": "510848da3b5d855b16bc3752c48aa947a17086c34d1602d15073c76d659a2c3a"
+      }
+    }
+  ]
+}

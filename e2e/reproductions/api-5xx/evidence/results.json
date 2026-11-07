@@ -1,0 +1,78 @@
+{
+  "applicationCommit": "b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec",
+  "releaseTag": "web-staging-200001602-b20853dbe65c",
+  "outcome": "original-message-not-reproduced",
+  "scope": "Web HTTP buy-in API only; not WebSocket sit RPC or historical root cause",
+  "playwright": {
+    "startTime": "2026-11-05T16:57:57.906Z",
+    "duration": 97067.151,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "command": "node e2e/reproductions/api-5xx/run.mjs",
+  "measurements": {
+    "elapsedSecondsIncludingPreparation": 105.84,
+    "maximumResidentSetSizeBytes": 615497728,
+    "memoryScope": "maximum RSS reported by /usr/bin/time; not aggregate simultaneous RSS"
+  },
+  "cases": [
+    {
+      "status": 500,
+      "format": "html",
+      "message": "Request failed with status code 500 /v10/texas_holdem/room/e2936f97-1cd1-4262-a149-a39a17db9d7c/buy_in/apply",
+      "originalMessageReproduced": false,
+      "scope": "真实 Web 的 HTTP 带入边界；不代表历史入座 RPC 的完整根因",
+      "evidence": "500-html",
+      "sha256": {
+        "recovered.png": "5e791b5bf0587cd1feb492fd39243a1bafdd1d4a6d5e7418d428895ca2e1c868",
+        "observed-error.json": "94de7807aa34785819ea602d7badb47b52b6a70c1aa5c484056e5fd534470fe0",
+        "5xx.png": "ecb5b17d3e4e26e5f2610e53665a138686382200e44603a6bddbcb147bd0421a",
+        "http-events.json": "bac3a21422646ee542d46e95cda1aa82c3e356c885c2318ccc8f02891fc6cb73"
+      }
+    },
+    {
+      "status": 500,
+      "format": "json",
+      "message": "Request failed with status code 500 /v10/texas_holdem/room/6eb9e5d7-2bf6-4ac4-b621-d9c86bf9f5b7/buy_in/apply",
+      "originalMessageReproduced": false,
+      "scope": "真实 Web 的 HTTP 带入边界；不代表历史入座 RPC 的完整根因",
+      "evidence": "500-json",
+      "sha256": {
+        "recovered.png": "559cae05710c2e5ae36f648ebfa71c31413e1c0177cc53062bca543b29176181",
+        "observed-error.json": "bf4926cf3f18bc02ac63d96a7ab4979a2c4218081d64f0a37b2a0f1df2bdcf4e",
+        "5xx.png": "15cb5b28fe82bb6e5baaf828b1da1109f739b6558d1b650667620389e9339aa0",
+        "http-events.json": "725697bd42ad3067bbb55a3ab60252ef5b5fbd751feb783f95271ab681ba9e7b"
+      }
+    },
+    {
+      "status": 503,
+      "format": "html",
+      "message": "Request failed with status code 503",
+      "originalMessageReproduced": false,
+      "scope": "真实 Web 的 HTTP 带入边界；不代表历史入座 RPC 的完整根因",
+      "evidence": "503-html",
+      "sha256": {
+        "recovered.png": "b8aa5345423e4b013ef70e178881f5826c3ee3e75321974f4a2e4e9f58f48a4a",
+        "observed-error.json": "730fb8bdfc3ae65586c17076592668fde2fe5e8fba545dd54e4b723e4d5399ce",
+        "5xx.png": "41b9558a439df803ceaad0e021daecc8e97fba7bb7f06bb6629e2b33c0ea1fab",
+        "http-events.json": "c6ef24a00431616cd52338c7c303a8162a76e21cf1886641835dd522e71a5536"
+      }
+    },
+    {
+      "status": 503,
+      "format": "json",
+      "message": "Request failed with status code 503",
+      "originalMessageReproduced": false,
+      "scope": "真实 Web 的 HTTP 带入边界；不代表历史入座 RPC 的完整根因",
+      "evidence": "503-json",
+      "sha256": {
+        "recovered.png": "670eaac600d4cae17276d31f8e04f2e8cf82e4197cda40eb2044e52ac14f1015",
+        "observed-error.json": "db6b31e042f119db76961630982af9e38641e2abd4fa3538b4cad0d2b6e242fe",
+        "5xx.png": "1e808cb6f2c38df1d365ebc0608e1a9b8ce9c79fce0240f525803762ee18f8e1",
+        "http-events.json": "2fe176443dadc7e78174db99f27a579aa3d77d4ee849b72151ed75bb5f1d5a49"
+      }
+    }
+  ]
+}

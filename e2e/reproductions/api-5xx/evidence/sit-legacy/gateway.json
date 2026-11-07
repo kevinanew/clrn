@@ -1,0 +1,9 @@
+{
+  "repository": "kevinanew/centrifugo_gateway_flask",
+  "commit": "e9be071eff77e1c767e63e36288935830b6dc6d3",
+  "sourceSha256": {
+    "apps/gateway/views.py": "541264f6fda8342bc155ca4922ecf476362589a96cbc869771afd3fb68be3ddb",
+    "apps/gateway/utils.py": "a1a308d187ca7771980731fbbfd5bc96dccb38d67d88659362536bc3f382722b",
+    "apps/gateway/serializers.py": "48e73f5098ce4f2d0e410037dcfe55bd40b0de84464a0d340573281ad3861d8c"
+  }
+}

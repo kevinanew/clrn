@@ -1,0 +1,17 @@
+{
+  "runId": "1793897876110-74274",
+  "applicationCommit": "b20853dbe65c5025d7232b17ea99e9a5d9a1a3ec",
+  "releaseTag": "web-staging-200001602-b20853dbe65c",
+  "archiveSha256": "ca1f1b81e9a750e5a517287a6c1209be866d9d36cd408391f10f6eb7b40fbe87",
+  "clrnCommit": "bb41e9f24b63b341986e02fe5f5f3938cf6a03ac",
+  "sourceSha256": {
+    "run.mjs": "e2107ac629200c7c6edf74b9b68cc092f61ede76091167a7bbcf0cae427eb82a",
+    "playwright.config.ts": "64004351fe5a417c1fae62756ef8b9ef2d7d6062b547a8a7a383824ee0fbea4e",
+    "fixtures.ts": "e562f23fc84e70e83a99c322b1aeff10626ed021c08d1f039a884d6fd8153865",
+    "table.ts": "feee9df9e92f539b2711a0eb020f540c0cbbb907087f7011349cc2d2744d657a",
+    "capture.ts": "721873e29c0ed047aee929ceec6a0b32254b771555f518ae47b6379b68613dce",
+    "buy-in.scenario.ts": "a6e16e0bb5711e670523d2c1edf9c43c82b4995bf49e417343607e951e62dc78",
+    "server_errors.py": "730d00ab9c889375f5ece9d9e1f4c343402ee10609fa2101c7c5e6aba944ac7f"
+  },
+  "backendVersion": "staging 实际部署版本未核实；5xx 仅在浏览器 HTTP 边界注入"
+}

@@ -1,0 +1,29 @@
+{
+  "enabled": false,
+  "events": [
+    {
+      "at": 1793897923.930505,
+      "requestId": "a193466f-d51a-4765-b930-39db0e0a84c1",
+      "source": "injected-5xx",
+      "method": "POST",
+      "path": "/v10/texas_holdem/room/e2936f97-1cd1-4262-a149-a39a17db9d7c/buy_in/apply",
+      "status": 500
+    },
+    {
+      "at": 1793897926.226818,
+      "requestId": "987adf51-f8e4-4db5-b73c-233d043a2a3c",
+      "source": "injected-5xx",
+      "method": "POST",
+      "path": "/v10/texas_holdem/room/e2936f97-1cd1-4262-a149-a39a17db9d7c/buy_in/apply",
+      "status": 500
+    },
+    {
+      "at": 1793897928.02128,
+      "requestId": "04a95320-b798-4893-a851-ca064866fc3b",
+      "source": "upstream",
+      "method": "POST",
+      "path": "/v10/texas_holdem/room/e2936f97-1cd1-4262-a149-a39a17db9d7c/buy_in/apply",
+      "status": 200
+    }
+  ]
+}
