@@ -5,6 +5,11 @@ import path from 'node:path';
 import type { FullConfig, FullResult, Reporter, TestCase, TestResult, TestStep, TestError } from '@playwright/test/reporter';
 import { DiagnosticLog, DiagnosticOutput, diagnosticCaseDirectory, logError, logText } from './diagnostic-log';
 
+// 内存附件没有路径，只信任已支持的光栅截图和录像类型，不从附件名称猜扩展名。
+const visualBodyExtensions = new Map([
+  ['image/png', '.png'], ['image/jpeg', '.jpg'], ['video/webm', '.webm'],
+]);
+
 /**
  * Playwright 将输入原样插入带引号标题，无法可靠区分输入内伪造的定位器边界。
  * @param title - 包含完整输入的原始标题，须先脱敏再交给容量截断出口。
@@ -144,13 +149,14 @@ export default class DiagnosticReporter implements Reporter {
      * @param index - 附件序号。
      */ (attachment, index) => {
       const connection = /^connection-(?:diagnostics|summary)$/.test(attachment.name);
-      const extension = path.extname(attachment.path || '') || (attachment.name === 'connection-summary' ? '.md' : '.json');
+      const extension = (attachment.path ? path.extname(attachment.path) : visualBodyExtensions.get(attachment.contentType))
+        || (attachment.name === 'connection-summary' ? '.md' : '.json');
       const visual = ['.png', '.jpg', '.jpeg', '.webm'].includes(extension);
       if (!(visual || connection)) return;
       const target = path.join(log.directory, `attachment-${index}${extension}`);
       try {
         if (attachment.path) copyFileSync(attachment.path, target);
-        else if (attachment.body && connection) writeFileSync(target, attachment.body);
+        else if (attachment.body) writeFileSync(target, attachment.body);
         else return;
         log.record('test.attachment', { file: path.basename(target), name: logText(attachment.name) });
       } catch (error) { log.record('collection.attachment-unavailable', logError(error)); }

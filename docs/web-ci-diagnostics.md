@@ -18,7 +18,7 @@ E2E、线上功能、交互/Freshchat、静态视觉、动画统一保存 14 天
 | `timeline.jsonl` | 按宿主真实采集时间合并同例记录，不受动画虚拟时钟影响 |
 | `proxy-*/proxy.jsonl` | 代理进程启动后到退出的现有 stdout/stderr；静默不表示没有错误 |
 | `release-*/release-server-events.jsonl` | 既有 Release 服务采集器的持久化副本，覆盖启动、请求和退出清理 |
-| `attachment-*` | 在下一条命令清理报告前复制的现有失败截图、录像及 connection-diagnostics 附件，与用例同目录 |
+| `attachment-*` | 在下一条命令清理报告前复制的现有路径型截图/录像、内存型 PNG/JPEG/WebM 及 connection-diagnostics 附件，与用例同目录并保留原附件名的关联记录 |
 | `auth-*` | 视觉测试正式用例之前的登录态采集及验证上下文输出 |
 | `*-manifest.json` | 各来源容量、保留时间范围、丢弃和截断统计 |
 
@@ -51,7 +51,7 @@ Release 服务保留最早 10000 事件并记录丢弃量；既有连接及代�
 本机仅验证本次日志链路，无需真实账号或业务服务：
 
 ```sh
-node --import tsx --test e2e/helpers/diagnostic-log.test.ts e2e/helpers/diagnostic-reporter.test.ts e2e/helpers/diagnostic-recorder.test.ts e2e/helpers/diagnostic-persistence.test.ts e2e/helpers/ci-diagnostics.browser.ts scripts/release-diagnostics.test.mjs scripts/ci-web-diagnostics.test.mjs
+node --import tsx --test e2e/helpers/diagnostic-log.test.ts e2e/helpers/diagnostic-reporter.test.ts e2e/helpers/diagnostic-attachments.test.ts e2e/helpers/diagnostic-recorder.test.ts e2e/helpers/diagnostic-persistence.test.ts e2e/helpers/ci-diagnostics.browser.ts scripts/release-diagnostics.test.mjs scripts/ci-web-diagnostics.test.mjs
 node --test --test-name-pattern='完整测试命令' scripts/release-web.test.mjs
 ```
 
