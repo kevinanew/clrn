@@ -1,4 +1,4 @@
-import { expect as baseExpect, test as base } from '@playwright/test';
+import { expect as baseExpect, test as base } from '../../src/support/diagnosticTest';
 import path from 'node:path';
 import type { Mitmproxy, ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';

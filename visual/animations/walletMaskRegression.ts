@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../src/support/diagnosticTest';
 import { captureTimeline, freeze, settleAnimations } from './timeline';
 import { exercisePopup } from './popups';
 import { slotWalletMask } from './slotWallet';

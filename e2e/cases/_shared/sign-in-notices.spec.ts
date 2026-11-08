@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test, type Page } from '@playwright/test';
+import { test, type Page } from '../../helpers/diagnostic-test';
 import { installSignInNoticeHandler, clickAfterSignInNotices } from './sign-in-notices';
 
 const relief = '3000个免费的金币，请收下';

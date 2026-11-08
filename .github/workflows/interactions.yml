@@ -5,6 +5,8 @@ name: H5 交互与 Freshchat 回归
 on:
   push:
     paths:
+      - '.github/actions/web-diagnostics/**'
+      - 'scripts/ci-web-diagnostics.mjs'
       - 'scripts/*release*'
       - 'scripts/extract-web-package.py'
       - '.github/actions/prepare-release-web/**'
@@ -22,6 +24,8 @@ on:
     branches:
       - master
     paths:
+      - '.github/actions/web-diagnostics/**'
+      - 'scripts/ci-web-diagnostics.mjs'
       - 'scripts/*release*'
       - 'scripts/extract-web-package.py'
       - '.github/actions/prepare-release-web/**'
@@ -129,3 +133,9 @@ jobs:
             e2e/playwright-report/
             e2e/test-results/interactions/
             e2e/test-results/freshchat/
+
+      - name: 保存本任务 Web 诊断与下载入口
+        if: always()
+        uses: ./.github/actions/web-diagnostics
+        with:
+          shard: interactions

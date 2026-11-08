@@ -1,7 +1,7 @@
 /** 使用真实浏览器校验流水截图门禁，拒绝空容器、错误数据及其他页签的残留条目。 */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { expect, test, type Page, type Response } from '@playwright/test';
+import { expect, test, type Page, type Response } from '../src/support/diagnosticTest';
 import { assertTransactionsReady, readTransactionFixture, type TransactionStatement } from '../cases/wallet/transactionReadiness';
 import { lockPageWidth } from '../src/support/pageStabilizers';
 

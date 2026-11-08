@@ -1,5 +1,5 @@
 /** 游戏测试代理及脱敏诊断历史访问入口。 */
-import { test as base, expect as playwrightExpect, type BrowserContextOptions } from '@playwright/test';
+import { test as base, expect as playwrightExpect, type BrowserContextOptions } from '../../src/support/diagnosticTest';
 import path from 'node:path';
 import { type Mitmproxy, type ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';

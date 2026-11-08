@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helpers/diagnostic-test';
 import { createTestingAccount } from './cases/_shared/test-user';
 import { requestFailure } from '../scripts/request-failure.cjs';
 

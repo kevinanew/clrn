@@ -2,20 +2,21 @@ import { ESLint } from 'eslint';
 import { relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repository, sourceFiles } from './source-files.mjs';
-import { visualSupportFiles, visualToolFiles, animationSupportFiles, animationFiles } from './visual-complexity-scope.mjs';
+import { visualSupportFiles, visualToolFiles, visualEntryFiles, animationSupportFiles, animationFiles } from './visual-complexity-scope.mjs';
 
 /**
  * 按显式范围列出本任务文件及检查实现，遗漏或删除源码时拒绝空跑。
  * @param animationsOnly - 是否只扫描动画范围与门禁实现。
+ * @param entrypointsOnly - 是否只扫描视觉入口范围与门禁实现。
  * @returns 本任务实际扫描的源码路径。
  */
-export function visualComplexityFiles(animationsOnly = false) {
+export function visualComplexityFiles(animationsOnly = false, entrypointsOnly = false) {
   const files = sourceFiles();
-  const required = [...animationSupportFiles, ...existingVisualFiles(animationsOnly), 'eslint.config.mjs'];
+  const required = [...existingAnimationFiles(entrypointsOnly), ...existingVisualFiles(animationsOnly), 'eslint.config.mjs'];
   for (const file of required) {
     if (!files.includes(file)) throw new Error(`视觉复杂度检查缺少文件：${file}`);
   }
-  return [...new Set([...required, ...animationFiles(files), ...files.filter(/** 根据当前条目计算结果。
+  return [...new Set([...required, ...scopedSupportFiles(files, animationsOnly, entrypointsOnly), ...files.filter(/** 根据当前条目计算结果。
  * @param file - 当前回调参数。 */ file => /^scripts\/visual-complexity.*\.mjs$/.test(file))])];
 }
 
@@ -82,7 +83,10 @@ function functionMeasurements(result) {
 
 /** 执行独立门禁或打印完整测量结果，失败均返回非零状态。 */
 async function main() {
-  const files = visualComplexityFiles(process.argv.includes('--animations'));
+  const animationsOnly = process.argv.includes('--animations');
+  const entrypointsOnly = process.argv.includes('--entrypoints');
+  if (animationsOnly && entrypointsOnly) throw new Error('--animations 与 --entrypoints 不能同时使用');
+  const files = visualComplexityFiles(animationsOnly, entrypointsOnly);
   if (process.argv.includes('--report')) {
     console.log(JSON.stringify(await measureVisualComplexity(files), null, 2));
     return;
@@ -105,3 +109,23 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
  * @returns 其他视觉模块的必要路径。
  */
 function existingVisualFiles(animationsOnly) { return animationsOnly ? [] : [...visualSupportFiles, ...visualToolFiles]; }
+
+/**
+ * 入口定向检查不依赖动画目录先清零。
+ * @param entrypointsOnly - 是否只扫描视觉入口。
+ * @returns 动画范围的必要路径。
+ */
+function existingAnimationFiles(entrypointsOnly) { return entrypointsOnly ? [] : animationSupportFiles; }
+
+/**
+ * 默认入口保持全部视觉范围，各定向入口只扫描自己的辅助模块。
+ * @param files - 当前源码路径。
+ * @param animationsOnly - 是否只扫描动画。
+ * @param entrypointsOnly - 是否只扫描视觉入口。
+ * @returns 对应范围内原模块和新提取模块。
+ */
+function scopedSupportFiles(files, animationsOnly, entrypointsOnly) {
+  const entries = animationsOnly ? [] : visualEntryFiles(files);
+  const animations = entrypointsOnly ? [] : animationFiles(files);
+  return [...entries, ...animations];
+}

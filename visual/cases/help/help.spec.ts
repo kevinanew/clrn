@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from '../../src/support/diagnosticTest';
 import { buildScenarios } from '../../scenarios';
 import { runVisualScenario } from '../runScenario';
 

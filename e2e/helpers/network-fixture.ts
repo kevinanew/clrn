@@ -1,5 +1,5 @@
 /** 自动管理应用场景独占的 Python 代理与证书；离线浏览器工具自测继续独立运行。 */
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect } from './diagnostic-test';
 import { withMitmproxy } from './mitmproxy-session';
 import type { Mitmproxy } from './mitmproxy-client';
 import { bindScenarioProxy } from './scenario-proxy';

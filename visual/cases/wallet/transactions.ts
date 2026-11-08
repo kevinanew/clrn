@@ -1,5 +1,5 @@
 /** 通过真实应用导航与 mitmproxy 固定流水，采集并校验金币、钻石页签。 */
-import { expect, test, type Browser } from '@playwright/test';
+import { expect, test, type Browser } from '../../src/support/diagnosticTest';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
 import { bindScenarioProxy, scenarioStatus } from '../../../e2e/helpers/scenario-proxy';
 import { buildStorageStateForScenario, readAuthStateEntries, setupContextForScenario } from '../../src/support/pageSetup';

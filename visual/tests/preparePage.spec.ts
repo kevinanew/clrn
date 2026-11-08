@@ -1,5 +1,5 @@
 // 验证截图准备流程的真实浏览器行为，防止稳定化逻辑改变页面或掩盖图标裁切。
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../src/support/diagnosticTest';
 import { assertMatchingArtworkVisible, scrollVisualReadyElementIntoView } from '../src/support/pageStabilizers';
 import type { VisualScenario } from '../scenarios';
 import {

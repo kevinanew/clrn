@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../helpers/diagnostic-test';
 import { openHall, prepareContext, unique } from '../_shared/page';
 
 for (const entry of ['slot-banner', 'daily-bonus-button', 'store-button', 'personal-house-create', 'personal-house-join']) {

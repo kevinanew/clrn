@@ -33,7 +33,8 @@ export async function javascriptFindings() {
   const findings = results.flatMap(/** 合并真实 ESLint 诊断和不可被行内禁用的指令检查结果。
  * @param result - 当前操作使用的 result。 */ result => {
     // 独立检查禁止的指令，防止 eslint-disable 把检查它自己的规则也关闭。
-    const directives = directiveChecker.verify(result.source ?? readFileSync(result.filePath, 'utf8'), [{
+    const source = result.source ?? readFileSync(result.filePath, 'utf8');
+    const directives = directiveChecker.verify(source, [{
       languageOptions: { parser: tseslint.parser }, linterOptions: { noInlineConfig: true },
       plugins: { quality }, rules: { 'quality/no-quality-disable': 'error' },
     }]).filter(/** 仅保留满足以下条件的条目：`item.ruleId === 'quality/no-quality-disable'`。
@@ -41,12 +42,12 @@ export async function javascriptFindings() {
     const messages = new Map([...result.messages, ...directives].map(/** 将当前条目映射为`[JSON.stringify(item), item]`。
  * @param item - 当前遍历的条目。 */ item => [JSON.stringify(item), item]));
     return [...messages.values()].map(/** 将 ESLint 消息转换为仓库相对路径的统一诊断结构。
- * @param message - 当前操作使用的 message。 */ message => ({
+ * @param message - 当前操作使用的 message。 */ message => fingerprint({
       file: relative(repository, result.filePath), rule: message.ruleId ?? 'parse-error',
       line: message.line ?? 1, column: message.column ?? 1, message: message.message,
-    }));
+    }, source));
   });
-  return findings.map(fingerprint);
+  return findings;
 }
 
 /**
@@ -69,5 +70,6 @@ export function pythonFindings() {
     };
     unique.set(JSON.stringify(finding), finding);
   }
-  return [...unique.values()].map(fingerprint);
+  return [...unique.values()].map(/** 为 Python 诊断读取对应源码并计算指纹。
+   * @param finding - 单位置诊断。 */ finding => fingerprint(finding));
 }

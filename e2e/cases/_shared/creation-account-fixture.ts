@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { test as base, expect, type BrowserContext, type Page } from '@playwright/test';
+import { test as base, expect, type BrowserContext, type Page } from '../../helpers/diagnostic-test';
 import { environment } from '../../helpers/environment';
 import { signIn, type Session } from './auth';
 import { accountPreparationError, verifyAccountSession } from './account-diagnostics';

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../helpers/diagnostic-test';
 import { openHall, openLoginForm, prepareContext, unique } from '../_shared/page';
 
 for (const method of ['email', 'sms'] as const) {

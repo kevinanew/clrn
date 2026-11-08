@@ -1,5 +1,5 @@
 /** 由 cardSpriteHistory.browser.ts 通过 Playwright 编译运行，验证正常时间的完整历史采样适配。 */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../src/support/diagnosticTest';
 import { useNormalCardSpriteClock } from './cardSpriteClock';
 import { captureTimeline, freeze, settleAnimations } from './timeline';
 

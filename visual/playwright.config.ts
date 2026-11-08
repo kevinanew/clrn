@@ -19,7 +19,7 @@ export default defineConfig({
   updateSnapshots: VISUAL_SNAPSHOT_UPDATES.test,
   // 单场景上限：staging 慢时登录/加载等待较长
   timeout: 300000,
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [['../e2e/helpers/diagnostic-reporter.ts'], ['list'], ['html', { open: 'never' }]],
   expect: {
     toHaveScreenshot: {
       maxDiffPixelRatio: MAXIMUM_DIFFERENT_PIXEL_RATIO,

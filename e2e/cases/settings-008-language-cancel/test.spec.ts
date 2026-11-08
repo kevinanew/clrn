@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../helpers/diagnostic-test';
 import { goBack } from '../_shared/navigation';
 import { openHall, prepareContext, unique } from '../_shared/page';
 import { openSettings } from '../_shared/settings-navigation';
