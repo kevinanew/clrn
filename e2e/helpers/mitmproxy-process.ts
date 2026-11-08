@@ -1,6 +1,8 @@
 import { safeDiagnosticReason } from '../../scripts/request-failure.cjs';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { DiagnosticLog, DiagnosticOutput, diagnosticDirectory } from './diagnostic-log';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const STARTUP_TIMEOUT_MS = 90_000;
@@ -19,6 +21,9 @@ export class MitmdumpProcess {
    * @param child - 已启动的代理子进程。
    */
   constructor(private readonly child: ChildProcess) {
+    const log = new DiagnosticLog(path.join(process.env.CLRN_DIAGNOSTIC_CASE || diagnosticDirectory(), `proxy-${randomUUID()}`), 'proxy');
+    const stdout = new DiagnosticOutput(log, 'proxy.stdout');
+    const stderr = new DiagnosticOutput(log, 'proxy.stderr');
     /**
      * 保留代理最近的标准输出和错误输出，用于启动失败诊断。
      * @param data - 子进程输出的数据块。
@@ -28,8 +33,21 @@ export class MitmdumpProcess {
     };
     child.stdout?.on('data', captureOutput);
     child.stderr?.on('data', captureOutput);
+    child.stdout?.on('data', /** 保存完整代理标准输出行。
+     * @param data - 代理输出块。
+     */ data => stdout.write(data));
+    child.stderr?.on('data', /** 保存完整代理标准错误行。
+     * @param data - 代理输出块。
+     */ data => stderr.write(data));
     child.on('error', /** 保存代理子进程启动错误，供就绪检查报告。
  * @param error - 当前操作抛出的错误。 */ error => { this.startupError = error; });
+    child.once('close', /** 退出和清理也记录到同一来源。
+     * @param code - 真实退出状态。
+     * @param signal - 真实退出信号。
+     */ (code, signal) => {
+      stdout.flush(); stderr.flush();
+      log.record('proxy.exit', { code, signal });
+    });
     this.exited = new Promise(/** 将代理进程关闭事件转换为可等待的完成通知。
  * @param resolve - 完成当前异步等待的通知。 */ resolve => child.once('close', /** 代理进程关闭后解除清理等待。 */ () => resolve()));
   }

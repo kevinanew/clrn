@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect } from './diagnostic-test';
 import { type Mitmproxy } from './mitmproxy-client';
 import { withMitmproxy } from './mitmproxy-session';
 

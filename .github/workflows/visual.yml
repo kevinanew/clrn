@@ -4,7 +4,7 @@ name: H5 画面回归测试
 # 使用 100 个 Web 专用账号的新凭据，保留账号并发锁并兼容旧分支继续运行。
 on:
   pull_request:
-    paths: ['scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/*proxy*.ts', 'e2e/helpers/*diagnostic*', 'scripts/connection-diagnostic-summary.mjs', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml']
+    paths: ['.github/actions/web-diagnostics/**', 'scripts/ci-web-diagnostics.mjs', 'scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'visual/**', 'e2e/helpers/staging-notice.ts', 'e2e/helpers/*proxy*.ts', 'e2e/helpers/*diagnostic*', 'scripts/connection-diagnostic-summary.mjs', 'e2e/mitmproxy/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/visual.yml']
   push:
     branches: [master]
     # 单独的部署记录由 staging-deployment.yml 调用本工作流，避免重复运行全量画面。
@@ -164,3 +164,9 @@ jobs:
             visual/playwright-report/
             visual/test-results/
           if-no-files-found: ignore
+
+      - name: 保存本任务 Web 诊断与下载入口
+        if: always()
+        uses: ./.github/actions/web-diagnostics
+        with:
+          shard: visual-${{ matrix.suite }}-${{ matrix.locale }}

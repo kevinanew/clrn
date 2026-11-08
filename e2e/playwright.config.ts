@@ -17,13 +17,14 @@ export default defineConfig({
   // 覆盖最多三次导航（135s）、首屏各阶段检查（最多 55s）及版本元信息读取，
   // 同时以 240s 限制单个站点用例的总耗时。
   timeout: 240_000,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: './playwright-report' }]],
+  reporter: [['./helpers/diagnostic-reporter.ts'], ['list'], ['html', { open: 'never', outputFolder: './playwright-report' }]],
   use: {
     ...devices['Desktop Chrome'],
     actionTimeout: 15_000,
     navigationTimeout: 45_000,
     // 真实 CI 账号的登录请求包含私有密码，不能将网络 trace 写入报告。
     trace: 'off',
+    screenshot: 'only-on-failure',
     launchOptions: {
       args: [
         // CI 容器里以 root 运行，且默认 /dev/shm 只有 64M，

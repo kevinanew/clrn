@@ -1,5 +1,5 @@
 /** 静态服务本地生命周期，不输出入口、资源路径、文件系统路径或异常正文。 */
-import { appendFileSync, mkdirSync } from 'node:fs';
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -19,20 +19,55 @@ export function releaseDiagnosticDirectory(command) {
 /**
  * 保存有界 JSONL；文件位于既有报告目录，由原工作流上传。
  * @param directory - 当前任务报告目录。
+ * @param persistentDirectory - 可选的独立目录，保留后续命令清理之前和退出时的日志。
  */
-export function releaseDiagnosticWriter(directory) {
+export function releaseDiagnosticWriter(directory, persistentDirectory) {
   mkdirSync(directory, { recursive: true });
   let count = 0;
+  let dropped = 0;
+  let droppedBytes = 0;
+  let bytes = 0;
+  let lastRetainedAt;
+  const startedAt = Date.now();
+  /**
+   * 新增持久化副本失败只标记不可用，不改变原服务器或测试结果。
+   * @param line - 已审阅事件行。
+   * @param retained - 是否仍在容量范围内。
+   */
+  const persist = (line, retained) => {
+    if (!persistentDirectory) return;
+    try {
+      mkdirSync(persistentDirectory, { recursive: true });
+      if (retained) appendFileSync(path.join(persistentDirectory, 'release-server-events.jsonl'), line);
+      writeFileSync(path.join(persistentDirectory, 'release-server-manifest.json'),
+        JSON.stringify({ retention: 'first-events', limit: 10000, events: Math.min(count, 10000),
+          startedAt, lastRetainedAt, lastObservedAt: Date.now(), bytes, dropped, droppedBytes,
+          truncationMarkers: Math.min(dropped, 1) }));
+    } catch {
+      persistentDirectory = undefined;
+      console.error('Release diagnostics: collection.unavailable (storage-write-failed)');
+    }
+  };
   /**
    * 只接收服务端构造的固定字段，不接收任意网络数据。
    * @param event - 内部生命周期事件。
    */
   const recordEvent = event => {
-    if (count++ > 10000) return;
+    count++;
+    if (count > 10000) {
+      dropped++;
+      droppedBytes += Buffer.byteLength(JSON.stringify(event) + '\n');
+    }
     if (count === 10001) event = { event: 'release.truncated', droppedAtLeast: 1, source: 'release-static' };
     // Playwright 启动时会清理 outputDir；每次写入都恢复既有附件子目录。
-    mkdirSync(directory, { recursive: true });
-    appendFileSync(path.join(directory, 'release-server-events.jsonl'), `${JSON.stringify(event)}\n`);
+    const line = `${JSON.stringify(event)}\n`;
+    if (count <= 10001) {
+      mkdirSync(directory, { recursive: true });
+      appendFileSync(path.join(directory, 'release-server-events.jsonl'), line);
+      bytes += Buffer.byteLength(line);
+      if (count <= 10000) lastRetainedAt = Date.now();
+    }
+    persist(line, count <= 10001);
   };
   return recordEvent;
 }

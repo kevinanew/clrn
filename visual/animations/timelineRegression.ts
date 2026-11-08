@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Locator } from '@playwright/test';
+import { expect, test, type Page, type Locator } from '../src/support/diagnosticTest';
 import { captureTimeline } from './timeline';
 import { PNG } from 'pngjs';
 

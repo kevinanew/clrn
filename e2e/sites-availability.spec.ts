@@ -1,4 +1,4 @@
-import { expect, type Response, type Page, test } from '@playwright/test';
+import { expect, type Response, type Page, test } from './helpers/diagnostic-test';
 import { expectBuildVersion, expectSiteReady } from './helpers/assertions';
 import { environment } from './helpers/environment';
 import { gotoDeployedSite } from './helpers/page';

@@ -1,4 +1,4 @@
-import { expect, test, type Response } from '@playwright/test';
+import { expect, test, type Response } from './helpers/diagnostic-test';
 import { expectStatementList, readStatements, type Statement } from './cases/settings-012-wallet-currencies/statements';
 
 const statement: Statement = {

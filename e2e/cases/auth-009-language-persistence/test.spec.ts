@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../helpers/diagnostic-test';
 import { openHall, prepareContext, unique } from '../_shared/page';
 
 test('AUTH-009：登录语言选择确认后保存，刷新仍显示对应语言', /** 验证AUTH-009：登录语言选择确认后保存，刷新仍显示对应语言。

@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { execFile, execFileSync, spawn } from 'node:child_process';
 import { createServer } from 'node:http';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -199,6 +199,7 @@ test('完整测试命令继承同一入口，失败退出码和取消均会关�
  * @param options - 当前操作使用的 options。 */ async options => {
     const prepared = await prepareReleaseWeb(options);
     const environment = { ...process.env, CLRN_RELEASE_WEB_ROOT: prepared.webRoot,
+      CLRN_DIAGNOSTICS_DIR: path.join(path.dirname(prepared.webRoot), 'diagnostics'),
       CLRN_EXPECTED_APPLICATION_COMMIT: prepared.commit };
     const result = await execute(process.execPath, [wrapper, process.execPath, '-e', `
       require('node:assert/strict').equal(process.env.E2E_STAGING_URL, process.env.VISUAL_BASE_URL);
@@ -230,6 +231,23 @@ test('完整测试命令继承同一入口，失败退出码和取消均会关�
       assert.notEqual(await completion, 0);
       await assert.rejects(fetch(cancelledAddress));
     } finally { child.kill('SIGKILL'); }
+    const sessions = await readdir(environment.CLRN_DIAGNOSTICS_DIR);
+    assert.equal(sessions.length, 3, '成功、失败、取消分别保存独立日志');
+    const outputs = await Promise.all(sessions.map(/** 每轮服务的退出与身份均在自身目录中。
+     * @param session - 随机会话编号。
+     */ session => readFile(path.join(environment.CLRN_DIAGNOSTICS_DIR, session, 'release-server-events.jsonl'), 'utf8')));
+    for (const output of outputs) {
+      assert.ok(output.includes('release.identity'));
+      assert.ok(output.includes(prepared.commit));
+      assert.ok(output.includes('release.stopped'));
+      assert.ok(!output.includes('127.0.0.1'));
+    }
+    assert.ok(outputs.some(/** 原始失败退出码进入持久化副本。
+     * @param output - 已脱敏日志。
+     */ output => output.includes('"code":17')));
+    assert.ok(outputs.some(/** 取消信号保留，不能误报为成功。
+     * @param output - 已脱敏日志。
+     */ output => output.includes('"signal":"SIGTERM"')));
   });
 });
 

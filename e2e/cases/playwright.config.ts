@@ -12,7 +12,7 @@ export default defineConfig({
   timeout: 120_000,
   expect: { timeout: 15_000 },
   outputDir: '../test-results/cases',
-  reporter: [['list'], ['html', { open: 'never', outputFolder: '../playwright-report/cases' }]],
+  reporter: [['../helpers/diagnostic-reporter.ts'], ['list'], ['html', { open: 'never', outputFolder: '../playwright-report/cases' }]],
   use: {
     baseURL: environment.stagingUrl,
     locale: 'zh-CN',

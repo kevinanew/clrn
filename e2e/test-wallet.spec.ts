@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helpers/diagnostic-test';
 import { readTestApiToken, setCreationDiamondBalance } from './cases/_shared/test-wallet';
 import { requestFailure } from '../scripts/request-failure.cjs';
 

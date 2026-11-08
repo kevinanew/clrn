@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../src/support/diagnosticTest';
 import { buildScenarios } from '../scenarios';
 import { accountPresentationRules } from '../cases/account/presentation';
 import { applyContentStabilizers } from '../src/support/pageStabilizers';

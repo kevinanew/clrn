@@ -3,6 +3,9 @@
     "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "node",
+    "paths": {
+      "@playwright/test": ["./node_modules/@playwright/test"]
+    },
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
