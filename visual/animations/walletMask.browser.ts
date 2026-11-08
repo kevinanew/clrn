@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import type { JSONReport, JSONReportSuite } from '@playwright/test/reporter';
-import { chromium } from '@playwright/test';
+import { chromium, type Locator, type Page } from '@playwright/test';
+import { assertProcessStatus, snapshotContents, assertSnapshotsUnchanged } from './timelineBrowserSupport';
 import { PNG } from 'pngjs';
 import { maskNumericFields } from './numericMask';
 import { slotWalletMask } from './slotWallet';
@@ -45,30 +46,27 @@ test('双视口全部入退场与奖励帧忽略余额变化，布局、动画�
      */
     const run = (compare: boolean, unmasked = false) => spawnSync(process.execPath,
       [cli, 'test', '--config', config, ...(compare ? [] : ['--update-snapshots']),
-        ...(unmasked ? ['--project=desktop', '--grep=wallet mask balance$'] : [])],
+        ...walletProjectArguments(unmasked)],
       { encoding: 'utf8', timeout: 240_000,
         env: { ...process.env, WALLET_MASK_COMPARISON: String(compare), WALLET_MASK_UNMASKED: String(unmasked) } });
     const oldBaseline = run(false, true);
-    assert.equal(oldBaseline.status, 0, oldBaseline.error?.message || oldBaseline.stdout + oldBaseline.stderr);
+    assertProcessStatus(oldBaseline, 0);
     const desktopFrame = path.join(snapshots, 'en-desktop-wallet-balance-exit-0ms.png');
     const unmasked = await readFile(desktopFrame);
     const baseline = run(false);
-    assert.equal(baseline.status, 0, baseline.error?.message || baseline.stdout + baseline.stderr);
+    assertProcessStatus(baseline, 0);
     const updated = await readFile(desktopFrame);
     assert.ok(!updated.equals(unmasked), '显式更新必须替换小于整图 0.5% 的桌面余额区');
     const bitmap = PNG.sync.read(updated);
     assertSmallMask(bitmap);
-    const before = new Map(await Promise.all((await readdir(snapshots)).map(/** 将当前条目映射为`[name, await readFile(path.join(snapshots, name))] as const`。
- * @param name - 当前操作使用的 name。 */ async name =>
-      [name, await readFile(path.join(snapshots, name))] as const)));
+    const before = await snapshotContents(snapshots);
     const comparison = run(true);
-    assert.equal(comparison.status, 1, comparison.error?.message || comparison.stdout + comparison.stderr);
+    assertProcessStatus(comparison, 1);
     const report: JSONReport = JSON.parse(await readFile(reportPath, 'utf8'));
     const entries = results(report.suites);
     assert.equal(entries.length, 10);
     assertComparisonResults(entries);
-    for (const [name, contents] of before) assert.deepEqual(await readFile(path.join(snapshots, name)), contents);
-    assert.equal((await readdir(snapshots)).length, before.size, '普通比较不创建基准');
+    await assertSnapshotsUnchanged(snapshots, before);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
@@ -90,29 +88,7 @@ test('数字遮罩保留图标像素，支持裁切和缩放，透明、移出�
     const panel = page.getByTestId('slot-machine-view');
     const masks = slotWalletMask(panel);
     const clip = { x: 5, y: 20, width: 360, height: 120 };
-    for (const scale of [1, 0.65]) {
-      await panel.evaluate(/** 缩放钱包面板，验证数字遮罩的坐标换算。
- * @param node - 当前遍历的 DOM 或语法节点。
- * @param scale - 当前操作使用的 scale。 */ (node, scale) => { (node as HTMLElement).style.transform = `scale(${scale})`; }, scale);
-      let first: Buffer | undefined;
-      for (const texts of [['0', '0'], ['7', '9'], ['999,999,999', '99,999'], ['123', '456']]) {
-        await panel.locator('.number').evaluateAll(/** 将测试数字写入钱包节点，构造不同长度的余额内容。
- * @param nodes - 当前匹配的页面节点集合。
- * @param texts - 当前操作使用的 texts。 */ (nodes, texts) => nodes.forEach(/** 按索引设置当前钱包数字的显示文本。
- * @param node - 当前遍历的 DOM 或语法节点。
- * @param index - 当前条目在集合中的位置。 */ (node, index) => { node.textContent = texts[index]; }), texts);
-        const original = await page.screenshot({ clip, scale: 'css' });
-        const masked = await maskNumericFields(original, masks, clip);
-        const actual = PNG.sync.read(masked.png);
-        const before = PNG.sync.read(original);
-        const boxes = await panel.locator('.number').evaluateAll(/** 读取钱包数字节点的真实边界，用于核对遮罩区域。
- * @param nodes - 当前匹配的页面节点集合。 */ nodes => nodes.map(/** 将当前条目映射为`node.getBoundingClientRect().toJSON()`。
- * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.getBoundingClientRect().toJSON()));
-        assertOutsideMaskUnchanged(actual, before, boxes, scale, clip);
-        assert.deepEqual(actual.data, first ?? actual.data, '不同位数的余额必须得到完全相同的遮罩图');
-        first = actual.data;
-      }
-    }
+    await assertWalletScales(page, panel, masks, clip);
     for (const style of ['opacity:0', 'transform:translateY(1000px)', 'display:none']) {
       await panel.evaluate(/** 应用当前测试样式，制造面板位移或变换场景。
  * @param node - 当前遍历的 DOM 或语法节点。
@@ -142,17 +118,7 @@ test('数字遮罩保留图标像素，支持裁切和缩放，透明、移出�
  */
 function assertOutsideMaskUnchanged(actual: PNG, before: PNG,
   boxes: { x: number; y: number; right: number; bottom: number }[], scale: number, clip: { x: number; y: number }) {
-  for (let y = 0; y < actual.height; y++) {
-    for (let x = 0; x < actual.width; x++) {
-      if (boxes.some(/** 判断像素是否落在考虑缩放、边距和截图裁切后的数字遮罩内。
- * @param box - 当前操作使用的 box。 */ box => x >= Math.floor(box.x - 4 * scale - clip.x)
-        && x < Math.ceil(box.right + 4 * scale - clip.x) && y >= Math.floor(box.y - 4 * scale - clip.y)
-        && y < Math.ceil(box.bottom + 4 * scale - clip.y))) continue;
-      const offset = (y * actual.width + x) * 4;
-      assert.ok(actual.data.subarray(offset, offset + 4).equals(before.data.subarray(offset, offset + 4)),
-        '数字区域外的图标、边缘及背景像素必须原样保留');
-    }
-  }
+  for (let y = 0; y < actual.height; y++) assertOutsideMaskRow(actual, before, boxes, scale, clip, y);
 }
 
 /**
@@ -160,28 +126,32 @@ function assertOutsideMaskUnchanged(actual: PNG, before: PNG,
  * @param entries - 展开的真实测试结果。
  */
 function assertComparisonResults(entries: ReturnType<typeof results>) {
-  for (const { title, result } of entries) {
-    assert.equal(result.status, title === 'wallet mask balance' ? 'passed' : 'failed',
-      `${title}: ${result.errors.map(/** 将当前条目映射为`error.message`。
- * @param error - 当前操作抛出的错误。 */ error => error.message).join('\n')}`);
-    if (title === 'wallet mask balance') {
-      assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`item.name === 'wallet-complete'`。
- * @param item - 当前遍历的条目。 */ item => item.name === 'wallet-complete'));
-      const originals = result.attachments.filter(/** 仅保留满足以下条件的条目：`item.name.endsWith('-unmasked')`。
- * @param item - 当前遍历的条目。 */ item => item.name.endsWith('-unmasked'));
-      assert.equal(originals.length, 16, '全部入场、退场与奖励帧保留未遮罩证据');
-    }
-    if (title === 'wallet mask layout' || title === 'wallet mask animation') {
-      assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`item.name.includes('-diff')`。
- * @param item - 当前遍历的条目。 */ item => item.name.includes('-diff')), '真实变化须报告像素差异');
-      assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`item.name === 'wallet-complete'`。
- * @param item - 当前遍历的条目。 */ item => item.name === 'wallet-complete'), '像素差异仍采集完整时间线');
-    }
-    if (title === 'wallet mask missing' || title === 'wallet mask data') {
-      assert.ok(!result.attachments.some(/** 判断是否存在满足以下条件的条目：`item.name === 'wallet-complete'`。
- * @param item - 当前遍历的条目。 */ item => item.name === 'wallet-complete'), '控件和数据断言仍立即中止');
-    }
-  }
+  for (const entry of entries) assertComparisonEntry(entry);
+}
+
+/**
+ * 每个场景明确登记完成状态、差异图和未遮罩证据要求。
+ * @param entry - 真实运行结果。
+ */
+function assertComparisonEntry({ title, result }: ReturnType<typeof results>[number]) {
+  const expectations: Record<string, { status: string; complete: boolean; diff: boolean; originals: number }> = {
+    'wallet mask balance': { status: 'passed', complete: true, diff: false, originals: 16 },
+    'wallet mask layout': { status: 'failed', complete: true, diff: true, originals: 0 },
+    'wallet mask animation': { status: 'failed', complete: true, diff: true, originals: 0 },
+    'wallet mask missing': { status: 'failed', complete: false, diff: false, originals: 0 },
+    'wallet mask data': { status: 'failed', complete: false, diff: false, originals: 0 },
+  };
+  const expected = expectations[title];
+  assert.equal(result.status, expected.status, `${title}: ${result.errors.map(/** 保留每个真实错误的诊断。
+   * @param error - 原运行错误。 */ error => error.message).join('\n')}`);
+  assert.equal(result.attachments.some(/** 检查全部阶段完成标记。
+   * @param item - 报告附件。 */ item => item.name === 'wallet-complete'), expected.complete,
+    '像素差异仍采集完整时间线，控件和数据断言仍立即中止');
+  if (expected.diff) assert.ok(result.attachments.some(/** 检查真实变化的像素差异图。
+   * @param item - 报告附件。 */ item => item.name.includes('-diff')), '真实变化须报告像素差异');
+  if (expected.originals) assert.equal(result.attachments.filter(/** 保留所有原始未遮罩证据。
+   * @param item - 报告附件。 */ item => item.name.endsWith('-unmasked')).length,
+    expected.originals, '全部入场、退场与奖励帧保留未遮罩证据');
 }
 
 /**
@@ -191,7 +161,123 @@ function assertComparisonResults(entries: ReturnType<typeof results>) {
 function assertSmallMask(bitmap: PNG) {
   let magenta = 0;
   for (let offset = 0; offset < bitmap.data.length; offset += 4) {
-    if (bitmap.data[offset] === 255 && bitmap.data[offset + 1] === 0 && bitmap.data[offset + 2] === 255) magenta++;
+    if (isMagenta(bitmap.data.subarray(offset, offset + 3))) magenta++;
   }
+  assertSmallMaskArea(magenta, bitmap);
+}
+
+/**
+ * 对照旧桌面真实数字图，仍只在显式种图时选择该用例。
+ * @param unmasked - 是否种入未遮罩的桌面基准。
+ */
+function walletProjectArguments(unmasked: boolean) {
+  return unmasked ? ['--project=desktop', '--grep=wallet mask balance$'] : [];
+}
+
+type WalletClip = { x: number; y: number; width: number; height: number };
+type WalletMasks = ReturnType<typeof slotWalletMask>;
+
+/**
+ * 在两个原始缩放比例上重复核对所有余额位数。
+ * @param page - 本地夹具页面。
+ * @param panel - 钱包面板。
+ * @param masks - 实际数字遮罩。
+ * @param clip - 原裁切。
+ */
+async function assertWalletScales(page: Page, panel: Locator, masks: WalletMasks, clip: WalletClip) {
+  for (const scale of [1, 0.65]) {
+    await panel.evaluate(/** 缩放钱包面板，验证数字遮罩的坐标换算。
+ * @param node - 当前遍历的 DOM 或语法节点。
+ * @param scale - 当前操作使用的 scale。 */ (node, scale) => { (node as HTMLElement).style.transform = `scale(${scale})`; }, scale);
+    await assertMaskedBalances(page, panel, masks, clip, scale);
+  }
+}
+
+/**
+ * 每个缩放比例下逐像素核对数字外区域以及不同位数的遮罩结果。
+ * @param page - 本地夹具页面。
+ * @param panel - 钱包面板。
+ * @param masks - 实际数字遮罩。
+ * @param clip - 原裁切。
+ * @param scale - 当前比例。
+ */
+async function assertMaskedBalances(page: Page, panel: Locator, masks: WalletMasks, clip: WalletClip, scale: number) {
+  let first: Buffer | undefined;
+  for (const texts of [['0', '0'], ['7', '9'], ['999,999,999', '99,999'], ['123', '456']]) {
+    await panel.locator('.number').evaluateAll(/** 将测试数字写入钱包节点，构造不同长度的余额内容。
+ * @param nodes - 当前匹配的页面节点集合。
+ * @param texts - 当前操作使用的 texts。 */ (nodes, texts) => nodes.forEach(/** 按索引设置当前钱包数字的显示文本。
+ * @param node - 当前遍历的 DOM 或语法节点。
+ * @param index - 当前条目在集合中的位置。 */ (node, index) => { node.textContent = texts[index]; }), texts);
+    const original = await page.screenshot({ clip, scale: 'css' });
+    const masked = await maskNumericFields(original, masks, clip);
+    const actual = PNG.sync.read(masked.png);
+    const before = PNG.sync.read(original);
+    const boxes = await panel.locator('.number').evaluateAll(/** 读取钱包数字节点的真实边界，用于核对遮罩区域。
+ * @param nodes - 当前匹配的页面节点集合。 */ nodes => nodes.map(/** 将当前条目映射为`node.getBoundingClientRect().toJSON()`。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.getBoundingClientRect().toJSON()));
+    assertOutsideMaskUnchanged(actual, before, boxes, scale, clip);
+    assert.deepEqual(actual.data, first ?? actual.data, '不同位数的余额必须得到完全相同的遮罩图');
+    first = actual.data;
+  }
+}
+
+/**
+ * 一行内仅数字遮罩中的像素允许改变。
+ * @param actual - 遮罩后的像素。
+ * @param before - 原始像素。
+ * @param boxes - 数字矩形。
+ * @param scale - 当前缩放比例。
+ * @param clip - 原裁切偏移。
+ * @param y - 当前行。
+ */
+function assertOutsideMaskRow(actual: PNG, before: PNG, boxes: MaskBox[], scale: number, clip: { x: number; y: number }, y: number) {
+  for (let x = 0; x < actual.width; x++) {
+    if (boxes.some(/** 检查当前像素是否在原数字遮罩内。
+     * @param box - 实际数字矩形。 */ box => insideMask(box, scale, clip, x, y))) continue;
+    const offset = (y * actual.width + x) * 4;
+    assert.ok(actual.data.subarray(offset, offset + 4).equals(before.data.subarray(offset, offset + 4)),
+      '数字区域外的图标、边缘及背景像素必须原样保留');
+  }
+}
+
+type MaskBox = { x: number; y: number; right: number; bottom: number };
+
+/**
+ * 将带阴影边距的遮罩按原取整规则投影到裁切图片。
+ * @param box - 实际数字边界。
+ * @param scale - 当前缩放比例。
+ * @param clip - 裁切偏移。
+ * @param x - 当前列。
+ * @param y - 当前行。
+ */
+function insideMask(box: MaskBox, scale: number, clip: { x: number; y: number }, x: number, y: number) {
+  return insideAxis(x, box.x, box.right, scale, clip.x) && insideAxis(y, box.y, box.bottom, scale, clip.y);
+}
+
+/**
+ * 每个轴保留原 4px 阴影边距与向外取整。
+ * @param value - 当前像素坐标。
+ * @param start - 原起点。
+ * @param end - 原终点。
+ * @param scale - 当前缩放比例。
+ * @param offset - 裁切偏移。
+ */
+function insideAxis(value: number, start: number, end: number, scale: number, offset: number) {
+  return value >= Math.floor(start - 4 * scale - offset) && value < Math.ceil(end + 4 * scale - offset);
+}
+
+/**
+ * 精确核对洋红色的三个通道。
+ * @param rgb - 当前像素前三个字节。
+ */
+function isMagenta(rgb: Buffer) { return rgb.equals(Buffer.from([255, 0, 255])); }
+
+/**
+ * 原遮罩面积须非零且小于整图阈值。
+ * @param magenta - 遮罩像素数。
+ * @param bitmap - 实际图片。
+ */
+function assertSmallMaskArea(magenta: number, bitmap: PNG) {
   assert.ok(magenta > 0 && magenta < bitmap.width * bitmap.height * 0.005, '使用低于整图阈值的真实遮罩面积');
 }
