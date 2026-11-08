@@ -33,7 +33,8 @@ export async function javascriptFindings() {
   const findings = results.flatMap(/** 合并真实 ESLint 诊断和不可被行内禁用的指令检查结果。
  * @param result - 当前操作使用的 result。 */ result => {
     // 独立检查禁止的指令，防止 eslint-disable 把检查它自己的规则也关闭。
-    const directives = directiveChecker.verify(result.source ?? readFileSync(result.filePath, 'utf8'), [{
+    const source = result.source ?? readFileSync(result.filePath, 'utf8');
+    const directives = directiveChecker.verify(source, [{
       languageOptions: { parser: tseslint.parser }, linterOptions: { noInlineConfig: true },
       plugins: { quality }, rules: { 'quality/no-quality-disable': 'error' },
     }]).filter(/** 仅保留满足以下条件的条目：`item.ruleId === 'quality/no-quality-disable'`。
@@ -44,9 +45,10 @@ export async function javascriptFindings() {
  * @param message - 当前操作使用的 message。 */ message => ({
       file: relative(repository, result.filePath), rule: message.ruleId ?? 'parse-error',
       line: message.line ?? 1, column: message.column ?? 1, message: message.message,
-    }));
+    })).map(/** 使用 ESLint 检查的源码计算指纹，避免异步扫描后重新读取已删除的临时文件。
+     * @param finding - 当前文件的诊断。 */ finding => fingerprint(finding, source));
   });
-  return findings.map(fingerprint);
+  return findings;
 }
 
 /**
