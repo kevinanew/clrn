@@ -35,9 +35,9 @@ test('SETTINGS-010：金币余额入口保留真实余额并默认显示金币',
  * @param element - 当前匹配的页面元素。 */ element => {
       const rect = element.getBoundingClientRect();
       const style = getComputedStyle(element);
-      return style.display !== 'none' && style.visibility !== 'hidden'
-        && rect.width > 0 && rect.height > 0
-        && rect.left < innerWidth && rect.right > 0 && rect.top < innerHeight && rect.bottom > 0;
+      return [style.display !== 'none', style.visibility !== 'hidden',
+        rect.width > 0, rect.height > 0, rect.left < innerWidth, rect.right > 0,
+        rect.top < innerHeight, rect.bottom > 0].every(Boolean);
     }).length), { message: '商城必须加载金币页或已确认的礼品卡错页' }).toBe(1);
     expect(await coins.count(), '金币标题应唯一或尚未挂载').toBeLessThanOrEqual(1);
     expect(await giftCard.count(), '礼品卡说明应唯一或尚未挂载').toBeLessThanOrEqual(1);

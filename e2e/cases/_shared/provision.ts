@@ -35,15 +35,7 @@ export async function readDiamondBalance(page: Page, account: Session): Promise<
  * @param error - 当前操作抛出的错误。 */ error => { throw requestFailure('existing-account-wallet', requestFailureReason(error)); });
   try {
     const body = await readRequestJson(response, 'existing-account-wallet');
-    const currencies = body.result?.currencies;
-    const diamond = Array.isArray(currencies) ? currencies.find(/** 查找满足以下条件的首个条目：`asset?.code === 'diamond'`。
- * @param asset - 当前操作使用的 asset。 */ asset => asset?.code === 'diamond') : undefined;
-    if (!diamond) throw requestFailure('existing-account-wallet', 'invalid-response', response.status());
-    let balance: number;
-    try { balance = Number(diamond.balance); }
-    catch { throw requestFailure('existing-account-wallet', 'invalid-response', response.status()); }
-    if (!Number.isFinite(balance)) throw requestFailure('existing-account-wallet', 'invalid-response', response.status());
-    return balance;
+    return diamondBalance(body, response.status());
   } finally {
     await response.dispose().catch(/** 将钱包响应释放失败转成带实际状态的诊断。 */ () => { throw requestFailure('existing-account-wallet', 'body-read-failed', response.status()); });
   }
@@ -87,4 +79,37 @@ async function registerOnStaging(page: Page): Promise<ProvisionedAccount> {
   const diamondBalance = await readDiamondBalance(page, account);
   expect(diamondBalance, '测试注册不发放钻石奖励').toBe(0);
   return { ...account, username, diamondBalance, initialDiamondBalance: diamondBalance };
+}
+
+/**
+ * 校验钱包契约并读取有限数值余额。
+ * @param body - 已通过 HTTP 与业务检查的响应。
+ * @param status - 实际 HTTP 状态。
+ */
+function diamondBalance(body: any, status: number): number {
+  const diamond = diamondAsset(body.result?.currencies);
+  if (!diamond) throw requestFailure('existing-account-wallet', 'invalid-response', status);
+  return numericDiamondBalance(diamond.balance, status);
+}
+
+/**
+ * 从币种数组查找钻石，非数组保持契约失败。
+ * @param currencies - 钱包币种字段。
+ */
+function diamondAsset(currencies: any) {
+  return Array.isArray(currencies) ? currencies.find(/** 匹配钻石币种。
+   * @param asset - 一个币种条目。 */ asset => asset?.code === 'diamond') : undefined;
+}
+
+/**
+ * 转换余额时保留类型转换失败与非有限数值的原有诊断。
+ * @param value - 钻石余额字段。
+ * @param status - 实际 HTTP 状态。
+ */
+function numericDiamondBalance(value: unknown, status: number): number {
+  let balance: number;
+  try { balance = Number(value); }
+  catch { throw requestFailure('existing-account-wallet', 'invalid-response', status); }
+  if (!Number.isFinite(balance)) throw requestFailure('existing-account-wallet', 'invalid-response', status);
+  return balance;
 }

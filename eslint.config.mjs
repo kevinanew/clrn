@@ -5,6 +5,7 @@ import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import quality from './scripts/quality-rules.mjs';
 import { visualSupportFiles, visualToolFiles, visualCheckFiles } from './scripts/visual-complexity-scope.mjs';
+import { e2eSupportPatterns, e2eCheckPatterns } from './scripts/e2e-complexity-scope.mjs';
 import documentation from './scripts/documentation-rule.mjs';
 
 export default [
@@ -59,6 +60,14 @@ export default [
   {
     files: [...visualToolFiles, ...visualCheckFiles, 'eslint.config.mjs'],
     rules: { complexity: ['error', { max: 6, variant: 'classic' }] },
+  },
+  {
+    files: e2eCheckPatterns,
+    rules: { complexity: ['error', { max: 6, variant: 'classic' }] },
+  },
+  {
+    files: e2eSupportPatterns,
+    rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
   },
   {
     files: [...visualSupportFiles, 'scripts/visual-complexity*.test.mjs'],

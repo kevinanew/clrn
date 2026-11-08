@@ -3,30 +3,17 @@ import { resolve } from 'node:path';
 import type { Session } from './auth';
 import { requestFailure } from '../../../scripts/request-failure.cjs';
 import { fetchRequestJson } from '../../../visual/src/support/requestJson';
+import { validTestingUserId } from './test-user';
 import { parseAccountUrl } from './account-diagnostics';
 
 const stagingWalletOrigin = 'https://api.shafayouxi.org';
 
 /** CI 使用 Secret；本机可直接复用相邻 staging 部署仓库中的共用 Secret。 */
 export async function readTestApiToken(): Promise<string> {
-  const configured = process.env.TESTING_API_TOKEN?.trim();
+  const configured = configuredTestApiToken();
   if (configured) return configured;
-  if (!process.env.CI) {
-    try {
-      const deployment = await readFile(resolve(__dirname,
-        '../../../../goplay_staging_auto_stack/user_transaction_flask/deploy.yaml'), 'utf8');
-      const secret = deployment.split(/^---\s*$/m).find(/** 查找 staging 命名空间内存放测试 API 令牌的 Secret 文档。
- * @param document - 当前操作使用的 document。 */ document =>
-        /^kind:\s*Secret\s*$/m.test(document)
-        && /^\s+name:\s*test-api-token\s*$/m.test(document)
-        && /^\s+namespace:\s*goplay-staging\s*$/m.test(document));
-      // 只接受部署文件当前使用的 stringData 简单标量，不解析任意 YAML。
-      const token = secret?.match(/^stringData:\s*\n(?:\s*#.*\n)*\s+token:\s*["']?([A-Za-z0-9_=-]+)["']?\s*$/m)?.[1];
-      if (token) return token;
-    } catch {
-      // 文件缺失时提供统一配置提示，不将部署内容写入报告。
-    }
-  }
+  const local = await localTestApiToken();
+  if (local) return local;
   throw new Error('缺少 TESTING_API_TOKEN；请配置环境变量或本机相邻 staging 部署文件的 test-api-token Secret');
 }
 
@@ -36,12 +23,9 @@ export async function readTestApiToken(): Promise<string> {
  */
 function validateCreationWallet(account: Session): void {
   const url = parseAccountUrl(account.accountUrl);
-  if (url.protocol !== 'https:' || url.port || url.username || url.password
-    || !(url.origin === stagingWalletOrigin || url.hostname.endsWith('.api.staging.laiwan.shafayouxi.com'))
-    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(account.userId)
-    || url.pathname !== `/v11/user/${account.userId}/account`) {
-    throw new Error('设置测试余额仅允许 staging 创建账号的钱包');
-  }
+  const valid = [url.protocol === 'https:', !url.port, !url.username, !url.password,
+    stagingWalletApi(url), validTestingUserId(account.userId), url.pathname === `/v11/user/${account.userId}/account`];
+  if (!valid.every(Boolean)) throw new Error('设置测试余额仅允许 staging 创建账号的钱包');
 }
 
 /**
@@ -58,11 +42,83 @@ export async function setCreationDiamondBalance(account: Session, token: string)
     redirect: 'error',
     signal: AbortSignal.timeout(15_000),
   }, 'set-creation-diamonds');
-  let balance: number;
-  try { balance = Number(body.result?.balance); }
-  catch { throw requestFailure('set-creation-diamonds', 'invalid-response', status); }
-  if (body.result?.wallet_id !== account.userId
-    || body.result?.currency_name !== 'diamond' || balance !== 60) {
-    throw requestFailure('set-creation-diamonds', 'invalid-response', status);
+  validateSetBalance(body.result, account.userId, status);
+}
+
+/**
+ * 核对 staging API 的两种既有来源。
+ * @param url - 已解析的账户地址。
+ */
+function stagingWalletApi(url: URL) {
+  return url.origin === stagingWalletOrigin || url.hostname.endsWith('.api.staging.laiwan.shafayouxi.com');
+}
+
+/**
+ * 仅本机读取相邻部署文件；缺失或解析不匹配时仍使用统一配置错误。
+ */
+async function localTestApiToken() {
+  if (process.env.CI) return;
+  try {
+    const deployment = await readFile(resolve(__dirname,
+      '../../../../goplay_staging_auto_stack/user_transaction_flask/deploy.yaml'), 'utf8');
+    return deploymentToken(deployment);
+  } catch {
+    // 部署内容或文件路径不能泄漏到报告。
   }
 }
+
+/**
+ * 只接受 staging Secret 的 stringData 简单标量，不解析任意 YAML。
+ * @param deployment - 部署文件内容。
+ */
+function deploymentToken(deployment: string) {
+  const secret = deployment.split(/^---\s*$/m).find(/** 匹配指定命名空间的 Secret。
+   * @param document - 一个 YAML 文档。 */ document => [
+    /^kind:\s*Secret\s*$/m.test(document), /^\s+name:\s*test-api-token\s*$/m.test(document),
+    /^\s+namespace:\s*goplay-staging\s*$/m.test(document),
+  ].every(Boolean));
+  return secret?.match(/^stringData:\s*\n(?:\s*#.*\n)*\s+token:\s*["']?([A-Za-z0-9_=-]+)["']?\s*$/m)?.[1];
+}
+
+/**
+ * 检查设置余额响应仍属于目标账号、币种与精确余额。
+ * @param result - 业务响应结果。
+ * @param userId - 本例创建账号 ID。
+ * @param status - 实际状态。
+ */
+function validateSetBalance(result: any, userId: string, status: number) {
+  const balance = setBalanceNumber(result?.balance, status);
+  const fields = [...setBalanceIdentity(result, userId), balance === 60];
+  assertSetBalanceFields(fields, status);
+}
+
+/**
+ * 拒绝任一余额契约字段不匹配的响应。
+ * @param fields - 独立字段的检查结果。
+ * @param status - 实际状态。
+ */
+function assertSetBalanceFields(fields: boolean[], status: number) {
+  if (!fields.every(Boolean)) throw requestFailure('set-creation-diamonds', 'invalid-response', status);
+}
+
+/**
+ * 转换测试余额并保留类型转换异常的安全分类。
+ * @param value - 返回余额字段。
+ * @param status - 实际状态。
+ */
+function setBalanceNumber(value: unknown, status: number) {
+  try { return Number(value); }
+  catch { throw requestFailure('set-creation-diamonds', 'invalid-response', status); }
+}
+
+/**
+ * 单独核对余额响应的账号与币种，允许缺失结果转为契约失败。
+ * @param result - 响应结果。
+ * @param userId - 当前账号 ID。
+ */
+function setBalanceIdentity(result: any, userId: string) {
+  return [result?.wallet_id === userId, result?.currency_name === 'diamond'];
+}
+
+/** 读取环境变量中的非空测试令牌。 */
+function configuredTestApiToken() { return (process.env.TESTING_API_TOKEN || '').trim(); }

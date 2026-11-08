@@ -8,31 +8,24 @@ import { unique } from './page';
  * @param maximumNotices - 本次点击最多处理的遮挡通知数量。
  */
 export async function clickWithBackgroundClubNotice(page: Page, testId: string, maximumNotices = 1): Promise<void> {
-  if (!Number.isInteger(maximumNotices) || maximumNotices < 1 || maximumNotices > 3) {
-    throw new Error('已知后台提示的确认上限必须为1～3');
-  }
-  for (let handled = 0; handled < maximumNotices; handled++) {
-    try {
-      await (await unique(page, testId)).click({ trial: true, timeout: 3_000 });
-      break;
-    } catch (error) {
-      const message = page.getByTestId('alert-message-text').filter({ visible: true });
-      if (!(await message.count())) throw error;
-      // 其他接口错误、业务提示、同时出现多个弹窗均保持失败。
-      await expect(message).toHaveCount(1);
-      await expect(message).toHaveText(/^\d+\s+v10\/club\?user_id=[\w-]+\s+网络有点问题，请重试$/);
-      const confirm = await unique(page, 'alert-custom-button');
-      await expect(confirm).toHaveText('好的');
-      test.info().annotations.push({
-        type: 'staging-background-error',
-        description: `后台 v10/club 请求出现网络提示；用户确认第${handled + 1}条后继续当前操作。`,
-      });
-      await confirm.click();
-    }
-  }
+  validateNoticeLimit(maximumNotices);
+  await clearBackgroundNotices(page, testId, maximumNotices);
   // 真实点击仅执行一次；不因业务请求慢而重复提交。
   await (await unique(page, testId)).click({ trial: true });
   await (await unique(page, testId)).click();
+}
+
+/**
+ * 有限次数地处理已知通知，不重复实际业务操作。
+ * @param page - 当前页面。
+ * @param testId - 目标测试标记。
+ * @param maximumNotices - 允许处理的通知数量。
+ */
+async function clearBackgroundNotices(page: Page, testId: string, maximumNotices: number) {
+  for (let handled = 0; handled < maximumNotices; handled++) {
+    if (await backgroundTargetReady(page, testId, handled)) break;
+  }
+
 }
 
 /**
@@ -55,4 +48,49 @@ export async function openSettingsItem(page: Page, id: string): Promise<void> {
     await page.waitForTimeout(150);
   }
   await (await unique(page, id)).click();
+}
+
+/**
+ * 检查每次操作允许处理的通知数量。
+ * @param maximumNotices - 用户指定上限。
+ */
+function validateNoticeLimit(maximumNotices: number) {
+  if (![1, 2, 3].includes(maximumNotices)) throw new Error('已知后台提示的确认上限必须为1～3');
+}
+
+/**
+ * 校验已知俱乐部提示并确认，未知或缺失提示继续传播原始错误。
+ * @param page - 当前页面。
+ * @param handled - 此前已处理条数。
+ * @param error - 原目标试探错误。
+ */
+async function confirmBackgroundNotice(page: Page, handled: number, error: unknown) {
+  const message = page.getByTestId('alert-message-text').filter({ visible: true });
+  if (!(await message.count())) throw error;
+  // 其他接口错误、业务提示、同时出现多个弹窗均保持失败。
+  await expect(message).toHaveCount(1);
+  await expect(message).toHaveText(/^\d+\s+v10\/club\?user_id=[\w-]+\s+网络有点问题，请重试$/);
+  const confirm = await unique(page, 'alert-custom-button');
+  await expect(confirm).toHaveText('好的');
+  test.info().annotations.push({
+    type: 'staging-background-error',
+    description: `后台 v10/club 请求出现网络提示；用户确认第${handled + 1}条后继续当前操作。`,
+  });
+  await confirm.click();
+}
+
+/**
+ * 试探目标，失败时只确认一条已知后台提示。
+ * @param page - 当前页面。
+ * @param testId - 目标测试标记。
+ * @param handled - 已处理条数。
+ */
+async function backgroundTargetReady(page: Page, testId: string, handled: number) {
+  try {
+    await (await unique(page, testId)).click({ trial: true, timeout: 3_000 });
+    return true;
+  } catch (error) {
+    await confirmBackgroundNotice(page, handled, error);
+    return false;
+  }
 }

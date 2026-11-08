@@ -29,7 +29,7 @@ function checkFailure(error: unknown, stage: string, method: string, operation: 
   status: number | 'unavailable', reason: string, source = 'laiwan_prd'): boolean {
   assert.ok(error instanceof Error);
   const upper = readAccountPreparationError(new Error(secret, { cause: error }));
-  assert.equal(upper.message, `${stage}失败：method=${method} operation=${operation} source=${source} status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}`);
+  assert.equal(upper.message, `${stage}失败：method=${method} operation=${operation} source=${source} status=${status} response=${responseState(status)} reason=${reason}`);
   for (const failure of [error, upper]) {
     assert.equal(failure.cause, undefined);
     assert.doesNotMatch(inspect(failure, { depth: 20 }), /account\.invalid|192\.0\.2\.60|2001:db8::60|9443|\/private|synthetic-|Bearer|Cookie|Call log/);
@@ -121,7 +121,11 @@ test('已有账号登录失败保留真实定位；200和完整缓存成功时�
 });
 
 test('表单准备失败或未观察到登录请求不能虚构POST；观察到请求后才记录POST及无响应', /** 验证表单准备失败或未观察到登录请求不能虚构POST；观察到请求后才记录POST及无响应。 */ async () => {
-  for (const phase of ['form', 'waiting', 'request'] as const) {
+  for (const { phase, operation, stage, method, source } of [
+    { phase: 'form', operation: 'existing-account-login-ui', stage: '准备已有只读账号登录表单', method: 'LOCAL', source: 'browser-ui' },
+    { phase: 'waiting', operation: 'existing-account-login-await', stage: '等待已有只读账号登录响应（请求未观察到）', method: 'UNKNOWN', source: 'browser-ui' },
+    { phase: 'request', operation: 'existing-account-login', stage: '已有只读账号登录', method: 'POST', source: 'laiwan_prd' },
+  ]) {
     let closed = false;
     let detached = false;
     const timeout = Object.assign(new Error(secret), { name: 'TimeoutError' });
@@ -141,24 +145,26 @@ test('表单准备失败或未观察到登录请求不能虚构POST；观察到�
       waitForResponse: /** 未收到任何HTTP响应。 */ async () => { throw timeout; },
       close: /** 失败必须关闭凭据表单。 */ async () => { closed = true; },
     } as unknown as Page;
-    const operation = phase === 'form' ? 'existing-account-login-ui'
-      : phase === 'waiting' ? 'existing-account-login-await' : 'existing-account-login';
-    const stage = phase === 'form' ? '准备已有只读账号登录表单'
-      : phase === 'waiting' ? '等待已有只读账号登录响应（请求未观察到）' : '已有只读账号登录';
     await assert.rejects(signIn(page, { username: 'synthetic-user', password: 'synthetic-password' }),
       /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
- * @param error - 当前操作抛出的错误。 */ error => checkFailure(error, stage, phase === 'form' ? 'LOCAL' : phase === 'waiting' ? 'UNKNOWN' : 'POST',
-        operation, 'unavailable', 'timeout', phase === 'request' ? 'laiwan_prd' : 'browser-ui'));
+ * @param error - 当前操作抛出的错误。 */ error => checkFailure(error, stage, method, operation, 'unavailable', 'timeout', source));
     assert.ok(closed);
     assert.ok(detached);
   }
 });
 
 test('实际只读fixture准备链保留本地阶段与真实会话状态，仍要求200并关闭失败页面', /** 验证实际只读fixture准备链保留本地阶段与真实会话状态，仍要求200并关闭失败页面。 */ async () => {
-  for (const phase of ['context', 'origin', 'session-401', 'session-503', 'session-201', 'success'] as const) {
+  const scenarios: { phase: string; status: number; failure: ExpectedFailure | null }[] = [
+    { phase: 'context', status: 200, failure: ['准备已有只读账号页面', 'LOCAL', 'existing-account-setup', 'unavailable', 'request-failed', 'browser-ui'] },
+    { phase: 'origin', status: 200, failure: ['核对只读账号页面来源', 'LOCAL', 'existing-account-origin', 'unavailable', 'request-failed', 'browser-ui'] },
+    { phase: 'session-401', status: 401, failure: ['核对已有只读账号会话', 'GET', 'existing-account-session', 401, 'http-error', 'laiwan_prd'] },
+    { phase: 'session-503', status: 503, failure: ['核对已有只读账号会话', 'GET', 'existing-account-session', 503, 'http-error', 'laiwan_prd'] },
+    { phase: 'session-201', status: 201, failure: ['核对已有只读账号会话', 'GET', 'existing-account-session', 201, 'invalid-response', 'laiwan_prd'] },
+    { phase: 'success', status: 200, failure: null },
+  ];
+  for (const { phase, status, failure } of scenarios) {
     let closed = false;
     let walletReads = 0;
-    const status = phase === 'session-401' ? 401 : phase === 'session-503' ? 503 : phase === 'session-201' ? 201 : 200;
     const page = {
       addLocatorHandler: /** 网络边界测试不触发 UI 引导。 */ async () => {},
       goto: /** 成功的隔离入口导航。 */ async () => ({ ok: /** HTTP成功。 */ () => true, status: /** 已收到200。 */ () => 200 }),
@@ -189,13 +195,7 @@ test('实际只读fixture准备链保留本地阶段与真实会话状态，仍�
       assert.equal(closed, false);
     } else {
       await assert.rejects(result, /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
- * @param error - 当前操作抛出的错误。 */ error => checkFailure(error,
-        phase === 'context' ? '准备已有只读账号页面' : phase === 'origin' ? '核对只读账号页面来源' : '核对已有只读账号会话',
-        phase === 'context' || phase === 'origin' ? 'LOCAL' : 'GET',
-        phase === 'context' ? 'existing-account-setup' : phase === 'origin' ? 'existing-account-origin' : 'existing-account-session',
-        phase === 'context' || phase === 'origin' ? 'unavailable' : status,
-        phase === 'context' || phase === 'origin' ? 'request-failed' : status === 201 ? 'invalid-response' : 'http-error',
-        phase === 'context' || phase === 'origin' ? 'browser-ui' : 'laiwan_prd'));
+ * @param error - 当前操作抛出的错误。 */ error => checkExpectedFailure(error, failure));
       assert.equal(walletReads, 0);
       assert.ok(closed);
     }
@@ -284,3 +284,21 @@ test('只读账号上层持久化不保存包装文本，未知页面错误仍�
     assert.doesNotMatch(output, /account\.invalid|synthetic-|192\.0\.2\.60|2001:db8::60|Call log/);
   }
 });
+
+/**
+ * 只根据实际是否收到状态描述响应，不推断 HTTP。
+ * @param status - 实际状态或明确无响应。
+ */
+function responseState(status: number | 'unavailable') { return status === 'unavailable' ? 'not-received' : 'received'; }
+
+type ExpectedFailure = [stage: string, method: string, operation: string, status: number | 'unavailable', reason: string, source: string];
+
+/**
+ * 使用显式场景表核对边界，不用分支重新推导期望。
+ * @param error - 实际失败。
+ * @param expected - 场景表的完整期望。
+ */
+function checkExpectedFailure(error: unknown, expected: ExpectedFailure | null) {
+  assert.ok(expected);
+  return checkFailure(error, ...expected);
+}

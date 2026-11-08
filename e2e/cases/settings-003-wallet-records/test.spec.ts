@@ -1,3 +1,4 @@
+import type { Locator } from '@playwright/test';
 import { expect, test } from '../_shared/read-account-fixture';
 import { unique } from '../_shared/page';
 import { goBack } from '../_shared/navigation';
@@ -13,7 +14,10 @@ test('SETTINGS-003：商城商品、钱包流水、购买记录和礼品卡浏�
     await expect(await unique(page, 'product-price-0')).toHaveText(/^¥\d/);
   });
   await test.step('金币和钻石流水与真实接口一致，兼容没有注册奖励的账号', /** 执行金币和钻石流水与真实接口一致，兼容没有注册奖励的账号。 */ async () => {
-    for (const currency of ['coin', 'diamond']) {
+    for (const { currency, entry, viewId } of [
+      { currency: 'coin', entry: 'currency-transaction-record-button', viewId: 'coin-transaction-record-view' },
+      { currency: 'diamond', entry: 'currency_transaction_top_tab_bar_diamond', viewId: 'account-security-items-list' },
+    ]) {
       // 在点击前监听页面自己的请求；空列表必须有成功响应，不能把加载失败当成空态。
       const recordsResponse = page.waitForResponse(/** 匹配GET `/v11/wallet/${signedInAccount.userId}/currency/${currency}/statement` 的响应，避免捕获其他请求。
  * @param response - 当前收到的接口响应。 */ (response) => {
@@ -21,27 +25,16 @@ test('SETTINGS-003：商城商品、钱包流水、购买记录和礼品卡浏�
         return url.pathname === `/v11/wallet/${signedInAccount.userId}/currency/${currency}/statement`
           && response.request().method() === 'GET';
       });
-      if (currency === 'coin') {
-        await (await unique(page, 'currency-transaction-record-button')).click();
-      } else {
-        await (await unique(page, 'currency_transaction_top_tab_bar_diamond')).click();
-      }
+      await (await unique(page, entry)).click();
       const response = await recordsResponse;
       expect(response.ok(), `${currency} 流水接口应成功`).toBe(true);
       const body = await response.json();
       expect(body.ok, `${currency} 流水业务响应应成功`).toBe(true);
       const statements = body.result?.statements;
       expect(Array.isArray(statements), '流水响应应包含列表').toBe(true);
-      const view = await unique(page, currency === 'coin' ? 'coin-transaction-record-view' : 'account-security-items-list');
+      const view = await unique(page, viewId);
       const amounts = view.getByTestId('CurrencyTransactionRecordItem_amount');
-      if (statements.length === 0) {
-        await expect(amounts).toHaveCount(0);
-      } else {
-        const first = statements[0];
-        expect(['deposit', 'withdraw']).toContain(first.event);
-        await expect(amounts.first()).toHaveText(`${first.event === 'deposit' ? '+' : '-'}${first.amount}`);
-        await expect(view.getByTestId('CurrencyTransactionRecordItem_balance').first()).toContainText(String(first.balance));
-      }
+      await expectWalletRows(view, amounts, statements);
     }
     await goBack(page);
     await expect(await unique(page, 'diamond-goods-list')).toContainText('颗钻石');
@@ -67,3 +60,20 @@ test('SETTINGS-003：商城商品、钱包流水、购买记录和礼品卡浏�
     await expect(await unique(page, 'personal-gift-card-screen-container')).toContainText('可用的');
   });
 });
+
+/**
+ * 区分真实空流水与首条交易，保留收支和余额断言。
+ * @param view - 当前币种视图。
+ * @param amounts - 金额行。
+ * @param statements - 已核对数组类型的真实流水。
+ */
+async function expectWalletRows(view: Locator, amounts: Locator, statements: any[]) {
+  if (statements.length === 0) {
+    await expect(amounts).toHaveCount(0);
+  } else {
+    const first = statements[0];
+    expect(['deposit', 'withdraw']).toContain(first.event);
+    await expect(amounts.first()).toHaveText(`${first.event === 'deposit' ? '+' : '-'}${first.amount}`);
+    await expect(view.getByTestId('CurrencyTransactionRecordItem_balance').first()).toContainText(String(first.balance));
+  }
+}

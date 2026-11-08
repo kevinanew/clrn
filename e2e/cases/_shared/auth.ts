@@ -47,21 +47,9 @@ export async function signIn(page: Page, credentials = {
  * @param error - 当前操作抛出的错误。 */ error => ({ error }));
     await (await unique(page, 'sign-in-button')).click();
     const result = await loginResponse;
-    if ('error' in result) throw result.error;
-    const response = result.response;
-    if (!response.ok()) {
-      // 登录失败时关闭密码表单，避免 Playwright 的错误上下文保存输入值。
-      throw requestFailure('existing-account-login', 'http-error', status);
-    }
+    const response = successfulLogin(result);
     await expect(page.getByTestId('hall-auth-state-signed-in')).toBeVisible({ timeout: 60_000 });
-    const session = await page.evaluate(/** 从页面缓存读取完整用户和访问令牌，缺失时终止登录准备。 */ () => {
-      const raw = localStorage.getItem('save.user.origin.data.from.server.key');
-      const auth = raw ? JSON.parse(raw) : null;
-      if (!auth?.user_id || !auth?.api_token?.access_token || !auth?.api_token?.token_type) {
-        throw new Error('登录后未生成完整认证缓存');
-      }
-      return { userId: String(auth.user_id), authorization: `${auth.api_token.token_type} ${auth.api_token.access_token}` };
-    });
+    const session = await page.evaluate(readLoginCache);
     return {
       userId: session.userId,
       accountUrl: `${new URL(response.url()).origin}/v11/user/${encodeURIComponent(session.userId)}/account`,
@@ -69,10 +57,7 @@ export async function signIn(page: Page, credentials = {
     };
   } catch (error) {
     await page.close().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-    const operation = status !== undefined || observed ? 'existing-account-login'
-      : waiting ? 'existing-account-login-await' : 'existing-account-login-ui';
-    throw requestFailure(operation, status === undefined ? requestFailureReason(error)
-      : status < 200 || status >= 300 ? 'http-error' : 'invalid-response', status);
+    throw requestFailure(loginOperation(status, observed, waiting), loginFailureReason(error, status), status);
   } finally {
     page.off('request', observeLogin);
   }
@@ -97,4 +82,71 @@ export async function accountStatus(page: Page, session: Session): Promise<numbe
   const status = response.status();
   await response.dispose().catch(/** 将会话响应释放失败转成带真实状态的安全诊断。 */ () => { throw requestFailure('existing-account-session', 'body-read-failed', status); });
   return status;
+}
+
+/**
+ * 将响应等待失败和 HTTP 拒绝保留为原有登录错误。
+ * @param result - 响应或等待错误。
+ */
+function successfulLogin(result: { error: unknown } | { response: import('@playwright/test').Response }) {
+  if ('error' in result) throw result.error;
+  if (!result.response.ok()) throw requestFailure('existing-account-login', 'http-error', result.response.status());
+  return result.response;
+}
+
+/**
+ * 根据实际观察区分 UI 准备、未观察到请求和登录请求。
+ * @param status - 已收到的状态。
+ * @param observed - 是否观察到 POST。
+ * @param waiting - 是否开始等待响应。
+ */
+function loginOperation(status: number | undefined, observed: boolean, waiting: boolean): string {
+  if (status !== undefined || observed) return 'existing-account-login';
+  return pendingLoginOperation(waiting);
+}
+
+/**
+ * 标记未收到请求前的本地阶段。
+ * @param waiting - 是否已开始等待响应。
+ */
+function pendingLoginOperation(waiting: boolean) {
+  return waiting ? 'existing-account-login-await' : 'existing-account-login-ui';
+}
+
+/**
+ * 保留真实状态，只有未收到响应时才推断网络错误类别。
+ * @param error - 边界捕获的错误。
+ * @param status - 实际响应状态。
+ */
+function loginFailureReason(error: unknown, status: number | undefined) {
+  return status === undefined ? requestFailureReason(error) : sessionFailureReason(status);
+}
+
+/** 在浏览器内读取认证缓存，局部校验函数随 evaluate 一同序列化。 */
+export function readLoginCache() {
+  const validation = {
+    /**
+     * 检查对象的必填真值字段，不回显缓存内容。
+     * @param value - 缓存对象。
+     * @param fields - 必填字段名。
+     */
+    requireFields(value: Record<string, any>, fields: string[]) {
+      if (!value) throw new Error('登录后未生成完整认证缓存');
+      if (!fields.every(/** 检查单个必填字段。
+       * @param field - 当前字段名。 */ field => value[field])) throw new Error('登录后未生成完整认证缓存');
+    },
+  };
+  const raw = localStorage.getItem('save.user.origin.data.from.server.key');
+  const auth = raw ? JSON.parse(raw) : null;
+  validation.requireFields(auth, ['user_id', 'api_token']);
+  validation.requireFields(auth.api_token, ['access_token', 'token_type']);
+  return { userId: String(auth.user_id), authorization: `${auth.api_token.token_type} ${auth.api_token.access_token}` };
+}
+
+/**
+ * 保留非 200 会话响应的 HTTP 与契约错误分类。
+ * @param status - 实际 HTTP 状态。
+ */
+export function sessionFailureReason(status: number) {
+  return status < 200 || status >= 300 ? 'http-error' : 'invalid-response';
 }

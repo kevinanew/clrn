@@ -1,3 +1,4 @@
+import { clubIdentifier, isCreatedClub, closeGuestContexts } from '../_shared/created-resource';
 import { test, expect } from '../_shared/creation-account-fixture';
 import { createSecondAccount, type SecondAccount } from '../_shared/second-account';
 import { unique } from '../_shared/page';
@@ -78,6 +79,19 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
     await expect(await unique(page, 'club-home-page-screen')).toBeVisible();
   };
 
+  /** 移除本例已批准成员后核对房主仍是唯一成员。 */
+  const cleanupJoined = async () => {
+    for (const guest of joined) {
+      const response = await guest.page.request.delete(`${apiOrigin}/v10/club/${clubId}/member/${guest.userId}`, {
+        headers: { Authorization: guest.authorization }, timeout: 15_000,
+      });
+      expect(response.ok(), '仅移除本次测试加入的成员').toBeTruthy();
+      expect((await response.json()).ok).toBe(true);
+      await response.dispose();
+    }
+    if (joined.length) await expect.poll(/** 重复读取`(await members()).length`，直到满足外层等待断言。 */ async () => (await members()).length).toBe(1);
+  };
+
   try {
     await test.step('房主创建独立俱乐部，核对初始成员和费用', /** 执行房主创建独立俱乐部，核对初始成员和费用。 */ async () => {
       expect(before).toBeGreaterThanOrEqual(50);
@@ -90,8 +104,8 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
         && new URL(response.url()).pathname === '/v3/pay_action/do', { timeout: 60_000 });
       const [response] = await Promise.all([creating, clickWithBackgroundClubNotice(page, 'edit-club-header-right-complete', 3)]);
       const body = await response.json();
-      if (body.ok === true && /^[0-9a-f-]{36}$/.test(body.result?.id || body.result?.club_id || '')) {
-        clubId = body.result.id || body.result.club_id;
+      if (isCreatedClub(body)) {
+        clubId = clubIdentifier(body);
         apiOrigin = new URL(response.url()).origin;
       }
       expect(response.ok()).toBeTruthy();
@@ -157,8 +171,7 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
       const parsedBody = await parsed.json();
       await parsed.dispose();
       expect(parsedBody.ok).toBe(true);
-      expect(parsedBody.result?.action).toBe('new_club_application');
-      expect(parsedBody.result?.params?.club_id).toBe(clubId);
+      expectInvitationPayload(parsedBody, clubId);
       const applied = await invitee.page.request.post(`${apiOrigin}/v10/club/${clubId}/application`, {
         headers: { Authorization: invitee.authorization },
       });
@@ -201,18 +214,26 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
   } finally {
     try {
       if (clubId && apiOrigin) {
-        for (const guest of joined) {
-          const response = await guest.page.request.delete(`${apiOrigin}/v10/club/${clubId}/member/${guest.userId}`, {
-            headers: { Authorization: guest.authorization }, timeout: 15_000,
-          });
-          expect(response.ok(), '仅移除本次测试加入的成员').toBeTruthy();
-          expect((await response.json()).ok).toBe(true);
-          await response.dispose();
-        }
-        if (joined.length) await expect.poll(/** 重复读取`(await members()).length`，直到满足外层等待断言。 */ async () => (await members()).length).toBe(1);
+        await cleanupJoined();
       }
     } finally {
-      for (const guest of guests) await guest.context.close();
+      await closeGuestContexts(guests);
     }
   }
 });
+
+/**
+ * 校验分享链接解析后的动作和目标俱乐部。
+ * @param body - 解析业务响应。
+ * @param clubId - 本例俱乐部 ID。
+ */
+function expectInvitationPayload(body: any, clubId: string | undefined) {
+  expect(body.result?.action).toBe('new_club_application');
+  expect(invitationClubId(body.result)).toBe(clubId);
+}
+
+/**
+ * 保持缺失参数的断言失败，避免读取其他俱乐部。
+ * @param result - 分享链接解析结果。
+ */
+function invitationClubId(result: any) { return result?.params?.club_id; }
