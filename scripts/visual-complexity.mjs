@@ -2,19 +2,20 @@ import { ESLint } from 'eslint';
 import { relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repository, sourceFiles } from './source-files.mjs';
-import { visualSupportFiles, visualToolFiles } from './visual-complexity-scope.mjs';
+import { visualSupportFiles, visualToolFiles, animationSupportFiles, animationFiles } from './visual-complexity-scope.mjs';
 
 /**
  * 按显式范围列出本任务文件及检查实现，遗漏或删除源码时拒绝空跑。
+ * @param animationsOnly - 是否只扫描动画范围与门禁实现。
  * @returns 本任务实际扫描的源码路径。
  */
-export function visualComplexityFiles() {
+export function visualComplexityFiles(animationsOnly = false) {
   const files = sourceFiles();
-  const required = [...visualSupportFiles, ...visualToolFiles, 'eslint.config.mjs'];
+  const required = [...animationSupportFiles, ...existingVisualFiles(animationsOnly), 'eslint.config.mjs'];
   for (const file of required) {
     if (!files.includes(file)) throw new Error(`视觉复杂度检查缺少文件：${file}`);
   }
-  return [...new Set([...required, ...files.filter(/** 根据当前条目计算结果。
+  return [...new Set([...required, ...animationFiles(files), ...files.filter(/** 根据当前条目计算结果。
  * @param file - 当前回调参数。 */ file => /^scripts\/visual-complexity.*\.mjs$/.test(file))])];
 }
 
@@ -53,13 +54,14 @@ function isGateMessage(message) {
 
 /**
  * 以 ESLint classic max=0 输出每一个函数，包含匿名、嵌套回调及默认参数。
+ * @param files - 要测量的实际文件。
  * @returns 当前逐函数实测报告。
  */
-export async function measureVisualComplexity() {
+export async function measureVisualComplexity(files = visualComplexityFiles()) {
   const eslint = new ESLint({ cwd: repository, overrideConfig: {
     linterOptions: { noInlineConfig: true }, rules: { complexity: ['error', { max: 0, variant: 'classic' }] },
   } });
-  const results = await eslint.lintFiles(visualComplexityFiles());
+  const results = await eslint.lintFiles(files);
   return results.flatMap(functionMeasurements);
 }
 
@@ -80,11 +82,12 @@ function functionMeasurements(result) {
 
 /** 执行独立门禁或打印完整测量结果，失败均返回非零状态。 */
 async function main() {
+  const files = visualComplexityFiles(process.argv.includes('--animations'));
   if (process.argv.includes('--report')) {
-    console.log(JSON.stringify(await measureVisualComplexity(), null, 2));
+    console.log(JSON.stringify(await measureVisualComplexity(files), null, 2));
     return;
   }
-  const results = await checkVisualComplexity();
+  const results = await checkVisualComplexity(files);
   const messages = results.flatMap(/** 根据当前条目计算结果。
  * @param result - 当前回调参数。 */ result => result.messages.map(/** 根据当前条目计算结果。
  * @param message - 当前回调参数。 */ message =>
@@ -95,3 +98,10 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
+
+/**
+ * 动画定向入口独立于其他目录，普通入口仍保持既有全部范围。
+ * @param animationsOnly - 是否只运行动画范围。
+ * @returns 其他视觉模块的必要路径。
+ */
+function existingVisualFiles(animationsOnly) { return animationsOnly ? [] : [...visualSupportFiles, ...visualToolFiles]; }
