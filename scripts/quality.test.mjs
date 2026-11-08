@@ -5,11 +5,25 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { ESLint } from 'eslint';
-import { assertShrinking, newFindings } from './quality-baseline.mjs';
+import { assertShrinking, fingerprint, newFindings } from './quality-baseline.mjs';
 import { repository } from './source-files.mjs';
 import { duplicationReference, projectJavascript } from './documentation-projection.mjs';
 
 const eslint = new ESLint({ cwd: repository });
+
+test('指纹使用诊断时的源码，临时文件删除后仍保留违规', /** 验证指纹不重读已清理的临时文件。 */ () => {
+  const directory = mkdtempSync(join(repository, '.quality-probe-'));
+  const file = join(directory, 'probe.ts');
+  const source = 'await page.route("**", handler);\n';
+  const finding = { file: file.slice(repository.length + 1), rule: 'quality/no-network-response', line: 1 };
+  try {
+    writeFileSync(file, source);
+    const expected = fingerprint(finding);
+    rmSync(directory, { recursive: true, force: true });
+    assert.deepEqual(fingerprint(finding, source), expected);
+    assert.throws(/** 缺少源码快照时仍必须报告文件缺失。 */ () => fingerprint(finding), { code: 'ENOENT' });
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
 
 /**
  * 对内存负例运行真实配置，不创建业务或浏览器连接。
