@@ -5,11 +5,25 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { ESLint } from 'eslint';
-import { assertShrinking, newFindings } from './quality-baseline.mjs';
+import { assertShrinking, fingerprint, newFindings } from './quality-baseline.mjs';
 import { repository } from './source-files.mjs';
 import { duplicationReference, projectJavascript } from './documentation-projection.mjs';
 
 const eslint = new ESLint({ cwd: repository });
+
+test('违规指纹按文件扩展名解析 TypeScript 泛型和 TSX', /** 验证泛型不会被误读为 JSX，且 TSX 仍可生成指纹。 */ () => {
+  for (const [file, source] of [
+    ['probe.ts', 'const probe = <T>(value: T) => value;'],
+    ['probe.tsx', 'const probe = <span />;'],
+  ]) {
+    const finding = { file, rule: 'complexity', line: 1, column: 1, message: 'probe' };
+    const documented = source.replace('= ', '= /** 说明。\n */ ');
+    assert.equal(fingerprint(finding, source).anchor,
+      fingerprint({ ...finding, line: 2 }, documented).anchor);
+    assert.notEqual(fingerprint(finding, source).anchor,
+      fingerprint(finding, source.replace('probe', 'changed')).anchor);
+  }
+});
 
 /**
  * 对内存负例运行真实配置，不创建业务或浏览器连接。

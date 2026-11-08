@@ -21,7 +21,7 @@ export function fingerprint(finding, source) {
     return { ...finding, anchor: raw };
   }
   if (!/\.[cm]?[jt]sx?$/.test(finding.file)) return { ...finding, anchor: raw };
-  return { ...finding, anchor: documentedLineAnchor(source, lines, finding.line) };
+  return { ...finding, anchor: documentedLineAnchor(source, lines, finding.line, finding.file) };
 }
 
 /**
@@ -29,14 +29,15 @@ export function fingerprint(finding, source) {
  * @param source - 完整源码。
  * @param lines - 原始源码行。
  * @param lineNumber - 诊断行号。
+ * @param filePath - 源码路径，用扩展名区分 TypeScript 与 JSX。
  * @returns 源码行哈希。
  */
-export function documentedLineAnchor(source, lines, lineNumber) {
+export function documentedLineAnchor(source, lines, lineNumber, filePath = 'estree.tsx') {
   const offset = lines.slice(0, lineNumber - 1).reduce(/** 计算诊断行在源码中的偏移。
  * @param sum - 累计字符数。
  * @param line - 当前源码行。 */ (sum, line) => sum + line.length + 1, 0);
   // 只合并解析器识别出的行内 TSDoc，避免误读字符串中的注释标记。
-  const { ast } = tseslint.parser.parseForESLint(source, { comment: true, range: true, loc: true, ecmaFeatures: { jsx: true } });
+  const { ast } = tseslint.parser.parseForESLint(source, { filePath, comment: true, range: true, loc: true, ecmaFeatures: { jsx: true } });
   let normalized = '', cursor = 0, mapped = offset;
   for (const comment of ast.comments) {
     if (comment.type !== 'Block' || !comment.value.startsWith('*')) continue;
