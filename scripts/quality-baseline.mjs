@@ -20,7 +20,8 @@ export function fingerprint(finding, source) {
  * @param item - 历史诊断。 */ item => item.file === finding.file && item.rule === finding.rule && item.anchor === raw)) {
     return { ...finding, anchor: raw };
   }
-  if (!/\.[cm]?[jt]sx?$/.test(finding.file)) return { ...finding, anchor: raw };
+  // 解析失败的源码无法归一化文档，保留原始行指纹以继续报告全部诊断。
+  if (finding.rule === 'parse-error' || !/\.[cm]?[jt]sx?$/.test(finding.file)) return { ...finding, anchor: raw };
   return { ...finding, anchor: documentedLineAnchor(source, lines, finding.line, finding.file) };
 }
 

@@ -203,11 +203,13 @@ test('统一入口拒绝新增 mock，整体禁用指令也不能绕过门禁', 
   const directory = mkdtempSync(join(repository, '.quality-probe-'));
   try {
     const file = join(directory, 'probe.ts');
+    writeFileSync(join(directory, 'invalid.ts'), 'export function (');
     for (const directive of ['', '/* eslint-disable */\n', '/* eslint complexity: off, "quality/no-quality-disable": off */\n']) {
       writeFileSync(file, `${directive}await page.route('**', handler);\n`);
       const result = invoke('scripts/quality.mjs', ['javascript'], repository);
       assert.equal(result.status, 1, result.stderr);
       assert.match(result.stderr, /probe\.ts/);
+      assert.match(result.stderr, /invalid\.ts:1:\d+ parse-error/);
       if (directive) assert.match(result.stderr, /quality\/no-quality-disable/);
     }
   } finally { rmSync(directory, { recursive: true, force: true }); }
