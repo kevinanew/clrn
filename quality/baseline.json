@@ -964,16 +964,6 @@
     },
     {
       "file": "visual/cases/texas-holdem/texas-holdem.spec.ts",
-      "rule": "complexity",
-      "line": 219,
-      "column": 72,
-      "message": "Async arrow function has a complexity of 18. Maximum allowed is 10.",
-      "anchor": "6cecd1c7550cb79d4d4c6088de4f2d16acaace5ae71a21b898216d0bbaa7751f",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/texas-holdem/texas-holdem.spec.ts",
       "rule": "max-depth",
       "line": 313,
       "column": 11,
