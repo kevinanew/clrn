@@ -5,6 +5,16 @@ import path from 'node:path';
 import type { FullConfig, FullResult, Reporter, TestCase, TestResult, TestStep, TestError } from '@playwright/test/reporter';
 import { DiagnosticLog, DiagnosticOutput, diagnosticCaseDirectory, logError, logText } from './diagnostic-log';
 
+/**
+ * Playwright 将输入原样插入带引号标题，无法可靠区分输入内伪造的定位器边界。
+ * @param title - 包含完整输入的原始标题，须先脱敏再交给容量截断出口。
+ */
+function stepTitle(title: string): string {
+  const text = logText(title);
+  const action = text.match(/^(Fill|Type|Insert(?: text)?)\b/i);
+  return action ? `${action[1]} [输入动作标题已隐藏；定位器不可安全分离]` : text;
+}
+
 /** 在 reporter 和 worker 间关联同一用例日志，原始失败结果始终由 Playwright 决定。 */
 export default class DiagnosticReporter implements Reporter {
   private runner?: DiagnosticLog;
@@ -71,11 +81,8 @@ export default class DiagnosticReporter implements Reporter {
    * @param step - 运行器提供的动作。
    */
   private stepFields(step: TestStep): Record<string, unknown> {
-    const title = step.title.replace(/^(Fill|Type|Insert text)\s+".*?"/i, '$1 [输入值已隐藏]');
-    return { stepId: step.titlePath().map(/** 使用脱敏步骤路径区分同名的嵌套动作。
-      * @param item - 步骤标题。
-      */ item => logText(item.replace(/^(Fill|Type|Insert text)\s+".*?"/i, '$1 [输入值已隐藏]'))).join(' > '),
-      target: logText(title), category: step.category };
+    return { stepId: step.titlePath().map(stepTitle).join(' > '),
+      target: stepTitle(step.title), category: step.category };
   }
 
   /**

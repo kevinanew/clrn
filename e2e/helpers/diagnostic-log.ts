@@ -1,6 +1,7 @@
 /** 在 Playwright 清理目录之外持续保存脱敏副本，保留每次命令和重试的独立身份。 */
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { StringDecoder } from 'node:string_decoder';
 import path from 'node:path';
 import { diagnosticFullText } from './diagnostic-privacy';
 
@@ -31,6 +32,8 @@ export class DiagnosticOutput {
   private depth = 0;
   private quote = '';
   private escaped = false;
+  private continuation = false;
+  private readonly decoder = new StringDecoder('utf8');
 
   /**
    * 为一个输出流创建独立缓冲，避免 stdout 和 stderr 交错拼接。
@@ -44,31 +47,38 @@ export class DiagnosticOutput {
    * @param chunk - 原始输出块。
    */
   write(chunk: string | Buffer): void {
-    const lines = String(chunk).split('\n');
+    const lines = (typeof chunk === 'string' ? this.decoder.end() + chunk : this.decoder.write(chunk)).split('\n');
     lines.forEach(/** 合并同一行的分块，不保留任意长的敏感输出。
      * @param line - 当前行片段。
      * @param index - 分块内行号。
      */ (line, index) => {
+      // 丢弃前也持续观察原始结构；单独一行的 [ 同样可能开启多行数组。
+      for (const character of line) this.observeStructure(character);
       this.pending += line;
       if (this.pending.length > 65536 || this.discarded) {
         this.discarded += this.pending.length;
         this.pending = '';
       }
-      if (index < lines.length - 1) this.flush();
+      if (index < lines.length - 1) this.flushLine();
     });
   }
 
   /** 正常退出时保留没有换行的最后输出；强制终止时未完成行可能无法取得。 */
   flush(): void {
+    const tail = this.decoder.end();
+    if (tail) this.write(tail);
+    this.flushLine();
+  }
+
+  /** 完整行立即落盘，字节解码器的跨块尾部继续保留到下一块或正常退出。 */
+  private flushLine(): void {
     if (this.discarded) this.log.record('collection.output-line-dropped', { droppedCharacters: this.discarded });
     else if (this.pending) {
-      const continuation = this.depth > 0;
-      const start = continuation ? 0 : this.pending.search(/\{|\[\s*(?=["'[{0-9-]|true\b|false\b|null\b)/);
-      if (start >= 0) for (const character of this.pending.slice(start)) this.observeStructure(character);
-      this.log.record(this.event, { text: continuation ? '[结构化续行已隐藏]' : logText(this.pending) });
+      this.log.record(this.event, { text: this.continuation ? '[结构化续行已隐藏]' : logText(this.pending) });
     }
     this.pending = '';
     this.discarded = 0;
+    this.continuation = this.depth > 0;
   }
 
   /**
@@ -102,7 +112,7 @@ export function logError(error: unknown): Record<string, string> {
   const message = error instanceof Error ? error.message : String(error ?? '');
   const code = message.match(/\b(?:net::ERR_[A-Z_]+|E(?:CONNRESET|CONNREFUSED|TIMEDOUT|NOTFOUND|AI_AGAIN)|UND_ERR_[A-Z_]+)\b/)?.[0];
   return { errorName: /^(?:Error|TypeError|ReferenceError|SyntaxError|RangeError|TimeoutError|AbortError)$/.test(name) ? name : 'Error',
-    code: code ?? 'unavailable', text: logText(message) };
+    code: code ?? 'unavailable', text: logText(message).replace(/Call log:[\s\S]*/i, 'Call log: [调用详情已隐藏]') };
 }
 
 /** 返回 reporter 提前传给 worker 的独立命令目录；本地无 reporter 时仍持续落盘。 */

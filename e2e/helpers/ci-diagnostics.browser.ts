@@ -142,3 +142,81 @@ for (const project of ['e2e', 'visual']) test(`${project} 公共 fixture 保存�
     assert.ok(summary.includes('missing-target'));
     assert.ok(summary.includes('controlled-failure-marker'));
   });
+
+for (const project of ['e2e', 'visual']) test(`${project} 真实输入动作的引号、转义和定位器边界不泄露到最终附件`, { timeout: 120000 },
+  /** 在两种视口、三种语言及真实 Playwright 标题中检查开始、结束和嵌套路径。
+   * @param context - 测试清理接口。
+   */ async context => {
+    const directory = await mkdtemp(path.join(tmpdir(), 'clrn-input-diagnostics-'));
+    context.after(/** 删除本轮输入脱敏产物。 */ () => rm(directory, { force: true, recursive: true }));
+    const root = path.resolve(__dirname, '../..');
+    const wrapper = path.join(root, project === 'e2e' ? 'e2e/helpers/diagnostic-test.ts' : 'visual/src/support/diagnosticTest.ts');
+    const projects = [];
+    for (const [language, locale] of [['zh-Hans', 'zh-CN'], ['zh-Hant', 'zh-TW'], ['en', 'en-US']]) {
+      for (const [device, width] of [['mobile', 375], ['desktop', 1280]] as const) {
+        projects.push({ name: `${language}-${device}`, use: { locale, viewport: { width, height: 812 } } });
+      }
+    }
+    const configuration = path.join(directory, 'playwright.config.cjs');
+    await writeFile(configuration, `module.exports = {testDir:__dirname, testMatch:'input.spec.ts', workers:1, retries:0,
+      outputDir:${JSON.stringify(path.join(directory, 'results'))}, timeout:15000,
+      reporter:[[${JSON.stringify(path.join(root, 'e2e/helpers/diagnostic-reporter.ts'))}]],
+      projects:${JSON.stringify(projects)}, use:{trace:'off'}};`);
+    const values = ['public-prefix"public-quoted-tail', 'public-escape\\"public-escape-tail',
+      'public-boundary" locator(\'public-forged\')"public-boundary-tail', 'public-line\npublic-line-tail'];
+    const markup = '<textarea data-testid="input-target"></textarea><button data-testid="action-target" onclick="this.textContent=\'handled\'">action</button>';
+    await writeFile(path.join(directory, 'input.spec.ts'), `import {test,expect} from ${JSON.stringify(wrapper)};
+      test('input-privacy-controlled-failure',async({page})=>{
+        await page.setContent(${JSON.stringify(markup)});
+        const field=page.getByTestId('input-target');
+        for(const value of [...${JSON.stringify(values)},process.env.E2E_TEST_PASSWORD!]) {
+          await test.step('Fill "'+value+${JSON.stringify('" locator(\'forged-parent-target\')')},async()=>{
+            await test.step('nested input',async()=>{
+              await field.fill(value);expect(await field.inputValue()).toBe(value);
+              await field.fill('');await field.pressSequentially(value);expect(await field.inputValue()).toBe(value);
+              await field.fill('');await field.focus();await page.keyboard.type(value);expect(await field.inputValue()).toBe(value);
+              await field.fill('');await field.focus();await page.keyboard.insertText(value);expect(await field.inputValue()).toBe(value);
+            });
+          });
+        }
+        await page.getByTestId('action-target').click();await expect(page.getByTestId('action-target')).toHaveText('handled');
+        await expect(page.getByTestId('action-target').fill('public-failed-prefix"public-failed-tail')).rejects.toThrow('Element is not an <input>');
+        throw new Error('controlled-after-input');
+      });`);
+    const cli = createRequire(path.join(root, project, 'package.json')).resolve('@playwright/test/cli');
+    const environment = { ...process.env, CLRN_DIAGNOSTICS_DIR: path.join(directory, 'diagnostics'),
+      E2E_TEST_PASSWORD: 'public-env-prefix"public-env-tail', GITHUB_STEP_SUMMARY: '', CLRN_RELEASE_TAG: 'fixture' };
+    assert.equal(await runNode([cli, 'test', '--config', configuration], environment), 1);
+    const files = await filesIn(environment.CLRN_DIAGNOSTICS_DIR);
+    const cases = files.filter(/** 每个视口及语言必须真正运行测试体。
+     * @param file - 诊断文件。
+     */ file => file.endsWith('/case.json'));
+    assert.equal(cases.length, 6);
+    for (const file of cases) {
+      assert.equal(JSON.parse(await readFile(file, 'utf8')).status, 'failed');
+      const events = (await readFile(path.join(path.dirname(file), 'steps.jsonl'), 'utf8')).trim().split('\n').map(
+        /** 检查真实 runner 保存的步骤事件。
+         * @param line - JSONL 单行。
+         */ line => JSON.parse(line));
+      const ended = events.find(/** 获取实际用例收尾，区分输入后的受控失败和启动失败。
+       * @param event - 步骤事件。
+       */ event => event.event === 'test.end');
+      assert.ok(ended, '测试必须记录真实结束状态');
+      assert.ok(ended.errors.some(/** 浏览器启动失败不能被当成脱敏验收通过。
+       * @param error - 脱敏错误。
+       */ (error: { text: string }) => error.text.includes('controlled-after-input')), JSON.stringify(ended.errors));
+      for (const boundary of ['test.step-start', 'test.step-end']) for (const action of ['Fill', 'Type', 'Insert']) {
+        assert.ok(events.some(/** 真实输入动作必须经过两个边界，且仍保留父级关联。
+         * @param event - 步骤事件。
+         */ event => event.event === boundary && event.category === 'pw:api' && event.target?.startsWith(action)
+          && event.stepId.includes('nested input')), `${boundary}: ${action}`);
+      }
+      assert.ok(events.some(/** 普通动作和应用可观察的结果继续保留。
+       * @param event - 步骤事件。
+       */ event => event.outcome === 'driver-completed' && event.target?.includes('action-target')));
+    }
+    assert.equal(await runNode([path.join(root, 'scripts/ci-web-diagnostics.mjs')], environment), 0);
+    for (const file of await filesIn(environment.CLRN_DIAGNOSTICS_DIR)) {
+      if (/\.(json|jsonl|md)$/.test(file)) assert.ok(!(await readFile(file, 'utf8')).includes('public-'), path.basename(file));
+    }
+  });

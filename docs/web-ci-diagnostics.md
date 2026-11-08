@@ -32,7 +32,10 @@ E2E、线上功能、交互/Freshchat、静态视觉、动画统一保存 14 天
 日志只修改副本，复用已有连接资料脱敏规则；不读取 console 参数对象，不收集认证缓存、请求/响应正文或头部。
 自由文本隐藏凭据字段、环境中的 Secret 值、认证串、地址和结构化对象/数组。
 stdout/stderr 按完整行脱敏，跨数据块的凭据不会拆开保存；未换行尾部只在正常收尾时输出。
-超长行超过 65536 字符时整行丢弃，并记录丢弃字符数。
+输入动作标题的输入值与定位器不能可靠区分，整个标题隐藏并明确标记；其他动作继续保留脱敏定位器。
+失败异常隐藏可能重复输入值的 Playwright Call log，保留其前面的错误原因、类型及网络代码。
+子进程的 UTF-8 输出按完整字符解码后再脱敏，避免非 ASCII 凭据被数据块拆开。
+超长行超过 65536 字符时整行丢弃，并记录丢弃字符数；丢弃期间仍跟踪结构及转义，正文续行继续隐藏。
 
 浏览器、步骤、测试输出和代理输出每来源最多 8 MiB，保留最早事件，超过容量后丢弃后续事件；
 每文本字段最多保留脱敏后前 2000 字符。来源清单记录准确丢弃条数、字节、截断字符数和时间范围。
@@ -46,8 +49,9 @@ Release 服务保留最早 10000 事件并记录丢弃量；既有连接及代�
 本机仅验证本次日志链路，无需真实账号或业务服务：
 
 ```sh
-node --import tsx --test e2e/helpers/diagnostic-log.test.ts e2e/helpers/diagnostic-recorder.test.ts e2e/helpers/diagnostic-persistence.test.ts e2e/helpers/ci-diagnostics.browser.ts scripts/release-diagnostics.test.mjs
+node --import tsx --test e2e/helpers/diagnostic-log.test.ts e2e/helpers/diagnostic-reporter.test.ts e2e/helpers/diagnostic-recorder.test.ts e2e/helpers/diagnostic-persistence.test.ts e2e/helpers/ci-diagnostics.browser.ts scripts/release-diagnostics.test.mjs
 ```
 
 浏览器自测使用已安装的 Chromium 和 Python 标准库测试源，覆盖成功、受控失败、超时、重试成功、
 早期 console、新页面、真实 503、无响应断连、截图关联及公开哨兵脱敏，并确认失败退出码未被覆盖。
+输入自测还覆盖移动/桌面视口和简繁英语言下的 fill、type、insertText、嵌套标题及最终汇总附件。
