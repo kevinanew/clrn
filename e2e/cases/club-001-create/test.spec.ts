@@ -1,3 +1,4 @@
+import { clubIdentifier } from '../_shared/created-resource';
 import { test, expect } from '../_shared/creation-account-fixture';
 import { unique } from '../_shared/page';
 import { clickWithBackgroundClubNotice } from '../_shared/navigation';
@@ -32,7 +33,7 @@ test('真实创建俱乐部并核实详情、归属和服务端持久化', { tag
     expect(clubResponse.ok()).toBeTruthy();
     const body = await clubResponse.json();
     expect(body.ok).toBe(true);
-    createdClubId = body.result?.id || body.result?.club_id;
+    createdClubId = clubIdentifier(body);
     expect(createdClubId, '创建响应必须返回真实俱乐部UUID').toMatch(/^[0-9a-f-]{36}$/);
     expect(body.result.name).toBe(name);
     expect(body.result.area).toBe(region);

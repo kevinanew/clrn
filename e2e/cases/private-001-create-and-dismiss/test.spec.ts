@@ -1,3 +1,4 @@
+import { readCreatedRoom, expectCreatedRoom } from '../_shared/created-resource';
 import { test, expect } from '../_shared/creation-account-fixture';
 import { unique } from '../_shared/page';
 import { clickWithBackgroundClubNotice } from '../_shared/navigation';
@@ -31,15 +32,12 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
         response.request().method() === 'POST'
         && new URL(response.url()).pathname === '/v3/pay_action/do');
       const [response] = await Promise.all([creating, clickWithBackgroundClubNotice(page, 'creat-room-button', 3)]);
-      const body = await response.json();
-      // 在任何页面断言前记录真实创建响应的UUID，UI导航失败也能精确回收。
-      if (body.ok === true && /^[0-9a-f-]{36}$/.test(body.result?.room_id || '')) {
-        createdRoomId = body.result.room_id;
-        cleanupUrl = `${new URL(response.url()).origin}/v1/room/${createdRoomId}`;
-      }
-      expect(response.ok()).toBeTruthy();
-      expect(body.ok).toBe(true);
-      expect(createdRoomId, '创建成功应返回真实room_id').toBeTruthy();
+      const body = await readCreatedRoom(response, /** 保存本次房间用于后续精确清理。
+       * @param room - 本次成功创建的房间。 */ room => {
+        createdRoomId = room.id;
+        cleanupUrl = room.cleanupUrl;
+      });
+      expectCreatedRoom(response, body, createdRoomId);
       await expect(await unique(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
       await expect(await unique(page, 'texas-holdem-room-name-text')).toHaveText(name);
       await expect(await unique(page, 'texas-holdem-room-type-text')).toHaveText('私人房间');
@@ -56,6 +54,25 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
     });
   } finally {
     if (createdRoomId && cleanupUrl) {
+      const roomCleanupUrl = cleanupUrl;
+      /** UI 清理失败时仅删除捕获的本次房间，原业务失败仍传播。 */
+      const fallbackCleanup = async () => {
+        if (!removed) {
+          // 只允许删除本次成功响应捕获的牌局；UI失败仍保持测试失败。
+          let response;
+          try {
+            response = await page.request.delete(roomCleanupUrl, {
+              headers: { Authorization: newAccount.authorization }, timeout: 15_000,
+            });
+          } catch {
+            throw new Error(`本次牌局 ${createdRoomId} 的API兜底清理请求失败`);
+          }
+          expect(response.ok(), '本次牌局兜底清理HTTP应成功').toBeTruthy();
+          expect((await response.json()).ok, '本次牌局兜底清理业务应成功').toBe(true);
+          await response.dispose();
+        }
+      };
+
       try {
         await test.step('清理本次未开始牌局，验证真实解散接口和退款', /** 执行清理本次未开始牌局，验证真实解散接口和退款。 */ async () => {
           if (await page.getByTestId('run-game-view').isVisible()) {
@@ -80,21 +97,7 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
           await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before);
         });
       } finally {
-        if (!removed) {
-          // 只允许删除本次成功响应捕获的牌局；UI失败仍保持测试失败。
-          let response;
-          try {
-            response = await page.request.delete(cleanupUrl, {
-              headers: { Authorization: newAccount.authorization }, timeout: 15_000,
-            });
-          } catch {
-            // eslint-disable-next-line no-unsafe-finally -- 清理失败必须使测试失败，避免遗留本次创建的牌局。
-            throw new Error(`本次牌局 ${createdRoomId} 的API兜底清理请求失败`);
-          }
-          expect(response.ok(), '本次牌局兜底清理HTTP应成功').toBeTruthy();
-          expect((await response.json()).ok, '本次牌局兜底清理业务应成功').toBe(true);
-          await response.dispose();
-        }
+        await fallbackCleanup();
       }
     }
   }

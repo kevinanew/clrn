@@ -1,3 +1,4 @@
+import { readCreatedRoom } from '../_shared/created-resource';
 import { test, expect } from '../_shared/creation-account-fixture';
 import { createSecondAccount } from '../_shared/second-account';
 import { unique } from '../_shared/page';
@@ -24,11 +25,11 @@ test('第二账号通过真实房号加入新建私人牌局', { tag: '@creates-
  * @param response - 当前收到的接口响应。 */ response => response.request().method() === 'POST'
         && new URL(response.url()).pathname === '/v3/pay_action/do', { timeout: 60_000 });
       const [response] = await Promise.all([creating, clickWithBackgroundClubNotice(page, 'creat-room-button', 3)]);
-      const body = await response.json();
-      if (body.ok === true && /^[0-9a-f-]{36}$/.test(body.result?.room_id || '')) {
-        roomId = body.result.room_id;
-        roomOrigin = new URL(response.url()).origin;
-      }
+      await readCreatedRoom(response, /** 保存本次房间用于后续精确清理。
+       * @param room - 本次成功创建的房间。 */ room => {
+        roomId = room.id;
+        roomOrigin = room.origin;
+      });
       expect(response.ok()).toBeTruthy();
       expect(roomId, '创建响应应返回本次牌局 UUID').toBeTruthy();
       await expect(await unique(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
@@ -62,7 +63,7 @@ test('第二账号通过真实房号加入新建私人牌局', { tag: '@creates-
       await expect(await unique(guest!.page, 'house-section-list')).toBeVisible();
     });
   } finally {
-    await guest?.context.close();
+    await closeGuest(guest);
     if (roomId && roomOrigin) {
       const response = await page.request.delete(`${roomOrigin}/v1/room/${roomId}`, {
         headers: { Authorization: newAccount.authorization }, timeout: 15_000,
@@ -74,3 +75,9 @@ test('第二账号通过真实房号加入新建私人牌局', { tag: '@creates-
     }
   }
 });
+
+/**
+ * 第二账号存在时关闭它的上下文，关闭失败继续使案例失败。
+ * @param guest - 本次第二账号。
+ */
+async function closeGuest(guest: Awaited<ReturnType<typeof createSecondAccount>> | undefined) { await guest?.context.close(); }

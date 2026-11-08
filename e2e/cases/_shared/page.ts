@@ -43,6 +43,15 @@ export async function openHall(page: Page): Promise<void> {
   });
   if (!response) throw requestFailure('functional-open-hall', 'invalid-response');
   if (!response.ok()) throw requestFailure('functional-open-hall', 'http-error', response.status());
+  await waitForHall(page, response.status());
+}
+
+/**
+ * 在已收到导航响应后等待 UI，保留真实状态用于安全诊断。
+ * @param page - 当前页面。
+ * @param status - 本次导航的状态。
+ */
+async function waitForHall(page: Page, status: number): Promise<void> {
   try {
     await installTutorialHandler(page);
     // staging 首次访问必须确认提示后才挂载大厅。
@@ -52,7 +61,7 @@ export async function openHall(page: Page): Promise<void> {
     await expect(await unique(page, 'hall-screen')).toBeVisible({ timeout: 60_000 });
   } catch {
     // 此处已收到本次导航的响应；后续UI未就绪不能丢掉可核实的GET及真实状态。
-    throw requestFailure('functional-open-hall', 'invalid-response', response.status());
+    throw requestFailure('functional-open-hall', 'invalid-response', status);
   }
 }
 

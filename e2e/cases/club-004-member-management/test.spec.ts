@@ -1,3 +1,4 @@
+import { clubIdentifier, closeGuestContexts } from '../_shared/created-resource';
 import { test, expect } from '../_shared/creation-account-fixture';
 import { createSecondAccount, type SecondAccount } from '../_shared/second-account';
 import { clickWithBackgroundClubNotice } from '../_shared/navigation';
@@ -112,7 +113,7 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
       const body = await response.json();
       expect(response.ok()).toBe(true);
       expect(body.ok).toBe(true);
-      clubId = body.result?.id || body.result?.club_id || '';
+      clubId = clubIdentifier(body) || '';
       expect(clubId, '创建响应应包含本例俱乐部 UUID').toMatch(/^[0-9a-f-]{36}$/);
       apiOrigin = new URL(response.url()).origin;
       await expect(await unique(page, 'club-info-name')).toHaveText(name);
@@ -167,7 +168,7 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
         await expect.poll(/** 重复读取`(await members()).length`，直到满足外层等待断言。 */ async () => (await members()).length, { timeout: 20_000 }).toBe(1);
       }
     } finally {
-      for (const guest of guests) await guest.context.close();
+      await closeGuestContexts(guests);
     }
   }
 });

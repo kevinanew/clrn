@@ -25,18 +25,7 @@ export async function readStatements(response: Response, currency: Currency): Pr
   });
   const statements: Statement[] = body.result.statements;
   for (const statement of statements) {
-    expect(statement, `${currency} 每条流水应属于目标币种且字段完整`).toMatchObject({
-      // result 使用币种代码，真实简中接口的条目使用本地化名称。
-      currency_name: expect.stringMatching(currency === 'coin' ? /^(coin|金币)$/ : /^(diamond|钻石)$/),
-      amount: expect.stringMatching(/^\d+(?:\.\d+)?$/),
-      balance: expect.stringMatching(/^-?\d+(?:\.\d+)?$/),
-      event: expect.stringMatching(/^(deposit|withdraw)$/),
-      create_at: expect.any(String),
-      statement_id: expect.stringMatching(/\S/),
-    });
-    // 后端 show_detail 保留合法的空备注；缺失字段或其他类型仍明确失败。
-    expect(statement.memo === null || typeof statement.memo === 'string', '流水备注应为字符串或 null').toBe(true);
-    expect(Number.isFinite(Date.parse(statement.create_at)), '流水时间应可解析').toBe(true);
+    expectStatement(statement, currency);
   }
   return statements;
 }
@@ -73,4 +62,24 @@ export async function expectStatementList(list: Locator, statements: Statement[]
     .toHaveText(`${statement.event === 'deposit' ? '+' : '-'}${statement.amount}`);
   await expect(row.getByTestId('CurrencyTransactionRecordItem_balance')).toHaveText(`余额: ${statement.balance}`);
   await expect(row.getByTestId('CurrencyTransactionRecordItem_date')).toHaveText(date);
+}
+
+/**
+ * 检查一条真实流水的币种、字段、备注和时间。
+ * @param statement - 实际流水。
+ * @param currency - 查询币种。
+ */
+function expectStatement(statement: Statement, currency: Currency) {
+  expect(statement, `${currency} 每条流水应属于目标币种且字段完整`).toMatchObject({
+    // result 使用币种代码，真实简中接口的条目使用本地化名称。
+    currency_name: expect.stringMatching(currency === 'coin' ? /^(coin|金币)$/ : /^(diamond|钻石)$/),
+    amount: expect.stringMatching(/^\d+(?:\.\d+)?$/),
+    balance: expect.stringMatching(/^-?\d+(?:\.\d+)?$/),
+    event: expect.stringMatching(/^(deposit|withdraw)$/),
+    create_at: expect.any(String),
+    statement_id: expect.stringMatching(/\S/),
+  });
+  // 后端 show_detail 保留合法的空备注；缺失字段或其他类型仍明确失败。
+  expect(statement.memo === null || typeof statement.memo === 'string', '流水备注应为字符串或 null').toBe(true);
+  expect(Number.isFinite(Date.parse(statement.create_at)), '流水时间应可解析').toBe(true);
 }

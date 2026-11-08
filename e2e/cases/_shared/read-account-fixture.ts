@@ -1,9 +1,10 @@
 import { test as base, expect, type Page, type BrowserContext } from '@playwright/test';
 import { environment } from '../../helpers/environment';
-import { accountStatus, signIn, type Session } from './auth';
+import { signIn, type Session } from './auth';
 import { openHall, prepareContext, unique } from './page';
 import { readDiamondBalance } from './provision';
 import { installSignInNoticeHandler } from './sign-in-notices';
+import { verifyAccountSession } from './account-diagnostics';
 import { requestFailure, requestFailureReason, safeDiagnosticReason } from '../../../scripts/request-failure.cjs';
 
 export type SignedInAccount = Session & { username: string; diamondBalance: number };
@@ -51,8 +52,7 @@ export async function prepareReadAccount(page: Page, context: BrowserContext): P
     // signIn 阻断自动注册接口；账号不存在时失败，绝不注册。
     const session = await signIn(page);
     operation = 'existing-account-session-check';
-    const status = await accountStatus(page, session);
-    if (status !== 200) throw requestFailure('existing-account-session', status < 200 || status >= 300 ? 'http-error' : 'invalid-response', status);
+    await verifyAccountSession(page, session);
     operation = 'existing-account-wallet-check';
     return { ...session, username: environment.testUsername, diamondBalance: await readDiamondBalance(page, session) };
   } catch (error) {
@@ -71,10 +71,17 @@ export function readAccountPreparationError(error: unknown, operation = 'existin
   const diagnostic = safeDiagnosticReason(error);
   // 字符串枚举（如 timeout）不能代替有业务定位的完整可信错误。
   if (diagnostic.includes(' operation=')) return new Error(diagnostic);
-  const localOperation = ['existing-account-origin', 'existing-account-login-ui',
+  return requestFailure(readAccountOperation(operation), requestFailureReason(error));
+}
+
+/**
+ * 将未知准备阶段限制在固定本地阶段内。
+ * @param operation - 调用方指定阶段。
+ */
+function readAccountOperation(operation: string) {
+  return ['existing-account-origin', 'existing-account-login-ui',
     'existing-account-session-check', 'existing-account-wallet-check'].includes(operation)
     ? operation : 'existing-account-setup';
-  return requestFailure(localOperation, requestFailureReason(error));
 }
 
 export { expect };

@@ -206,4 +206,3 @@ async function saveOrCompareFrame(frame: Buffer, info: TestInfo, snapshot: strin
   if (options.observeFrames) await info.attach(snapshot, { body: frame, contentType: 'image/png' });
   else expect.soft(frame).toMatchSnapshot(snapshot, imageComparisonOptions(0.1, comparedPixels));
 }
-

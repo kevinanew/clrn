@@ -1,3 +1,4 @@
+import { clubIdentifier, readCreatedRoom, expectCreatedRoom } from '../_shared/created-resource';
 import { test, expect } from '../_shared/creation-account-fixture';
 import { unique } from '../_shared/page';
 import { clickWithBackgroundClubNotice } from '../_shared/navigation';
@@ -29,7 +30,7 @@ test('真实创建俱乐部德州牌局、验证归属并通过API清理退款',
     expect(response.ok()).toBeTruthy();
     const body = await response.json();
     expect(body.ok).toBe(true);
-    clubId = body.result?.id || body.result?.club_id;
+    clubId = clubIdentifier(body);
     expect(clubId).toMatch(/^[0-9a-f-]{36}$/);
     await expect(await unique(page, 'club-info-name')).toHaveText(clubName);
     await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
@@ -53,15 +54,12 @@ test('真实创建俱乐部德州牌局、验证归属并通过API清理退款',
         response.request().method() === 'POST'
         && new URL(response.url()).pathname === '/v3/pay_action/do', { timeout: 60_000 });
       const [response] = await Promise.all([creating, clickWithBackgroundClubNotice(page, 'creat-room-button', 3)]);
-      const body = await response.json();
-      // 在任何页面断言前记录真实创建响应的UUID，UI导航失败也能精确回收。
-      if (body.ok === true && /^[0-9a-f-]{36}$/.test(body.result?.room_id || '')) {
-        createdRoomId = body.result.room_id;
-        cleanupUrl = `${new URL(response.url()).origin}/v1/room/${createdRoomId}`;
-      }
-      expect(response.ok()).toBeTruthy();
-      expect(body.ok).toBe(true);
-      expect(createdRoomId, '创建成功应返回真实room_id').toBeTruthy();
+      const body = await readCreatedRoom(response, /** 保存本次房间用于后续精确清理。
+       * @param room - 本次成功创建的房间。 */ room => {
+        createdRoomId = room.id;
+        cleanupUrl = room.cleanupUrl;
+      });
+      expectCreatedRoom(response, body, createdRoomId);
       expect(body.result.building_type).toBe('club');
       expect(body.result.building_id).toBe(clubId);
       expect(body.result.creator_id).toBe(newAccount.userId);

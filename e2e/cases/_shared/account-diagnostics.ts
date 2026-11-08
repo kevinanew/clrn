@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { accountStatus, type Session } from './auth';
+import { accountStatus, sessionFailureReason, type Session } from './auth';
 import { requestFailure, requestFailureReason, safeDiagnosticReason } from '../../../scripts/request-failure.cjs';
 
 /**
@@ -30,5 +30,5 @@ export function accountPreparationError(error: unknown, operation: string): Erro
 export async function verifyAccountSession(page: Page, account: Session): Promise<void> {
   const status = await accountStatus(page, account);
   if (status !== 200) throw requestFailure('existing-account-session',
-    status < 200 || status >= 300 ? 'http-error' : 'invalid-response', status);
+    sessionFailureReason(status), status);
 }

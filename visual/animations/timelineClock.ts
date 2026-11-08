@@ -178,4 +178,3 @@ export async function freeze(page: Page): Promise<void> {
       || document.getElementById('visual-disable-animations'),
   )), '动画套件不得使用静态截图的禁动画开关').toBe(false);
 }
-

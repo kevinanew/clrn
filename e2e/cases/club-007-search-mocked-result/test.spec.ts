@@ -1,3 +1,4 @@
+import type { Response } from '@playwright/test';
 /** 用代理固定只读俱乐部结果，验证真实输入、请求、渲染及截图证据。 */
 import { test as accountTest, expect } from '../_shared/read-account-fixture';
 import { unique } from '../_shared/page';
@@ -52,17 +53,7 @@ test('俱乐部搜索命中固定结果并显示对应卡片', /** 验证俱乐�
         && url.pathname === '/v10/club/search'
         && url.searchParams.get('keyword') === keyword;
     });
-    const detailsResponse = page.waitForResponse(/** 匹配包含目标俱乐部 ID 的批量查询请求，避免误用其他列表响应。
- * @param response - 当前收到的接口响应。 */ response => {
-      const request = response.request();
-      if (request.method() !== 'PUT' || new URL(response.url()).pathname !== '/v10/clubs') return false;
-      try {
-        const body: unknown = request.postDataJSON();
-        if (!body || typeof body !== 'object' || !('club_ids' in body)) return false;
-        const ids = body.club_ids;
-        return Array.isArray(ids) && ids.length === 1 && ids[0] === clubId;
-      } catch { return false; }
-    });
+    const detailsResponse = page.waitForResponse(matchesClubDetails);
     const input = await unique(page, 'club-search-input');
     await input.fill(keyword);
     await input.press('Enter');
@@ -93,3 +84,48 @@ test('俱乐部搜索命中固定结果并显示对应卡片', /** 验证俱乐�
     });
   });
 });
+
+/**
+ * 只等待目标批量查询；解析失败保持不匹配，真实请求仍透传。
+ * @param response - 浏览器响应。
+ */
+function matchesClubDetails(response: Response) {
+  if (!isClubDetailsRequest(response)) return false;
+  try { return hasTargetClubIds(response.request().postDataJSON()); }
+  catch { return false; }
+}
+
+/**
+ * 匹配原有方法和精确接口路径。
+ * @param response - 浏览器响应。
+ */
+function isClubDetailsRequest(response: Response) {
+  return response.request().method() === 'PUT' && new URL(response.url()).pathname === '/v10/clubs';
+}
+
+/**
+ * 确认 JSON 请求对象包含俱乐部 ID 字段。
+ * @param body - 实际请求体。
+ */
+function hasTargetClubIds(body: unknown): boolean {
+  if (!body || typeof body !== 'object') return false;
+  return targetClubIds(body);
+}
+
+/**
+ * 只接受包含本例俱乐部的单项数组。
+ * @param body - 已确认的请求对象。
+ */
+function targetClubIds(body: object): boolean {
+  if (!('club_ids' in body)) return false;
+  return onlyTargetClub(body.club_ids);
+}
+
+/**
+ * 校验单项数组的精确 ID。
+ * @param ids - 请求的 ID 字段。
+ */
+function onlyTargetClub(ids: unknown): boolean {
+  if (!Array.isArray(ids)) return false;
+  return ids.length === 1 && ids[0] === clubId;
+}

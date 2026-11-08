@@ -3,16 +3,6 @@
   "revision": "347b50a4b4782d07c48cb8256efcda3f13f26e49",
   "findings": [
     {
-      "file": "e2e/cases/_shared/account-fixture.ts",
-      "rule": "complexity",
-      "line": 22,
-      "column": 1,
-      "message": "Function 'validate' has a complexity of 12. Maximum allowed is 10.",
-      "anchor": "d1312cc22fd3b6991d9aed1860b8c95dabb2f253f88f26d05dc8ae3f16551516",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "e2e/cases/_shared/auth.test.ts",
       "rule": "quality/no-network-response",
       "line": 2,
@@ -34,16 +24,6 @@
     },
     {
       "file": "e2e/cases/_shared/auth.ts",
-      "rule": "complexity",
-      "line": 13,
-      "column": 8,
-      "message": "Async function 'signIn' has a complexity of 11. Maximum allowed is 10.",
-      "anchor": "e72a67f564b920f2ff635b3c0b611dae8f14dffe8f29be62c92eea0065f63890",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/cases/_shared/auth.ts",
       "rule": "quality/no-network-response",
       "line": 30,
       "column": 11,
@@ -51,116 +31,6 @@
       "anchor": "c98354098f19a2096f9df6d0da0340bedcb203d0c2c826da853fddaf454ffc2b",
       "kind": "migration",
       "reason": "既有注册请求阻断用于防止登录自动创建账号，仅 abort；后续迁往代理，禁止扩张为响应伪造。"
-    },
-    {
-      "file": "e2e/cases/_shared/creation-account-fixture.ts",
-      "rule": "complexity",
-      "line": 20,
-      "column": 3,
-      "message": "Async method 'newAccount' has a complexity of 20. Maximum allowed is 10.",
-      "anchor": "2d242c655cc268ae8c3633c2492081605c7b173c9be942ce2afc005d6a3f476a",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/cases/_shared/read-account-diagnostics.test.ts",
-      "rule": "complexity",
-      "line": 192,
-      "column": 39,
-      "message": "Arrow function has a complexity of 14. Maximum allowed is 10.",
-      "anchor": "a8ff554b1dcf1a357b4682bd0162cf92d236cfcc8b6b32505db0599a8662cf1f",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/cases/_shared/sign-in-notices.ts",
-      "rule": "complexity",
-      "line": 21,
-      "column": 86,
-      "message": "Async arrow function has a complexity of 14. Maximum allowed is 10.",
-      "anchor": "0eadc3d76ab520afa02e4ef9393a9b6aa417c951a4cb5442108a925df1694c27",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/cases/_shared/sign-in-notices.ts",
-      "rule": "complexity",
-      "line": 80,
-      "column": 8,
-      "message": "Async function 'clickAfterSignInNotices' has a complexity of 13. Maximum allowed is 10.",
-      "anchor": "aa870a79e60b17a8a04a48a9d3731a3229a314ba5041afffb68b3a6ffdbfd274",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/cases/_shared/sign-in-notices.ts",
-      "rule": "max-depth",
-      "line": 99,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "37fb05e24852eb8712f5a59943729d494ac22c84138138149c1cad5e88a8443b",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "e2e/cases/_shared/sign-in-notices.ts",
-      "rule": "max-depth",
-      "line": 110,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "2eebea01afce6cf6d14068d1b0f23da61c79b7b1b44341c0b193c7fe06cb3c87",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "e2e/cases/_shared/sign-in-notices.ts",
-      "rule": "max-depth",
-      "line": 119,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "ddf219a454dba5f52864e1498614e3e12ffdf9c7e8edf137ce7d62becbc34c5f",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "e2e/cases/club-005-join-approval-invite/test.spec.ts",
-      "rule": "max-depth",
-      "line": 204,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "d1987c64d2485fc21ea0e81b1907e12ff84047cf55ab3ce8a8c4021219ded238",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "e2e/cases/club-005-join-approval-invite/test.spec.ts",
-      "rule": "max-depth",
-      "line": 212,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "b76f342754f1bf92c02ffb85f6fa6fa52d02c28b6294a419a93c179e8e6eb0be",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "e2e/cases/private-001-create-and-dismiss/test.spec.ts",
-      "rule": "max-depth",
-      "line": 83,
-      "column": 9,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "d438f0dd6fb1c1b7e3a473e66c1c590b34670fca1bf19805c19f752d711c5eb7",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "e2e/cases/private-001-create-and-dismiss/test.spec.ts",
-      "rule": "max-depth",
-      "line": 86,
-      "column": 11,
-      "message": "Blocks are nested too deeply (5). Maximum allowed is 3.",
-      "anchor": "03d9aba6351173e5f8c479f3e786247afca28bd814dd42e6477fa51b48c9fe36",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
     },
     {
       "file": "e2e/helpers/connection-diagnostics.browser.ts",
