@@ -41,17 +41,19 @@ async function waitForMount(target: Locator, requirePresentation = false): Promi
 }
 
 /**
- * 同时识别卸载、透明和移出视口的退场，保留 DOM 的弹层也不能仍显示。
+ * 逐帧推进晚到响应的渲染回调，直到弹层卸载、透明或移出视口。
  * @param target - 弹层内容标记。
  */
-async function expectDismissed(target: Locator): Promise<void> {
+export async function expectDismissed(target: Locator): Promise<void> {
   await expect.poll(/** 轮询弹层是否隐藏或已完全移出视口。 */ async () => {
     if (!(await target.isVisible())) return true;
+    // 网络响应可能在预热结束后才返回；真实时间轮询不会推进暂停的渲染和定时器。
+    await advanceCardSpriteClock(target.page(), 16);
     const viewport = target.page().viewportSize()!;
     return (await appearance(target)).every(/** 确认当前弹层完全透明或在视口边界之外。
  * @param state - 当前操作使用的 state。 */ state => state.opacity === 0 || state.y >= viewport.height
       || state.y + state.height <= 0 || state.x >= viewport.width || state.x + state.width <= 0);
-  }, { message: '关闭后的弹层应卸载、完全透明或移出视口' }).toBe(true);
+  }, { intervals: [20], message: '关闭后的弹层应卸载、完全透明或移出视口' }).toBe(true);
 }
 
 /**

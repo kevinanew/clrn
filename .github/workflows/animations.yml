@@ -160,6 +160,9 @@ jobs:
       - name: 验证底部弹层的文档和应用壳滚动锁定
         if: matrix.suite == 'app' && matrix.part == 'application'
         run: node --import tsx --test visual/animations/bottomSheetScroll.browser.ts visual/animations/renderReadiness.browser.ts
+      - name: 验证取消响应晚到时的弹层退场及失败边界
+        if: matrix.suite == 'app' && matrix.part == 'application'
+        run: node --import tsx --test visual/animations/popups.browser.ts
       - name: 验证老虎机横幅起点与余额遮罩
         if: matrix.suite == 'app' && matrix.part == 'ui'
         run: node --import tsx --test visual/animations/slotBannerPreparation.browser.ts visual/animations/walletMask.browser.ts
