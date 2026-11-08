@@ -27,6 +27,7 @@ export function releaseDiagnosticWriter(directory, persistentDirectory) {
   let dropped = 0;
   let droppedBytes = 0;
   let bytes = 0;
+  let lastRetainedAt;
   const startedAt = Date.now();
   /**
    * 新增持久化副本失败只标记不可用，不改变原服务器或测试结果。
@@ -40,7 +41,8 @@ export function releaseDiagnosticWriter(directory, persistentDirectory) {
       if (retained) appendFileSync(path.join(persistentDirectory, 'release-server-events.jsonl'), line);
       writeFileSync(path.join(persistentDirectory, 'release-server-manifest.json'),
         JSON.stringify({ retention: 'first-events', limit: 10000, events: Math.min(count, 10000),
-          startedAt, lastObservedAt: Date.now(), bytes, dropped, droppedBytes }));
+          startedAt, lastRetainedAt, lastObservedAt: Date.now(), bytes, dropped, droppedBytes,
+          truncationMarkers: Math.min(dropped, 1) }));
     } catch {
       persistentDirectory = undefined;
       console.error('Release diagnostics: collection.unavailable (storage-write-failed)');
@@ -63,6 +65,7 @@ export function releaseDiagnosticWriter(directory, persistentDirectory) {
       mkdirSync(directory, { recursive: true });
       appendFileSync(path.join(directory, 'release-server-events.jsonl'), line);
       bytes += Buffer.byteLength(line);
+      if (count <= 10000) lastRetainedAt = Date.now();
     }
     persist(line, count <= 10001);
   };

@@ -24,17 +24,20 @@ test('自由文本隐藏凭据、嵌套正文和私有入口，同时保留普�
     'https://private.fixture.invalid:9443/private?token=public-token-sentinel',
     '192.0.2.10:8443 [2001:db8::10]:9443',
     'standalone public-password-sentinel',
+    'api_key=public-key-sentinel',
+    'session-key: public-session-sentinel',
     'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzZW50aW5lbCJ9.cHVibGlj',
   ];
   const output = values.map(logText).join('\n');
   for (const secret of ['public-password', 'public-auth', 'public-cookie', 'public-body', 'public-token',
-    'fixture.invalid', '192.0.2.10', '2001:db8', ':8443', ':9443', 'eyJhbGci']) assert.ok(!output.includes(secret), secret);
+    'public-key', 'public-session', 'fixture.invalid', '192.0.2.10', '2001:db8', ':8443', ':9443', 'eyJhbGci']) assert.ok(!output.includes(secret), secret);
   assert.equal(logText('before failure: button handled'), 'before failure: button handled');
   assert.equal(logText('Click locator(\'[data-testid="action"]\')'), 'Click locator(\'[data-testid="action"]\')');
   const error = logError(new TypeError('net::ERR_CONNECTION_RESET https://private.fixture.invalid'));
   assert.equal(error.errorName, 'TypeError');
   assert.equal(error.code, 'net::ERR_CONNECTION_RESET');
   assert.ok(!Object.hasOwn(error, 'status'), '异常文本不能推断 HTTP 状态');
+  assert.equal(logError(Object.assign(new Error('connection lost'), { code: 'ECONNRESET' })).code, 'ECONNRESET');
 });
 
 test('事件持续落盘，保留最早现场并准确记录容量与文本截断', /** 检查清单和文件在收尾之前已经可读。

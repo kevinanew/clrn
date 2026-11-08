@@ -1,13 +1,12 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { rmSync } from 'node:fs';
 import path from 'node:path';
-import { tmpdir } from 'node:os';
 import test from 'node:test';
-import { repository, sourceFiles } from './source-files.mjs';
+import { sourceFiles } from './source-files.mjs';
 import { animationFiles, animationSupportFiles } from './visual-complexity-scope.mjs';
 import { checkVisualComplexityText, visualComplexityFiles } from './visual-complexity.mjs';
+import { isolatedVisualRepository, assertVisualGateStatus } from './visual-complexity-fixture.mjs';
 
 /**
  * 用真实 ESLint classic 规则生成精确复杂度的临时函数。
@@ -47,30 +46,17 @@ test('动画独立门禁完整包含原文件与新模块，不依赖其他目�
 });
 
 /**
- * 通过正式 npm 入口检查实际退出状态。
- * @param directory - 隔离仓库目录。
- * @returns 定向门禁子进程结果。
- */
-function runGate(directory) {
-  return spawnSync('npm', ['run', 'lint:visual-complexity', '--', '--animations'],
-    { cwd: directory, encoding: 'utf8', timeout: 30_000 });
-}
-
-/**
  * 向同名前缀的新模块写入临时源码并调用真实门禁。
  * @param file - 唯一临时模块路径。
  * @param source - 正例、负例或解析错误。
  * @param expected - 预期退出码。
  */
 function assertGateStatus(file, source, expected) {
-  writeFileSync(file, source);
-  const result = runGate(path.resolve(path.dirname(file), '../..'));
-  assert.ifError(result.error);
-  assert.equal(result.status, expected, result.stdout + result.stderr);
+  assertVisualGateStatus(path.resolve(path.dirname(file), '../..'), file, source, expected, '--animations');
 }
 
 test('npm 入口实际阻断新增辅助模块的 4、禁用注释及解析失败，3 通过', /** 临时负例必须改变真实入口的退出状态。 */ () => {
-  const directory = isolatedRepository();
+  const directory = isolatedVisualRepository();
   const file = path.join(directory, `visual/animations/timelineComplexityProbe-${randomUUID()}.ts`);
   try {
     assertGateStatus(file, probe(3), 0);
@@ -81,27 +67,3 @@ test('npm 入口实际阻断新增辅助模块的 4、禁用注释及解析失�
     rmSync(directory, { recursive: true, force: true });
   }
 });
-
-/**
- * 复制门禁所需源码，隔离临时模块；Git 元数据和依赖仅通过链接读取。
- * @returns 隔离仓库目录。
- */
-function isolatedRepository() {
-  const directory = mkdtempSync(path.join(tmpdir(), 'clrn-animation-quality-'));
-  for (const file of sourceFiles().filter(isGateSource)) {
-    const target = path.join(directory, file);
-    mkdirSync(path.dirname(target), { recursive: true });
-    cpSync(path.join(repository, file), target);
-  }
-  for (const entry of ['.git', 'node_modules']) symlinkSync(path.join(repository, entry), path.join(directory, entry));
-  return directory;
-}
-
-/**
- * 仅复制正式动画门禁的源码、配置与 npm 入口。
- * @param file - 仓库相对路径。
- * @returns 是否属于隔离夹具。
- */
-function isGateSource(file) {
-  return /^(?:scripts\/|visual\/animations\/|eslint\.config\.mjs$|package\.json$)/.test(file);
-}

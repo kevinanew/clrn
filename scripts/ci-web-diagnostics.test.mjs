@@ -20,6 +20,9 @@ test('采集目录缺失仍生成附件说明，不能把缺日志报告成没�
   assert.ok(summary.includes('Artifacts'));
   const manifest = JSON.parse(await readFile(path.join(directory, 'manifest.json'), 'utf8'));
   assert.equal(manifest.sources.backend, '不可获取');
+  assert.equal(manifest.sources.browser.files, 0);
+  assert.match(manifest.sources.proxy.availability, /未取得文件/);
+  assert.deepEqual(manifest.generatedFiles, ['README.md', 'manifest.json']);
 });
 
 test('中断的时间线保留早期事件及 running，显示准备错误并列出截图', /** 检查异常退出留下的部分文件也能汇总。
@@ -35,6 +38,7 @@ test('中断的时间线保留早期事件及 running，显示准备错误并列
   await writeFile(path.join(caseDirectory, 'steps.jsonl'), '{"event":"test.step-start","target":"button","observedAt":1}\n');
   await writeFile(path.join(caseDirectory, 'attachment-0.png'), 'public screenshot placeholder');
   await writeFile(path.join(directory, 'session', 'runner.jsonl'), '{"event":"run.error","text":"controlled setup failure","observedAt":0}\n');
+  await writeFile(path.join(directory, 'release-server-events.jsonl'), '{"event":"release.command-end","code":17,"observedAt":3}\n');
   await summarizeWebDiagnostics(directory, null);
   const timeline = (await readFile(path.join(caseDirectory, 'timeline.jsonl'), 'utf8')).trim().split('\n').map(/** 读取汇总后的安全事件。
    * @param line - JSONL 单行。
@@ -43,5 +47,23 @@ test('中断的时间线保留早期事件及 running，显示准备错误并列
   assert.equal(timeline[1].target, 'button');
   assert.equal(timeline[2].text, 'early output');
   const summary = await readFile(path.join(directory, 'README.md'), 'utf8');
-  for (const text of ['running', 'controlled setup failure', 'attachment-0.png']) assert.ok(summary.includes(text), text);
+  for (const text of ['running', 'controlled setup failure', 'attachment-0.png', 'release.command-end', '17']) assert.ok(summary.includes(text), text);
+});
+
+test('收到 HTTP 错误和浏览器错误输出时，即使用例成功也在摘要中保留可观察原因', /** 不把收到错误响应或控制台错误简化为成功用例没有错误。
+ * @param context - 测试清理接口。
+ */ async context => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'clrn-summary-http-'));
+  context.after(/** 删除已脱敏的摘要测试文件。 */ () => rm(directory, { force: true, recursive: true }));
+  await writeFile(path.join(directory, 'case.json'), JSON.stringify({ title: 'HTTP diagnostic',
+    project: 'mobile', status: 'passed', repeat: 0, retry: 0 }));
+  await writeFile(path.join(directory, 'browser.jsonl'), [
+    { event: 'http.response', status: 503, response: 'received', observedAt: 1 },
+    { event: 'page.console', level: 'error', text: 'controlled-console-error', observedAt: 2 },
+  ].map(/** 生成采集器会输出的安全事件行。
+   * @param event - 受控失败事件。
+   */ event => JSON.stringify(event)).join('\n') + '\n');
+  await summarizeWebDiagnostics(directory, null);
+  const summary = await readFile(path.join(directory, 'README.md'), 'utf8');
+  for (const text of ['passed', '503', 'http.response', 'controlled-console-error']) assert.ok(summary.includes(text), text);
 });

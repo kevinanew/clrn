@@ -144,5 +144,8 @@ test('静态服务日志使用既有上传路径，并明确记录容量截断',
   const manifest = JSON.parse(await readFile(path.join(persistent, 'release-server-manifest.json'), 'utf8'));
   assert.equal(manifest.dropped, 5);
   assert.equal(manifest.events, 10000);
+  assert.equal(manifest.truncationMarkers, 1);
+  assert.ok(manifest.startedAt <= manifest.lastRetainedAt);
+  assert.ok(manifest.lastRetainedAt <= manifest.lastObservedAt);
   assert.ok(manifest.droppedBytes > 0);
 });

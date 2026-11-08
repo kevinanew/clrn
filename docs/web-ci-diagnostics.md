@@ -7,6 +7,7 @@ E2E、线上功能、交互/Freshchat、静态视觉、动画统一保存 14 天
 
 先阅读包内 `README.md`：它给出原始用例结果、失败步骤、关键错误和文件目录。
 `manifest.json` 是完整文件清单，`identity.json` 关联 run ID、attempt、测试提交、应用提交、Release 和分片。
+`releaseServerId` 关联同轮静态服务；浏览器事件的 `contextId` / `pageId` 区分手动上下文和新页面。
 每次 Playwright 命令创建独立会话；每个用例、项目/视口、worker、重复及重试都有独立目录。
 后续成功重试、候选基准比较、图集时钟对照及后续测试命令不会覆盖初次失败。
 
@@ -17,7 +18,7 @@ E2E、线上功能、交互/Freshchat、静态视觉、动画统一保存 14 天
 | `timeline.jsonl` | 按宿主真实采集时间合并同例记录，不受动画虚拟时钟影响 |
 | `proxy-*/proxy.jsonl` | 代理进程启动后到退出的现有 stdout/stderr；静默不表示没有错误 |
 | `release-*/release-server-events.jsonl` | 既有 Release 服务采集器的持久化副本，覆盖启动、请求和退出清理 |
-| `attachment-*` | 在下一条命令清理报告前复制的现有失败截图、录像及 connection-diagnostics 附件，与用例同目录 |
+| `attachment-*` | 在下一条命令清理报告前复制的现有路径型截图/录像、内存型 PNG/JPEG/WebM 及 connection-diagnostics 附件，与用例同目录并保留原附件名的关联记录 |
 | `auth-*` | 视觉测试正式用例之前的登录态采集及验证上下文输出 |
 | `*-manifest.json` | 各来源容量、保留时间范围、丢弃和截断统计 |
 
@@ -40,6 +41,7 @@ stdout/stderr 按完整行脱敏，跨数据块的凭据不会拆开保存；未
 浏览器、步骤、测试输出和代理输出每来源最多 8 MiB，保留最早事件，超过容量后丢弃后续事件；
 每文本字段最多保留脱敏后前 2000 字符。来源清单记录准确丢弃条数、字节、截断字符数和时间范围。
 Release 服务保留最早 10000 事件并记录丢弃量；既有连接及代理诊断历史仍保留最近 5000 事件和 dropped 计数。
+总清单逐项说明浏览器、步骤、代理及 Release 日志是否取得文件；文件存在也可能仅含采集生命周期。
 持久化目录位于 `.ci-diagnostics/`，独立于会被 Playwright 清理的 `test-results/`。
 
 应用未输出、构建时删除、系统已覆盖的日志，以及未接入的后端内部日志均不可恢复。
@@ -49,9 +51,11 @@ Release 服务保留最早 10000 事件并记录丢弃量；既有连接及代�
 本机仅验证本次日志链路，无需真实账号或业务服务：
 
 ```sh
-node --import tsx --test e2e/helpers/diagnostic-log.test.ts e2e/helpers/diagnostic-reporter.test.ts e2e/helpers/diagnostic-recorder.test.ts e2e/helpers/diagnostic-persistence.test.ts e2e/helpers/ci-diagnostics.browser.ts scripts/release-diagnostics.test.mjs
+node --import tsx --test e2e/helpers/diagnostic-log.test.ts e2e/helpers/diagnostic-reporter.test.ts e2e/helpers/diagnostic-attachments.test.ts e2e/helpers/diagnostic-recorder.test.ts e2e/helpers/diagnostic-persistence.test.ts e2e/helpers/ci-diagnostics.browser.ts scripts/release-diagnostics.test.mjs scripts/ci-web-diagnostics.test.mjs
+node --test --test-name-pattern='完整测试命令' scripts/release-web.test.mjs
 ```
 
 浏览器自测使用已安装的 Chromium 和 Python 标准库测试源，覆盖成功、受控失败、超时、重试成功、
 早期 console、新页面、真实 503、无响应断连、截图关联及公开哨兵脱敏，并确认失败退出码未被覆盖。
+手动上下文及真实页面崩溃也有独立关联；Release 测试验证成功、失败和取消后的清理日志。
 输入自测还覆盖移动/桌面视口和简繁英语言下的 fill、type、insertText、嵌套标题及最终汇总附件。

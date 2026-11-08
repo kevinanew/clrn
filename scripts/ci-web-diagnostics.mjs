@@ -65,15 +65,46 @@ async function timeline(directory) {
 async function runnerErrors(file) {
   const lines = (await readFile(file, 'utf8')).trim().split('\n');
   const messages = [];
-  for (const line of lines.slice(-20)) {
+  for (const line of lines) {
     try {
       const event = JSON.parse(line);
-      if (event.event === 'run.error' || ['warn', 'error'].includes(event.level)) {
-        messages.push(`- ${plain(event.event)}: ${plain(event.text)}`);
+      if (/(?:error|failed)$/.test(event.event) || ['warn', 'error'].includes(event.level)
+        || event.event === 'release.command-end' && event.code !== 0) {
+        messages.push(`- ${plain(event.event)}: ${plain(event.text ?? event.reason)} ${plain(event.code)} ${plain(event.signal)}`);
       }
     } catch { messages.push('- 运行日志尾部未完成，请检查原文件。'); }
   }
-  return messages;
+  return messages.slice(-20);
+}
+
+/**
+ * 只统计采集文件；生成的摘要和清单单独列出，重复汇总不会使用它们上次的大小。
+ * @param directory - 诊断根目录。
+ */
+async function diagnosticInventory(directory) {
+  const inventory = [];
+  for (const file of await filesIn(directory)) {
+    const relative = path.relative(directory, file);
+    if (!['README.md', 'manifest.json'].includes(relative)) inventory.push({ file: relative, bytes: (await stat(file)).size });
+  }
+  return inventory;
+}
+
+/**
+ * 按实际文件说明各来源的可用性；文件存在不能证明没有发生错误。
+ * @param inventory - 采集文件清单。
+ */
+function sourceAvailability(inventory) {
+  const sources = {};
+  for (const [source, name] of Object.entries({ browser: 'browser.jsonl', steps: 'steps.jsonl',
+    proxy: 'proxy.jsonl', release: 'release-server-events.jsonl' })) {
+    const count = inventory.filter(/** 分别计算各个固定日志源取得的文件数。
+     * @param file - 安全文件清单条目。
+     */ file => path.basename(file.file) === name).length;
+    sources[source] = { files: count, availability: count ? '已取得文件；内容可能仅含采集生命周期'
+      : '未取得文件：可能未使用、未启动或采集不可用；不表示没有错误' };
+  }
+  return sources;
 }
 
 /**
@@ -109,10 +140,11 @@ export async function summarizeWebDiagnostics(directory = '.ci-diagnostics', sum
     const events = await timeline(path.dirname(file));
     const failures = events.filter(/** 保留驱动失败、浏览器异常和真实网络错误。
      * @param event - 时间线事件。
-     */ event => event.outcome === 'failed' || event.errors?.length || /(?:failed|error|crash|unavailable)$/.test(event.event));
+     */ event => event.outcome === 'failed' || event.errors?.length || ['warn', 'error'].includes(event.level)
+       || typeof event.status === 'number' && event.status >= 400 || /(?:failed|error|crash|unavailable)$/.test(event.event));
     const errors = failures.slice(-4).map(/** 展示安全定位及真实错误类型、代码、状态。
      * @param event - 失败事件。
-     */ event => plain([event.target, event.errorName, event.code, event.status, event.text,
+     */ event => plain([event.event, event.target, event.errorName, event.code, event.status, event.text,
        JSON.stringify(event.errors || [])].filter(Boolean).join(' ')));
     lines.push(`| ${plain(item.title)} / ${plain(item.project)} | ${item.repeat} / ${item.retry} | ${plain(item.status)} | ${errors.join('; ') || '未记录失败；结合原结果判断'} | ${path.relative(directory, path.dirname(file))} |`);
     cases++;
@@ -121,16 +153,16 @@ export async function summarizeWebDiagnostics(directory = '.ci-diagnostics', sum
   lines.push('', '## 运行与准备阶段', '');
   for (const file of files.filter(/** 包含全局发现/准备错误和登录态采集输出。
    * @param file - 已脱敏运行日志。
-   */ file => path.basename(file) === 'runner.jsonl')) {
+   */ file => ['runner.jsonl', 'release-server-events.jsonl'].includes(path.basename(file)))) {
     lines.push(...await runnerErrors(file));
   }
-  const inventory = [];
-  for (const file of await filesIn(directory)) inventory.push({ file: path.relative(directory, file), bytes: (await stat(file)).size });
+  const inventory = await diagnosticInventory(directory);
   await writeFile(path.join(directory, 'manifest.json'), JSON.stringify({ files: inventory, cases,
-    sources: { browser: '空输出不能证明无错误', proxy: '仅现有输出', application: '仅构建已有事件', backend: '不可获取' } }, null, 2));
+    generatedFiles: ['README.md', 'manifest.json'],
+    sources: { ...sourceAvailability(inventory), application: '仅构建已有事件', backend: '不可获取' } }, null, 2));
   lines.push('', '## 文件清单', '', ...inventory.map(/** 列出文件名和容量，不读取私有文件。
    * @param file - 文件名及大小。
-   */ file => `- ${file.file} (${file.bytes} bytes)`));
+   */ file => `- ${file.file} (${file.bytes} bytes)`), '- README.md / manifest.json（本次生成的摘要和清单）');
   const summary = lines.join('\n') + '\n';
   await writeFile(path.join(directory, 'README.md'), summary);
   if (summaryFile) await appendFile(summaryFile,

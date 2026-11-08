@@ -35,6 +35,32 @@ export const visualSupportFiles = [
 export const visualToolFiles = ['visual/open-report.ts', 'visual/playwright.config.ts'];
 export const visualCheckFiles = ['scripts/visual-complexity*.mjs'];
 
+const visualModuleStems = [...new Set([...visualSupportFiles, ...visualToolFiles].map(moduleStem))];
+export const visualSupportPatterns = visualModuleStems.flatMap(/** 覆盖同名前缀的模块、相邻测试及目录内所有后代实现。
+ * @param stem - 不含测试后缀与扩展名的模块路径。 */ stem => [
+  `${stem}*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}`,
+  `${stem}*/**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}`,
+]);
+export const visualCheckSupportFiles = ['scripts/visual-complexity-fixture.mjs', 'scripts/visual-complexity*.test.mjs'];
+
+/**
+ * 从显式文件清单取得模块前缀，不按测试后缀放宽辅助实现。
+ * @param file - 原始模块或相邻测试路径。
+ * @returns 同名模块的公共前缀。
+ */
+function moduleStem(file) { return file.replace(/(?:\.(?:test|spec|browser))?\.ts$/, ''); }
+
+/**
+ * 自动纳入同名前缀的新模块，独立工具仍只使用显式清单。
+ * @param files - 当前源码候选路径。
+ * @returns 视觉入口范围的实际文件。
+ */
+export function visualEntryFiles(files) {
+  return files.filter(/** 仅扫描本范围前缀的 JS/TS 源码。
+   * @param file - 当前源码路径。 */ file => /\.[cm]?[jt]sx?$/.test(file) && visualModuleStems.some(/** 匹配原模块前缀。
+    * @param stem - 原模块公共前缀。 */ stem => file.startsWith(stem)));
+}
+
 /** Issue 103 的原始文件必须存在，相邻测试及提取模块按同名前缀全量覆盖。 */
 export const animationSupportFiles = [
   'visual/animations/timeline.browser.ts',

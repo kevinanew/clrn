@@ -12,14 +12,14 @@ import { diagnosticFullText } from './diagnostic-privacy';
 export function logText(value: unknown): string {
   let text = String(value ?? '');
   for (const [key, secret] of Object.entries(process.env)) {
-    if (/(?:password|token|secret|cookie|authorization)/i.test(key) && secret && secret.length >= 4) {
+    if (/(?:password|passwd|token|secret|cookie|authorization|(?:api|session|private)[_-]?key|credential)/i.test(key) && secret && secret.length >= 4) {
       text = text.split(secret).join('[已隐藏]');
     }
   }
   // 自由文本中的对象/数组可能是完整请求正文；不展开、不猜测其中哪些字段安全。
   text = text.replace(/\{[\s\S]*/, '[结构化内容已隐藏]')
     .replace(/\[\s*(?=["'[{0-9-]|true\b|false\b|null\b)[\s\S]*/, '[结构化内容已隐藏]');
-  text = text.replace(/((?:["']?(?:authorization|proxy-authorization|cookie|set-cookie|password|passwd|access[_-]?token|refresh[_-]?token|token|secret|body|data|payload|headers|requestBody|responseBody)["']?)\s*[:=])[\s\S]*/gi, '$1[已隐藏]')
+  text = text.replace(/((?:["']?(?:authorization|proxy-authorization|cookie|set-cookie|password|passwd|access[_-]?token|refresh[_-]?token|token|secret|(?:api|session|private)[_-]?key|credential|body|data|payload|headers|requestBody|responseBody)["']?)\s*[:=])[\s\S]*/gi, '$1[已隐藏]')
     .replace(/\b(?:Basic|Bearer)\s+[^\s,"'}]+/gi, '[认证已隐藏]');
   text = text.replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, '[认证已隐藏]');
   return diagnosticFullText(text);
@@ -110,7 +110,8 @@ export class DiagnosticOutput {
 export function logError(error: unknown): Record<string, string> {
   const name = error instanceof Error ? error.name : 'Error';
   const message = error instanceof Error ? error.message : String(error ?? '');
-  const code = message.match(/\b(?:net::ERR_[A-Z_]+|E(?:CONNRESET|CONNREFUSED|TIMEDOUT|NOTFOUND|AI_AGAIN)|UND_ERR_[A-Z_]+)\b/)?.[0];
+  const errorCode = error instanceof Error && 'code' in error ? String(error.code) : '';
+  const code = `${errorCode} ${message}`.match(/\b(?:net::ERR_[A-Z_]+|E(?:CONNRESET|CONNREFUSED|TIMEDOUT|NOTFOUND|AI_AGAIN)|UND_ERR_[A-Z_]+)\b/)?.[0];
   return { errorName: /^(?:Error|TypeError|ReferenceError|SyntaxError|RangeError|TimeoutError|AbortError)$/.test(name) ? name : 'Error',
     code: code ?? 'unavailable', text: logText(message).replace(/Call log:[\s\S]*/i, 'Call log: [调用详情已隐藏]') };
 }

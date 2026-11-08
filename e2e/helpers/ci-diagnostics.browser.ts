@@ -2,10 +2,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { execFile, spawn } from 'node:child_process';
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { PNG } from 'pngjs';
 
 /**
  * 收集临时附件的全部文件。
@@ -62,10 +63,17 @@ for (const project of ['e2e', 'visual']) test(`${project} 公共 fixture 保存�
       {name:'offline-api',use:{launchOptions:{executablePath:'/public-nonexistent-browser-sentinel'}}}],
       use:{screenshot:'only-on-failure', trace:'off'}};`);
     await writeFile(path.join(directory, 'controlled.spec.ts'), `import {test} from ${JSON.stringify(wrapper)};
-      test('controlled-failure', async ({page,context})=>{
+      test('controlled-failure', async ({page,context,browser})=>{
         await test.step('before-failure-click action',async()=>{await page.goto(process.env.LOCAL_DIAGNOSTIC_URL!);await page.getByTestId('password').fill('public-input-sentinel');await page.getByTestId('action').click()});
         const popup=await context.newPage();await popup.goto(process.env.LOCAL_DIAGNOSTIC_URL!);
         await popup.waitForTimeout(150);
+        const manual=await browser.newContext();const manualPage=await manual.newPage();
+        await manualPage.goto(process.env.LOCAL_DIAGNOSTIC_URL!);
+        await manualPage.evaluate(()=>console.log('manual-context-marker'));
+        const session=await manual.newCDPSession(manualPage);
+        const crashed=manualPage.waitForEvent('crash');
+        void session.send('Page.crash').catch(()=>{});await crashed;
+        await manual.close();
         process.stdout.write('Authorization: Bea');process.stdout.write('rer public-stdout-sentinel\\n');
         throw new Error('controlled-failure-marker');
       });
@@ -104,6 +112,7 @@ for (const project of ['e2e', 'visual']) test(`${project} 公共 fixture 保存�
     const failed = cases.find(/** 定位受控失败的截图与日志所属目录。
      * @param item - 用例记录。
      */ item => item.title.includes('controlled-failure'));
+    assert.equal(failed.status, 'failed', '崩溃验收后必须继续执行原来的受控失败，不能提前超时');
     assert.ok(after.some(/** 截图与同一次尝试处在同一诊断目录。
      * @param file - 保留文件。
      */ file => path.dirname(file) === failed.directory && file.endsWith('.png')));
@@ -119,9 +128,20 @@ for (const project of ['e2e', 'visual']) test(`${project} 公共 fixture 保存�
     assert.ok(browser.some(/** 真实 HTTP 503 有响应状态。
      * @param event - 浏览器事件。
      */ event => event.event === 'http.response' && event.status === 503));
+    assert.ok(browser.some(/** 手动上下文的启动和崩溃都在同一次用例中，且有独立编号。
+     * @param event - 浏览器事件。
+     */ event => event.event === 'page.crash' && event.pageId === 1 && event.contextId));
+    const manualOutput = browser.find(/** 通过真实 console 事件关联手动上下文。
+     * @param event - 浏览器事件。
+     */ event => event.text === 'manual-context-marker');
+    assert.ok(manualOutput?.contextId && manualOutput.pageId === 1);
+    assert.ok(browser.some(/** 手动页面的崩溃必须与其 console 属于同一上下文。
+     * @param event - 浏览器事件。
+     */ event => event.event === 'page.crash' && event.contextId === manualOutput.contextId));
     assert.ok(browser.some(/** 断连明确没有收到响应。
      * @param event - 浏览器事件。
-     */ event => event.event === 'http.failed' && event.status === 'unavailable' && event.response === 'not-received'));
+     */ event => event.event === 'http.failed' && event.status === 'unavailable' && event.response === 'not-received'
+       && event.errorName === 'Error' && event.code.startsWith('net::ERR_') && event.text));
     assert.ok(browser.some(/** 保留异常类型。
      * @param event - 浏览器事件。
      */ event => event.errorName === 'TypeError' && event.text === 'controlled-page-error'));
@@ -141,6 +161,111 @@ for (const project of ['e2e', 'visual']) test(`${project} 公共 fixture 保存�
     assert.ok(summary.includes('timedOut'));
     assert.ok(summary.includes('missing-target'));
     assert.ok(summary.includes('controlled-failure-marker'));
+  });
+
+for (const project of ['e2e', 'visual']) test(`${project} 手动 context 的 body PNG 在失败及后续报告清理后字节与用例归属不变`, { timeout: 120000 },
+  /** 不启用自动截图，覆盖两种视口及简繁英的内存附件完整保全链路。
+   * @param context - 测试清理接口。
+   */ async context => {
+    const directory = await mkdtemp(path.join(tmpdir(), 'clrn-body-attachments-'));
+    context.after(/** 清理合成截图和受控失败报告。 */ () => rm(directory, { force: true, recursive: true }));
+    const root = path.resolve(__dirname, '../..');
+    const references = path.join(directory, 'references');
+    await mkdir(references);
+    const wrapper = path.join(root, project === 'e2e' ? 'e2e/helpers/diagnostic-test.ts' : 'visual/src/support/diagnosticTest.ts');
+    const projects = [];
+    for (const locale of ['zh-CN', 'zh-TW', 'en-US']) for (const width of [375, 1440]) {
+      projects.push({ name: `${locale}-${width}`, use: { locale, viewport: { width, height: 812 } } });
+    }
+    const outputDir = path.join(directory, 'results');
+    const configuration = path.join(directory, 'playwright.config.cjs');
+    await writeFile(configuration, `module.exports = {testDir:__dirname, testMatch:'body.spec.ts', workers:1, retries:0,
+      outputDir:${JSON.stringify(outputDir)}, timeout:15000, projects:${JSON.stringify(projects)},
+      reporter:[[${JSON.stringify(path.join(root, 'e2e/helpers/diagnostic-reporter.ts'))}]],
+      use:{screenshot:'off',video:'off',trace:'off'}};`);
+    await writeFile(path.join(directory, 'body.spec.ts'), `import {test,expect} from ${JSON.stringify(wrapper)};
+      import {writeFileSync} from 'node:fs';import path from 'node:path';
+      test('body-only-controlled-failure',async({browser},info)=>{
+        const manual=await browser.newContext({viewport:info.project.use.viewport,locale:info.project.use.locale});
+        const page=await manual.newPage();
+        try {
+          const label=info.project.use.locale==='zh-CN'?'流水校验':info.project.use.locale==='zh-TW'?'流水校驗':'Transactions';
+          await page.setContent('<button onclick="this.textContent=String(42)">'+label+'</button>');
+          await page.getByRole('button',{name:label}).click();await expect(page.getByRole('button')).toHaveText('42');
+          const image=await page.screenshot();
+          writeFileSync(path.join(${JSON.stringify(references)},info.project.name+'.png'),image);
+          writeFileSync(info.outputPath('cleaned-by-next-command.txt'),'first failure output');
+          await info.attach('流水校验失败页面',{body:image,contentType:'image/png'});
+        } finally {await manual.close()}
+        expect(manual.pages()).toHaveLength(0);throw new Error('body-after-close-controlled-failure');
+      });
+      test('later-success',async()=>{});`);
+    const cli = createRequire(path.join(root, project, 'package.json')).resolve('@playwright/test/cli');
+    const environment = { ...process.env, CLRN_DIAGNOSTICS_DIR: path.join(directory, 'diagnostics'),
+      GITHUB_STEP_SUMMARY: '', GITHUB_RUN_ID: '121', GITHUB_RUN_ATTEMPT: '2',
+      CLRN_EXPECTED_APPLICATION_COMMIT: 'a'.repeat(40) };
+    assert.equal(await runNode([cli, 'test', '--config', configuration, '--grep', 'body-only-controlled-failure'], environment), 1);
+    const before = await filesIn(environment.CLRN_DIAGNOSTICS_DIR);
+    const failedCases = before.filter(/** 精确检查首次失败的同例目录，不接受其他测试的图片。
+     * @param file - 诊断文件。
+     */ file => file.endsWith('/case.json'));
+    assert.equal(failedCases.length, projects.length);
+    for (const file of failedCases) {
+      const steps = await readFile(path.join(path.dirname(file), 'steps.jsonl'), 'utf8');
+      const ended = steps.trim().split('\n').map(/** 只报告真实失败原因，避免将浏览器启动失败当作预期失败。
+       * @param line - 步骤事件。
+       */ line => JSON.parse(line)).find(/** 获取运行器记录的结束错误。
+         * @param event - 同例事件。
+         */ event => event.event === 'test.end');
+      assert.ok(ended.errors.some(/** 截图及关闭上下文后才会抛出这个错误。
+       * @param error - 脱敏错误。
+       */ (error: { text: string }) => error.text.includes('body-after-close-controlled-failure')), JSON.stringify(ended.errors));
+    }
+    const outputBefore = await filesIn(outputDir);
+    assert.equal(outputBefore.filter(/** 确认第一轮确实产生后续命令会清理的测试输出。
+     * @param file - 原始结果文件。
+     */ file => file.endsWith('cleaned-by-next-command.txt')).length, projects.length);
+    assert.equal(await runNode([cli, 'test', '--config', configuration, '--grep', 'later-success'], environment), 0);
+    const outputAfter = await filesIn(outputDir);
+    assert.ok(!outputAfter.some(/** 必须真正经历 Playwright 清理，而非手动保留原始报告。
+     * @param file - 后续命令结果文件。
+     */ file => file.endsWith('cleaned-by-next-command.txt')));
+    assert.equal(await runNode([path.join(root, 'scripts/ci-web-diagnostics.mjs')], environment), 0);
+    const manifest = JSON.parse(await readFile(path.join(environment.CLRN_DIAGNOSTICS_DIR, 'manifest.json'), 'utf8'));
+    assert.equal(manifest.cases, projects.length * 2);
+    for (const file of failedCases) {
+      const item = JSON.parse(await readFile(file, 'utf8'));
+      assert.equal(item.status, 'failed');
+      assert.equal(item.retry, 0);
+      assert.ok(item.title.includes('body-only-controlled-failure'));
+      const caseDirectory = path.dirname(file);
+      const events = (await readFile(path.join(caseDirectory, 'timeline.jsonl'), 'utf8')).trim().split('\n').map(
+        /** 从最终诊断包检查原用例的附件名称、文件和失败原因。
+         * @param line - 汇总事件。
+         */ line => JSON.parse(line));
+      assert.ok(events.some(/** 最终下载包仍记录原用例的失败状态。
+       * @param event - 同例事件。
+       */ event => event.event === 'test.end' && event.status === 'failed'));
+      const attachment = events.find(/** 不能只验证文件存在，还要保留原附件关联。
+       * @param event - 同例事件。
+       */ event => event.event === 'test.attachment' && event.name === '流水校验失败页面');
+      assert.ok(attachment);
+      const image = path.join(caseDirectory, attachment.file);
+      const retained = await readFile(image);
+      assert.deepEqual(retained, await readFile(path.join(references, `${item.project}.png`)));
+      const decoded = PNG.sync.read(retained);
+      assert.deepEqual({ width: decoded.width, height: decoded.height }, item.viewport);
+      assert.ok(manifest.files.some(/** Artifact 汇总文件清单必须包含同一例的 PNG。
+       * @param entry - 最终附件清单。
+       */ (entry: { file: string }) => entry.file === path.relative(environment.CLRN_DIAGNOSTICS_DIR, image)));
+      const identity = JSON.parse(await readFile(path.join(path.dirname(caseDirectory), 'identity.json'), 'utf8'));
+      assert.equal(identity.applicationCommit, environment.CLRN_EXPECTED_APPLICATION_COMMIT);
+      assert.equal(identity.runId, '121');
+      assert.equal(identity.runAttempt, '2');
+      assert.deepEqual(item.viewport, projects.find(/** 对照原项目视口，避免设备间错误归属。
+       * @param entry - Playwright 项目。
+       */ entry => entry.name === item.project)!.use.viewport);
+    }
   });
 
 for (const project of ['e2e', 'visual']) test(`${project} 真实输入动作的引号、转义和定位器边界不泄露到最终附件`, { timeout: 120000 },

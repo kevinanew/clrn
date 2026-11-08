@@ -25,6 +25,29 @@ test('违规指纹按文件扩展名解析 TypeScript 泛型和 TSX', /** 验证
   }
 });
 
+test('解析错误保留原始行指纹并作为新增违规阻断门禁', /** 验证无效源码不会在指纹计算时再次解析并丢失诊断。 */ () => {
+  const source = 'export function (';
+  const finding = { file: 'e2e/cases/_shared/complexity-probe-regression/probe.ts', rule: 'parse-error',
+    line: 1, column: 17, message: 'Parsing error: Identifier expected.' };
+  const result = fingerprint(finding, source);
+  assert.deepEqual(result, { ...finding, anchor: fingerprint({ ...finding, file: 'probe.py' }, source).anchor });
+  assert.deepEqual(newFindings([result], []), [result]);
+});
+
+test('指纹使用诊断时的源码，临时文件删除后仍保留违规', /** 验证指纹不重读已清理的临时文件。 */ () => {
+  const directory = mkdtempSync(join(repository, '.quality-probe-'));
+  const file = join(directory, 'probe.ts');
+  const source = 'await page.route("**", handler);\n';
+  const finding = { file: file.slice(repository.length + 1), rule: 'quality/no-network-response', line: 1 };
+  try {
+    writeFileSync(file, source);
+    const expected = fingerprint(finding);
+    rmSync(directory, { recursive: true, force: true });
+    assert.deepEqual(fingerprint(finding, source), expected);
+    assert.throws(/** 缺少源码快照时仍必须报告文件缺失。 */ () => fingerprint(finding), { code: 'ENOENT' });
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
 /**
  * 对内存负例运行真实配置，不创建业务或浏览器连接。
  * @param source - 临时源码。

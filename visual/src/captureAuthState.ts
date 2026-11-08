@@ -37,8 +37,9 @@ const authLog = new DiagnosticLog(path.join(diagnosticDirectory(), `auth-run-${r
  * @param message - 执行阶段或错误消息。
  */
 function authOutput(level: 'log' | 'warn' | 'error', message: string): void {
-  console[level](message);
-  authLog.record('auth.output', { level, text: logText(message) });
+  const text = logText(message);
+  console[level](text);
+  authLog.record('auth.output', { level, text });
 }
 
 const BROWSER_LAUNCH_ARGS = [
