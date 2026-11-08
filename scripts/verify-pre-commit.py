@@ -7,6 +7,22 @@ import tempfile
 import unittest
 
 
+def inherited_variable(key):
+    """排除会改变临时克隆或跳过 hook 的调用者环境变量。"""
+    return not key.startswith("GIT_") and key not in {"SKIP", "PRE_COMMIT_ALLOW_NO_CONFIG"}
+
+
+def isolated_environment():
+    """保留正常工具环境，移除 Git 与 hook 控制变量。"""
+    return {key: value for key, value in os.environ.items() if inherited_variable(key)}
+
+
+def assert_executable_hook(hook):
+    """确认安装生成了可执行的真实 Git hook。"""
+    if not hook.is_file() or not os.access(hook, os.X_OK):
+        raise AssertionError("未安装可执行的实际 Git hook")
+
+
 class PreCommitAcceptance(unittest.TestCase):
     """复用实际 npm 检查验证安装、提交阻断和修改保留。"""
 
@@ -16,11 +32,7 @@ class PreCommitAcceptance(unittest.TestCase):
         cls.temporary = tempfile.TemporaryDirectory(prefix="clrn-pre-commit-")
         cls.addClassCleanup(cls.temporary.cleanup)
         cls.repository = Path(cls.temporary.name) / "repository"
-        cls.environment = {
-            key: value for key, value in os.environ.items()
-            if not key.startswith("GIT_")
-            and key not in {"SKIP", "PRE_COMMIT_ALLOW_NO_CONFIG"}
-        }
+        cls.environment = isolated_environment()
         cls.environment.update({
             "GIT_CONFIG_GLOBAL": os.devnull,
             "GIT_CONFIG_NOSYSTEM": "1",
@@ -46,8 +58,7 @@ class PreCommitAcceptance(unittest.TestCase):
         )
         cls.run_command(cls.pre_commit, "install")
         hook = cls.repository / ".git/hooks/pre-commit"
-        if not hook.is_file() or not os.access(hook, os.X_OK):
-            raise AssertionError("未安装可执行的实际 Git hook")
+        assert_executable_hook(hook)
 
     @classmethod
     def run_command(cls, *arguments, check=True):
@@ -79,13 +90,17 @@ class PreCommitAcceptance(unittest.TestCase):
             ("stash", "list"),
         )
         state = [self.run_command("git", *command).stdout for command in commands]
+        state.append(self.untracked_contents())
+        return state
+
+    def untracked_contents(self):
+        """读取未跟踪文件原始字节，忽略 Git 的末尾空分隔项。"""
         untracked = self.run_command(
             "git", "ls-files", "--others", "--exclude-standard", "-z",
         ).stdout.split("\0")
-        state.append({
+        return {
             name: (self.repository / name).read_bytes() for name in untracked if name
-        })
-        return state
+        }
 
     def assert_hooks_once(self, output):
         """两个全仓库 hook 每次调用必须各出现一次。"""

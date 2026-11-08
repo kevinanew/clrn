@@ -1,0 +1,662 @@
+{
+  "issue": 108,
+  "beforeRevision": "495890e3bcb5077f4a662f6dca5d18615354d7c9",
+  "tools": {
+    "python": "3.12.12",
+    "radon": "6.0.1",
+    "ruff": "0.15.12"
+  },
+  "counting": {
+    "no_assert": true,
+    "independentFunctionsMethodsAsyncAndLambdas": true,
+    "nestedScopesAccumulateIntoParent": false
+  },
+  "limits": {
+    "testAndSupport": 3,
+    "standaloneTool": 6
+  },
+  "before": [
+    {
+      "file": "scripts/extract-web-package.py",
+      "line": 8,
+      "column": 1,
+      "name": "extract_package",
+      "complexity": 11,
+      "limit": 6
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 14,
+      "column": 5,
+      "name": "setUpClass",
+      "complexity": 6,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 53,
+      "column": 5,
+      "name": "run_command",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 66,
+      "column": 5,
+      "name": "tearDown",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 72,
+      "column": 5,
+      "name": "snapshot",
+      "complexity": 4,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 90,
+      "column": 5,
+      "name": "assert_hooks_once",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 98,
+      "column": 5,
+      "name": "commit",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 106,
+      "column": 5,
+      "name": "test_all_files",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 115,
+      "column": 5,
+      "name": "test_lint_errors_block_commits",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 141,
+      "column": 5,
+      "name": "test_python_500_lines_commit",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 152,
+      "column": 5,
+      "name": "test_partial_staging_failure_then_success",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 186,
+      "column": 5,
+      "name": "test_document_only_and_deletion_commits",
+      "complexity": 1,
+      "limit": 3
+    }
+  ],
+  "after": [
+    {
+      "file": "scripts/extract-web-package.py",
+      "line": 12,
+      "column": 1,
+      "name": "member_path",
+      "complexity": 4,
+      "limit": 6
+    },
+    {
+      "file": "scripts/extract-web-package.py",
+      "line": 20,
+      "column": 1,
+      "name": "validate_member",
+      "complexity": 4,
+      "limit": 6
+    },
+    {
+      "file": "scripts/extract-web-package.py",
+      "line": 28,
+      "column": 1,
+      "name": "validated_members",
+      "complexity": 5,
+      "limit": 6
+    },
+    {
+      "file": "scripts/extract-web-package.py",
+      "line": 45,
+      "column": 1,
+      "name": "extract_package",
+      "complexity": 1,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 32,
+      "column": 1,
+      "name": "function_complexity",
+      "complexity": 3,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 41,
+      "column": 1,
+      "name": "measurements",
+      "complexity": 3,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 54,
+      "column": 1,
+      "name": "adjacent_scope",
+      "complexity": 3,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 65,
+      "column": 1,
+      "name": "import_names",
+      "complexity": 5,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 73,
+      "column": 1,
+      "name": "import_directories",
+      "complexity": 3,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 80,
+      "column": 1,
+      "name": "candidate_modules",
+      "complexity": 4,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 91,
+      "column": 1,
+      "name": "local_dependencies",
+      "complexity": 6,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 100,
+      "column": 1,
+      "name": "extend_scope",
+      "complexity": 2,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 108,
+      "column": 1,
+      "name": "scan",
+      "complexity": 6,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 130,
+      "column": 1,
+      "name": "violations",
+      "complexity": 3,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 135,
+      "column": 1,
+      "name": "main",
+      "complexity": 3,
+      "limit": 6
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 24,
+      "column": 5,
+      "name": "visit_FunctionDef",
+      "complexity": 1,
+      "limit": 6
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 17,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 25,
+      "column": 5,
+      "name": "write_archive",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 31,
+      "column": 5,
+      "name": "test_regular_files_and_directories",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 42,
+      "column": 5,
+      "name": "test_invalid_paths_before_creating_output",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 51,
+      "column": 5,
+      "name": "test_rejects_non_static_member_types",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 61,
+      "column": 5,
+      "name": "test_rejects_sparse_regular_metadata",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 70,
+      "column": 5,
+      "name": "test_duplicate_normalized_paths",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 80,
+      "column": 5,
+      "name": "test_size_budget_boundary",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 91,
+      "column": 5,
+      "name": "test_count_budget_boundary",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_extract_web_package.py",
+      "line": 100,
+      "column": 5,
+      "name": "test_existing_destination_and_corrupt_archive_propagate",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 15,
+      "column": 1,
+      "name": "source_with_complexity",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 23,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 32,
+      "column": 5,
+      "name": "write",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 36,
+      "column": 5,
+      "name": "run_cli",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 42,
+      "column": 5,
+      "name": "test_test_three_passes_four_fails",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 50,
+      "column": 5,
+      "name": "test_tool_six_passes_seven_fails",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 57,
+      "column": 5,
+      "name": "test_nested_functions_classes_async_and_lambdas_are_independent",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 77,
+      "column": 5,
+      "name": "test_lambda_in_defaults_and_decorators_is_scanned",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 87,
+      "column": 5,
+      "name": "test_radon_decisions_and_no_assert",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 103,
+      "column": 5,
+      "name": "test_adjacent_tests_and_support_without_test_suffix_use_three",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 112,
+      "column": 5,
+      "name": "test_extracted_support_is_scanned_transitively",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 120,
+      "column": 5,
+      "name": "test_shared_helper_inherits_stricter_test_budget",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 127,
+      "column": 5,
+      "name": "test_packages_and_relative_imports_are_scanned",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 138,
+      "column": 5,
+      "name": "test_unrelated_files_are_out_of_scope",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 143,
+      "column": 5,
+      "name": "test_disable_comments_do_not_suppress_cli_failure",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 151,
+      "column": 5,
+      "name": "test_cli_tool_boundary",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 158,
+      "column": 5,
+      "name": "test_parse_error_and_missing_file_fail",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 169,
+      "column": 5,
+      "name": "test_empty_scan_fails",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_python_tool_complexity.py",
+      "line": 176,
+      "column": 5,
+      "name": "test_missing_dependency_fails",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_verify_pre_commit.py",
+      "line": 17,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_verify_pre_commit.py",
+      "line": 23,
+      "column": 5,
+      "name": "test_isolated_environment",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_verify_pre_commit.py",
+      "line": 32,
+      "column": 5,
+      "name": "test_executable_hook",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_verify_pre_commit.py",
+      "line": 44,
+      "column": 5,
+      "name": "test_setup_keeps_installation_and_environment",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_verify_pre_commit.py",
+      "line": 64,
+      "column": 5,
+      "name": "test_snapshot_preserves_all_git_state_and_untracked_bytes",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_verify_pre_commit.py",
+      "line": 81,
+      "column": 5,
+      "name": "test_empty_untracked_and_read_error",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_verify_pre_commit.py",
+      "line": 91,
+      "column": 5,
+      "name": "test_acceptance_cases_still_collect",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 10,
+      "column": 1,
+      "name": "inherited_variable",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 15,
+      "column": 1,
+      "name": "isolated_environment",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 20,
+      "column": 1,
+      "name": "assert_executable_hook",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 30,
+      "column": 5,
+      "name": "setUpClass",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 64,
+      "column": 5,
+      "name": "run_command",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 77,
+      "column": 5,
+      "name": "tearDown",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 83,
+      "column": 5,
+      "name": "snapshot",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 96,
+      "column": 5,
+      "name": "untracked_contents",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 105,
+      "column": 5,
+      "name": "assert_hooks_once",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 113,
+      "column": 5,
+      "name": "commit",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 121,
+      "column": 5,
+      "name": "test_all_files",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 130,
+      "column": 5,
+      "name": "test_lint_errors_block_commits",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 156,
+      "column": 5,
+      "name": "test_python_500_lines_commit",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 167,
+      "column": 5,
+      "name": "test_partial_staging_failure_then_success",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/verify-pre-commit.py",
+      "line": 201,
+      "column": 5,
+      "name": "test_document_only_and_deletion_commits",
+      "complexity": 1,
+      "limit": 3
+    }
+  ],
+  "validation": {
+    "static": "npm run lint:python:tools",
+    "targetedTests": "node --test scripts/python-tool-complexity.test.mjs scripts/python-lines.test.mjs scripts/release-web.test.mjs",
+    "pythonUnitTests": 29,
+    "nodeTests": 14,
+    "acceptanceCasesCollectedOnly": 5,
+    "runtime": "Real local gzip archives and HTTP; no full hook acceptance, browser, device or live account tests."
+  }
+}
