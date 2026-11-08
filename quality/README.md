@@ -10,8 +10,9 @@ CI 的 `lint.yml` 在 push、PR 和手动触发时使用相同 pre-commit 入口
 | --- | --- |
 | `npm run lint:js` | ESLint 10.12.0：complexity classic > 10、max-depth > 3、TS 网络响应入口，以及全部既有规则；警告同样失败 |
 | `npm run lint:docs` | 全仓逐实现 TSDoc、Python 公私有 docstring、lambda 与 Shell 用途说明；缺文档、空摘要、解析及工具异常均失败 |
-| `npm run lint:python` | 先执行 Python 500 物理行硬门禁，再执行 Ruff 0.15.12：原有规则及 C901 > 10；独立强制 C901 扫描不接受 noqa、配置忽略或阈值放宽 |
+| `npm run lint:python` | 先执行 Python 500 物理行和 #108 工具范围的 3/6 复杂度门禁，再执行 Ruff 0.15.12：原有规则及 C901 > 10；独立强制 C901 扫描不接受 noqa、配置忽略或阈值放宽 |
 | `npm run lint:python:lines` | 独立只读扫描 Python 文件；超过 500 物理行、读取失败、Git 缺失或空扫描均失败 |
+| `npm run lint:python:tools` | #108 范围内逐函数 Radon 6.0.1：测试及测试支持 ≤3，明确登记的独立工具 ≤6；工具另执行 Ruff C901 ≤6 |
 | `npm run lint:architecture` | dependency-cruiser 18.7.0：循环（包含类型导入）、直接或间接越层、本地导入无法解析 |
 | `npm run lint:duplication` | jscpd 5.4.2：至少 5 行、70 词元、mild 模式；不使用总百分比容忍新增重复 |
 | `npm run --silent quality:report` | 输出全部实测诊断、依赖图和无源码片段的重复位置 JSON；用于测量，不代表门禁通过 |
@@ -41,6 +42,26 @@ CI 的 `lint.yml` 在 push、PR 和手动触发时使用相同 pre-commit 入口
 `node --test scripts/python-lines.test.mjs` 用临时 Git 仓库验证 500/501、换行、空文件、
 新文件、删除文件、嵌套及排除目录、读取失败、Git 缺失和空扫描，并验证实际 npm 静态入口阻断。
 `scripts/verify-pre-commit.py` 另通过真实 `git commit` 验证 500 行可提交、501 行被 hook 拦截。
+
+## Python 工具复杂度（#108）
+
+`npm run lint:python:tools` 使用 Python 3.12.12、Radon 6.0.1 和 Ruff 0.15.12。
+范围为 `extract-web-package.py`、`verify-pre-commit.py`、检查器自身、同名相邻测试和支持模块，
+并递归包含静态本地导入的辅助实现。只有解包脚本和检查器采用 6；hook 验收及其环境、
+快照辅助逻辑都采用 3，共用辅助模块取更严格的上限。不读取或扩大历史豁免。
+
+普通/异步函数、方法、lambda 独立测量，嵌套函数、类和 lambda 不累加至外层，
+断言使用 `no_assert=True`。读取/解析失败、缺失 Radon、必需文件缺失或没有函数均失败；
+`noqa` 和 Ruff 忽略配置不能屏蔽 AST 门禁。此入口经 `lint:python`、`lint` 接入既有
+pre-commit 和 CI，未新增流水线。
+
+[逐函数前后报告](issue-108-complexity.json) 记录实施前 revision、计数规则及当前测量。
+当前报告可用 `uv run --no-project --python 3.12.12 --with radon==6.0.1 python scripts/python-tool-complexity.py --report` 重测。
+定向验收命令为 `node --test scripts/python-tool-complexity.test.mjs scripts/python-lines.test.mjs scripts/release-web.test.mjs`；
+其中包含 3/4、6/7、嵌套回调、提取辅助模块、禁用注释及失败退出的临时正负例，
+并通过临时仓库的实际 `lint:python` 入口验证阻断。仅收集真实 hook 的 5 个用例，
+未执行会启动全仓检查的 `verify-pre-commit.py` 完整验收；Release 回归使用本地 HTTP 和真实归档。
+本次结果不代表线上应用、设备或真实账号场景验收。
 
 ## 最新代码的初始测量
 
