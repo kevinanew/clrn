@@ -14,24 +14,29 @@ export async function seekCssAnimations(page: Page, elapsed: number, reset = fal
   await page.evaluate(/** 初始化或更新页面动画采样表，按采样进度推进动画时间。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ elapsed, reset }) => {
     const state = window as typeof window & { animationSamples?: Map<Animation, number> };
-    /**
-     * 新采样区间清空起点，否则保留此前动画的挂载时刻。
-     */
-    function sampleStarts() {
-      if (reset) return new Map<Animation, number>();
-      return state.animationSamples || new Map<Animation, number>();
-    }
-    state.animationSamples = sampleStarts();
+    // 对象方法避免 tsx 为嵌套函数注入浏览器中不存在的 __name。
+    const sampling = {
+      /**
+       * 新采样区间清空起点，否则保留此前动画的挂载时刻。
+       */
+      sampleStarts() {
+        if (reset) return new Map<Animation, number>();
+        return state.animationSamples || new Map<Animation, number>();
+      }
+    };
+    state.animationSamples = sampling.sampleStarts();
     const starts = state.animationSamples;
-    /**
-     * 记录新动画的起点，已有动画不重置。
-     * @param animation - 当前动画。
-     */
-    function remember(animation: Animation) {
-      if (!starts.has(animation)) starts.set(animation, elapsed);
-    }
+    const tracking = {
+      /**
+       * 记录新动画的起点，已有动画不重置。
+       * @param animation - 当前动画。
+       */
+      remember(animation: Animation) {
+        if (!starts.has(animation)) starts.set(animation, elapsed);
+      }
+    };
     for (const animation of document.getAnimations()) {
-      remember(animation);
+      tracking.remember(animation);
       animation.pause();
       animation.currentTime = elapsed - state.animationSamples.get(animation)!;
     }
@@ -73,39 +78,41 @@ async function settleFrozenAnimations(page: Page, duration: number, fast: boolea
  * @param restore - 是否归还未结束动画的播放控制。
  */
 function controlCssAnimations(restore: boolean) {
-  /**
-   * 有限且到达终点的动画才能结束。
-   * @param animation - 待检查动画。
-   */
-  function elapsed(animation: Animation) {
-    const end = animation.effect?.getComputedTiming().endTime;
-    if (typeof end !== 'number') return false;
-    return reachedEnd(animation, end);
-  }
-  /**
-   * 无限动画保持原播放状态。
-   * @param animation - 待检查动画。
-   * @param end - 动画结束时间。
-   */
-  function reachedEnd(animation: Animation, end: number) {
-    return end !== Infinity && Number(animation.currentTime) >= end;
-  }
-  /**
-   * 已结束动画只触发 finish，未结束动画按调用场景处理。
-   * @param animation - 当前 CSS 动画。
-   */
-  function control(animation: Animation) {
-    if (elapsed(animation)) animation.finish();
-    else resume(animation);
-  }
-  /**
-   * 预热保持暂停，归还阶段才播放未完成动画。
-   * @param animation - 未完成的动画。
-   */
-  function resume(animation: Animation) {
-    if (restore) animation.play();
-  }
-  for (const animation of document.getAnimations()) control(animation);
+  const controls = {
+    /**
+     * 有限且到达终点的动画才能结束。
+     * @param animation - 待检查动画。
+     */
+    elapsed(animation: Animation) {
+      const end = animation.effect?.getComputedTiming().endTime;
+      if (typeof end !== 'number') return false;
+      return controls.reachedEnd(animation, end);
+    },
+    /**
+     * 无限动画保持原播放状态。
+     * @param animation - 待检查动画。
+     * @param end - 动画结束时间。
+     */
+    reachedEnd(animation: Animation, end: number) {
+      return end !== Infinity && Number(animation.currentTime) >= end;
+    },
+    /**
+     * 已结束动画只触发 finish，未结束动画按调用场景处理。
+     * @param animation - 当前 CSS 动画。
+     */
+    control(animation: Animation) {
+      if (controls.elapsed(animation)) animation.finish();
+      else controls.resume(animation);
+    },
+    /**
+     * 预热保持暂停，归还阶段才播放未完成动画。
+     * @param animation - 未完成的动画。
+     */
+    resume(animation: Animation) {
+      if (restore) animation.play();
+    }
+  };
+  for (const animation of document.getAnimations()) controls.control(animation);
 }
 
 /**
@@ -135,34 +142,36 @@ export async function freeze(page: Page): Promise<void> {
     const state = window as typeof window & { animationCssObserver?: MutationObserver };
     if (state.animationCssObserver) return;
     const seen = new WeakSet<Animation>();
-    /** 新 CSS 动画交由采样器推进，保留原始关键帧和时长。 */
-    const pauseNewAnimations = () => {
-      for (const animation of document.getAnimations()) {
-        if (seen.has(animation)) continue;
-        seen.add(animation);
-        animation.pause();
-        animation.currentTime = 0;
+    const observer = {
+      /** 新 CSS 动画交由采样器推进，保留原始关键帧和时长。 */
+      pauseNewAnimations() {
+        for (const animation of document.getAnimations()) {
+          if (seen.has(animation)) continue;
+          seen.add(animation);
+          animation.pause();
+          animation.currentTime = 0;
+        }
+      },
+      /**
+       * 仅检查 style 中显式声明的动画名。
+       * @param target - 变更所属节点。
+       */
+      hasAnimationName(target: Node) {
+        return target instanceof HTMLElement && Boolean(target.style.animationName);
       }
     };
-    /**
-     * 仅检查 style 中显式声明的动画名。
-     * @param target - 变更所属节点。
-     */
-    function hasAnimationName(target: Node) {
-      return target instanceof HTMLElement && Boolean(target.style.animationName);
-    }
     state.animationCssObserver = new MutationObserver(/** 仅在可能新增 CSS 动画的 DOM 变化后更新暂停状态。
  * @param records - 当前操作使用的 records。 */ records => {
       // JS 动画每帧修改 transform/opacity；这些更新不会创建 CSS 动画，不必强制重新布局。
       if (records.some(/** 判断变更是否涉及节点、class 或显式动画名称。
  * @param record - 当前操作使用的 record。 */ record => record.type === 'childList' || record.attributeName === 'class'
-        || hasAnimationName(record.target))) {
-        pauseNewAnimations();
+        || observer.hasAnimationName(record.target))) {
+        observer.pauseNewAnimations();
       }
     });
     state.animationCssObserver.observe(document.documentElement,
       { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style'] });
-    pauseNewAnimations();
+    observer.pauseNewAnimations();
   });
   expect(await page.evaluate(/** 检查页面是否启用会干扰真实动画的视觉回归模式。 */ () => Boolean(
     (globalThis as typeof globalThis & { __VISUAL_REGRESSION__?: boolean }).__VISUAL_REGRESSION__
