@@ -1,5 +1,5 @@
 /** 为俱乐部列表和牌局截图启动独立代理，并在用例结束后释放代理进程。 */
-import { test as base } from '@playwright/test';
+import { test as base } from '../../src/support/diagnosticTest';
 import path from 'node:path';
 import type { Mitmproxy, ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';

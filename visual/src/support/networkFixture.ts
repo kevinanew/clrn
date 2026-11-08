@@ -1,5 +1,5 @@
 /** 使用视觉子项目的 Playwright 版本，复用相同的代理启动和控制接口。 */
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect } from './diagnosticTest';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
 import type { Mitmproxy } from '../../../e2e/helpers/mitmproxy-client';
 import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';

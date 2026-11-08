@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../helpers/diagnostic-test';
 import { accountStatus, signIn } from '../_shared/auth';
 import { openHall, prepareContext } from '../_shared/page';
 

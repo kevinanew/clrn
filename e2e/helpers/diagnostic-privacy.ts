@@ -41,6 +41,14 @@ export function diagnosticNode(address: string): string {
  * @param value - 待展示的文本。
  */
 export function diagnosticText(value: unknown): string {
+  return diagnosticFullText(value).slice(0, 2000);
+}
+
+/**
+ * 使用相同脱敏规则，由持续日志出口统计长度和截断量。
+ * @param value - 待展示的文本。
+ */
+export function diagnosticFullText(value: unknown): string {
   return String(value ?? '')
     .replace(/\bBearer\s+[^\s,"'}]+/gi, 'Bearer [已隐藏]')
     .replace(/((?:access_token|refresh_token|authorization|password|cookie|token)["']?\s*[:=]\s*["']?)[^\s,"';&}]+/gi, '$1[已隐藏]')
@@ -48,8 +56,7 @@ export function diagnosticText(value: unknown): string {
     .replace(/\[[0-9a-f:.]+\](?::\d+)?|\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?/gi, '[地址已隐藏]')
     .replace(/(?:[a-f0-9]{0,4}:){2,}[a-f0-9:.]+/gi, /** 隐藏真实 IP 地址，保留不构成地址的匹配文本。
  * @param match - 当前操作使用的 match。 */ match => isIP(match) ? '[地址已隐藏]' : match)
-    .replace(/\b(?:[a-z0-9-]+\.)+[a-z]{2,63}\b(?::\d+)?(?:\/[^\s<>"'`),;]*)?/gi, diagnosticNode)
-    .slice(0, 2000);
+    .replace(/\b(?:[a-z0-9-]+\.)+[a-z]{2,63}\b(?::\d+)?(?:\/[^\s<>"'`),;]*)?/gi, diagnosticNode);
 }
 
 const allowedFields = new Set(['event', 'source', 'node', 'path', 'method', 'status', 'requestId',

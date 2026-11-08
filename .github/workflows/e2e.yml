@@ -4,7 +4,7 @@ name: H5 端到端测试
 # 使用 100 个 Web 专用账号的新凭据，保留账号并发锁并兼容旧分支继续运行。
 on:
   push:
-    paths: ['scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'e2e/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/e2e.yml']
+    paths: ['.github/actions/web-diagnostics/**', 'scripts/ci-web-diagnostics.mjs', 'scripts/*release*', 'scripts/extract-web-package.py', '.github/actions/prepare-release-web/**', 'e2e/**', 'scripts/*ci*', 'scripts/prepare-test-account*', '.github/workflows/e2e.yml']
   workflow_call:
     inputs:
       release_record:
@@ -100,3 +100,9 @@ jobs:
             e2e/playwright-report/
             e2e/test-results/
           if-no-files-found: ignore
+
+      - name: 保存本任务 Web 诊断与下载入口
+        if: always()
+        uses: ./.github/actions/web-diagnostics
+        with:
+          shard: e2e

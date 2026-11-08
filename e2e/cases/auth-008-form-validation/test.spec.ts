@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../helpers/diagnostic-test';
 import { openHall, openLoginForm, prepareContext, unique } from '../_shared/page';
 
 test('AUTH-008：登录必填与密码长度校验随输入、清空即时更新', /** 验证AUTH-008：登录必填与密码长度校验随输入、清空即时更新。

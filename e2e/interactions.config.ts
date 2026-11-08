@@ -9,7 +9,7 @@ export default defineConfig({
   timeout: 120_000,
   expect: { timeout: 15_000 },
   outputDir: './test-results/interactions',
-  reporter: [['list'], ['html', { open: 'never', outputFolder: './playwright-report' }]],
+  reporter: [['./helpers/diagnostic-reporter.ts'], ['list'], ['html', { open: 'never', outputFolder: './playwright-report' }]],
   use: {
     baseURL: process.env.E2E_INTERACTION_BASE_URL || environment.stagingUrl,
     actionTimeout: 15_000,

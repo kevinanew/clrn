@@ -10,6 +10,12 @@ export class DiagnosticRecorder {
   dropped = 0;
 
   /**
+   * 可选持久化出口收到每条脱敏事件，早于内存轮转，不改变既有快照语义。
+   * @param onEvent - 持续落盘回调；原有用例默认只保留内存快照。
+   */
+  constructor(private readonly onEvent?: (event: DiagnosticEvent) => void) {}
+
+  /**
    * 写入脱敏事件，超过容量时保留最近现场并明确标记截断。
    * @param event - 事件类型。
    * @param fields - 白名单字段。
@@ -17,7 +23,9 @@ export class DiagnosticRecorder {
   record(event: string, fields: unknown = {}): void {
     const safe = diagnosticFields(fields);
     const observedAt = typeof safe.observedAt === 'number' ? safe.observedAt : Date.now();
-    this.events.push({ ...safe, event: String(diagnosticFields({ event }).event), observedAt });
+    const entry = { ...safe, event: String(diagnosticFields({ event }).event), observedAt };
+    this.events.push(entry);
+    this.onEvent?.(entry);
     if (this.events.length > 5000) { this.events.shift(); this.dropped++; }
   }
 

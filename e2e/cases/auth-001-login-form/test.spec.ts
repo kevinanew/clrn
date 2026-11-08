@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../helpers/diagnostic-test';
 import { openHall, openLoginForm, prepareContext, unique } from '../_shared/page';
 
 test('AUTH-001：打开用户名登录表单，密码输入被遮蔽', /** 验证AUTH-001：打开用户名登录表单，密码输入被遮蔽。

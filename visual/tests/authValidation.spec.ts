@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { inspect } from 'node:util';
 import type { AddressInfo } from 'node:net';
-import { expect, type Page, test } from '@playwright/test';
+import { expect, type Page, test } from '../src/support/diagnosticTest';
 import { isSignedIn, waitForSignInState } from '../src/support/authFlow';
 const AUTH_STORAGE_KEY = 'save.user.origin.data.from.server.key';
 const COMPLETE_AUTH = {

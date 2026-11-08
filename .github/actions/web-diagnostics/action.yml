@@ -1,0 +1,35 @@
+name: 保存 Web CI 诊断
+description: 汇总持续落盘的脱敏诊断并提供统一下载入口。
+inputs:
+  shard:
+    description: 本任务套件及分片标识
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: 汇总已落盘诊断
+      if: always()
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: node scripts/ci-web-diagnostics.mjs
+    - name: 上传本轮诊断
+      if: always()
+      id: diagnostics
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-diagnostics-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ github.workspace }}/.ci-diagnostics/
+        include-hidden-files: true
+        retention-days: 14
+        if-no-files-found: warn
+    - name: 提供诊断下载入口
+      if: always()
+      shell: bash
+      env:
+        DIAGNOSTIC_URL: ${{ steps.diagnostics.outputs.artifact-url }}
+      run: |
+        if [ -n "$DIAGNOSTIC_URL" ]; then
+          echo "[下载本任务 Web 诊断附件]($DIAGNOSTIC_URL)" >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo '诊断附件未上传；请检查采集/上传步骤及 runner 状态，不能据此判定没有错误。' >> "$GITHUB_STEP_SUMMARY"
+        fi

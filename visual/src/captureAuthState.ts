@@ -9,6 +9,10 @@
 
 import { chromium } from '@playwright/test';
 import fs from 'fs';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { collectBrowserDiagnostics } from '../../e2e/helpers/browser-diagnostics';
+import { DiagnosticLog, diagnosticDirectory, logText } from '../../e2e/helpers/diagnostic-log';
 import { LANGUAGE_STORAGE_KEY, VISUAL_DEVICE_ID, VISUAL_TEST_USERNAME, VISUAL_TEST_PASSWORD } from '../scenarios';
 import { ensureAppReadyPastStaging, ensureSignedIn, waitForSignInState } from './support/authFlow';
 import {
@@ -25,6 +29,17 @@ const username = VISUAL_TEST_USERNAME;
 const password = VISUAL_TEST_PASSWORD;
 const deviceId = VISUAL_DEVICE_ID;
 const MAX_CAPTURE_ATTEMPTS = Number(process.env.VISUAL_AUTH_CAPTURE_ATTEMPTS || 3);
+const authLog = new DiagnosticLog(path.join(diagnosticDirectory(), `auth-run-${randomUUID()}`), 'runner');
+
+/**
+ * 为登录态准备保留测试执行输出，原终端级别和退出语义不变。
+ * @param level - 原始输出级别。
+ * @param message - 执行阶段或错误消息。
+ */
+function authOutput(level: 'log' | 'warn' | 'error', message: string): void {
+  console[level](message);
+  authLog.record('auth.output', { level, text: logText(message) });
+}
 
 const BROWSER_LAUNCH_ARGS = [
   '--no-sandbox',
@@ -82,6 +97,10 @@ async function createAuthContext(
         }
       : undefined,
   });
+  const log = new DiagnosticLog(path.join(diagnosticDirectory(), `auth-${randomUUID()}`), 'browser');
+  log.record('auth.start', { operation: storageEntries ? 'validate-auth' : 'capture-auth', device: 'visual-account-device' });
+  const stop = await collectBrowserDiagnostics(context, log);
+  context.once('close', stop);
   await fixNavigatorLanguage(context);
   await disableAnimations(context);
   // 测试账号缺失时由 Python 环境边界禁止注册，登录与节点探测仍使用真实接口。
@@ -132,7 +151,7 @@ function persistAuthState(entries: Record<string, string>) {
     JSON.stringify({ capturedAt: new Date().toISOString(), username, entries }, null, 2),
     'utf8',
   );
-  console.log(
+  authOutput('log',
     `AUTH STATE > 登录态已保存到 ${AUTH_STATE_PATH}（${Object.keys(entries).length} 个键）`,
   );
 }
@@ -155,13 +174,13 @@ async function validateCapturedAuthState(
     page.on('response', /** 注入登录态验证遇到 401 时记录响应位置。
  * @param response - 当前收到的接口响应。 */ (response) => {
       if (response.status() === 401) {
-        console.log(`AUTH STATE > 注入验证收到 401：${response.url()}`);
+        authOutput('log', `AUTH STATE > 注入验证收到 401：${response.url()}`);
       }
     });
     await page.goto(baseUrl, { waitUntil: 'load', timeout: 120000 });
     await ensureAppReadyPastStaging(page);
     const valid = (await waitForSignInState(page, { requireAppState: true })) === 'signedIn';
-    console.log(`AUTH STATE > 新 context 注入验证：${valid ? '成功' : '失败'}`);
+    authOutput('log', `AUTH STATE > 新 context 注入验证：${valid ? '成功' : '失败'}`);
     if (!valid) {
       throw new Error('采集的登录态无法注入新 context');
     }
@@ -184,7 +203,7 @@ async function captureAuthState(proxy: Mitmproxy): Promise<void> {
     for (let attempt = 1; attempt <= MAX_CAPTURE_ATTEMPTS; attempt += 1) {
       const context = await createAuthContext(browser, proxy);
       try {
-        console.log(`AUTH STATE > 采集尝试 ${attempt}/${MAX_CAPTURE_ATTEMPTS}`);
+        authOutput('log', `AUTH STATE > 采集尝试 ${attempt}/${MAX_CAPTURE_ATTEMPTS}`);
         const page = await context.newPage();
         // 仅记录认证接口路径与状态，不输出凭据、请求正文或 token。
         page.on('response', /** 监听登录、注册及用户名检查响应，输出业务状态诊断。
@@ -193,14 +212,14 @@ async function captureAuthState(proxy: Mitmproxy): Promise<void> {
           if (/\/user\/(login|register|username\/is_existed)/.test(pathname)) {
             void response.json().then(/** 仅输出认证响应的状态和错误类型，避免记录凭据正文。
  * @param body - 当前操作使用的 body。 */ body => {
-              console.log(`AUTH HTTP > ${response.status()} ${pathname} ok=${String(body?.ok)} error_type=${String(body?.error_type || '')}`);
-            }).catch(/** 响应正文不可读时仅记录 HTTP 状态与路径。 */ () => console.log(`AUTH HTTP > ${response.status()} ${pathname}`));
+              authOutput('log', `AUTH HTTP > ${response.status()} ${pathname} ok=${String(body?.ok)} error_type=${String(body?.error_type || '')}`);
+            }).catch(/** 响应正文不可读时仅记录 HTTP 状态与路径。 */ () => authOutput('log', `AUTH HTTP > ${response.status()} ${pathname}`));
           }
         });
         await page.goto(baseUrl, { waitUntil: 'load', timeout: 120000 });
-        console.log('AUTH STATE > 页面加载完成');
+        authOutput('log', 'AUTH STATE > 页面加载完成');
         await ensureAppReadyPastStaging(page);
-        console.log('AUTH STATE > 大厅已就绪');
+        authOutput('log', 'AUTH STATE > 大厅已就绪');
         await page
           .waitForFunction(/** 等待页面加载指示消失，确认登录采集可以继续。 */ () => !document.querySelector('[role="progressbar"]'), undefined, {
             timeout: 60000,
@@ -208,14 +227,14 @@ async function captureAuthState(proxy: Mitmproxy): Promise<void> {
           .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
 
         await ensureSignedIn(page, { username, password });
-        console.log('AUTH STATE > UI 登录完成，验证注入态');
+        authOutput('log', 'AUTH STATE > UI 登录完成，验证注入态');
         const entries = await collectLocalStorageEntries(page);
         const validatedEntries = await validateCapturedAuthState(browser, entries, proxy);
         persistAuthState(validatedEntries);
         return;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(
+        authOutput('warn',
           `AUTH STATE > 第 ${attempt}/${MAX_CAPTURE_ATTEMPTS} 次采集失败：${lastError.message}`,
         );
       } finally {
@@ -247,7 +266,7 @@ async function main(): Promise<void> {
 
 main().catch(/** 连续登录失败后删除无效登录态文件，并保留失败退出状态。
  * @param error - 当前操作抛出的错误。 */ (error: Error) => {
-  console.error(`AUTH STATE > 登录态采集连续失败：${error.message}`);
+  authOutput('error', `AUTH STATE > 登录态采集连续失败：${error.message}`);
   try {
     fs.rmSync(AUTH_STATE_PATH, { force: true });
   } catch {

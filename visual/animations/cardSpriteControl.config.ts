@@ -10,6 +10,6 @@ export default defineConfig({
   projects: config.projects?.map(/** 将当前条目映射为`{ ...project, testIgnore: [] }`。
  * @param project - 当前操作使用的 project。 */ project => ({ ...project, testIgnore: [] })),
   outputDir: '../test-results/card-sprite-control',
-  reporter: [['list'], ['html', { open: 'never', outputFolder: '../playwright-report/card-sprite-control' }]],
+  reporter: [['../../e2e/helpers/diagnostic-reporter.ts'], ['list'], ['html', { open: 'never', outputFolder: '../playwright-report/card-sprite-control' }]],
   updateSnapshots: 'none',
 });

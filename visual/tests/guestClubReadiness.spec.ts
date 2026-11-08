@@ -1,5 +1,5 @@
 /** 使用真实浏览器验证俱乐部分页限宽及游客登录横幅的截图门禁。 */
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../src/support/diagnosticTest';
 import { assertGuestClubReady } from '../cases/club/guestReadiness';
 import { lockPageWidth } from '../src/support/pageStabilizers';
 

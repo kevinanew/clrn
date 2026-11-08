@@ -1,7 +1,9 @@
 /** 在测试命令执行期间托管指定 Release；向全部子进程传递同一地址并在结束时清理。 */
 import { requestFailure, requestFailureReason, safeDiagnosticReason } from './request-failure.cjs';
 import { spawn } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
+import { randomUUID } from 'node:crypto';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { releaseDiagnosticDirectory, releaseDiagnosticWriter } from './release-diagnostics.mjs';
 import { startReleaseWebServer, verifyBuildVersion } from './release-web-server.mjs';
 
@@ -13,7 +15,14 @@ import { startReleaseWebServer, verifyBuildVersion } from './release-web-server.
 export async function runWithReleaseWebServer(command, environment = process.env) {
   if (!command.length || !environment.CLRN_RELEASE_WEB_ROOT) throw new Error('缺少测试命令或已校验的 Release 目录');
   await verifyBuildVersion(environment.CLRN_RELEASE_WEB_ROOT, environment.CLRN_EXPECTED_APPLICATION_COMMIT);
-  const record = releaseDiagnosticWriter(releaseDiagnosticDirectory(command));
+  const persistentRoot = environment.CLRN_DIAGNOSTICS_DIR
+    || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.ci-diagnostics');
+  const persistentDirectory = path.join(persistentRoot, `release-${randomUUID()}`);
+  const record = releaseDiagnosticWriter(releaseDiagnosticDirectory(command), persistentDirectory);
+  record({ event: 'release.identity', observedAt: Date.now(), source: 'release-static',
+    applicationCommit: environment.CLRN_EXPECTED_APPLICATION_COMMIT || 'unavailable',
+    releaseTag: environment.CLRN_RELEASE_TAG || 'unavailable',
+    runId: environment.GITHUB_RUN_ID || 'local', runAttempt: environment.GITHUB_RUN_ATTEMPT || '1' });
   const { server, serverId, baseUrl } = await startReleaseWebServer(environment.CLRN_RELEASE_WEB_ROOT, { record });
   console.log('Release 静态服务已启动：source=release-static');
   let child;
@@ -40,7 +49,8 @@ export async function runWithReleaseWebServer(command, environment = process.env
     if (!response.ok) throw requestFailure('release-readiness', 'http-error', response.status);
     await response.body.cancel().catch(/** 将就绪响应取消失败转换为带实际状态的正文读取诊断。 */ () => { throw requestFailure('release-readiness', 'body-read-failed', response.status); });
     child = spawn(command[0], command.slice(1), { stdio: 'inherit', detached: true,
-      env: { ...environment, CLRN_RELEASE_WEB_URL: baseUrl, CLRN_RELEASE_SERVER_ID: serverId, VISUAL_BASE_URL: baseUrl,
+      env: { ...environment, CLRN_DIAGNOSTIC_SESSION: persistentDirectory,
+        CLRN_RELEASE_WEB_URL: baseUrl, CLRN_RELEASE_SERVER_ID: serverId, VISUAL_BASE_URL: baseUrl,
         E2E_STAGING_URL: baseUrl, E2E_INTERACTION_BASE_URL: baseUrl,
         E2E_EXPECT_BUILD_SHA: environment.CLRN_EXPECTED_APPLICATION_COMMIT } });
     return await new Promise(/**

@@ -23,7 +23,7 @@ export default defineConfig({
   ],
   // 缺失基准也必须失败；只有显式传入 --update-snapshots 才生成候选图。
   updateSnapshots: 'none',
-  reporter: [['list'], ['html', { open: 'never', outputFolder: path.resolve(__dirname, '../playwright-report/animations') }]],
+  reporter: [['../../e2e/helpers/diagnostic-reporter.ts'], ['list'], ['html', { open: 'never', outputFolder: path.resolve(__dirname, '../playwright-report/animations') }]],
   expect: {
     timeout: 15_000,
     toHaveScreenshot: {
