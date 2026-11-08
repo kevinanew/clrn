@@ -14,7 +14,7 @@ for (const change of ['balance', 'layout', 'animation', 'missing', 'data'] as co
     await page.setContent(`<style>
       body { margin:0; background:#ddd; }
       #panel { position:absolute; top:150px; left:10px; width:350px; height:500px; background:#8544ef; }
-      #panel.enter { animation:enter ${comparison && change === 'animation' ? 640 : 320}ms linear both; }
+      #panel.enter { animation:enter ${entranceDuration(change)}ms linear both; }
       #panel.exit { animation:exit 160ms linear both; }
       @keyframes enter { from { transform:translateY(1000px); opacity:0; } to { transform:translateY(0); opacity:1; } }
       @keyframes exit { from { transform:translateY(0); opacity:1; } to { transform:translateY(1000px); opacity:0; } }
@@ -35,8 +35,12 @@ for (const change of ['balance', 'layout', 'animation', 'missing', 'data'] as co
     await page.evaluate(/** 按回归场景改变钱包布局、数字和可见性，测试遮罩的边界。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ comparison, change }) => {
       const panel = document.getElementById('panel')!;
-      if (comparison && change === 'layout') panel.style.left = '45px';
-      if (comparison && change === 'missing') document.querySelector('.number')!.remove();
+      if (comparison) applyChange();
+      /** 仅在比较轮注入指定的布局或节点故障。 */
+      function applyChange() {
+        if (change === 'layout') panel.style.left = '45px';
+        if (change === 'missing') document.querySelector('.number')!.remove();
+      }
       let reads = 0;
       document.getElementById('open')!.onclick = /** 开始一轮面板和余额动画。 */ () => {
         panel.style.display = 'block';
@@ -68,7 +72,7 @@ for (const change of ['balance', 'layout', 'animation', 'missing', 'data'] as co
       close: /** 通过夹具的按钮触发 CSS 退场。 */ () => page.locator('#close').dispatchEvent('click'),
       afterEntrance: /** 数字仍须显示真实状态，遮罩不能让数据断言失效。 */ async () => {
         await expect(panel.locator('.number')).toHaveText(
-          comparison && change === 'data' ? ['999', '999'] : comparison ? ['123', '123'] : ['0', '0'], { timeout: 100 });
+          expectedBalances(change), { timeout: 100 });
       } });
     await page.locator('#open').dispatchEvent('click');
     await settleAnimations(page, 1600);
@@ -81,4 +85,19 @@ for (const change of ['balance', 'layout', 'animation', 'missing', 'data'] as co
       { clip, numericMask, requireMotion: true, times: [0, 160, 500, 1000] });
     await info.attach('wallet-complete', { body: 'enter/exit/reward', contentType: 'text/plain' });
   });
+}
+
+/**
+ * 只在动画故障比较轮延长原入场时长。
+ * @param change - 本轮故障场景。
+ */
+function entranceDuration(change: string) { return comparison && change === 'animation' ? 640 : 320; }
+
+/**
+ * 真实数据断言独立于数字遮罩，错误数据仍立即失败。
+ * @param change - 本轮故障场景。
+ */
+function expectedBalances(change: string) {
+  if (!comparison) return ['0', '0'];
+  return change === 'data' ? ['999', '999'] : ['123', '123'];
 }

@@ -29,7 +29,7 @@ async function locatorRectangle(locator: Locator): Promise<Rectangle | null> {
  * @param size - 实际截图大小。
  */
 function screenshotRectangle(box: Rectangle, clip: Rectangle | undefined, size: { width: number; height: number }) {
-  const x = clip?.x || 0, y = clip?.y || 0;
+  const x = clipOffset(clip, 'x'), y = clipOffset(clip, 'y');
   return { left: Math.max(0, Math.floor(box.x - x)), right: Math.min(size.width, Math.ceil(box.x + box.width - x)),
     top: Math.max(0, Math.floor(box.y - y)), bottom: Math.min(size.height, Math.ceil(box.y + box.height - y)) };
 }
@@ -53,6 +53,17 @@ async function foregroundRegions(size: { width: number; height: number },
   const rectangle = screenshotRectangle(box, clip, size);
   const { left, right, bottom } = rectangle;
   const top = Math.max(foreground.y, rectangle.top);
+  return belowForeground(below, { left, right, top, bottom });
+}
+
+/**
+ * 保留前景与分界线以下区域的交集，空交集时排除整个下半区域。
+ * @param below - 分界线下方的完整区域。
+ * @param rectangle - 已裁切的前景矩形。
+ */
+function belowForeground(below: ExcludedPixelRectangle, rectangle: ExcludedPixelRectangle) {
+  const { left, right, top, bottom } = rectangle;
+  const width = below.right;
   if (right <= left || bottom <= top) return [below];
   return [
     { ...below, bottom: top }, { left: 0, right: left, top, bottom },
@@ -69,16 +80,26 @@ async function foregroundRegions(size: { width: number; height: number },
  */
 async function backgroundRegions(size: { width: number; height: number }, options: PartialComparisonOptions,
   subjects: Rectangle[], name: string) {
+  const backgrounds = options.excludedBackground || [];
+  return collectBackgroundRegions(size, options.clip, backgrounds, subjects, name);
+}
+
+/**
+ * 逐个验证背景存在并转换到截图坐标。
+ * @param size - 实际截图大小。
+ * @param clip - 原裁切。
+ * @param backgrounds - 原背景定位器。
+ * @param subjects - 动画主体位置。
+ * @param name - 动画名称。
+ */
+async function collectBackgroundRegions(size: { width: number; height: number }, clip: Rectangle | undefined,
+  backgrounds: Locator[], subjects: Rectangle[], name: string) {
   const excluded: ExcludedPixelRectangle[] = [];
-  for (const background of options.excludedBackground || []) {
+  for (const background of backgrounds) {
     const box = await locatorRectangle(background);
     expect(box, `${name} 背景排除区域必须存在`).not.toBeNull();
-    for (const subject of subjects) {
-      expect(box!.x + box!.width <= subject.x || subject.x + subject.width <= box!.x
-        || box!.y + box!.height <= subject.y || subject.y + subject.height <= box!.y,
-      `${name} 背景排除区域不能遮住弹层`).toBe(true);
-    }
-    excluded.push(screenshotRectangle(box!, options.clip, size));
+    assertBackgroundSeparate(box!, subjects, name);
+    excluded.push(screenshotRectangle(box!, clip, size));
   }
   return excluded;
 }
@@ -108,13 +129,68 @@ export function preparePartialComparison(frame: Buffer, reference: Buffer, exclu
   const expected = PNG.sync.read(reference);
   const comparedPixels = remainingPixelCount(actual.width, actual.height, excluded);
   // 保留尺寸变化，交给调用方原有的稳定性或尺寸断言拒绝，不能通过复制像素隐藏。
-  if (actual.width !== expected.width || actual.height !== expected.height) return { png: frame, comparedPixels };
-  for (const rectangle of excluded) {
-    for (let row = Math.max(0, rectangle.top); row < Math.min(actual.height, rectangle.bottom); row++) {
-      const start = (row * actual.width + Math.max(0, rectangle.left)) * 4;
-      const end = (row * actual.width + Math.min(actual.width, rectangle.right)) * 4;
-      if (end > start) actual.data.set(expected.data.subarray(start, end), start);
-    }
-  }
+  if (differentSize(actual, expected)) return { png: frame, comparedPixels };
+  for (const rectangle of excluded) copyExcludedRectangle(actual, expected, rectangle);
   return { png: PNG.sync.write(actual), comparedPixels };
+}
+
+/**
+ * 每个坐标轴保留原有缺省零值语义。
+ * @param clip - 原截图裁切。
+ * @param axis - 坐标轴。
+ */
+export function clipOffset(clip: Rectangle | undefined, axis: 'x' | 'y') { return clip?.[axis] || 0; }
+
+/**
+ * 分别检查横纵分离，任何主体重叠仍立即失败。
+ * @param box - 实际存在的背景区域。
+ * @param subjects - 动画主体。
+ * @param name - 原断言名称。
+ */
+function assertBackgroundSeparate(box: Rectangle, subjects: Rectangle[], name: string) {
+  for (const subject of subjects) {
+    expect(horizontalSeparation(box, subject) || verticalSeparation(box, subject),
+      `${name} 背景排除区域不能遮住弹层`).toBe(true);
+  }
+}
+
+/**
+ * 判断横轴上是否没有交集。
+ * @param box - 背景矩形。
+ * @param subject - 主体矩形。
+ */
+function horizontalSeparation(box: Rectangle, subject: Rectangle) {
+  return box.x + box.width <= subject.x || subject.x + subject.width <= box.x;
+}
+
+/**
+ * 判断纵轴上是否没有交集。
+ * @param box - 背景矩形。
+ * @param subject - 主体矩形。
+ */
+function verticalSeparation(box: Rectangle, subject: Rectangle) {
+  return box.y + box.height <= subject.y || subject.y + subject.height <= box.y;
+}
+
+/**
+ * 逐行复制排除矩形，仍限制在实际图片边界内。
+ * @param actual - 实际像素。
+ * @param expected - 参考像素。
+ * @param rectangle - 原排除区域。
+ */
+function copyExcludedRectangle(actual: PNG, expected: PNG, rectangle: ExcludedPixelRectangle) {
+  for (let row = Math.max(0, rectangle.top); row < Math.min(actual.height, rectangle.bottom); row++) {
+    const start = (row * actual.width + Math.max(0, rectangle.left)) * 4;
+    const end = (row * actual.width + Math.min(actual.width, rectangle.right)) * 4;
+    if (end > start) actual.data.set(expected.data.subarray(start, end), start);
+  }
+}
+
+/**
+ * 尺寸变化仍返回原图，不能用复制像素隐藏变化。
+ * @param actual - 实际图片。
+ * @param expected - 参考图片。
+ */
+function differentSize(actual: PNG, expected: PNG) {
+  return actual.width !== expected.width || actual.height !== expected.height;
 }

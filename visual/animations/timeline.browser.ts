@@ -1,11 +1,12 @@
 /** 用真实 Playwright 子进程确认收集全部差异后仍返回失败，且不写入正式基准。 */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { assertProcessStatus, snapshotContents, assertSnapshotsUnchanged, attachmentContents } from './timelineBrowserSupport';
 
 const directory = __dirname;
 const moduleRequire = createRequire(path.join(directory, 'timeline.browser.ts'));
@@ -40,22 +41,37 @@ function collectResults(suites: ReportSuite[]): { title: string; result: ReportR
  * @param result - Playwright 返回的实际结果。
  */
 async function assertCaptureResult(title: string, result: ReportResult) {
-  if (title.startsWith('局部稳定性有效面积：')) {
-    const unstable = title.includes('over-boundary/');
-    assert.equal(result.status, unstable ? 'failed' : 'passed', title);
-    assert.equal(result.attachments.some(/** 判断是否存在满足以下条件的条目：`attachment.name === '局部稳定性检查之后'`。
- * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name === '局部稳定性检查之后'), !unstable, title);
-    if (unstable) assert.ok(result.errors.some(/** 判断是否存在满足以下条件的条目：`error.message?.includes('首帧画面应稳定')`。
- * @param error - 当前操作抛出的错误。 */ error => error.message?.includes('首帧画面应稳定')),
-      '五十一个有效差异像素必须在稳定性检查时失败，不能依赖后续基准比较');
-    return;
-  }
+  if (title.startsWith('局部稳定性有效面积：')) return assertPartialStability(title, result);
   if (title.startsWith('相邻截图稳定性：tolerated/')) {
     assert.equal(result.status, 'passed', '阈值内的相邻截图微差不得阻止后续采样');
     assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`attachment.name === '稳定性检查之后'`。
  * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name === '稳定性检查之后'));
     return;
   }
+  await assertFailedCapture(title, result);
+}
+
+/**
+ * 局部稳定性按五十／五十一个有效差异像素保留边界断言。
+ * @param title - 子用例标题。
+ * @param result - 实际运行结果。
+ */
+function assertPartialStability(title: string, result: ReportResult) {
+  const unstable = title.includes('over-boundary/');
+  assert.equal(result.status, unstable ? 'failed' : 'passed', title);
+  assert.equal(result.attachments.some(/** 判断是否存在满足以下条件的条目：`attachment.name === '局部稳定性检查之后'`。
+ * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name === '局部稳定性检查之后'), !unstable, title);
+  if (unstable) assert.ok(result.errors.some(/** 判断是否存在满足以下条件的条目：`error.message?.includes('首帧画面应稳定')`。
+ * @param error - 当前操作抛出的错误。 */ error => error.message?.includes('首帧画面应稳定')),
+    '五十一个有效差异像素必须在稳定性检查时失败，不能依赖后续基准比较');
+}
+
+/**
+ * 硬错误不得继续；截图软失败仍须报告全部阶段和差异。
+ * @param title - 子用例标题。
+ * @param result - 实际运行结果。
+ */
+async function assertFailedCapture(title: string, result: ReportResult) {
   assert.equal(result.status, 'failed', title);
   if (!title.startsWith('截图差异')) {
     assert.ok(!result.attachments.some(/** 判断是否存在满足以下条件的条目：`attachment.name.endsWith('之后')`。
@@ -70,8 +86,7 @@ async function assertCaptureResult(title: string, result: ReportResult) {
  * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name.endsWith('-timeline'));
   assert.equal(timelines.length, 2, title);
   for (const attachment of timelines) {
-    const contents = attachment.path ? await readFile(attachment.path, 'utf8')
-      : Buffer.from(attachment.body!, 'base64').toString();
+    const contents = await attachmentContents(attachment);
     const timeline: { samples: { milliseconds: number }[] } = JSON.parse(contents);
     assert.deepEqual(timeline.samples.map(/** 将当前条目映射为`sample.milliseconds`。
  * @param sample - 当前操作使用的 sample。 */ sample => sample.milliseconds), [0, 80]);
@@ -104,22 +119,33 @@ test('完整记录普通、局部比较和数字遮罩的差异，保留失败�
       { cwd: directory, encoding: 'utf8', timeout: 120_000,
         env: { ...process.env, ANIMATION_CAPTURE_COMPARISON: String(compare) } });
     const baseline = run(false);
-    assert.equal(baseline.status, 0, baseline.error?.message || baseline.stdout + baseline.stderr);
-    for (const mode of ['ordinary', 'foreground', 'background', 'numeric']) {
-      await rm(path.join(snapshotsDirectory, `en-offline-${mode}-first-0ms.png`));
-    }
-    const before = new Map(await Promise.all((await readdir(snapshotsDirectory)).map(/** 将当前条目映射为`[filename, await readFile(path.join(snapshotsDirectory, filename))] as const`。
- * @param filename - 当前操作使用的 filename。 */ async filename =>
-      [filename, await readFile(path.join(snapshotsDirectory, filename))] as const)));
+    assertProcessStatus(baseline, 0);
+    await removeFirstFrames(snapshotsDirectory);
+    const before = await snapshotContents(snapshotsDirectory);
     const comparison = run(true);
-    assert.equal(comparison.status, 1, comparison.error?.message || comparison.stdout + comparison.stderr);
+    assertProcessStatus(comparison, 1);
     const report: { suites: ReportSuite[] } = JSON.parse(await readFile(reportPath, 'utf8'));
     const results = collectResults(report.suites);
     assert.equal(results.length, 25);
-    for (const { title, result } of results) await assertCaptureResult(title, result);
-    assert.deepEqual((await readdir(snapshotsDirectory)).sort(), [...before.keys()].sort(), '比较不得创建缺失基准');
-    for (const [filename, contents] of before) {
-      assert.deepEqual(await readFile(path.join(snapshotsDirectory, filename)), contents, '比较不得修改旧基准');
-    }
+    await assertCaptureResults(results);
+    await assertSnapshotsUnchanged(snapshotsDirectory, before);
   } finally { await rm(temporaryDirectory, { recursive: true, force: true }); }
 });
+
+/**
+ * 删除每种模式的首帧，确认缺图仍软失败并采集后续帧。
+ * @param directory - 临时基准目录。
+ */
+async function removeFirstFrames(directory: string) {
+  for (const mode of ['ordinary', 'foreground', 'background', 'numeric']) {
+    await rm(path.join(directory, `en-offline-${mode}-first-0ms.png`));
+  }
+}
+
+/**
+ * 核对每个子用例的断言与后续执行状态。
+ * @param results - 原 Playwright 报告结果。
+ */
+async function assertCaptureResults(results: ReturnType<typeof collectResults>) {
+  for (const { title, result } of results) await assertCaptureResult(title, result);
+}
