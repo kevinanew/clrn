@@ -145,3 +145,8 @@ CI 因此使用 100 个专用账号，功能、弱网、交互与 Freshchat、�
 覆盖桌面和触屏的 16 项测试（含 2 项客服）；`npm run test:freshchat` 可单独运行客服。
 独立配置保持单 worker，CI 与其他同账号测试排队，默认 `npm test` 不重复收集交互套件。
 详细范围、本地构建目标覆盖及第三方网络限制见 [交互与 Freshchat 说明](INTERACTIONS.md)。
+
+## CI 诊断下载
+
+五类 Web 工作流在成功、失败及超时后统一提供诊断附件，下载入口、来源和保留范围见
+[Web CI 日志下载](../docs/web-ci-diagnostics.md)。

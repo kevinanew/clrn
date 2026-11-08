@@ -1,4 +1,4 @@
-import { test as base, expect, type Page, type BrowserContext } from '@playwright/test';
+import { test as base, expect, type Page, type BrowserContext } from '../../helpers/diagnostic-test';
 import { environment } from '../../helpers/environment';
 import { signIn, type Session } from './auth';
 import { openHall, prepareContext, unique } from './page';

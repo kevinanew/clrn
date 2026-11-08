@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { test as base, expect, type BrowserContext, type Page } from '@playwright/test';
+import { test as base, expect, type BrowserContext, type Page } from '../../helpers/diagnostic-test';
 import { environment } from '../../helpers/environment';
 import { parseAccountUrl, verifyAccountSession } from './account-diagnostics';
 import { openHall } from './page';

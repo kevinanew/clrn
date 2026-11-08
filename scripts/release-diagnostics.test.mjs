@@ -132,11 +132,20 @@ test('静态服务日志使用既有上传路径，并明确记录容量截断',
   }
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-log-bound-'));
   context.after(/** 清理本轮诊断测试创建的临时目录。 */ () => rm(directory, { force: true, recursive: true }));
-  const record = releaseDiagnosticWriter(directory);
+  const persistent = path.join(directory, 'persistent');
+  const record = releaseDiagnosticWriter(directory, persistent);
   await rm(directory, { recursive: true });
   // 模拟 Playwright 在启动时清理输出目录，日志必须能够继续写入。
   for (let index = 0; index < 10005; index++) record({ event: 'release.request' });
   const lines = (await readFile(path.join(directory, 'release-server-events.jsonl'), 'utf8')).trim().split('\n');
   assert.equal(lines.length, 10001);
   assert.equal(JSON.parse(lines.at(-1)).event, 'release.truncated');
+  assert.equal(await readFile(path.join(persistent, 'release-server-events.jsonl'), 'utf8'), lines.join('\n') + '\n');
+  const manifest = JSON.parse(await readFile(path.join(persistent, 'release-server-manifest.json'), 'utf8'));
+  assert.equal(manifest.dropped, 5);
+  assert.equal(manifest.events, 10000);
+  assert.equal(manifest.truncationMarkers, 1);
+  assert.ok(manifest.startedAt <= manifest.lastRetainedAt);
+  assert.ok(manifest.lastRetainedAt <= manifest.lastObservedAt);
+  assert.ok(manifest.droppedBytes > 0);
 });

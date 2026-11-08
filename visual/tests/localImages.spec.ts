@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../src/support/diagnosticTest';
 import { ensureLocalImagesLoaded } from '../src/support/pageStabilizers';
 
 test('页面切换后不把已移除图片误判为当前画面的缺图', /** 验证页面切换后不把已移除图片误判为当前画面的缺图。

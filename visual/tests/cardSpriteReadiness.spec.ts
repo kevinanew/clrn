@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../src/support/diagnosticTest';
 import { waitForTexasCardSprites } from '../animations/cardSpriteReadiness';
 
 test('德州隐藏牌面等待图片与牌槽，正面可见后再等待图集布局和文字回退', /** 验证德州隐藏牌面等待图片与牌槽，正面可见后再等待图集布局和文字回退。

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../src/support/diagnosticTest';
 import { checkFlopCardFaces, checkMobilePlayerAction } from '../cases/texas-holdem/renderingChecks';
 import { REPLAY_PLAYER_IDS } from '../cases/texas-holdem/replayData';
 

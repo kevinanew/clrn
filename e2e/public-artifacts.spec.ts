@@ -3,7 +3,7 @@
  * 验证脚本已压缩、源码映射无法下载，且原始项目文件不会由站点提供。
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from './helpers/diagnostic-test';
 import { environment } from './helpers/environment';
 import { readPublicResourceContents } from './helpers/public-source-maps';
 

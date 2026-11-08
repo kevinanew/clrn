@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Locator } from '@playwright/test';
+import { expect, test, type Page, type Locator } from '../../helpers/diagnostic-test';
 import { unique } from './page';
 
 const reliefNotice = /^(?:3000个免费的金币，请收下|3000 free coins, please accept them)$/;

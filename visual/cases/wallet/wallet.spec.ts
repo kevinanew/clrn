@@ -1,5 +1,5 @@
 /** 运行钱包相关截图；货币流水使用逐条校验的固定收支场景。 */
-import { test } from '@playwright/test';
+import { test } from '../../src/support/diagnosticTest';
 import { buildScenarios } from '../../scenarios';
 import { runVisualScenario } from '../runScenario';
 import { runCurrencyTransactionScenario } from './transactions';

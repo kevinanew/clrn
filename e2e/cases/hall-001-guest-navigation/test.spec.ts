@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../helpers/diagnostic-test';
 import { openHall, prepareContext, unique } from '../_shared/page';
 
 test('HALL-001：游客进入私人房间后返回大厅', /** 验证HALL-001：游客进入私人房间后返回大厅。

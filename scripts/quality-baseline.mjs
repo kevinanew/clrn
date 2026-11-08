@@ -7,11 +7,12 @@ import tseslint from 'typescript-eslint';
 /**
  * 用规则、文件、诊断及源码行指纹定位历史违规，行号仅用于审阅。
  * @param finding - 工具的单位置诊断。
+ * @param source - 产生诊断时的源码；默认读取当前文件。
  * @returns 不含源码正文的历史清单条目。
  */
-export function fingerprint(finding) {
+export function fingerprint(finding, source) {
   if (finding.file.startsWith('/') || finding.file.split('/').includes('..')) throw new Error('诊断路径必须位于仓库内。');
-  const source = readFileSync(`${repository}/${finding.file}`, 'utf8');
+  source ??= readFileSync(`${repository}/${finding.file}`, 'utf8');
   const lines = source.split('\n');
   const raw = createHash('sha256').update(lines[finding.line - 1].trim()).digest('hex');
   const baseline = JSON.parse(readFileSync(`${repository}/quality/baseline.json`, 'utf8'));
@@ -19,7 +20,7 @@ export function fingerprint(finding) {
  * @param item - 历史诊断。 */ item => item.file === finding.file && item.rule === finding.rule && item.anchor === raw)) {
     return { ...finding, anchor: raw };
   }
-  if (!/\.[cm]?[jt]sx?$/.test(finding.file)) return { ...finding, anchor: raw };
+  if (finding.rule === 'parse-error' || !/\.[cm]?[jt]sx?$/.test(finding.file)) return { ...finding, anchor: raw };
   return { ...finding, anchor: documentedLineAnchor(source, lines, finding.line) };
 }
 

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../helpers/diagnostic-test';
 import { openHall, prepareContext, unique } from '../_shared/page';
 
 test('AUTH-004：手机号登录选择国家区号并切换密码方式', /** 验证AUTH-004：手机号登录选择国家区号并切换密码方式。

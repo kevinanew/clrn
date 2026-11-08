@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './helpers/diagnostic-test';
 import { environment } from './helpers/environment';
 import { confirmStagingNotice } from './helpers/staging-notice';
 
