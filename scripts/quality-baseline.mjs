@@ -20,7 +20,7 @@ export function fingerprint(finding, source) {
  * @param item - 历史诊断。 */ item => item.file === finding.file && item.rule === finding.rule && item.anchor === raw)) {
     return { ...finding, anchor: raw };
   }
-  if (!/\.[cm]?[jt]sx?$/.test(finding.file)) return { ...finding, anchor: raw };
+  if (finding.rule === 'parse-error' || !/\.[cm]?[jt]sx?$/.test(finding.file)) return { ...finding, anchor: raw };
   return { ...finding, anchor: documentedLineAnchor(source, lines, finding.line) };
 }
 

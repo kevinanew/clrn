@@ -11,6 +11,15 @@ import { duplicationReference, projectJavascript } from './documentation-project
 
 const eslint = new ESLint({ cwd: repository });
 
+test('解析错误保留原始行指纹并作为新增违规阻断门禁', /** 验证无效源码不会在指纹计算时再次解析并丢失诊断。 */ () => {
+  const source = 'export function (';
+  const finding = { file: 'e2e/cases/_shared/complexity-probe-regression/probe.ts', rule: 'parse-error',
+    line: 1, column: 17, message: 'Parsing error: Identifier expected.' };
+  const result = fingerprint(finding, source);
+  assert.deepEqual(result, { ...finding, anchor: fingerprint({ ...finding, file: 'probe.py' }, source).anchor });
+  assert.deepEqual(newFindings([result], []), [result]);
+});
+
 test('指纹使用诊断时的源码，临时文件删除后仍保留违规', /** 验证指纹不重读已清理的临时文件。 */ () => {
   const directory = mkdtempSync(join(repository, '.quality-probe-'));
   const file = join(directory, 'probe.ts');
