@@ -36,8 +36,11 @@ export const visualToolFiles = ['visual/open-report.ts', 'visual/playwright.conf
 export const visualCheckFiles = ['scripts/visual-complexity*.mjs'];
 
 const visualModuleStems = [...new Set([...visualSupportFiles, ...visualToolFiles].map(moduleStem))];
-export const visualSupportPatterns = visualModuleStems.map(/** 覆盖原模块、相邻测试及同名前缀的提取实现。
- * @param stem - 不含测试后缀与扩展名的模块路径。 */ stem => `${stem}*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}`);
+export const visualSupportPatterns = visualModuleStems.flatMap(/** 覆盖同名前缀的模块、相邻测试及目录内所有后代实现。
+ * @param stem - 不含测试后缀与扩展名的模块路径。 */ stem => [
+  `${stem}*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}`,
+  `${stem}*/**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}`,
+]);
 export const visualCheckSupportFiles = ['scripts/visual-complexity-fixture.mjs', 'scripts/visual-complexity*.test.mjs'];
 
 /**

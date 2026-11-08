@@ -12,7 +12,7 @@
   "summary": {
     "beforeFunctions": 525,
     "beforeOverLimit": 0,
-    "afterFunctions": 542,
+    "afterFunctions": 549,
     "afterOverLimit": 0
   },
   "regression": {
@@ -20,6 +20,39 @@
     "path": "visual/scenariosFutureHelper.ts",
     "before": "passed incorrectly at the default budget of 10; absent from CLI discovery",
     "after": "fails at budget 3 through both ESLint and the npm gate"
+  },
+  "directoryRegression": {
+    "reviewedHead": "a862ca90f458790298e48c057c6cf7c6c0c2a13d",
+    "probePaths": [
+      "visual/scenariosSupport/helpers.ts",
+      "visual/scenarios/helpers.ts",
+      "visual/tests/walletTransactionReadiness/helpers.ts",
+      "visual/scenariosSupport/nested/deeper/helpers.ts",
+      "visual/open-reportSupport/nested/helpers.ts",
+      "visual/playwright.config/helpers.ts"
+    ],
+    "before": "Independently reproduced max=10 and no complexity diagnostic for the first three paths; a complexity-4 probe in the first path exited 0 through --entrypoints (40 files) and the default npm entry (52 files).",
+    "after": "All six directory paths pass complexity 3 and fail complexity 4 through both real npm entries; failures must name the probe file and max=3. Only explicitly listed tool files retain max=6.",
+    "configCoverage": {
+      "moduleStems": 26,
+      "extensions": [
+        "js",
+        "jsx",
+        "mjs",
+        "cjs",
+        "ts",
+        "tsx",
+        "mts",
+        "cts"
+      ],
+      "descendantPaths": 416,
+      "check": "Every current CLI-discovered visual helper and generated descendant uses classic max=3; explicit tools use max=6; unrelated visual source retains max=10."
+    },
+    "redTestCommands": [
+      "node --test --test-name-pattern='npm --entrypoints 目录辅助模块 visual/scenariosSupport/helpers.ts' scripts/visual-complexity-entrypoints.test.mjs",
+      "node --test --test-name-pattern='CLI 发现的全部辅助文件' scripts/visual-complexity-entrypoints.test.mjs"
+    ],
+    "redTestResult": "Both regression tests exited 1 before the scope fix: the CLI probe returned 0 instead of 1, and the resolved helper configuration was max=10 instead of max=3."
   },
   "validation": [
     {
@@ -31,34 +64,39 @@
       "result": "39 files, zero violations"
     },
     {
-      "command": "npx eslint eslint.config.mjs scripts/visual-complexity*.mjs",
+      "command": "npx --no-install eslint eslint.config.mjs 'scripts/visual-complexity*.mjs'",
       "result": "passed"
     },
     {
       "command": "node --test scripts/visual-complexity-entrypoints.test.mjs scripts/visual-complexity-animations.test.mjs scripts/visual-complexity.test.mjs",
-      "result": "78 passed; includes temporary CLI 3/4 and 6/7 probes, nested callbacks, disable comments, missing files/dependencies, parse errors and scope isolation"
+      "result": "97 passed; includes both npm entries for six directory paths, 3/4 and 6/7 boundaries, nested callbacks, disable comments, missing files/dependencies, parse errors and scope isolation"
     },
     {
-      "command": "node --import tsx --test visual/docker-env.test.ts visual/run-visual-config.test.ts visual/run-visual-isolation.test.ts visual/scenarioPages.test.ts visual/scenarios.test.ts visual/screenshotComparisonConfiguration.test.ts visual/snapshotLocations.test.ts visual/target.test.ts visual/test-account.test.ts visual/visual-suite.test.ts scripts/visual-complexity.test.mjs",
-      "result": "112 passed"
+      "command": "node --import tsx --test visual/docker-env.test.ts visual/run-visual-config.test.ts visual/run-visual-isolation.test.ts visual/scenarioPages.test.ts visual/scenarios.test.ts visual/screenshotComparisonConfiguration.test.ts visual/snapshotLocations.test.ts visual/target.test.ts visual/test-account.test.ts visual/visual-suite.test.ts",
+      "result": "68 passed; includes all locales and viewports, scenario ordering, isolation, error cleanup and real pixel comparator boundaries"
     },
     {
-      "command": "npx playwright test --config visual/playwright.config.ts visual/tests --list --reporter=list",
+      "command": "npx --no-install playwright test --config visual/playwright.config.ts visual/tests --list --reporter=list",
       "result": "67 tests collected in 10 files; collection only"
+    },
+    {
+      "command": "node scripts/visual-complexity.mjs --entrypoints --report",
+      "result": "549 functions measured with native ESLint classic diagnostics; zero over the configured 3/6 limits. The 525-function baseline snapshot was separately remeasured from Git and matched exactly."
     }
   ],
   "runtime": {
     "node": "v24.14.0",
     "fullTestSuiteRun": false,
     "applicationOrDeviceRun": false,
-    "note": "Only static gate code changed; no native interaction, proxy protocol, animation implementation or visual baseline changes."
+    "note": "Only static gate code changed; no native interaction, proxy protocol, animation implementation or visual baseline changes. Full local tests, make lint and commit hooks were not run; the full gate remains for remote CI.",
+    "uvCacheDir": "/Users/kevina/orca/workspaces/clrn/js-ts-3-6-3/.ttyctl/uv-cache"
   },
   "files": [
     {"file":"eslint.config.mjs","limit":6,"sha256":"cf2b675fb6888014b7e143cf7e7cc31357f70767201e0c95689d790662aaf39c"},
     {"file":"scripts/visual-complexity-animations.test.mjs","limit":3,"sha256":"58e135e0f839d15509ceecf94dba35f74d9b236c6cc0afa4f41bb5da5feba5cf"},
-    {"file":"scripts/visual-complexity-entrypoints.test.mjs","limit":3,"sha256":"c213ecf9208d3a06aa91e7f2ea33345435fe0c6fef9403439ca15efcfda38102"},
-    {"file":"scripts/visual-complexity-fixture.mjs","limit":3,"sha256":"e66bdeae4d536da026b393b39b39ec6976457fcc30e2ad877b75288908fc509a"},
-    {"file":"scripts/visual-complexity-scope.mjs","limit":6,"sha256":"167cb128dc2bd09a99c2b055f4e8b613cdfb95500b7f22428d0765b0c8200154"},
+    {"file":"scripts/visual-complexity-entrypoints.test.mjs","limit":3,"sha256":"75069aab858312e57ca4f921fcc3c96b5330b1a34ccefb26cf767e9eca279ff7"},
+    {"file":"scripts/visual-complexity-fixture.mjs","limit":3,"sha256":"f9daf6c657ec7b71805ea437bf4502100e7d9e3e1e478d499b3a4ccfe9958728"},
+    {"file":"scripts/visual-complexity-scope.mjs","limit":6,"sha256":"02da8f2f114c3f6fd0e7b85a7607b4f7b3e53fa2c3514f589d490558de931031"},
     {"file":"scripts/visual-complexity.mjs","limit":6,"sha256":"086c045153e17f4fe38d925580ed49d376d4ab8880cc7d685018ca3b3df450f7"},
     {"file":"scripts/visual-complexity.test.mjs","limit":3,"sha256":"3e8ee6e38a21352a5e47fe04344db7ccea5a673a51b3501f932fe3d1bc7d8f17"},
     {"file":"visual/docker-env.test.ts","limit":3,"sha256":"a776b56caf5af2553d2a34ed8b013d5dd7ff604fed883732b8d4a1c2cbec3d22"},
@@ -631,26 +669,33 @@
       {"file":"scripts/visual-complexity-animations.test.mjs","line":41,"column":57,"name":"Arrow function","complexity":2,"limit":3},
       {"file":"scripts/visual-complexity-animations.test.mjs","line":54,"column":1,"name":"Function 'assertGateStatus'","complexity":1,"limit":3},
       {"file":"scripts/visual-complexity-animations.test.mjs","line":58,"column":73,"name":"Arrow function","complexity":1,"limit":3},
-      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":14,"column":1,"name":"Function 'probe'","complexity":1,"limit":3},
-      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":33,"column":72,"name":"Async arrow function","complexity":1,"limit":3},
-      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":36,"column":47,"name":"Arrow function","complexity":1,"limit":3},
-      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":40,"column":64,"name":"Arrow function","complexity":1,"limit":3},
-      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":60,"column":73,"name":"Arrow function","complexity":2,"limit":3},
-      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":71,"column":65,"name":"Arrow function","complexity":1,"limit":3},
-      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":88,"column":51,"name":"Arrow function","complexity":1,"limit":3},
-      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":100,"column":52,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":15,"column":1,"name":"Function 'probe'","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":50,"column":1,"name":"Function 'descendantPaths'","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":53,"column":40,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":54,"column":56,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":58,"column":72,"name":"Async arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":61,"column":47,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":65,"column":64,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":67,"column":36,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":73,"column":108,"name":"Async arrow function","complexity":3,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":78,"column":41,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":89,"column":107,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":116,"column":73,"name":"Arrow function","complexity":2,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":127,"column":65,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":144,"column":51,"name":"Arrow function","complexity":1,"limit":3},
+      {"file":"scripts/visual-complexity-entrypoints.test.mjs","line":156,"column":52,"name":"Arrow function","complexity":1,"limit":3},
       {"file":"scripts/visual-complexity-fixture.mjs","line":12,"column":8,"name":"Function 'isolatedVisualRepository'","complexity":3,"limit":3},
       {"file":"scripts/visual-complexity-fixture.mjs","line":28,"column":1,"name":"Function 'isGateSource'","complexity":1,"limit":3},
       {"file":"scripts/visual-complexity-fixture.mjs","line":38,"column":8,"name":"Function 'runVisualGate'","complexity":1,"limit":3},
-      {"file":"scripts/visual-complexity-fixture.mjs","line":51,"column":8,"name":"Function 'assertVisualGateStatus'","complexity":2,"limit":3},
-      {"file":"scripts/visual-complexity-fixture.mjs","line":68,"column":1,"name":"Function 'restoreProbe'","complexity":2,"limit":3},
+      {"file":"scripts/visual-complexity-fixture.mjs","line":52,"column":8,"name":"Function 'assertVisualGateStatus'","complexity":2,"limit":3},
+      {"file":"scripts/visual-complexity-fixture.mjs","line":71,"column":1,"name":"Function 'restoreProbe'","complexity":2,"limit":3},
       {"file":"scripts/visual-complexity-scope.mjs","line":40,"column":43,"name":"Arrow function","complexity":1,"limit":6},
-      {"file":"scripts/visual-complexity-scope.mjs","line":48,"column":1,"name":"Function 'moduleStem'","complexity":1,"limit":6},
-      {"file":"scripts/visual-complexity-scope.mjs","line":55,"column":8,"name":"Function 'visualEntryFiles'","complexity":1,"limit":6},
-      {"file":"scripts/visual-complexity-scope.mjs","line":57,"column":36,"name":"Arrow function","complexity":2,"limit":6},
-      {"file":"scripts/visual-complexity-scope.mjs","line":58,"column":38,"name":"Arrow function","complexity":1,"limit":6},
-      {"file":"scripts/visual-complexity-scope.mjs","line":77,"column":8,"name":"Function 'animationFiles'","complexity":1,"limit":6},
-      {"file":"scripts/visual-complexity-scope.mjs","line":79,"column":36,"name":"Arrow function","complexity":1,"limit":6},
+      {"file":"scripts/visual-complexity-scope.mjs","line":51,"column":1,"name":"Function 'moduleStem'","complexity":1,"limit":6},
+      {"file":"scripts/visual-complexity-scope.mjs","line":58,"column":8,"name":"Function 'visualEntryFiles'","complexity":1,"limit":6},
+      {"file":"scripts/visual-complexity-scope.mjs","line":60,"column":36,"name":"Arrow function","complexity":2,"limit":6},
+      {"file":"scripts/visual-complexity-scope.mjs","line":61,"column":38,"name":"Arrow function","complexity":1,"limit":6},
+      {"file":"scripts/visual-complexity-scope.mjs","line":80,"column":8,"name":"Function 'animationFiles'","complexity":1,"limit":6},
+      {"file":"scripts/visual-complexity-scope.mjs","line":82,"column":36,"name":"Arrow function","complexity":1,"limit":6},
       {"file":"scripts/visual-complexity.mjs","line":13,"column":8,"name":"Function 'visualComplexityFiles'","complexity":5,"limit":6},
       {"file":"scripts/visual-complexity.mjs","line":20,"column":34,"name":"Arrow function","complexity":1,"limit":6},
       {"file":"scripts/visual-complexity.mjs","line":28,"column":8,"name":"Async function 'checkVisualComplexity'","complexity":2,"limit":6},

@@ -46,15 +46,18 @@ export function runVisualGate(directory, ...modes) {
  * @param file - 临时模块的绝对路径。
  * @param source - 静态正例、负例或解析错误。
  * @param expected - 预期退出状态。
- * @param mode - 定向入口参数。
+ * @param modes - 可选的定向入口参数；缺省时运行默认入口。
+ * @returns 已校验退出状态的门禁结果，供调用方检查具体诊断。
  */
-export function assertVisualGateStatus(directory, file, source, expected, mode) {
+export function assertVisualGateStatus(directory, file, source, expected, ...modes) {
   const original = existsSync(file) ? readFileSync(file) : undefined;
   try {
+    mkdirSync(path.dirname(file), { recursive: true });
     writeFileSync(file, source);
-    const result = runVisualGate(directory, mode);
+    const result = runVisualGate(directory, ...modes);
     assert.ifError(result.error);
     assert.equal(result.status, expected, result.stdout + result.stderr);
+    return result;
   } finally {
     restoreProbe(file, original);
   }

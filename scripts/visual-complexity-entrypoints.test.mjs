@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { ESLint } from 'eslint';
 import { visualEntryFiles, visualSupportFiles, visualToolFiles } from './visual-complexity-scope.mjs';
 import { checkVisualComplexityText, visualComplexityFiles } from './visual-complexity.mjs';
 import { isolatedVisualRepository, assertVisualGateStatus, runVisualGate } from './visual-complexity-fixture.mjs';
@@ -15,6 +16,15 @@ function probe(complexity) {
   return `export function probe(x) { ${'if (x) x++;'.repeat(complexity - 1)} return x; }`;
 }
 
+const directoryHelperPaths = [
+  'visual/scenariosSupport/helpers.ts',
+  'visual/scenarios/helpers.ts',
+  'visual/tests/walletTransactionReadiness/helpers.ts',
+  'visual/scenariosSupport/nested/deeper/helpers.ts',
+  'visual/open-reportSupport/nested/helpers.ts',
+  'visual/playwright.config/helpers.ts',
+];
+
 const helperPaths = [
   'visual/scenariosFutureHelper.ts',
   'visual/scenariosFutureHelper.test.ts',
@@ -27,7 +37,22 @@ const helperPaths = [
   'visual/scenariosFutureHelper.js',
   'visual/scenariosFutureHelper.mts',
   'visual/scenariosFutureHelper.cts',
+  ...directoryHelperPaths,
 ];
+
+const unrelatedPaths = ['visual/animations/timeline.ts', 'visual/src/support/preparePage.ts', 'visual/cases/auth/scenarios.ts'];
+
+/**
+ * 为每个模块生成同名及同名前缀目录中各类源码扩展名的后代路径。
+ * @param file - 原始模块或相邻测试路径。
+ * @returns 应当全部沿用辅助预算的候选路径。
+ */
+function descendantPaths(file) {
+  const stem = file.replace(/(?:\.(?:test|spec|browser))?\.ts$/, '');
+  return ['', 'Support'].flatMap(/** 同名目录与前缀目录都覆盖多层后代。
+   * @param suffix - 模块目录后缀。 */ suffix => ['js', 'jsx', 'mjs', 'cjs', 'ts', 'tsx', 'mts', 'cts'].map(/** 各扩展名沿用同一预算。
+    * @param extension - ESLint 支持的源码扩展名。 */ extension => `${stem}${suffix}/nested/helpers.${extension}`));
+}
 
 for (const file of helperPaths) {
   test(`${file} 新提取实现及相邻测试沿用 3/4 边界`, /** 使用与正式门禁相同的路径和配置。 */ async () => {
@@ -38,12 +63,43 @@ for (const file of helperPaths) {
 }
 
 test('视觉入口范围包含原清单及同名前缀辅助模块，排除其他目录', /** 检查文件发现与预算使用同一范围。 */ () => {
-  const entries = [...visualSupportFiles, ...visualToolFiles, ...helperPaths.slice(0, 7), ...helperPaths.slice(8)];
-  const unrelated = ['visual/animations/timeline.ts', 'visual/src/support/preparePage.ts', 'visual/cases/auth/scenarios.ts'];
-  assert.deepEqual(visualEntryFiles([...entries, ...unrelated]), entries);
+  const entries = [...visualSupportFiles, ...visualToolFiles, ...helperPaths.filter(/** 检查脚本不属于视觉模块目录。
+   * @param file - 静态探针路径。 */ file => file.startsWith('visual/'))];
+  assert.deepEqual(visualEntryFiles([...entries, ...unrelatedPaths]), entries);
   assert.deepEqual(visualEntryFiles(visualComplexityFiles(false, true)), visualEntryFiles(visualComplexityFiles()));
   assert.equal(visualComplexityFiles(false, true).includes('visual/animations/timeline.ts'), false);
 });
+
+test('CLI 发现的全部辅助文件及各模块后代均使用 classic 上限 3，显式工具仍为 6', /** 逐文件核对实际 ESLint override 而非推断 glob 行为。 */ async () => {
+  const eslint = new ESLint();
+  const descendants = [...new Set([...visualSupportFiles, ...visualToolFiles].flatMap(descendantPaths))];
+  assert.deepEqual(visualEntryFiles(descendants), descendants);
+  const support = visualEntryFiles([...visualComplexityFiles(false, true), ...helperPaths, ...descendants]).filter(/** 仅显式列出的工具可放宽预算。
+   * @param file - CLI 纳入的模块路径。 */ file => !visualToolFiles.includes(file));
+  for (const [max, files] of [[3, support], [6, visualToolFiles], [10, unrelatedPaths.slice(1)]]) {
+    for (const file of files) {
+      const config = await eslint.calculateConfigForFile(file);
+      assert.deepEqual(config.rules.complexity, [2, { max, variant: 'classic' }], file);
+    }
+  }
+});
+
+for (const modes of [['--entrypoints'], []]) {
+  for (const file of directoryHelperPaths) {
+    test(`npm ${modes.join(' ') || '默认入口'} 目录辅助模块 ${file} 的 3 通过、4 失败`, /** 两个正式入口都必须因当前文件的复杂度诊断失败。 */ () => {
+      const directory = isolatedVisualRepository();
+      try {
+        const target = path.join(directory, file);
+        assertVisualGateStatus(directory, target, probe(3), 0, ...modes);
+        const result = assertVisualGateStatus(directory, target, probe(4), 1, ...modes);
+        assert.ok(result.stderr.includes(`${file}:`), result.stderr);
+        assert.match(result.stderr, /complexity: .*Maximum allowed is 3/);
+      } finally {
+        rmSync(directory, { recursive: true, force: true });
+      }
+    });
+  }
+}
 
 const cliProbes = [
   ['visual/scenarios.test.ts', probe(3), 0],
