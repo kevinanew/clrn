@@ -39,12 +39,17 @@ export async function holdListDeadline(page: Page, hold: boolean): Promise<void>
       return Reflect.apply(open, this, [method, url, ...args]);
     };
     /**
+     * 未记录地址的 XHR 继续按空路径判断，避免影响其他请求。
+     * @param request - 当前 XHR 对象。
+     */
+    function requestUrl(request: XMLHttpRequest) { return requests.get(request) ?? ''; }
+    /**
      * 仅在代理挂起战绩列表时取消 XHR 截止时间，其他请求保持原行为。
      * @param body - 原始请求正文。
      */
     XMLHttpRequest.prototype.send = /** 对当前挂起的战绩列表请求取消超时，其余请求保持原发送行为。
  * @param body - 当前操作使用的 body。 */ function(body) {
-      const url = requests.get(this) ?? '';
+      const url = requestUrl(this);
       if (state.recordListHeld && /\/v(?:10\/texas_holdem\/user\/[^/]+\/game_records|11\/game_log\/[^/]+\/play_session_record\/recent)(?:\?|$)/.test(url)) {
         this.timeout = 0;
       }

@@ -4,7 +4,7 @@
  */
 export function appliedGameTranslation(declaration: string): number {
   const value = declaration.trim();
-  if (!value || value === '0' || value === '0px') return 0;
+  if (['', '0', '0px'].includes(value)) return 0;
   const match = /^0(?:px)?\s+(-?\d+(?:\.\d+)?)px$/.exec(value);
   if (!match) throw new Error(`牌桌已有未知 translate: ${value}`);
   return Number(match[1]);

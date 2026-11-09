@@ -17,10 +17,11 @@ test('收尾使用固定 staging 入口删除本轮房间，不依赖客户端�
   await deletePrivateGameRoom(room);
   assert.equal(requests.length, 1);
   assert.equal(requests[0].url, `https://api.shafayouxi.org/v1/room/${room.roomId}`);
-  assert.equal(requests[0].options?.method, 'DELETE');
-  assert.deepEqual(requests[0].options?.headers, { Authorization: room.authorization });
-  assert.equal(requests[0].options?.redirect, 'error');
-  assert.ok(requests[0].options?.signal instanceof AbortSignal);
+  const options = requests[0].options!;
+  assert.equal(options.method, 'DELETE');
+  assert.deepEqual(options.headers, { Authorization: room.authorization });
+  assert.equal(options.redirect, 'error');
+  assert.ok(options.signal instanceof AbortSignal);
   await assert.rejects(deletePrivateGameRoom({ ...room, roomId: '../other' }), /有效 UUID/);
   assert.equal(requests.length, 1);
 });

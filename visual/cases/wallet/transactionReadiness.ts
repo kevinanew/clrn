@@ -69,7 +69,7 @@ export async function readTransactionFixture(response: Response, currency: Trans
      * 按接口事件生成预期收支符号。
      * @param statement - 已校验的单条流水。
      */
-    statement => `${statement.event === 'deposit' ? '+' : '-'}${statement.amount}`,
+    statement => signedAmount(statement),
   ), '流水必须属于所选固定场景，不能退回真实账号的不确定数据').toEqual(expectedAmounts[currency]);
   return statements;
 }
@@ -92,7 +92,7 @@ export async function assertTransactionsReady(page: Page, currency: TransactionC
     const row = rows.nth(index);
     await expect(row, '每条固定流水都必须完整位于截图视口内').toBeInViewport({ ratio: 1 });
     await expect(row.getByTestId('CurrencyTransactionRecordItem_amount'), '收支符号与金额必须匹配本次响应')
-      .toHaveText(`${statement.event === 'deposit' ? '+' : '-'}${statement.amount}`);
+      .toHaveText(signedAmount(statement));
     await expect(row.getByTestId('CurrencyTransactionRecordItem_balance'), '余额必须匹配本次响应和当前语言')
       .toHaveText(`${balanceLabels[locale]}: ${statement.balance}`);
     const date = new Date(Date.parse(statement.create_at) + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
@@ -100,8 +100,31 @@ export async function assertTransactionsReady(page: Page, currency: TransactionC
       .toHaveText(date);
     await expect(row.getByTestId('CurrencyTransactionRecordItem_memo'), '交易备注必须匹配当前币种和语言')
       .toHaveText(memoLabels[locale][currency][index]);
-    const identifier = statement.memo?.match(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/i)?.[0];
+    const identifiers = statementIdentifiers(statement);
     await expect(row.getByTestId('CurrencyTransactionRecordItem_uuidText'), '房间标识必须单独展示，不能遗漏或混入其他流水')
-      .toHaveText(identifier ? [identifier] : []);
+      .toHaveText(identifiers);
   }
 }
+
+/**
+ * 按事件生成界面收支符号。
+ * @param statement - 单条流水。
+ */
+function signedAmount(statement: TransactionStatement) {
+  return `${statement.event === 'deposit' ? '+' : '-'}${statement.amount}`;
+}
+
+/**
+ * 提取备注中的独立房间标识。
+ * @param statement - 单条流水。
+ */
+function statementIdentifiers(statement: TransactionStatement) {
+  const identifier = statement.memo?.match(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/i)?.[0];
+  return identifierList(identifier);
+}
+
+/**
+ * 将可选标识转换为预期文本列表。
+ * @param identifier - 备注中的 UUID。
+ */
+function identifierList(identifier: string | undefined) { return identifier ? [identifier] : []; }

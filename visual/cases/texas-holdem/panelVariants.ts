@@ -22,10 +22,7 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
   for (const mode of ['pending', 'resolved', 'more'] as const) {
     await proxy.configureUI({ applications: mode });
     await click(page, 'buy-in-application-button');
-    await expect(page.locator('[data-testid="buy-in-application-nickname"]:visible')).toHaveCount(mode === 'resolved' ? 3 : 2);
-    if (mode === 'pending') await expect(page.locator('[data-testid="buy-in-approved-applications-tab"]:visible')).toHaveCount(2);
-    if (mode === 'resolved') await expect(page.locator('[data-testid="buy-in-application-status"]:visible')).toHaveCount(3);
-    if (mode === 'more') await expect(visible(page, 'buy-in-application-list-more')).not.toHaveAttribute('aria-disabled', 'true');
+    await assertApplicationMode(page, mode);
     await snapshot(`applications_${mode}`);
     await closeMask(page, 'buy-in-application-list');
   }
@@ -72,4 +69,21 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
   }[scenario.locale]);
   await snapshot('alert_authentication_failed');
   done();
+}
+
+/**
+ * 按具名状态断言申请人数和相应控件。
+ * @param page - 当前牌桌页面。
+ * @param mode - 固定申请状态。
+ */
+async function assertApplicationMode(page: Page, mode: 'pending' | 'resolved' | 'more') {
+  const cases = {
+    pending: { count: 2, selector: 'buy-in-approved-applications-tab', expected: 2 },
+    resolved: { count: 3, selector: 'buy-in-application-status', expected: 3 },
+    more: { count: 2, selector: 'buy-in-application-list-more', expected: undefined },
+  };
+  const entry = cases[mode];
+  await expect(page.locator('[data-testid="buy-in-application-nickname"]:visible')).toHaveCount(entry.count);
+  if (entry.expected === undefined) await expect(visible(page, entry.selector)).not.toHaveAttribute('aria-disabled', 'true');
+  else await expect(page.locator(`[data-testid="${entry.selector}"]:visible`)).toHaveCount(entry.expected);
 }

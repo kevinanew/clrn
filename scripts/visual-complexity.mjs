@@ -2,21 +2,22 @@ import { ESLint } from 'eslint';
 import { relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repository, sourceFiles } from './source-files.mjs';
-import { visualSupportFiles, visualToolFiles, visualEntryFiles, animationSupportFiles, animationFiles } from './visual-complexity-scope.mjs';
+import { visualSupportFiles, visualToolFiles, visualEntryFiles, animationSupportFiles, animationFiles, visualCaseSupportFiles, visualCaseFiles } from './visual-complexity-scope.mjs';
 
 /**
  * 按显式范围列出本任务文件及检查实现，遗漏或删除源码时拒绝空跑。
  * @param animationsOnly - 是否只扫描动画范围与门禁实现。
  * @param entrypointsOnly - 是否只扫描视觉入口范围与门禁实现。
+ * @param casesOnly - 是否只扫描业务场景及门禁。
  * @returns 本任务实际扫描的源码路径。
  */
-export function visualComplexityFiles(animationsOnly = false, entrypointsOnly = false) {
+export function visualComplexityFiles(animationsOnly = false, entrypointsOnly = false, casesOnly = false) {
   const files = sourceFiles();
-  const required = [...existingAnimationFiles(entrypointsOnly), ...existingVisualFiles(animationsOnly), 'eslint.config.mjs'];
+  const required = requiredFiles(animationsOnly, entrypointsOnly, casesOnly);
   for (const file of required) {
     if (!files.includes(file)) throw new Error(`视觉复杂度检查缺少文件：${file}`);
   }
-  return [...new Set([...required, ...scopedSupportFiles(files, animationsOnly, entrypointsOnly), ...files.filter(/** 根据当前条目计算结果。
+  return [...new Set([...required, ...scopedSupportFiles(files, animationsOnly, entrypointsOnly, casesOnly), ...files.filter(/** 根据当前条目计算结果。
  * @param file - 当前回调参数。 */ file => /^scripts\/visual-complexity.*\.mjs$/.test(file))])];
 }
 
@@ -85,8 +86,9 @@ function functionMeasurements(result) {
 async function main() {
   const animationsOnly = process.argv.includes('--animations');
   const entrypointsOnly = process.argv.includes('--entrypoints');
-  if (animationsOnly && entrypointsOnly) throw new Error('--animations 与 --entrypoints 不能同时使用');
-  const files = visualComplexityFiles(animationsOnly, entrypointsOnly);
+  const casesOnly = process.argv.includes('--cases');
+  if ([animationsOnly, entrypointsOnly, casesOnly].filter(Boolean).length > 1) throw new Error('定向范围参数不能同时使用');
+  const files = visualComplexityFiles(animationsOnly, entrypointsOnly, casesOnly);
   if (process.argv.includes('--report')) {
     console.log(JSON.stringify(await measureVisualComplexity(files), null, 2));
     return;
@@ -122,10 +124,26 @@ function existingAnimationFiles(entrypointsOnly) { return entrypointsOnly ? [] :
  * @param files - 当前源码路径。
  * @param animationsOnly - 是否只扫描动画。
  * @param entrypointsOnly - 是否只扫描视觉入口。
+ * @param casesOnly - 是否只扫描业务场景。
  * @returns 对应范围内原模块和新提取模块。
  */
-function scopedSupportFiles(files, animationsOnly, entrypointsOnly) {
+function scopedSupportFiles(files, animationsOnly, entrypointsOnly, casesOnly) {
+  if (casesOnly) return visualCaseFiles(files);
   const entries = animationsOnly ? [] : visualEntryFiles(files);
   const animations = entrypointsOnly ? [] : animationFiles(files);
-  return [...entries, ...animations];
+  const cases = animationsOnly || entrypointsOnly ? [] : visualCaseFiles(files);
+  return [...entries, ...animations, ...cases];
+}
+
+/**
+ * 每个定向入口独立验证必要文件，默认入口合并已有范围。
+ * @param animationsOnly - 只扫描动画。
+ * @param entrypointsOnly - 只扫描视觉入口。
+ * @param casesOnly - 只扫描业务场景。
+ * @returns 必须存在的原始模块与根配置。
+ */
+function requiredFiles(animationsOnly, entrypointsOnly, casesOnly) {
+  if (casesOnly) return [...visualCaseSupportFiles, 'eslint.config.mjs'];
+  const cases = animationsOnly || entrypointsOnly ? [] : visualCaseSupportFiles;
+  return [...existingAnimationFiles(entrypointsOnly), ...existingVisualFiles(animationsOnly), ...cases, 'eslint.config.mjs'];
 }

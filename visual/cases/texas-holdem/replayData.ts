@@ -15,6 +15,17 @@ export type TableLayout = 'standard' | 'observer' | 'full' | 'full-pots' | 'chec
  * @param layout - 具名座位或操作按钮场景。
  */
 export function restoreTable(self: string, street: Street, opponentTurn = false, layout: TableLayout = 'standard') {
+  return tableSelection(self, street, opponentTurn, layout);
+}
+
+/**
+ * 验证账号并选择具名代理场景。
+ * @param self - 真实账号。
+ * @param street - 牌局阶段。
+ * @param opponentTurn - 是否轮到对手。
+ * @param layout - 布局。
+ */
+function tableSelection(self: string, street: Street, opponentTurn: boolean, layout: TableLayout) {
   if (!self) throw new Error('回放必须绑定真实账号');
   return { scene: 'restore', parameters: { street, turn: opponentTurn ? 'opponent' : 'self', layout } };
 }

@@ -903,36 +903,6 @@
       "reason": "房间清理请求适配器单测：Node mock 注入失败并验证错误传播，不连接真实房间。"
     },
     {
-      "file": "visual/cases/_shared/room.ts",
-      "rule": "complexity",
-      "line": 18,
-      "column": 1,
-      "message": "Async function 'visualAccount' has a complexity of 11. Maximum allowed is 10.",
-      "anchor": "b0342535b6137714e03b00a2159c339fcf96dc1682195ddee66f304dfd4e4b48",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/_shared/room.ts",
-      "rule": "complexity",
-      "line": 66,
-      "column": 8,
-      "message": "Async function 'ensureRoomBalance' has a complexity of 11. Maximum allowed is 10.",
-      "anchor": "4616960966d424ce18da05c7bdf26928cc39a4c76e5dba7a85b1dee0295e119c",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/game-record/game-record.spec.ts",
-      "rule": "complexity",
-      "line": 168,
-      "column": 74,
-      "message": "Async arrow function has a complexity of 13. Maximum allowed is 10.",
-      "anchor": "26458cdb283a643f3324ecc23af0775d7ecb59c30942d07dc9fc423f51e1f312",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "visual/cases/texas-holdem/roomCleanup.test.ts",
       "rule": "quality/no-network-response",
       "line": 2,
@@ -961,26 +931,6 @@
       "anchor": "40c632cb362ca705d26addb9c84e77351bdfed3b5bc42e09d60bae8c4b0adce9",
       "kind": "adapter-unit",
       "reason": "房间清理适配器单测：本机回源及 fetch 替换验证请求路径、状态和释放。"
-    },
-    {
-      "file": "visual/cases/texas-holdem/texas-holdem.spec.ts",
-      "rule": "max-depth",
-      "line": 313,
-      "column": 11,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "10b28023ecc4f370d422fd0b653bd13e91bb11c489ec6606c6137feed167085e",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
-    },
-    {
-      "file": "visual/cases/zhajinhua/zhajinhua.spec.ts",
-      "rule": "max-depth",
-      "line": 74,
-      "column": 15,
-      "message": "Blocks are nested too deeply (4). Maximum allowed is 3.",
-      "anchor": "f44c6284e02b36fdea89c73994d760544139e5c4ded46e151fd06988f5b723d6",
-      "kind": "migration",
-      "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
     },
     {
       "file": "visual/src/support/authValidation.ts",

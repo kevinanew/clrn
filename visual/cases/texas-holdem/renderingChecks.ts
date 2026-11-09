@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect } from './proxy';
 import { REPLAY_PLAYER_IDS } from './replayData';
 
@@ -23,12 +23,8 @@ export async function checkFlopCardFaces(page: Page): Promise<void> {
   const holeFaces = handFronts.getByTestId('sprite-image-content');
   await expect(communityFaces).toHaveCount(3);
   await expect(holeFaces).toHaveCount(2);
-  for (const faces of [communityFaces, holeFaces]) {
-    for (const face of await faces.all()) {
-      await expect(face).toBeVisible();
-      await expect(face).toHaveCSS('opacity', '1');
-    }
-  }
+  await assertFaceVisibility(communityFaces);
+  await assertFaceVisibility(holeFaces);
 }
 
 /**
@@ -46,4 +42,15 @@ export async function checkMobilePlayerAction(page: Page): Promise<void> {
     throw new Error('手机端翻牌圈玩家昵称或动作提示缺少可见布局区域');
   }
   expect(actionBox.y, '动作提示应位于昵称下方').toBeGreaterThanOrEqual(nicknameBox.y + nicknameBox.height);
+}
+
+/**
+ * 逐张核对已加载牌面的可见性和不透明度。
+ * @param faces - 当前牌面定位器。
+ */
+async function assertFaceVisibility(faces: Locator) {
+  for (const face of await faces.all()) {
+    await expect(face).toBeVisible();
+    await expect(face).toHaveCSS('opacity', '1');
+  }
 }

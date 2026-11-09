@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, type TexasProxy } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import { TABLE_STATES } from './scenarios';
@@ -53,27 +53,25 @@ export async function captureTableStates(page: Page, scenario: VisualScenario, p
   const sidePotsList = visible(page, 'texas_holdem_side_pots_list');
   const sidePotItems = sidePotsList.getByTestId(/^texas_holdem_side_pot_\d+$/);
   await expect(sidePotItems).toHaveText(fullTablePots.map(String));
-  const sidePotsBounds = await sidePotsList.boundingBox();
-  if (!sidePotsBounds) throw new Error('多底池列表应具有可见的布局区域');
-  const sidePotBounds = [];
-  for (const sidePot of await sidePotItems.all()) {
-    await expect(sidePot).toBeVisible();
-    const bounds = await sidePot.boundingBox();
-    if (!bounds) throw new Error('每个底池都应具有可见的布局区域');
-    expect(bounds.x).toBeGreaterThanOrEqual(sidePotsBounds.x);
-    expect(bounds.y).toBeGreaterThanOrEqual(sidePotsBounds.y);
-    expect(bounds.x + bounds.width).toBeLessThanOrEqual(sidePotsBounds.x + sidePotsBounds.width);
-    expect(bounds.y + bounds.height).toBeLessThanOrEqual(sidePotsBounds.y + sidePotsBounds.height);
-    sidePotBounds.push(bounds);
-  }
-  for (let index = 0; index < sidePotBounds.length; index++) {
-    const bounds = sidePotBounds[index];
-    if (index % 2 === 1) {
-      expect(bounds.y).toBe(sidePotBounds[index - 1].y);
-      expect(bounds.x).toBeGreaterThanOrEqual(sidePotBounds[index - 1].x + sidePotBounds[index - 1].width);
+  /**
+   * 验证所有底池完整位于列表内，并按两列排列。
+   */
+  const assertPotLayout = async () => {
+    const sidePotsBounds = await sidePotsList.boundingBox();
+    if (!sidePotsBounds) throw new Error('多底池列表应具有可见的布局区域');
+    const sidePotBounds = [];
+    for (const sidePot of await sidePotItems.all()) {
+      await expect(sidePot).toBeVisible();
+      const bounds = await potBounds(sidePot);
+      expect(bounds.x).toBeGreaterThanOrEqual(sidePotsBounds.x);
+      expect(bounds.y).toBeGreaterThanOrEqual(sidePotsBounds.y);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(sidePotsBounds.x + sidePotsBounds.width);
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(sidePotsBounds.y + sidePotsBounds.height);
+      sidePotBounds.push(bounds);
     }
-    if (index >= 2) expect(bounds.y).toBeGreaterThanOrEqual(sidePotBounds[index - 2].y + sidePotBounds[index - 2].height);
-  }
+    assertPotRows(sidePotBounds);
+  };
+  await assertPotLayout();
   await snapshot('full_table_multiple_pots');
   // 真实离桌消息移除额外玩家，再恢复五人牌桌，避免旧实体残留。
   await proxy.replayTexas(room, { scene: 'table-variants-stand_up-stand_up-stand_up-stand_up' });
@@ -95,4 +93,31 @@ export async function captureTableStates(page: Page, scenario: VisualScenario, p
   await expect(visible(page, 'drawer-menu-item-exit')).toBeVisible();
   await snapshot('guest_menu');
   done();
+}
+
+/**
+ * 获取单个底池的可见边界。
+ * @param sidePot - 底池定位器。
+ */
+async function potBounds(sidePot: Locator) {
+  const bounds = await sidePot.boundingBox();
+  if (!bounds) throw new Error('每个底池都应具有可见的布局区域');
+  return bounds;
+}
+
+/**
+ * 验证底池间的行列顺序。
+ * @param bounds - 按显示顺序读取的底池矩形。
+ */
+function assertPotRows(bounds: { x: number; y: number; width: number; height: number }[]) {
+  bounds.forEach(/** 核对当前底池与左侧和上一行的关系。
+   * @param current - 当前矩形。
+   * @param index - 显示位置。
+   */ (current, index) => {
+    if (index % 2 === 1) {
+      expect(current.y).toBe(bounds[index - 1].y);
+      expect(current.x).toBeGreaterThanOrEqual(bounds[index - 1].x + bounds[index - 1].width);
+    }
+    if (index >= 2) expect(current.y).toBeGreaterThanOrEqual(bounds[index - 2].y + bounds[index - 2].height);
+  });
 }

@@ -21,8 +21,7 @@ export const test = base.extend<{ clubRoomProxy: ClubVisualProxy; clubListProxy:
    * @param use - 运行使用代理的截图用例。
    */
   clubListProxy: async ({}, use) => {
-    const entries = readAuthStateEntries();
-    const userId: unknown = JSON.parse(entries?.['save.user.origin.data.from.server.key'] || '{}').user_id;
+    const userId: unknown = clubUserId();
     if (typeof userId !== 'string' || !userId) throw new Error('俱乐部列表场景缺少本轮登录账号');
     await withMitmproxy(/** 选择有成员的俱乐部列表场景，并向测试提供代理和命中状态读取。
  * @param proxy - 当前隔离的代理控制器。 */ async proxy => {
@@ -50,3 +49,10 @@ export const test = base.extend<{ clubRoomProxy: ClubVisualProxy; clubListProxy:
     }, { addonPath: path.resolve(__dirname, 'mitmproxy/addon.py') });
   },
 });
+
+/**
+ * 读取当前真实登录缓存的账号标识。
+ */
+function clubUserId() {
+  return JSON.parse(readAuthStateEntries()?.['save.user.origin.data.from.server.key'] || '{}').user_id;
+}

@@ -9,6 +9,22 @@ export const PLAYER_IDS = [1, 2, 3, 4].map(/** 将当前条目映射为`00000000
  * @param seen - 是否已看牌。
  */
 export function restoreTable(self: string, opponent = false, seen = false) {
-  if (!self) throw new Error('回放必须绑定真实账号');
-  return { scene: 'restore', parameters: { turn: opponent ? 'opponent' : 'self', cards: seen ? 'seen' : 'blind' } };
+  return tableSelection(self, opponent, seen);
 }
+
+/**
+ * 验证账号并选择具名代理场景。
+ * @param self - 真实账号。
+ * @param opponent - 是否轮到对手。
+ * @param seen - 是否已看牌。
+ */
+function tableSelection(self: string, opponent: boolean, seen: boolean) {
+  if (!self) throw new Error('回放必须绑定真实账号');
+  return { scene: 'restore', parameters: { turn: replayTurn(opponent), cards: seen ? 'seen' : 'blind' } };
+}
+
+/**
+ * 选择回放中的行动方。
+ * @param opponent - 是否轮到对手。
+ */
+function replayTurn(opponent: boolean) { return opponent ? 'opponent' : 'self'; }

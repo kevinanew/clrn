@@ -11,22 +11,34 @@ import presentation from '../../fixtures/account-presentation.json';
  */
 export async function accountPresentationRules(page: Page, scenario: VisualScenario): Promise<FixedTextRule[]> {
   if (!scenario.signIn) return [];
-  if (scenario.pageLabel === 'signed_in_me') {
-    const username = await page.getByTestId('username-text').filter({ visible: true }).innerText();
-    if (!username.includes('：')) throw new Error('账号页用户名缺少本地化标签分隔符。');
-    return [
-      { selector: '[data-testid="nickname-text"]', text: presentation.nickname },
-      { selector: '[data-testid="username-text"]', text: username.replace(/：.*$/u, `：${presentation.username}`) },
-    ];
-  }
-  if (scenario.pageLabel === 'signed_in_profile') {
-    const joined = await page.getByTestId('profile-join-date').filter({ visible: true }).innerText();
-    if (!/\d{4}-\d{2}-\d{2}/.test(joined)) throw new Error('个人资料页缺少有效注册日期。');
-    return [
-      { selector: '[data-testid="profile-item-0"] [data-testid="content-text-0"]', text: presentation.nickname },
-      { selector: '[data-testid="profile-item-1"] [data-testid="content-text-1"]', text: presentation.username },
-      { selector: '[data-testid="profile-join-date"]', text: joined.replace(/\d{4}-\d{2}-\d{2}/, presentation.joinedDate) },
-    ];
-  }
-  return [];
+  const rules = { signed_in_me: accountRules, signed_in_profile: profileRules };
+  const handler = rules[scenario.pageLabel as keyof typeof rules];
+  return handler ? handler(page) : [];
+}
+
+/**
+ * 固定账号摘要，保留翻译标签。
+ * @param page - 账号页面。
+ */
+async function accountRules(page: Page): Promise<FixedTextRule[]> {
+  const username = await page.getByTestId('username-text').filter({ visible: true }).innerText();
+  if (!username.includes('：')) throw new Error('账号页用户名缺少本地化标签分隔符。');
+  return [
+    { selector: '[data-testid="nickname-text"]', text: presentation.nickname },
+    { selector: '[data-testid="username-text"]', text: username.replace(/：.*$/u, `：${presentation.username}`) },
+  ];
+}
+
+/**
+ * 固定资料页，保留真实日期格式校验。
+ * @param page - 资料页面。
+ */
+async function profileRules(page: Page): Promise<FixedTextRule[]> {
+  const joined = await page.getByTestId('profile-join-date').filter({ visible: true }).innerText();
+  if (!/\d{4}-\d{2}-\d{2}/.test(joined)) throw new Error('个人资料页缺少有效注册日期。');
+  return [
+    { selector: '[data-testid="profile-item-0"] [data-testid="content-text-0"]', text: presentation.nickname },
+    { selector: '[data-testid="profile-item-1"] [data-testid="content-text-1"]', text: presentation.username },
+    { selector: '[data-testid="profile-join-date"]', text: joined.replace(/\d{4}-\d{2}-\d{2}/, presentation.joinedDate) },
+  ];
 }

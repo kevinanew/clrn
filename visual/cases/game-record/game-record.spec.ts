@@ -9,10 +9,8 @@ import { back, captureStates, click, holdListDeadline, reopen, row, scrollList, 
 import { captureDetails } from './details';
 import type { Page } from '@playwright/test';
 
-const pagedRoomNames = Array.from({ length: 17 }, /** 为当前索引构造`Paged Texas ${String(index + 1).padStart(2, '0')}`。
- * @param _ - 当前操作使用的 _。
- * @param index - 当前条目在集合中的位置。 */ (_, index) =>
-  `Paged Texas ${String(index + 1).padStart(2, '0')}`);
+import { pagedRoomNames } from './listData';
+import { capturePagedV2, assertV2ListScroll, restoreV2List, assertRecordRequests } from './listStates';
 
 /**
  * 验证战绩勾选、全选和分数统计，并截取各选择状态。
@@ -195,7 +193,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
         .toBe(String(version === 'v2'));
       await holdListDeadline(page, true);
       await click(page, 'game-record');
-      await expect(visible(page, version === 'legacy' ? 'progress-hud-activity-indicator' : 'loading-indicator')).toBeVisible();
+      await expect(visible(page, { legacy: 'progress-hud-activity-indicator', v2: 'loading-indicator' }[version])).toBeVisible();
       await snapshot('loading');
       await recordProxy.release();
       await holdListDeadline(page, false);
@@ -207,85 +205,58 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       await expect(visible(page, 'club-game-text')).toHaveCount(1);
       await expect(visible(page, 'club-game-text')).toContainText('Visual Club');
       await snapshot('list');
-      if (version === 'v2') {
-        // 新版一次返回全部记录；长列表必须真实滚动才能看到末尾。
-        await recordProxy.mode('paged');
-        await reopen(page);
-        await expect(row(page, 'Paged Texas 01', version)).toBeVisible();
-        await expect(visible(page, 'loading-indicator')).toHaveCount(0);
-        // SectionList 可能尚未挂载末行；先滚动并随内容高度更新继续滚动。
-        await expect.poll(/** 滚动列表直到目标长房间名记录进入可见区域。 */ async () => {
-          await scrollList(page, true);
-          return row(page, 'Long Room Name', version).isVisible();
-        }, { message: '滚动长列表后应挂载末条记录' }).toBe(true);
-        await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(23);
-        await expect(page.locator('[data-testid^="record-visual-record-"]:visible')
-          .getByTestId('room-name-text')).toHaveText([
-          'Private Texas', 'Club Cards', 'Hall Texas', ...pagedRoomNames,
-          'Short Deck', 'No Hands', 'Long Room Name ABCDE',
-        ]);
-        await row(page, 'Long Room Name', version).scrollIntoViewIfNeeded();
-      }
+      await capturePagedV2(page, version, recordProxy);
       await scrollList(page, true);
-      if (version === 'v2') {
-        await expect.poll(/** 重复读取`visible(page, 'my-game-record-list').evaluate(node => node.scrollTop)`，直到满足外层等待断言。 */ () => visible(page, 'my-game-record-list').evaluate(/** 在页面中读取`node.scrollTop`，供测试判断当前界面状态。
- * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.scrollTop)).toBeGreaterThan(0);
-        await expect(row(page, 'Long Room Name', version)).toBeInViewport();
-      }
+      await assertV2ListScroll(page, version);
       await expect(row(page, 'Long Room Name', version)).toBeVisible();
       await snapshot('list_bottom');
-      if (version === 'v2') {
-        await recordProxy.mode('list');
-        await reopen(page);
-        await scrollList(page, false);
-        await expect(row(page, 'Private Texas', version)).toBeVisible();
-        await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(6);
-        await expect(row(page, 'Paged Texas 01', version)).toHaveCount(0);
-      }
+      await restoreV2List(page, version, recordProxy);
       await scrollList(page, false);
       await selections(page, version, snapshot);
       await deletion(page, version, snapshot);
       await captureDetails(page, version, snapshot, recordProxy);
-      if (version === 'legacy') {
-        await legacyEnd(page, recordProxy, snapshot);
-      } else {
-        await recordProxy.mode('list-error');
-        await reopen(page);
-        await expect(visible(page, 'alert-custom-button')).toHaveCount(2);
-        await expect(visible(page, 'alert-message-text')).toHaveText('Request failed with status code 503');
-        await snapshot('list_failure');
-        const endpoint = `/v11/game_log/${userId}/play_session_record/recent`;
-        const beforeRetry = (await recordProxy.status()).recordRequests[endpoint];
-        await recordProxy.mode('list');
-        await visible(page, 'alert-custom-button').last().click({ noWaitAfter: true });
-        await expect.poll(/** 重复读取`(await recordProxy.status()).recordRequests[endpoint]`，直到满足外层等待断言。 */ async () => (await recordProxy.status()).recordRequests[endpoint]).toBeGreaterThan(beforeRetry);
-        await expect(visible(page, 'loading-indicator')).toHaveCount(0);
-        await expect(row(page, 'Private Texas', version)).toBeVisible();
-        await snapshot('retry_success');
-        await recordProxy.mode('detail-error');
-        await row(page, 'Private Texas', version).click({ noWaitAfter: true });
-        await expect(visible(page, 'alert-custom-button')).toHaveCount(1);
-        await expect(visible(page, 'alert-message-text')).toHaveText('Visual record service unavailable');
-        await snapshot('detail_failure');
-        await click(page, 'alert-custom-button');
-      }
+      /** 按版本验证列表结束、错误与重试流程。 */
+      const captureEnd = async () => {
+        if (version === 'legacy') {
+          await legacyEnd(page, recordProxy, snapshot);
+        } else {
+          await recordProxy.mode('list-error');
+          await reopen(page);
+          await expect(visible(page, 'alert-custom-button')).toHaveCount(2);
+          await expect(visible(page, 'alert-message-text')).toHaveText('Request failed with status code 503');
+          await snapshot('list_failure');
+          const endpoint = `/v11/game_log/${userId}/play_session_record/recent`;
+          const beforeRetry = (await recordProxy.status()).recordRequests[endpoint];
+          await recordProxy.mode('list');
+          await visible(page, 'alert-custom-button').last().click({ noWaitAfter: true });
+          await expect.poll(/** 重复读取`(await recordProxy.status()).recordRequests[endpoint]`，直到满足外层等待断言。 */ async () => (await recordProxy.status()).recordRequests[endpoint]).toBeGreaterThan(beforeRetry);
+          await expect(visible(page, 'loading-indicator')).toHaveCount(0);
+          await expect(row(page, 'Private Texas', version)).toBeVisible();
+          await snapshot('retry_success');
+          await recordProxy.mode('detail-error');
+          await row(page, 'Private Texas', version).click({ noWaitAfter: true });
+          await expect(visible(page, 'alert-custom-button')).toHaveCount(1);
+          await expect(visible(page, 'alert-message-text')).toHaveText('Visual record service unavailable');
+          await snapshot('detail_failure');
+          await click(page, 'alert-custom-button');
+        }
+      };
+      await captureEnd();
       complete();
       expect(errors, '战绩流程不能出现未捕获的页面异常').toEqual([]);
-      const status = await recordProxy.status();
-      if (version === 'v2') expect(status.deleted).toEqual([]);
-      expect(Object.keys(status.recordRequests).length).toBeGreaterThan(5);
-      expect(status.recordRequests[`/v1/game_log/user/${userId}/room/visual-record-private`] ?? 0).toBe(0);
-      const faults = version === 'legacy'
-        ? [`/v1/game_log/user/${userId}/room/visual-record-hall`]
-        : [`/v11/game_log/${userId}/play_session_record/recent`,
-          `/v11/game_log/${userId}/play_session_record/visual-record-private`];
-      for (const endpoint of faults) expect(status.faultRequests[endpoint] ?? 0).toBeGreaterThan(0);
+      await assertRecordRequests(version, recordProxy, userId);
     } finally {
       const alerts = await visible(page, 'alert-message-text').allTextContents().catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []);
-      if (alerts.length) console.error(`RECORD ALERT > ${JSON.stringify(alerts)}`);
+      logAlerts(alerts);
       await recordProxy.release();
       console.log(`RECORD MITMPROXY > ${JSON.stringify((await recordProxy.status()).recordRequests)}`);
       await context.close();
     }
   });
 }
+
+/**
+ * 仅在出现弹窗时输出原有诊断。
+ * @param alerts - 采集到的弹窗文本。
+ */
+function logAlerts(alerts: string[]) { if (alerts.length) console.error(`RECORD ALERT > ${JSON.stringify(alerts)}`); }

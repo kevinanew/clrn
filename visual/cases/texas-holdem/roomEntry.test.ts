@@ -68,11 +68,11 @@ test('观察者连接错误页保留实际状态与操作，任意响应头和�
   }
 });
 
-test('观察者连接继续要求 HTTP 和业务结果同时成功，并释放每种结果的响应', /** 验证观察者连接继续要求 HTTP 和业务结果同时成功，并释放每种结果的响应。 */ async () => {
-  for (const [status, ok] of [[200, true], [200, false], [503, true]] as const) {
+for (const [status, ok, reason] of [[200, true, ''], [200, false, 'business-rejected'], [503, true, 'http-error']] as const) {
+  test(`观察者连接 status=${status} ok=${ok} 保留结果并释放响应`, /** 验证每种 HTTP 和业务结果组合。 */ async () => {
     const { page, verify } = fixture(Response.json({ ok }, { status }));
-    if (status === 200 && ok) await enterTexasRoom(page, room);
-    else await assert.rejects(enterTexasRoom(page, room), new RegExp(`method=PUT operation=texas-enter source=laiwan_proxy status=${status} response=received reason=${status === 200 ? 'business-rejected' : 'http-error'}`));
+    if (!reason) await enterTexasRoom(page, room);
+    else await assert.rejects(enterTexasRoom(page, room), new RegExp(`method=PUT operation=texas-enter source=laiwan_proxy status=${status} response=received reason=${reason}`));
     verify();
-  }
-});
+  });
+}

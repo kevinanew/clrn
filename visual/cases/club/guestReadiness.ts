@@ -29,9 +29,11 @@ async function assertFullyVisible(element: Locator, message: string): Promise<vo
             entries => {
               observer.disconnect();
               const { boundingClientRect: bounds, intersectionRect: visible } = entries[0];
-              resolve(visible.width > 0 && visible.height > 0
-                && visible.left - bounds.left <= 0.5 && bounds.right - visible.right <= 0.5
-                && visible.top - bounds.top <= 0.5 && bounds.bottom - visible.bottom <= 0.5);
+              resolve([
+                visible.width > 0, visible.height > 0,
+                visible.left - bounds.left <= 0.5, bounds.right - visible.right <= 0.5,
+                visible.top - bounds.top <= 0.5, bounds.bottom - visible.bottom <= 0.5,
+              ].every(Boolean));
             },
           );
           observer.observe(target);
@@ -67,7 +69,8 @@ export async function assertGuestClubReady(page: Page): Promise<void> {
        */
       (element) => {
         const image = element instanceof HTMLImageElement ? element : element.querySelector('img');
-        return image !== null && image.complete && image.naturalWidth > 0 && image.naturalHeight > 0;
+        if (image === null) return false;
+        return [image.complete, image.naturalWidth > 0, image.naturalHeight > 0].every(Boolean);
       },
     ),
     { message: '登录引导图片必须成功解码，不能保存缺图基准' },

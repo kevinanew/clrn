@@ -54,7 +54,8 @@ export async function captureControls(page: Page, scenario: VisualScenario, prox
   const thumb = visible(page, 'sliderThumb');
   const trackBox = await slider.boundingBox();
   const thumbBox = await thumb.boundingBox();
-  expect(trackBox && thumbBox).toBeTruthy();
+  expect(trackBox).toBeTruthy();
+  expect(thumbBox).toBeTruthy();
   const x = thumbBox!.x + thumbBox!.width / 2;
   /**
    * 分步移动按住的鼠标并推进时钟，让 PanResponder 正确累计拖动位移。
@@ -89,15 +90,21 @@ export async function captureControls(page: Page, scenario: VisualScenario, prox
     await snapshot('raise_dragging');
   } finally { await page.mouse.up(); }
   await click(page, 'raise-bet-cancel-button');
-  await click(page, 'texas-holdem-operation-accurate-bet-button');
-  for (const digit of [1, 2, 3]) await click(page, `texas-holdem-operation-accurate-bet-number-button-${digit}`);
-  await expect(visible(page, 'accurate-bet-value-text')).toHaveText('123');
-  await snapshot('accurate_raise_value');
-  for (let i = 0; i < 3; i++) await click(page, 'texas-holdem-operation-accurate-bet-backspace-button');
-  await click(page, 'texas-holdem-operation-accurate-bet-number-button-1');
-  await click(page, 'texas-holdem-operation-accurate-bet-confirm-button');
-  await expect(visible(page, 'toastText1')).toContainText('40');
-  await snapshot('accurate_raise_minimum_error');
-  await closeMask(page, 'accurate-bet-popup-container');
+  /**
+   * 校验精确加注输入、退格与最低金额错误。
+   */
+  const captureAccurateRaise = async () => {
+    await click(page, 'texas-holdem-operation-accurate-bet-button');
+    for (const digit of [1, 2, 3]) await click(page, `texas-holdem-operation-accurate-bet-number-button-${digit}`);
+    await expect(visible(page, 'accurate-bet-value-text')).toHaveText('123');
+    await snapshot('accurate_raise_value');
+    for (let i = 0; i < 3; i++) await click(page, 'texas-holdem-operation-accurate-bet-backspace-button');
+    await click(page, 'texas-holdem-operation-accurate-bet-number-button-1');
+    await click(page, 'texas-holdem-operation-accurate-bet-confirm-button');
+    await expect(visible(page, 'toastText1')).toContainText('40');
+    await snapshot('accurate_raise_minimum_error');
+    await closeMask(page, 'accurate-bet-popup-container');
+  };
+  await captureAccurateRaise();
   done();
 }

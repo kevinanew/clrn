@@ -2,7 +2,7 @@ import { withMitmproxy } from '../../e2e/helpers/mitmproxy-session';
 import type { Mitmproxy } from '../../e2e/helpers/mitmproxy-client';
 import { bindScenarioProxy } from '../../e2e/helpers/scenario-proxy';
 /** 执行独立视觉场景，并在截图前核对场景内容仍然完整可见。 */
-import { expect, type Browser } from '@playwright/test';
+import { expect, type Browser, type Page } from '@playwright/test';
 import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
 import { preparePage } from '../src/support/preparePage';
@@ -43,57 +43,100 @@ export async function runVisualScenario(
     await setupContextForScenario(context, scenario, page);
     await page.goto(scenario.path);
     await preparePage(page, scenario);
-    if (scenario.spriteImageCount) {
-      const sprites = page.locator('[data-testid="sprite-image-container"]');
-      const spriteContents = page.locator('[data-testid="sprite-image-content"]');
-      await expect(sprites).toHaveCount(scenario.spriteImageCount);
-      await expect(spriteContents).toHaveCount(scenario.spriteImageCount);
-      for (let index = 0; index < scenario.spriteImageCount; index += 1) {
-        await expect(spriteContents.nth(index)).toHaveCSS('opacity', '1');
-      }
-    }
-    // preparePage 内的稳定化步骤可能耗时较长。截图前再次断言就绪元素仍可见，
-    // 避免「更多」菜单等短暂出现后又消失时，被空白页面静默写入视觉基准图。
+    await assertSprites(page, scenario);
+    // 截图前再次确认就绪元素，避免菜单退场后记录空白截图。
     await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
-    if (scenario.pageLabel === 'guest_club') {
-      await assertGuestClubReady(page);
-    }
-    if (scenario.pageLabel === 'signed_in_club_populated') {
-      const list = page.locator('[data-testid="club-list-screen"]:visible').last();
-      await expect(list.locator('[data-testid^="club-"][data-testid$="-profile"]'), '我的俱乐部应显示三张卡片')
-        .toHaveCount(3);
-      await expect(list.getByTestId('club-title'), '三张卡片应展示固定名称').toHaveText([
-        '星光俱乐部', '周末俱乐部', '好友俱乐部',
-      ]);
-      await expect(list.getByTestId('club-member-amount-container'), '卡片应展示各俱乐部成员人数')
-        .toHaveText(['18', '36', '72']);
-      await expect(list.getByTestId('default-club-avatar-text'), '默认头像应显示俱乐部名称首字')
-        .toHaveText(['星', '周', '好']);
-      await expect(list.getByTestId('create-room-no-clubs-container'), '有俱乐部时应移除空状态').toHaveCount(0);
-      await expect(list.getByTestId('club-list-load-error'), '列表应加载成功').toHaveCount(0);
-    }
-    if (scenario.pageLabel === 'signed_in_club_rooms_populated') {
-      // 大厅也会挂载同一批牌局；断言只检查当前俱乐部页，避免把两处卡片合并计数。
-      const clubRoomScreen = page.locator('[data-testid="club-rooms-screen"]:visible').last();
-      await expect(clubRoomScreen.locator('[data-testid^="club-room-item-visual-club-room-"]')).toHaveCount(2);
-      await expect(clubRoomScreen.locator('[data-testid="club-room-name"]')).toHaveText(['德州体验局', '周末牌局']);
-      await expect(clubRoomScreen.locator('[data-testid="club-room-club-name"]')).toHaveText(['演示俱乐部', '演示俱乐部']);
-      await expect(clubRoomScreen.locator('[data-testid="club-room-player-count"]')).toHaveText(['2/9', '4/9']);
-      await expect(clubRoomScreen.locator('[data-testid="club-rooms-empty-view"]')).toHaveCount(0);
-    }
-    if (scenario.pageLabel === 'signed_in_daily_bonus') {
-      await expect(page.getByTestId('CheckInDateListItem.checkInDetailDate')).toHaveText('01/01');
-    }
-    if (scenario.pageLabel === 'signed_in_application_management') {
-      const visibleBackButton = page
-        .locator('[data-testid="navigation-bar-back-image"]:visible')
-        .locator('xpath=ancestor::button[1]');
-      await expect(visibleBackButton).toHaveCount(1);
-      const accessibilityLabel = await visibleBackButton.getAttribute('aria-label');
-      expect(accessibilityLabel).toBe(backAccessibilityLabels[scenario.locale]);
-    }
+    await assertScenarioContent(page, scenario);
     await expect(page).toHaveScreenshot(`${scenario.label}.png`);
   } finally {
     await context.close();
   }
+}
+
+/**
+ * 核对精灵数量及每个精灵的不透明度。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉配置。
+ */
+async function assertSprites(page: Page, scenario: VisualScenario) {
+  if (scenario.spriteImageCount) {
+    const sprites = page.locator('[data-testid="sprite-image-container"]');
+    const spriteContents = page.locator('[data-testid="sprite-image-content"]');
+    await expect(sprites).toHaveCount(scenario.spriteImageCount);
+    await expect(spriteContents).toHaveCount(scenario.spriteImageCount);
+    for (let index = 0; index < scenario.spriteImageCount; index += 1) {
+      await expect(spriteContents.nth(index)).toHaveCSS('opacity', '1');
+    }
+  }
+}
+
+/**
+ * 为需要附加内容断言的页面选择专用检查。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉配置。
+ */
+async function assertScenarioContent(page: Page, scenario: VisualScenario) {
+  const checks: Record<string, (page: Page, scenario: VisualScenario) => Promise<void>> = {
+    guest_club: assertGuestClubReady,
+    signed_in_club_populated: assertClubList,
+    signed_in_club_rooms_populated: assertClubRooms,
+    signed_in_daily_bonus: assertDailyBonus,
+    signed_in_application_management: assertApplicationBack,
+  };
+  await checks[scenario.pageLabel]?.(page, scenario);
+}
+
+/**
+ * 校验俱乐部卡片、成员数量、默认头像及非空状态。
+ * @param page - 当前页面。
+ */
+async function assertClubList(page: Page) {
+  const list = page.locator('[data-testid="club-list-screen"]:visible').last();
+  await expect(list.locator('[data-testid^="club-"][data-testid$="-profile"]'), '我的俱乐部应显示三张卡片')
+    .toHaveCount(3);
+  await expect(list.getByTestId('club-title'), '三张卡片应展示固定名称').toHaveText([
+    '星光俱乐部', '周末俱乐部', '好友俱乐部',
+  ]);
+  await expect(list.getByTestId('club-member-amount-container'), '卡片应展示各俱乐部成员人数')
+    .toHaveText(['18', '36', '72']);
+  await expect(list.getByTestId('default-club-avatar-text'), '默认头像应显示俱乐部名称首字')
+    .toHaveText(['星', '周', '好']);
+  await expect(list.getByTestId('create-room-no-clubs-container'), '有俱乐部时应移除空状态').toHaveCount(0);
+  await expect(list.getByTestId('club-list-load-error'), '列表应加载成功').toHaveCount(0);
+}
+
+/**
+ * 核对当前俱乐部页中的固定牌局卡片。
+ * @param page - 当前页面。
+ */
+async function assertClubRooms(page: Page) {
+  // 大厅也会挂载同一批牌局；断言只检查当前俱乐部页，避免把两处卡片合并计数。
+  const clubRoomScreen = page.locator('[data-testid="club-rooms-screen"]:visible').last();
+  await expect(clubRoomScreen.locator('[data-testid^="club-room-item-visual-club-room-"]')).toHaveCount(2);
+  await expect(clubRoomScreen.locator('[data-testid="club-room-name"]')).toHaveText(['德州体验局', '周末牌局']);
+  await expect(clubRoomScreen.locator('[data-testid="club-room-club-name"]')).toHaveText(['演示俱乐部', '演示俱乐部']);
+  await expect(clubRoomScreen.locator('[data-testid="club-room-player-count"]')).toHaveText(['2/9', '4/9']);
+  await expect(clubRoomScreen.locator('[data-testid="club-rooms-empty-view"]')).toHaveCount(0);
+}
+
+/**
+ * 核对每日奖励的固定日期。
+ * @param page - 当前页面。
+ */
+async function assertDailyBonus(page: Page) {
+  await expect(page.getByTestId('CheckInDateListItem.checkInDetailDate')).toHaveText('01/01');
+}
+
+/**
+ * 核对申请管理返回按钮的唯一性及本地化标签。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉配置。
+ */
+async function assertApplicationBack(page: Page, scenario: VisualScenario) {
+  const visibleBackButton = page
+    .locator('[data-testid="navigation-bar-back-image"]:visible')
+    .locator('xpath=ancestor::button[1]');
+  await expect(visibleBackButton).toHaveCount(1);
+  const accessibilityLabel = await visibleBackButton.getAttribute('aria-label');
+  expect(accessibilityLabel).toBe(backAccessibilityLabels[scenario.locale]);
 }

@@ -1,3 +1,4 @@
+import { enableGameSettings } from '../_shared/gameSettings';
 import type { Page } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
 import { expect } from './proxy';
@@ -71,24 +72,23 @@ export async function capturePreGame(page: Page, scenario: VisualScenario): Prom
   }
   await click(page, 'game-settings-card-theme-simple');
   await click(page, 'game-settings-close-button');
-  for (const background of ['blue', 'purple', 'black'] as const) {
-    await menu(page, 'theme', 'game-settings-card-theme-simple');
-    await click(page, `game-settings-background-${background}`);
-    await click(page, 'game-settings-close-button');
-    await snapshot(`table_${background}`);
-  }
+  /**
+   * 保留每种背景的菜单打开、关闭和截图顺序。
+   */
+  const captureBackgrounds = async () => {
+    for (const background of ['blue', 'purple', 'black'] as const) {
+      await menu(page, 'theme', 'game-settings-card-theme-simple');
+      await click(page, `game-settings-background-${background}`);
+      await click(page, 'game-settings-close-button');
+      await snapshot(`table_${background}`);
+    }
+  };
+  await captureBackgrounds();
   await menu(page, 'theme', 'game-settings-card-theme-simple');
   await click(page, 'game-settings-background-green');
   await click(page, 'game-settings-close-button');
   await menu(page, 'settings', 'game-settings-popup-container');
-  const switches = page.locator('[data-testid^="game-settings-switch-"]:visible');
-  expect(await switches.count()).toBeGreaterThanOrEqual(4);
-  for (const control of await switches.all()) {
-    if (!(await control.locator('input[type="checkbox"]').isChecked())) {
-      await control.click();
-    }
-    await expect(control.locator('input[type="checkbox"]')).toBeChecked();
-  }
+  await enableGameSettings(page, { assertChecked: true });
   await snapshot('settings_enabled');
   expect(index).toBe(PRE_GAME_STATES.length);
 }

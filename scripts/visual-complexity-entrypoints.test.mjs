@@ -76,7 +76,7 @@ test('CLI 发现的全部辅助文件及各模块后代均使用 classic 上限 
   assert.deepEqual(visualEntryFiles(descendants), descendants);
   const support = visualEntryFiles([...visualComplexityFiles(false, true), ...helperPaths, ...descendants]).filter(/** 仅显式列出的工具可放宽预算。
    * @param file - CLI 纳入的模块路径。 */ file => !visualToolFiles.includes(file));
-  for (const [max, files] of [[3, support], [6, visualToolFiles], [10, unrelatedPaths.slice(1)]]) {
+  for (const [max, files] of [[3, [...support, unrelatedPaths[2]]], [6, visualToolFiles], [10, [unrelatedPaths[1]]]]) {
     for (const file of files) {
       const config = await eslint.calculateConfigForFile(file);
       assert.deepEqual(config.rules.complexity, [2, { max, variant: 'classic' }], file);

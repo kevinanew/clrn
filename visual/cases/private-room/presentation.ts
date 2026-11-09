@@ -9,6 +9,14 @@ import presentation from '../../fixtures/game-presentation.json';
  */
 export async function privateRoomPresentationRules(page: Page, scenario: VisualScenario): Promise<FixedTextRule[]> {
   if (!scenario.signIn || scenario.group !== 'private-room') return [];
+  return roomNumberRules(page);
+}
+
+/**
+ * 验证并固定已登录房号展示。
+ * @param page - 私人房页面。
+ */
+async function roomNumberRules(page: Page): Promise<FixedTextRule[]> {
   const button = page.getByTestId('copy-house-number-button').filter({ visible: true });
   if (await button.count() === 0) return [];
   const selector = '[data-testid="copy-house-number-button"] [dir="auto"]';

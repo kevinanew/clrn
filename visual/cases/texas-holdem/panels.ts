@@ -1,3 +1,4 @@
+import { enableGameSettings } from '../_shared/gameSettings';
 import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
@@ -55,14 +56,7 @@ export async function capturePanels(page: Page, scenario: VisualScenario, proxy:
   await click(page, 'game-settings-background-green');
   await click(page, 'game-settings-close-button');
   await menu('settings');
-  const switches = page.locator('[data-testid^="game-settings-switch-"]:visible');
-  expect(await switches.count()).toBeGreaterThanOrEqual(4);
-  for (const control of await switches.all()) {
-    if (!(await control.locator('input[type="checkbox"]').isChecked())) {
-      await control.click();
-      await advance(page);
-    }
-  }
+  await enableGameSettings(page, { afterClick: /** 保留德州开关切换后的动画推进。 */ () => advance(page), assertChecked: false });
   await snapshot('settings_enabled');
   await click(page, 'game-settings-close-button');
   // 预热 Chromium 虚拟麦克风；只检查授权和弹窗，不发送录音。

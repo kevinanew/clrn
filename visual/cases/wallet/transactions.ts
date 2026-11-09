@@ -14,7 +14,7 @@ import { assertTransactionsReady, readTransactionFixture, waitForTransactionResp
  * @param browser - Playwright 提供的真实浏览器。
  */
 export async function runCurrencyTransactionScenario(scenario: VisualScenario, browser: Browser): Promise<void> {
-  const userId = JSON.parse(readAuthStateEntries()?.['save.user.origin.data.from.server.key'] || '{}').user_id;
+  const userId = transactionUserId();
   if (typeof userId !== 'string' || !userId) throw new Error('流水截图必须使用本轮真实登录账号');
   await withMitmproxy(
     /**
@@ -66,4 +66,11 @@ export async function runCurrencyTransactionScenario(scenario: VisualScenario, b
       }
     },
   );
+}
+
+/**
+ * 读取当前真实登录缓存的账号标识。
+ */
+function transactionUserId() {
+  return JSON.parse(readAuthStateEntries()?.['save.user.origin.data.from.server.key'] || '{}').user_id;
 }

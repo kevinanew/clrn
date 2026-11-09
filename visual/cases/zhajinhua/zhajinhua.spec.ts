@@ -9,9 +9,13 @@ import { visualBaseUrl } from '../../target';
 import { buildStorageStateForScenario, setupContextForScenario } from '../../src/support/pageSetup';
 import { preparePage } from '../../src/support/preparePage';
 import { createPrivateGameRoom, deletePrivateGameRoom, type RoomSession } from '../_shared/room';
+import { sanitizeScenarioError } from '../_shared/scenarioError';
+import type { Page } from '@playwright/test';
 import { visible } from './capture';
 import { capturePreGame } from './preGame';
 import { captureGameplay } from './gameplay';
+import type { VisualScenario } from '../../scenarioTypes';
+import type { ZhajinhuaProxy } from './proxy';
 
 for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'zhajinhua'`。
  * @param item - 当前遍历的条目。 */ item => item.group === 'zhajinhua')) {
@@ -58,22 +62,41 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       await expect(visible(page, 'zhajinhua-text-room-name')).toHaveText('TestRoom');
       await expect(visible(page, 'menu-button')).toBeVisible();
       console.log('ZHAJINHUA > 等待牌桌已就绪');
-      if (gameplay) {
-        await page.clock.pauseAt(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()) + 1000);
-        await captureGameplay(page, scenario, mitmproxy, room.roomId);
-      } else await capturePreGame(page, scenario);
+      await captureScenario(page, scenario, mitmproxy, room.roomId, gameplay);
       await diagnostics.save();
     } catch (error) {
       await diagnostics.save(error).catch(/** 记录炸金花诊断附件保存失败，保留原始案例结果。
  * @param failure - 当前操作使用的 failure。 */ failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
       await page.screenshot({ path: test.info().outputPath('failure.png'), timeout: 5000 }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-      if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
+      sanitizeScenarioError(error);
       throw error;
     } finally {
       try {
-        try { if (room) await deletePrivateGameRoom(room); }
+        try { await cleanupRoom(room); }
         finally { await mitmproxy.release(); }
       } finally { await context.close(); }
     }
   });
+}
+
+/**
+ * 截图失败时仍清理本轮登记的真实房间。
+ * @param room - 本轮创建响应中的房间。
+ */
+async function cleanupRoom(room: RoomSession | undefined) { if (room) await deletePrivateGameRoom(room); }
+
+/**
+ * 按原有开局前或游戏中分支执行截图。
+ * @param page - 当前牌桌页面。
+ * @param scenario - 当前视觉配置。
+ * @param proxy - 本轮独占代理。
+ * @param roomId - 本轮房间标识。
+ * @param gameplay - 是否执行游戏中场景。
+ */
+async function captureScenario(page: Page, scenario: VisualScenario,
+  proxy: ZhajinhuaProxy, roomId: string, gameplay: boolean) {
+  if (gameplay) {
+    await page.clock.pauseAt(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()) + 1000);
+    await captureGameplay(page, scenario, proxy, roomId);
+  } else await capturePreGame(page, scenario);
 }

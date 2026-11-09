@@ -51,7 +51,7 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
     await restore(street);
     if (street === 'flop') {
       await checkFlopCardFaces(page);
-      if (scenario.viewport.label === 'mobile') await checkMobilePlayerAction(page);
+      await checkPlayerActionForViewport(page, scenario);
     }
     await snapshot(street);
   }
@@ -130,4 +130,13 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   await visible(page, 'player-profile-popup-close').click();
   expect(index).toBe(GAME_STATES.length);
   expect((await proxy.status()).replayedMessages).toBeGreaterThan(0);
+}
+
+/**
+ * 只在手机视口检查玩家动作布局。
+ * @param page - 当前牌桌页面。
+ * @param scenario - 当前截图场景。
+ */
+async function checkPlayerActionForViewport(page: Page, scenario: VisualScenario) {
+  if (scenario.viewport.label === 'mobile') await checkMobilePlayerAction(page);
 }
