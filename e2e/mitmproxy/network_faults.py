@@ -60,31 +60,8 @@ class NetworkFaults:
         if flow.request.headers.get("X-E2E-Control-Token") != self.token:
             flow.response = http.Response.make(403, b"Forbidden")
             return
-        path = urlsplit(flow.request.path).path
-        if flow.request.method == "POST" and path == "/scenario":
-            try:
-                scenario = json.loads(flow.request.content)["scenario"]
-                if scenario not in SCENARIOS:
-                    raise ValueError("Unknown scenario")
-            except (ValueError, KeyError, TypeError):
-                flow.response = http.Response.make(400, b"Invalid scenario")
-                return
-            self.scenario = scenario
-            if scenario is not None:
-                self.intercepted_requests = 0
-                self.club_search_requests = 0
-                self.club_details_requests = 0
-        elif flow.request.method != "GET" or path != "/status":
-            flow.response = http.Response.make(404, b"Not found")
-            return
-        flow.response = json_response(flow, {
-            "scenario": self.scenario,
-            "interceptedRequests": self.intercepted_requests,
-            "proxiedRequests": self.proxied_requests,
-            "stabilizedRequests": self.stabilized_requests,
-            "clubSearchRequests": self.club_search_requests,
-            "clubDetailsRequests": self.club_details_requests,
-        })
+        if self.control_route(flow):
+            flow.response = json_response(flow, self.status())
 
     def mock_existing_username(self, flow, path):
         """登录故障场景中保留用户名已存在分支，避免触发自动注册。"""
@@ -104,30 +81,10 @@ class NetworkFaults:
 
     def mock_club_search_result(self, flow, url):
         """只替换本例只读搜索和指定俱乐部资料，其他业务流量继续透传。"""
-        if self.scenario != "club-search-result":
+        if self.scenario != "club-search-result" or flow.request.method == "OPTIONS":
             return False
-        search_path = url.path == "/v10/club/search"
-        details_path = url.path == "/v10/clubs"
-        if not search_path and not details_path:
-            return False
-        if flow.request.method == "OPTIONS":
-            return False
-        if search_path:
-            keyword = parse_qs(url.query, keep_blank_values=True).get("keyword")
-            if flow.request.method != "GET" or keyword != [CLUB_SEARCH_KEYWORD]:
-                return False
-            self.club_search_requests += 1
-            flow.response = json_response(flow, {"ok": True, "result": [CLUB_SEARCH_ID]})
-            return True
-        try:
-            body = json.loads(flow.request.content)
-        except (ValueError, TypeError):
-            body = None
-        if flow.request.method != "PUT" or body != {"club_ids": [CLUB_SEARCH_ID]}:
-            return False
-        self.club_details_requests += 1
-        flow.response = json_response(flow, {"ok": True, "result": [CLUB_SEARCH_RESULT]})
-        return True
+        handler = {"/v10/club/search": self.club_search, "/v10/clubs": self.club_details}.get(url.path)
+        return self.call_club_handler(handler, flow, url)
 
     async def request(self, flow: http.HTTPFlow):
         """路由代理控制与业务请求，仅对当前匹配场景执行故障注入。"""
@@ -137,19 +94,104 @@ class NetworkFaults:
             self.control(flow)
             return
         self.proxied_requests += 1
-        url = urlsplit(flow.request.path)
-        # 故障注入放行 CORS 预检和非 staging 流量。
+        await self.business_request(flow)
+
+
+    def status(self):
+        """保留控制入口全部观测字段。"""
+        return {"scenario": self.scenario, "interceptedRequests": self.intercepted_requests,
+                "proxiedRequests": self.proxied_requests, "stabilizedRequests": self.stabilized_requests,
+                "clubSearchRequests": self.club_search_requests, "clubDetailsRequests": self.club_details_requests}
+
+    def control_route(self, flow):
+        """按精确方法和路径分发，未知命令返回 404。"""
+        route = (flow.request.method, urlsplit(flow.request.path).path)
+        if route == ("POST", "/scenario"):
+            return self.select_scenario(flow)
+        if route != ("GET", "/status"):
+            flow.response = http.Response.make(404, b"Not found")
+            return False
+        return True
+
+    def select_scenario(self, flow):
+        """损坏或未知场景命令保持原状态。"""
+        try:
+            scenario = self.read_scenario(flow)
+        except (ValueError, KeyError, TypeError):
+            flow.response = http.Response.make(400, b"Invalid scenario")
+            return False
+        self.scenario = scenario
+        self.reset_scenario(scenario)
+        return True
+
+    def read_scenario(self, flow):
+        """只接受登记的故障场景。"""
+        scenario = json.loads(flow.request.content)["scenario"]
+        if scenario not in SCENARIOS:
+            raise ValueError("Unknown scenario")
+        return scenario
+
+    def reset_scenario(self, scenario):
+        """保留关闭场景时的计数语义。"""
+        if scenario is not None:
+            self.intercepted_requests = 0
+            self.club_search_requests = 0
+            self.club_details_requests = 0
+
+    def call_club_handler(self, handler, flow, url):
+        """未登记的俱乐部请求原样透传。"""
+        return handler(flow, url) if handler else False
+
+    def club_search(self, flow, url):
+        """仅精确关键词的 GET 搜索返回固定俱乐部编号。"""
+        keyword = parse_qs(url.query, keep_blank_values=True).get("keyword")
+        if flow.request.method != "GET" or keyword != [CLUB_SEARCH_KEYWORD]:
+            return False
+        self.club_search_requests += 1
+        flow.response = json_response(flow, {"ok": True, "result": [CLUB_SEARCH_ID]})
+        return True
+
+    def club_body(self, flow):
+        """请求正文损坏时不命中详情场景。"""
+        try:
+            return json.loads(flow.request.content)
+        except (ValueError, TypeError):
+            return None
+
+    def club_details(self, flow, url):
+        """只替换确切虚拟俱乐部批次的 PUT 读取。"""
+        body = self.club_body(flow)
+        if flow.request.method != "PUT" or body != {"club_ids": [CLUB_SEARCH_ID]}:
+            return False
+        self.club_details_requests += 1
+        flow.response = json_response(flow, {"ok": True, "result": [CLUB_SEARCH_RESULT]})
+        return True
+
+    async def business_request(self, flow):
+        """故障注入放行非配置来源和俱乐部只读夹具。"""
         if not is_staging_api(flow.request.host):
             return
+        url = urlsplit(flow.request.path)
         if self.mock_club_search_result(flow, url):
             return
+        await self.fault_request(flow, url)
+
+    async def fault_request(self, flow, url):
+        """预检和未命中接口透传。"""
         if flow.request.method == "OPTIONS":
             return
-        if self.mock_existing_username(flow, url.path) or not self.matches_fault(url):
+        if self.skip_fault(flow, url):
             return
+        await self.inject_fault(flow)
+
+    def skip_fault(self, flow, url):
+        """保留用户名存在查询，其他请求仅命中当前故障路径。"""
+        return self.mock_existing_username(flow, url.path) or not self.matches_fault(url)
+
+    async def inject_fault(self, flow):
+        """只延迟首次大厅故障，其他请求和控制入口仍可执行。"""
         self.intercepted_requests += 1
-        if self.scenario == "hall-timeout" and self.intercepted_requests == 1:
-            # 异步延迟保证其他请求和控制接口仍可响应。
+        if all((self.scenario == "hall-timeout", self.intercepted_requests == 1)):
             await asyncio.sleep(12)
         if flow.killable:
             flow.kill()

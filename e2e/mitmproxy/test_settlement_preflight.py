@@ -12,6 +12,7 @@ import tempfile
 import threading
 import time
 import unittest
+from proxy_test_support import events_named, field_values
 from unittest.mock import patch
 from urllib.parse import urlsplit
 
@@ -64,29 +65,56 @@ def browser_working_directory(repository=None, invocation_directory=None):
     """优先使用调用方已安装的依赖；画面独立安装时从画面目录启动。"""
     repository = ROOT if repository is None else repository
     invocation_directory = Path.cwd() if invocation_directory is None else invocation_directory
+    return installed_browser_project(browser_projects(repository, invocation_directory))
+
+
+def browser_failure_diagnostic(stderr):
+    """只接受子进程有限诊断字段，未知输出不作为可公开异常内容。"""
+    for line in reversed(stderr.splitlines()[-10:]):
+        if diagnostic := browser_diagnostic_line(line):
+            return f"stage={diagnostic['stage']} reason={diagnostic['reason']}"
+    return 'stage=unclassified reason=unclassified'
+
+
+def browser_projects(repository, invocation_directory):
+    """显式子项目调用只使用本项目版本，根目录调用按安装位置选择。"""
     projects = (repository, repository / 'visual', repository / 'e2e')
-    # 子项目显式调用时不借用其他版本；根目录发现共用测试时按实际安装位置选择。
-    candidates = (invocation_directory,) if invocation_directory in projects[1:] else projects
+    return (invocation_directory,) if invocation_directory in projects[1:] else projects
+
+
+def installed_browser_project(candidates):
+    """缺少锁定浏览器依赖时明确失败，禁止空跑。"""
     for directory in candidates:
         if (directory / 'node_modules/@playwright/test/package.json').is_file():
             return directory
     raise AssertionError('真实浏览器依赖未安装：reason=module-not-found；请在调用子项目安装锁定依赖和浏览器。')
 
 
-def browser_failure_diagnostic(stderr):
-    """只接受子进程有限诊断字段，未知输出不作为可公开异常内容。"""
-    for line in reversed(stderr.splitlines()[-10:]):
-        if len(line) > 512:
-            continue
-        try:
-            diagnostic = json.loads(line)
-        except ValueError:
-            continue
-        if (isinstance(diagnostic, dict) and diagnostic.get('event') == 'settlement-browser-failure'
-                and diagnostic.get('stage') in ('module-import', 'browser-launch', 'page-navigation', 'request')
-                and diagnostic.get('reason') in ('module-not-found', 'browser-launch-failed', 'unclassified')):
-            return f"stage={diagnostic['stage']} reason={diagnostic['reason']}"
-    return 'stage=unclassified reason=unclassified'
+def browser_diagnostic_line(line):
+    """仅解析长度受限的子进程 JSON 诊断行。"""
+    if len(line) > 512:
+        return None
+    try:
+        return validated_browser_diagnostic(json.loads(line))
+    except ValueError:
+        return None
+
+
+def validated_browser_diagnostic(diagnostic):
+    """先确认对象形状，再验证全部公开字段的固定枚举。"""
+    if not isinstance(diagnostic, dict):
+        return None
+    valid = all((diagnostic.get('event') == 'settlement-browser-failure',
+                 diagnostic.get('stage') in ('module-import', 'browser-launch', 'page-navigation', 'request'),
+                 diagnostic.get('reason') in ('module-not-found', 'browser-launch-failed', 'unclassified')))
+    return diagnostic if valid else None
+
+
+def page_response(path):
+    """测试页面可读取，其他真实业务请求保持 503 失败对照。"""
+    if path == '/':
+        return 200, 'text/html', '<!doctype html><title>本机预检对照</title>'.encode()
+    return 503, 'application/json', b'{"ok":false}'
 
 
 class Upstream(BaseHTTPRequestHandler):
@@ -108,11 +136,11 @@ class Upstream(BaseHTTPRequestHandler):
         """为测试页面返回 HTML，为真实业务读取返回 503。"""
         path = urlsplit(self.path).path
         self.server.requests.append(('GET', path))
-        self.send_response(200 if path == '/' else 503)
-        self.send_header('Content-Type', 'text/html' if path == '/' else 'application/json')
+        status, content_type, content = page_response(path)
+        self.send_response(status)
+        self.send_header('Content-Type', content_type)
         self.send_header('Access-Control-Allow-Origin', self.headers.get('Origin', ''))
         self.send_header('Access-Control-Allow-Credentials', 'true')
-        content = '<!doctype html><title>本机预检对照</title>'.encode() if path == '/' else b'{"ok":false}'
         self.send_header('Content-Length', str(len(content)))
         self.end_headers()
         self.wfile.write(content)
@@ -157,15 +185,7 @@ class SettlementPreflightTests(unittest.TestCase):
                 'MITMPROXY_API_HOSTS': '["node-0.service.invalid"]', 'CLRN_RELEASE_WEB_URL': self.origin},
             stdout=logs, stderr=logs)
         self.addCleanup(self.stop_proxy)
-        deadline = time.monotonic() + 15
-        while True:
-            try:
-                self.control('/status')
-                break
-            except OSError:
-                if self.proxy.poll() is not None or time.monotonic() >= deadline:
-                    self.fail('本机生产代理启动失败')
-                time.sleep(0.1)
+        self.wait_proxy()
         self.control('/scenario', {'scenario': 'visual-stable'})
         # 必须先观察成功的建房响应；直接赋值不能验证生产绑定链路。
         self.request('http://node-0.service.invalid/v3/pay_action/do', 'POST', {
@@ -242,9 +262,8 @@ class SettlementPreflightTests(unittest.TestCase):
         self.assertNotIn(('OPTIONS', SETTLEMENT), self.upstream.requests, '必要夹具预检不能依赖上游')
         self.assertNotIn(('GET', SETTLEMENT), self.upstream.requests, '读取必须命中当前房间夹具')
         _, diagnostic = self.control('/diagnostics')
-        responses = [event for event in diagnostic['events'] if event['event'] == 'proxy.response'
-                     and event.get('method') in ('GET', 'OPTIONS') and event.get('source') == 'fixture']
-        self.assertEqual({event['method'] for event in responses}, {'GET', 'OPTIONS'})
+        responses = self.fixture_reads(diagnostic['events'])
+        self.assertEqual(set(field_values(responses, 'method')), {'GET', 'OPTIONS'})
 
     def test_不匹配预检仍依赖上游且真实业务失败保持失败(self):
         """验证不匹配预检仍依赖上游且真实业务失败保持失败。"""
@@ -259,6 +278,37 @@ class SettlementPreflightTests(unittest.TestCase):
         observed = self.browse(other)
         self.assertEqual(observed, {'outcome': 'response', 'status': 503, 'body': {'ok': False}},
                          '预检成功不能把其他房间的真实业务错误伪造成成功')
+
+    def wait_proxy(self):
+        """按原有启动预算等待真实控制入口。"""
+        deadline = time.monotonic() + 15
+        while True:
+            if self.proxy_ready():
+                return
+            self.check_proxy_alive(deadline)
+            time.sleep(0.1)
+
+    def proxy_ready(self):
+        """仅连接未就绪时继续轮询，其他异常仍传播。"""
+        try:
+            self.control('/status')
+            return True
+        except OSError:
+            return False
+
+    def check_proxy_alive(self, deadline):
+        """进程退出或原有预算耗尽时阻断测试。"""
+        if self.proxy.poll() is not None or time.monotonic() >= deadline:
+            self.fail('本机生产代理启动失败')
+
+    def fixture_reads(self, events):
+        """仅选择 GET 和 OPTIONS 的本地夹具响应。"""
+        responses = events_named(events, 'proxy.response')
+        return [event for event in responses if self.fixture_read(event)]
+
+    def fixture_read(self, event):
+        """区分本地夹具响应及真实上游响应。"""
+        return event.get('method') in ('GET', 'OPTIONS') and event.get('source') == 'fixture'
 
 
 if __name__ == '__main__':

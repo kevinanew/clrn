@@ -1,6 +1,7 @@
 """使用锁定 mitmproxy 的真实事件类型验证安全连接记录；不连接任何业务接口。"""
 import json
 import unittest
+from proxy_test_support import event_names, field_values
 from unittest.mock import patch
 from mitmproxy import http
 from mitmproxy.proxy.server_hooks import ServerConnectionHookData
@@ -27,25 +28,18 @@ class ReleaseConnectionTests(unittest.TestCase):
         self.data.server.timestamp_tcp_setup = 1
         self.diagnostics.server_connected(self.data)
         for identifier in ('request-first', 'request-reused'):
-            self.request.id = identifier
-            self.request.response = None
-            self.diagnostics.request(self.request)
-            self.request.response = http.Response.make(200, b'synthetic-secret')
-            self.diagnostics.response(self.request)
+            self.record_reused_request(identifier)
         self.diagnostics.server_disconnected(self.data)
         events = self.diagnostics.snapshot()['events']
-        self.assertEqual([event['event'] for event in events], [
+        self.assertEqual(event_names(events), [
             'proxy.server-connect', 'proxy.server-connected', 'proxy.request', 'proxy.response',
             'proxy.request', 'proxy.response', 'proxy.server-disconnected'])
-        self.assertEqual({event['upstreamConnectionId'] for event in events}, {str(self.data.server.id)})
+        self.assertEqual(set(field_values(events, 'upstreamConnectionId')), {str(self.data.server.id)})
         self.assertEqual(events[-1]['upstreamMatch'], 'matched')
         for event in events:
-            if event['operation'] == 'release-static-connect':
-                self.assertNotIn('status', event, 'TCP 事件不能冒充 HTTP 响应')
-                self.assertNotIn('method', event)
+            self.assert_tcp_event(event)
         output = json.dumps(events)
-        for value in ('127.0.0.1', '18080', 'connection.invalid', '/private', 'synthetic-secret'):
-            self.assertNotIn(value, output)
+        self.assert_no_connection_secrets(output)
 
     def test_未连接及连接到不同peer不猜测响应或实际来源(self):
         """验证未连接及连接到不同peer不猜测响应或实际来源。"""
@@ -80,3 +74,22 @@ class ReleaseConnectionTests(unittest.TestCase):
             self.diagnostics.server_connect(self.data)
         self.assertEqual(len(self.diagnostics.events), 5000)
         self.assertEqual(self.diagnostics.dropped, 1)
+
+    def record_reused_request(self, identifier):
+        """在同一实际连接上记录完整请求和响应。"""
+        self.request.id = identifier
+        self.request.response = None
+        self.diagnostics.request(self.request)
+        self.request.response = http.Response.make(200, b'synthetic-secret')
+        self.diagnostics.response(self.request)
+
+    def assert_tcp_event(self, event):
+        """TCP 连接事件不得伪装成 HTTP 状态或方法。"""
+        if event['operation'] == 'release-static-connect':
+            self.assertNotIn('status', event, 'TCP 事件不能冒充 HTTP 响应')
+            self.assertNotIn('method', event)
+
+    def assert_no_connection_secrets(self, output):
+        """完整诊断不得包含连接地址、端口、路径及凭据。"""
+        for value in ('127.0.0.1', '18080', 'connection.invalid', '/private', 'synthetic-secret'):
+            self.assertNotIn(value, output)

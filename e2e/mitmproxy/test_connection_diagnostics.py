@@ -37,10 +37,7 @@ class DiagnosticTests(unittest.TestCase):
     def test_共用路径登记保留操作语义且重复清理不改变实体模板(self):
         """验证共用路径登记保留操作语义且重复清理不改变实体模板。"""
         for path, segments in PATH_TEMPLATES:
-            with self.subTest(path=path):
-                self.assertEqual(safe_path(path), path)
-                self.assertEqual(safe_path('/'.join('token=synthetic-secret' if part.startswith('{') else part
-                                                   for part in segments)), path)
+            self.check_path_template(path, segments)
         for path in ('//api.fixture.invalid/private', 'https://api.fixture.invalid/private',
                      '/v10/wallet/user/extra', '/v10/wallet/../profile', '/v10/wallet/', '/', ['secret']):
             self.assertEqual(safe_path(path), '[未知接口]')
@@ -65,13 +62,10 @@ class DiagnosticTests(unittest.TestCase):
         for path in ('/node/v1/status', '/public/v13/metadata/servers',
                      '/public/v1/hall_matching/available.json', '/public/v11/game_log/available.json',
                      '/v3/pay_action/batch/price'):
-            request = flow(f'https://api.invalid{path}?token=synthetic-secret')
-            diagnostics.request(request)
-            self.assertEqual(diagnostics.events[-1]['path'], path)
+            self.check_known_path(path, diagnostics)
         serialized = json.dumps(diagnostics.snapshot())
-        for value in inputs:
-            self.assertNotIn(value, serialized)
-        self.assertTrue(any(event.get('status') == 503 for event in diagnostics.events))
+        self.assert_hidden(inputs, serialized)
+        self.assert_observed_status(diagnostics.events, 503)
 
     def test_原因只识别已知错误首部而不扫描地址凭据或后续诊断(self):
         """验证原因只识别已知错误首部而不扫描地址凭据或后续诊断。"""
@@ -107,8 +101,8 @@ class DiagnosticTests(unittest.TestCase):
                 self.assertEqual(event['source'], 'laiwan_proxy')
                 self.assertEqual(event['status'], 'unavailable')
                 self.assertEqual(event['response'], 'not-received')
-                for value in ('fixture.invalid', '192.0.2.40', 'synthetic-secret', '/private'):
-                    self.assertNotIn(value, json.dumps(diagnostics.snapshot()))
+                self.assert_hidden(('fixture.invalid', '192.0.2.40', 'synthetic-secret', '/private'),
+                                   json.dumps(diagnostics.snapshot()))
 
     def test_错误中的连接地址与主机不进入公开诊断(self):
         """验证错误中的连接地址与主机不进入公开诊断。"""
@@ -138,27 +132,7 @@ class DiagnosticTests(unittest.TestCase):
                                    ('http://127.0.0.1:18081/asset.webp', 'different'),
                                    ('https://127.0.0.1:18080/asset.webp', 'different'),
                                    ('http://other.invalid:18080/asset.webp', 'different')]:
-                request = flow(address)
-                diagnostics.request(request)
-                self.assertEqual(diagnostics.events[-1]['originMatch'], match)
-                self.assertEqual(diagnostics.events[-1]['upstreamMatch'], 'unavailable')
-                self.assertFalse(diagnostics.events[-1]['fixtureHit'])
-                request.server_conn.peername = ('127.0.0.1', 18080)
-                request.server_conn.timestamp_tcp_setup = 1
-                request.response = http.Response.make(500, b'synthetic-password',
-                                                     {'X-Clrn-Release-Request': server_id + '-2'})
-                diagnostics.response(request)
-                event = diagnostics.events[-1]
-                self.assertEqual(event['status'], 500)
-                self.assertEqual(event['releaseRequestId'], server_id + '-2' if match == 'matched' else 'unverified')
-                self.assertEqual(event['connectionId'], str(request.client_conn.id))
-                self.assertEqual(event['upstreamConnectionId'], str(request.server_conn.id))
-                request.response = None
-                diagnostics.error(request)
-                self.assertEqual(diagnostics.events[-1]['status'], 'unavailable')
-                self.assertEqual(diagnostics.events[-1]['response'], 'not-received')
-                self.assertEqual(diagnostics.events[-1]['source'],
-                                 'release-static' if match == 'matched' else 'laiwan_proxy')
+                self.check_release_origin(address, match, diagnostics, server_id)
             output = json.dumps(diagnostics.snapshot())
             for value in ('127.0.0.1', '18080', '18081', 'other.invalid', 'synthetic-password'):
                 self.assertNotIn(value, output)
@@ -191,34 +165,7 @@ class DiagnosticTests(unittest.TestCase):
                 (('127.0.0.1', 18080), 1, False, 'matched'),
                 (('127.0.0.1', 18080), 1, True, 'not-applicable'),
             ]:
-                with self.subTest(peer=peer, connected=connected, fixture=fixture):
-                    request = flow('http://127.0.0.1:18080/asset.webp?token=synthetic-secret')
-                    request.request.headers['Authorization'] = 'Bearer synthetic-secret'
-                    request.server_conn.peername = peer
-                    request.server_conn.timestamp_tcp_setup = connected
-                    response = http.Response.make(500, b'synthetic-secret',
-                                                  {'X-Clrn-Release-Request': server_id + '-1'})
-                    request.response = response if fixture else None
-                    diagnostics.request(request)
-                    event = diagnostics.events[-1]
-                    self.assertEqual(event['originMatch'], 'matched', '只证明请求地址')
-                    self.assertEqual(event['path'], '[未知接口]', '来源核验仍须隐藏未登记的素材路径及查询凭据')
-                    self.assertEqual(event['upstreamMatch'], expected)
-                    self.assertEqual(event['fixtureHit'], fixture)
-                    request.response = response
-                    diagnostics.response(request)
-                    event = diagnostics.events[-1]
-                    self.assertEqual(event['status'], 500)
-                    self.assertEqual(event['source'], 'fixture' if fixture else 'upstream')
-                    self.assertEqual(event['releaseRequestId'],
-                                     server_id + '-1' if expected == 'matched' else 'unverified')
-                    request.response = None
-                    diagnostics.error(request)
-                    self.assertEqual(diagnostics.events[-1]['status'], 'unavailable')
-                    self.assertEqual(diagnostics.events[-1]['response'], 'not-received')
-                    self.assertEqual(diagnostics.events[-1]['upstreamMatch'], expected)
-                    self.assertEqual(diagnostics.events[-1]['path'], '[未知接口]')
-                    self.assertEqual(diagnostics.events[-1]['reason'], 'detail-withheld')
+                self.check_actual_connection(peer, connected, fixture, expected, diagnostics, server_id)
             output = json.dumps(diagnostics.snapshot())
             for value in ('127.0.0.1', '192.0.2.40', '18080', '18081', 'synthetic-secret'):
                 self.assertNotIn(value, output)
@@ -239,12 +186,7 @@ class DiagnosticTests(unittest.TestCase):
         """验证来源分类与主机脱敏。"""
         diagnostics = ConnectionDiagnostics()
         for source in ('upstream', 'fixture'):
-            request = flow('https://node-4.service.invalid/node/v1/status?token=secret')
-            response = http.Response.make(503 if source == 'fixture' else 200, b'{}')
-            request.response = response if source == 'fixture' else None
-            diagnostics.request(request)
-            request.response = response
-            diagnostics.response(request)
+            self.record_source(source, diagnostics)
         events = diagnostics.snapshot()['events']
         self.assertEqual([event['source'] for event in events], ['upstream', 'upstream', 'fixture', 'fixture'])
         result = json.dumps(events)
@@ -299,6 +241,96 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(len(diagnostics.events), 5000)
         self.assertEqual(safe_text('https://user:secret@node-14.service.invalid/path?token=secret'), node_name('node-14.service.invalid'))
         self.assertNotIn('secret', safe_text('failed https://node-12.service.invalid/?access_token=secret Bearer secret'))
+
+    def check_path_template(self, path, segments):
+        """验证路径模板及真实标识替换后保持同一接口语义。"""
+        with self.subTest(path=path):
+            self.assertEqual(safe_path(path), path)
+            self.assertEqual(safe_path('/'.join('token=synthetic-secret' if part.startswith('{') else part
+                                               for part in segments)), path)
+
+    def check_known_path(self, path, diagnostics):
+        """验证已登记接口删除查询凭据后仍可识别。"""
+        request = flow(f'https://api.invalid{path}?token=synthetic-secret')
+        diagnostics.request(request)
+        self.assertEqual(diagnostics.events[-1]['path'], path)
+
+    def check_release_origin(self, address, match, diagnostics, server_id):
+        """验证请求来源、实际连接及发布编号的独立证明。"""
+        request = flow(address)
+        diagnostics.request(request)
+        self.assertEqual(diagnostics.events[-1]['originMatch'], match)
+        self.assertEqual(diagnostics.events[-1]['upstreamMatch'], 'unavailable')
+        self.assertFalse(diagnostics.events[-1]['fixtureHit'])
+        request.server_conn.peername = ('127.0.0.1', 18080)
+        request.server_conn.timestamp_tcp_setup = 1
+        request.response = http.Response.make(500, b'synthetic-password',
+                                             {'X-Clrn-Release-Request': server_id + '-2'})
+        diagnostics.response(request)
+        event = diagnostics.events[-1]
+        self.assertEqual(event['status'], 500)
+        self.assertEqual(event['releaseRequestId'], server_id + '-2' if match == 'matched' else 'unverified')
+        self.assertEqual(event['connectionId'], str(request.client_conn.id))
+        self.assertEqual(event['upstreamConnectionId'], str(request.server_conn.id))
+        request.response = None
+        diagnostics.error(request)
+        self.assertEqual(diagnostics.events[-1]['status'], 'unavailable')
+        self.assertEqual(diagnostics.events[-1]['response'], 'not-received')
+        self.assertEqual(diagnostics.events[-1]['source'],
+                         'release-static' if match == 'matched' else 'laiwan_proxy')
+
+    def check_actual_connection(self, peer, connected, fixture, expected, diagnostics, server_id):
+        """验证真实 peer、连接状态和本地响应的组合边界。"""
+        with self.subTest(peer=peer, connected=connected, fixture=fixture):
+            request = flow('http://127.0.0.1:18080/asset.webp?token=synthetic-secret')
+            request.request.headers['Authorization'] = 'Bearer synthetic-secret'
+            request.server_conn.peername = peer
+            request.server_conn.timestamp_tcp_setup = connected
+            response = http.Response.make(500, b'synthetic-secret',
+                                          {'X-Clrn-Release-Request': server_id + '-1'})
+            request.response = response if fixture else None
+            diagnostics.request(request)
+            event = diagnostics.events[-1]
+            self.assertEqual(event['originMatch'], 'matched', '只证明请求地址')
+            self.assertEqual(event['path'], '[未知接口]', '来源核验仍须隐藏未登记的素材路径及查询凭据')
+            self.assertEqual(event['upstreamMatch'], expected)
+            self.assertEqual(event['fixtureHit'], fixture)
+            request.response = response
+            diagnostics.response(request)
+            event = diagnostics.events[-1]
+            self.assertEqual(event['status'], 500)
+            self.assertEqual(event['source'], 'fixture' if fixture else 'upstream')
+            self.assertEqual(event['releaseRequestId'],
+                             self.expected_identifier(server_id, expected))
+            request.response = None
+            diagnostics.error(request)
+            self.assertEqual(diagnostics.events[-1]['status'], 'unavailable')
+            self.assertEqual(diagnostics.events[-1]['response'], 'not-received')
+            self.assertEqual(diagnostics.events[-1]['upstreamMatch'], expected)
+            self.assertEqual(diagnostics.events[-1]['path'], '[未知接口]')
+            self.assertEqual(diagnostics.events[-1]['reason'], 'detail-withheld')
+
+    def record_source(self, source, diagnostics):
+        """记录指定来源的请求和真实 HTTP 响应。"""
+        request = flow('https://node-4.service.invalid/node/v1/status?token=secret')
+        response = http.Response.make(503 if source == 'fixture' else 200, b'{}')
+        request.response = response if source == 'fixture' else None
+        diagnostics.request(request)
+        request.response = response
+        diagnostics.response(request)
+
+    def assert_hidden(self, values, output):
+        """诊断中不得出现任何原始地址或凭据。"""
+        for value in values:
+            self.assertNotIn(value, output)
+
+    def expected_identifier(self, server_id, match):
+        """只有实际来源匹配时才能确认发布请求编号。"""
+        return server_id + '-1' if match == 'matched' else 'unverified'
+
+    def assert_observed_status(self, events, status):
+        """路径脱敏后仍须保留真实失败状态。"""
+        self.assertTrue(any(event.get('status') == status for event in events))
 
 
 if __name__ == '__main__':

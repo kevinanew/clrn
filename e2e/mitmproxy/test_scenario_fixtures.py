@@ -4,6 +4,7 @@ import asyncio
 import copy
 import json
 import unittest
+from proxy_test_support import json_lines
 from test_network_faults import source_environment
 from unittest.mock import patch
 
@@ -74,21 +75,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
     async def test_私人房资料的真实读取方法绑定归属且不修改上游响应(self):
         """验证私人房资料的真实读取方法绑定归属且不修改上游响应。"""
         for method in ('GET', 'PUT'):
-            with self.subTest(method=method):
-                self.setUp()
-                house = await self.request(f'/v10/house/user/{SELF}', method)
-                original = {'ok': True, 'result': {'house_id': ROOM, 'user_id': SELF}, 'new_field': 42}
-                for status, body in ((503, original), (200, {'ok': False}), (200, original)):
-                    house.response = http.Response.make(status, json.dumps(body).encode())
-                    before = house.response.content
-                    self.addon.response(house)
-                    self.assertEqual(house.response.content, before, '绑定归属时必须保留真实房屋资料')
-                    self.assertEqual(self.addon.user_id, SELF if status == 200 and body.get('ok') else '')
-                foreign = await self.request(f'/v10/house/user/{OTHER}', method)
-                foreign.response = http.Response.make(200, json.dumps(original).encode())
-                self.addon.response(foreign)
-                self.assertEqual((self.addon.user_id, self.addon.house_id), (SELF, ROOM),
-                                 '其他账号资料不能改变当前代理归属')
+            await self.check_house_method(method)
 
     async def test_默认和未匹配流量含初始化均透传(self):
         """验证默认和未匹配流量含初始化均透传。"""
@@ -96,15 +83,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
                  '/public/v11/user/login', f'/v11/user/{SELF}/account', f'/v10/wallet/{SELF}',
                  '/v2/room/disallow-rule/reminder', '/public/v1/hall_matching/available.json']
         for scene in ('none', 'mall', 'slot', 'daily-bonus', 'club-empty'):
-            await self.control({'name': scene})
-            for path in paths:
-                request = await self.request(path)
-                self.assertIsNone(request.response, (scene, path))
-                self.assertIsNone(request.error, (scene, path))
-            for origin, method in (('https://production.example', 'GET'),
-                                   ('https://node-1.service.invalid', 'GET'), (HOST, 'OPTIONS')):
-                request = await self.request('/v1/alipay_order/goods', method, origin=origin)
-                self.assertIsNone(request.response)
+            await self.check_default_scene(scene, paths)
 
     async def test_控制命令原子拒绝响应载荷错误阶段与其他归属(self):
         """验证控制命令原子拒绝响应载荷错误阶段与其他归属。"""
@@ -167,28 +146,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
     async def test_俱乐部列表夹具必须绑定唯一所属账号(self):
         """验证俱乐部列表夹具必须绑定唯一所属账号。"""
         for scene in ('club-empty', 'club-skeleton'):
-            with self.subTest(scene=scene):
-                await self.control({'name': scene})
-                self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}')).response,
-                                  '未绑定时不能伪造任何账号的列表')
-                await self.control({'name': scene, 'userId': SELF})
-                own = await self.request(f'/v10/club?user_id={SELF}')
-                self.assertEqual(len(own.response.json()['result']['clubs']),
-                                 0 if scene == 'club-empty' else 2)
-                for query in ('', '?user_id=', f'?user_id={OTHER}',
-                              f'?user_id={SELF}&user_id={OTHER}', f'?user_id={SELF}&user_id={SELF}'):
-                    request = await self.request('/v10/club' + query)
-                    self.assertIsNone(request.response, query)
-                    self.assertIsNone(request.error, query)
-                for method in ('POST', 'PUT', 'OPTIONS'):
-                    self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}', method)).response)
-                self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}',
-                                                     origin='https://other.invalid')).response)
-                await self.control({'name': 'none'})
-                self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}')).response)
-                # 每个子场景使用新的代理，不能复用前一场景已绑定的身份。
-                with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
-                    self.addon = ScenarioFixtures()
+            await self.check_club_scene(scene)
 
     async def test_故障释放后重新读取真实上游(self):
         """验证故障释放后重新读取真实上游。"""
@@ -219,7 +177,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
         finally:
             await self.control({'name': 'club-skeleton', 'phase': 'release'})
             details = await asyncio.wait_for(pending, 1)
-        self.assertEqual([club['id'] for club in details.response.json()['result']], identifiers)
+        self.assertEqual(self.club_ids(details.response.json()['result']), identifiers)
         self.assertEqual(self.addon.requests, 1)
 
     async def test_启动等待释放后不替换健康响应(self):
@@ -332,7 +290,7 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
             args = master.commands.call.call_args.args
         self.assertEqual(message.text.splitlines(), [json.dumps(ping), json.dumps(subscription), 'invalid', '[]'])
         self.assertEqual(args[:3], ('inject.websocket', socket, True))
-        replies = [json.loads(line) for line in args[3].decode().splitlines()]
+        replies = json_lines(args[3].decode())
         self.assertEqual([reply['id'] for reply in replies], [3, 4])
         self.assertEqual(self.addon.spins, 1)
         message.injected = True
@@ -355,6 +313,73 @@ class ScenarioFixtureTests(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(message.dropped)
                 self.assertTrue(json.loads(master.commands.call.call_args.args[3])['result']['data']['ok'])
         self.assertEqual(self.addon.requests, 6)
+
+    async def check_house_method(self, method):
+        """验证指定读取方法的成功归属绑定及其他账号隔离。"""
+        with self.subTest(method=method):
+            self.setUp()
+            house = await self.request(f'/v10/house/user/{SELF}', method)
+            original = {'ok': True, 'result': {'house_id': ROOM, 'user_id': SELF}, 'new_field': 42}
+            for status, body in ((503, original), (200, {'ok': False}), (200, original)):
+                house.response = http.Response.make(status, json.dumps(body).encode())
+                before = house.response.content
+                self.addon.response(house)
+                self.assertEqual(house.response.content, before, '绑定归属时必须保留真实房屋资料')
+                self.assertEqual(self.addon.user_id, self.expected_house_owner(status, body))
+            foreign = await self.request(f'/v10/house/user/{OTHER}', method)
+            foreign.response = http.Response.make(200, json.dumps(original).encode())
+            self.addon.response(foreign)
+            self.assertEqual((self.addon.user_id, self.addon.house_id), (SELF, ROOM),
+                             '其他账号资料不能改变当前代理归属')
+
+    async def check_default_scene(self, scene, paths):
+        """验证场景不覆盖初始化、未配置来源及预检流量。"""
+        await self.control({'name': scene})
+        for path in paths:
+            request = await self.request(path)
+            self.assertIsNone(request.response, (scene, path))
+            self.assertIsNone(request.error, (scene, path))
+        for origin, method in (('https://production.example', 'GET'),
+                               ('https://node-1.service.invalid', 'GET'), (HOST, 'OPTIONS')):
+            request = await self.request('/v1/alipay_order/goods', method, origin=origin)
+            self.assertIsNone(request.response)
+
+    async def check_club_scene(self, scene):
+        """验证俱乐部场景的唯一账号绑定、查询及方法边界。"""
+        with self.subTest(scene=scene):
+            await self.control({'name': scene})
+            self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}')).response,
+                              '未绑定时不能伪造任何账号的列表')
+            await self.control({'name': scene, 'userId': SELF})
+            own = await self.request(f'/v10/club?user_id={SELF}')
+            self.assertEqual(len(own.response.json()['result']['clubs']),
+                             self.expected_club_count(scene))
+            for query in ('', '?user_id=', f'?user_id={OTHER}',
+                          f'?user_id={SELF}&user_id={OTHER}', f'?user_id={SELF}&user_id={SELF}'):
+                request = await self.request('/v10/club' + query)
+                self.assertIsNone(request.response, query)
+                self.assertIsNone(request.error, query)
+            for method in ('POST', 'PUT', 'OPTIONS'):
+                self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}', method)).response)
+            self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}',
+                                                 origin='https://other.invalid')).response)
+            await self.control({'name': 'none'})
+            self.assertIsNone((await self.request(f'/v10/club?user_id={SELF}')).response)
+            # 每个子场景使用新的代理，不能复用前一场景已绑定的身份。
+            with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
+                self.addon = ScenarioFixtures()
+
+    def expected_house_owner(self, status, body):
+        """只有真实业务成功可绑定房屋归属。"""
+        return SELF if all((status == 200, body.get('ok'))) else ''
+
+    def expected_club_count(self, scene):
+        """保留空列表和骨架列表的独立期望。"""
+        return 0 if scene == 'club-empty' else 2
+
+    def club_ids(self, clubs):
+        """按原顺序提取俱乐部编号。"""
+        return [club['id'] for club in clubs]
 
 
 if __name__ == '__main__':

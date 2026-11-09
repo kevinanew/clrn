@@ -1,5 +1,6 @@
 """锁定代理的真实 HTTP/1 状态机对照，不依赖 FIN 到达顺序或外部网络。"""
 import unittest
+from proxy_test_support import instances, event_objects
 from mitmproxy import connection, http, options
 from mitmproxy.proxy import commands, events
 from mitmproxy.proxy.context import Context
@@ -28,19 +29,7 @@ class ReleaseHttp1CloseTests(unittest.TestCase):
     def test_完整正文后即关闭不等FIN且keepalive对照仍可复用(self):
         """验证完整正文后即关闭不等FIN且keepalive对照仍可复用。"""
         for header in (b'close', b'keep-alive'):
-            with self.subTest(connection=header):
-                client, server = self.client()
-                first = list(client.handle_event(events.DataReceived(server,
-                    b'HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: ' + header + b'\r\n\r\nabc')))
-                self.assertFalse(any(isinstance(command, commands.CloseConnection) for command in first))
-                last = list(client.handle_event(events.DataReceived(server, b'def')))
-                received = [command.event for command in first + last if isinstance(command, ReceiveHttp)]
-                self.assertEqual(b''.join(event.data for event in received if isinstance(event, ResponseData)), b'abcdef')
-                self.assertEqual(sum(isinstance(event, ResponseEndOfMessage) for event in received), 1)
-                closed = [command for command in last if isinstance(command, commands.CloseConnection)]
-                self.assertEqual(len(closed), 1 if header == b'close' else 0)
-                if closed:
-                    self.assertIs(closed[0].connection, server)
+            self.check_complete_response(header)
 
     def test_提前断开不能因ConnectionClose而当作完整正文(self):
         """验证提前断开不能因ConnectionClose而当作完整正文。"""
@@ -48,6 +37,26 @@ class ReleaseHttp1CloseTests(unittest.TestCase):
         list(client.handle_event(events.DataReceived(server,
             b'HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nabc')))
         result = list(client.handle_event(events.ConnectionClosed(server)))
-        received = [command.event for command in result if isinstance(command, ReceiveHttp)]
-        self.assertTrue(any(isinstance(event, ResponseProtocolError) for event in received))
-        self.assertFalse(any(isinstance(event, ResponseEndOfMessage) for event in received))
+        received = event_objects(result, ReceiveHttp)
+        self.assertTrue(bool(instances(received, ResponseProtocolError)))
+        self.assertFalse(bool(instances(received, ResponseEndOfMessage)))
+
+    def check_complete_response(self, header):
+        """验证完整正文与关闭命令，覆盖 keep-alive 对照。"""
+        with self.subTest(connection=header):
+            client, server = self.client()
+            first = list(client.handle_event(events.DataReceived(server,
+                b'HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: ' + header + b'\r\n\r\nabc')))
+            self.assertFalse(bool(instances(first, commands.CloseConnection)))
+            last = list(client.handle_event(events.DataReceived(server, b'def')))
+            received = event_objects(first + last, ReceiveHttp)
+            self.assertEqual(b''.join(event.data for event in instances(received, ResponseData)), b'abcdef')
+            self.assertEqual(len(instances(received, ResponseEndOfMessage)), 1)
+            closed = instances(last, commands.CloseConnection)
+            self.assertEqual(len(closed), 1 if header == b'close' else 0)
+            self.assert_closed_connection(closed, server)
+
+    def assert_closed_connection(self, closed, server):
+        """关闭命令必须指向实际上游连接。"""
+        if closed:
+            self.assertIs(closed[0].connection, server)

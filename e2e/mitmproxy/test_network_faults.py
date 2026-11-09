@@ -182,12 +182,7 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         for path in ('/v10/club/search?keyword=other', '/v10/club/search',
                      '/v10/club/search?keyword=',
                      '/v10/club/search?keyword=VisualClubSearch&keyword=other'):
-            for method in ('GET', 'POST', 'PUT', 'OPTIONS'):
-                with self.subTest(path=path, method=method):
-                    request = flow('https://node-0.service.invalid' + path, method)
-                    await self.addon.request(request)
-                    self.assertIsNone(request.response)
-                    self.assertIsNone(request.error)
+            await self.check_search_passthrough(path)
         for method in ('POST', 'PUT', 'DELETE', 'OPTIONS'):
             request = flow('https://node-0.service.invalid/v10/club/search?keyword=VisualClubSearch', method)
             await self.addon.request(request)
@@ -205,14 +200,27 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
             "node-8.service.invalid",
             "node-9.service.invalid"))
         for url in urls:
-            for method in ('GET', 'POST', 'OPTIONS'):
-                with self.subTest(url=url, method=method):
-                    request = flow(url, method)
-                    await self.addon.request(request)
-                    self.assertIsNone(request.response)
-                    self.assertIsNone(request.error)
+            await self.check_visual_passthrough(url)
         self.assertEqual(self.addon.stabilized_requests, 0)
         self.assertEqual(self.addon.intercepted_requests, 0)
+
+    async def check_search_passthrough(self, path):
+        """验证同一非匹配搜索在各方法下均完整透传。"""
+        for method in ('GET', 'POST', 'PUT', 'OPTIONS'):
+            with self.subTest(path=path, method=method):
+                request = flow('https://node-0.service.invalid' + path, method)
+                await self.addon.request(request)
+                self.assertIsNone(request.response)
+                self.assertIsNone(request.error)
+
+    async def check_visual_passthrough(self, url):
+        """验证候选节点及元数据各方法均保留真实上游。"""
+        for method in ('GET', 'POST', 'OPTIONS'):
+            with self.subTest(url=url, method=method):
+                request = flow(url, method)
+                await self.addon.request(request)
+                self.assertIsNone(request.response)
+                self.assertIsNone(request.error)
 
 
 if __name__ == "__main__":

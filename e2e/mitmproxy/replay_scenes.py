@@ -5,12 +5,10 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from replay_table import (CARDS, STREETS, INITIAL_BETS, initial_queue,
+                          texas_table, zhajinhua_table)
+
 DATA = Path(__file__).with_name('data')
-PLAYERS = [f'00000000-0000-4000-8000-{index:012d}' for index in range(1, 9)]
-CARDS = ['ah', 'kd', '7c', '2s', 'qs']
-STREETS = {'preflop': 0, 'flop': 3, 'turn': 4, 'river': 5}
-LAYOUTS = {'standard', 'observer', 'full', 'full-pots', 'check', 'all-in-only',
-           'all-in-call', 'shortcut-blinds', 'shortcut-disabled'}
 
 
 def load(game, name):
@@ -20,147 +18,181 @@ def load(game, name):
 
 def table(game, self_id, parameters):
     """根据玩法、当前玩家与参数构造运行中的牌桌重放状态。"""
-    status = load(game, 'table')
-    room_status = {**copy.deepcopy(status), 'state': 'running'}
-    operating = {'player_id': '@self', 'remain_operating_seconds': 120}
-    if game == 'texas':
-        operating['valid_bets'] = {'fold': {}, 'call': {'amount': 20},
-            'raise': {'minimum': 40, 'maximum': 1000}, 'all_in': {'amount': 1000}}
-        queue = [{'event': 'room_status', 'status': room_status},
-            {'event': 'game_status', 'game_id': 'visual-fixed-game', 'status': copy.deepcopy(status)},
-            {'event': 'table_status', 'status': copy.deepcopy(status)},
-            {'event': 'hand_card', 'player_id': '@self', 'hole_card': ['as', 'ad'], 'hand_strength': 'one_pair'},
-            {'event': 'operating_player_status', 'status': operating}, {'event': 'hand_analyse', 'hand_power': 82}]
-    else:
-        operating['valid_bets'] = {'fold': {}, 'call': {'amount': 10}, 'challenge': {'amount': 20},
-            'raise': {'minimum': 20, 'maximum': 100, 'step': 10}, 'all_in': {'amount': 1000}}
-        queue = [{'event': 'room_status', 'status': room_status},
-            {'event': 'game_status', 'game_id': 'visual-fixed-zhajinhua-game', 'status': copy.deepcopy(status)},
-            {'event': 'operating_player_status', 'status': operating},
-            {'event': 'table_status', 'status': copy.deepcopy(status)}]
-    value = {'stream': 'texas_holdem' if game == 'texas' else game, 'queue': queue}
-    if game == 'texas':
-        if not set(parameters) <= {'street', 'turn', 'layout'}:
-            raise ValueError('Unknown table parameters')
-        street, turn, layout = (parameters.get('street', 'river'), parameters.get('turn', 'self'),
-                                parameters.get('layout', 'standard'))
-        if street not in STREETS or turn not in ('self', 'opponent') or layout not in LAYOUTS:
-            raise ValueError('Unknown table scene')
-        statuses = [event['status'] for event in value['queue'] if event['event'] in
-                    ('room_status', 'game_status', 'table_status')]
-        for status in statuses:
-            status['street'] = street
-            status['community_card'] = CARDS[:STREETS[street]]
-            status['pots'] = [6] if street == 'preflop' else [120, 60]
-            players = PLAYERS if layout == 'observer' else ['@self', *PLAYERS]
-            if layout not in ('full', 'full-pots'):
-                players = players[:4 if layout == 'observer' else 5]
-            if layout in ('full', 'full-pots', 'observer'):
-                positions = ['BTN', 'SB', 'BB', 'UTG', 'MP1', 'MP2', 'MP3', 'HJ', 'CO'] if layout != 'observer' else ['D', 'SB', 'BB', 'UTG', 'CO']
-                for index, seat in enumerate(status['seats']):
-                    occupied = index < len(players)
-                    seat.update(state='occupied' if occupied else 'empty', position=positions[index] if index < len(positions) else '')
-                    seat['player'] = ({'player_id': players[index], 'seat_number': index + 1,
-                        'stack': 1000 - index * 40, 'buy_in': 1000, 'is_leave': False, 'is_playing': True,
-                        'position': positions[index], 'last_action': {'name': 'fold' if index == 3 else 'call', 'amount': 20},
-                        'public_hole_card': [], 'hole_card': []} if occupied else None)
-            if layout == 'full-pots':
-                status['pots'] = [90, 80, 70, 60, 50, 40, 30, 20, 10]
-            if layout == 'shortcut-blinds':
-                status['pots'] = [3]
-        operating['player_id'] = PLAYERS[0] if turn == 'opponent' or layout == 'observer' else '@self'
-        bets = {
-            'check': {'fold': {}, 'check': {}, 'raise': {'minimum': 40, 'maximum': 1000}, 'all_in': {'amount': 1000}},
-            'all-in-only': {'fold': {}, 'all_in': {'amount': 15}},
-            'all-in-call': {'fold': {}, 'call': {'amount': 15}, 'all_in': {'amount': 15}},
-            'shortcut-disabled': {'fold': {}, 'call': {'amount': 20}, 'raise': {'minimum': 40, 'maximum': 50}, 'all_in': {'amount': 50}},
-        }
-        if layout in bets or layout == 'shortcut-blinds':
-            operating['valid_bets'] = copy.deepcopy(bets['check' if layout == 'shortcut-blinds' else layout])
-        if layout == 'observer':
-            value['queue'] = [event for event in value['queue'] if event['event'] not in ('hand_card', 'hand_analyse')]
-    else:
-        if not set(parameters) <= {'turn', 'cards'} or parameters.get('turn', 'self') not in ('self', 'opponent') or parameters.get('cards', 'blind') not in ('blind', 'seen'):
-            raise ValueError('Unknown table parameters')
-        opponent, seen = parameters.get('turn') == 'opponent', parameters.get('cards') == 'seen'
-        if seen:
-            value['queue'].insert(2, {'event': 'hand_card', 'player_id': '@self',
-                'hole_card': ['as', 'ad', 'ac'], 'hand_strength': 'three_of_a_kind'})
-        for event in value['queue']:
-            if event['event'] in ('room_status', 'game_status', 'table_status'):
-                event['status']['seats'][0]['player']['is_seen_card'] = seen
-            if event['event'] == 'operating_player_status':
-                event['status']['player_id'] = PLAYERS[0] if opponent else '@self'
-                if seen and not opponent:
-                    call = 20
-                    event['status']['valid_bets'] = {'fold': {}, 'call': {'amount': call},
-                        'challenge': {'amount': call * 2}, 'raise': {'minimum': call * 2, 'maximum': call * 10, 'step': call},
-                        'all_in': {'amount': 1000}}
+    operating = {'player_id': '@self', 'remain_operating_seconds': 120,
+                 'valid_bets': copy.deepcopy(INITIAL_BETS[game])}
+    value = {'stream': 'texas_holdem' if game == 'texas' else game,
+             'queue': initial_queue(game, load(game, 'table'), operating)}
+    {'texas': texas_table, 'zhajinhua': zhajinhua_table}[game](value, operating, parameters)
     return replace(value, {'@self': self_id})
 
 
 def replace(value, values):
     """递归替换嵌套模板中的占位值，保留字典与列表结构。"""
     if isinstance(value, dict):
-        return {key: replace(item, values) for key, item in value.items()}
+        return replace_mapping(value, values)
+    return replace_sequence(value, values)
+
+
+def replace_mapping(value, values):
+    """替换字典值，保持原有键。"""
+    return {key: replace(item, values) for key, item in value.items()}
+
+
+def replace_sequence(value, values):
+    """替换列表元素，标量交由占位符处理。"""
     if isinstance(value, list):
         return [replace(item, values) for item in value]
+    return replace_scalar(value, values)
+
+
+def replace_scalar(value, values):
+    """仅字符串参与占位符替换。"""
     return values.get(value, value) if isinstance(value, str) else value
+
+
+def validate_owner(game, self_id):
+    """限制已登记玩法及非空字符串归属。"""
+    if game not in ('texas', 'zhajinhua'):
+        raise ValueError('Unknown game or owner')
+    if not all((isinstance(self_id, str), self_id)):
+        raise ValueError('Unknown game or owner')
+
+
+def validate_command(command):
+    """控制端只能选择具名场景及受限参数。"""
+    if not isinstance(command, dict):
+        raise ValueError('Only named replay scenes are accepted')
+    if not set(command) <= {'scene', 'parameters'}:
+        raise ValueError('Only named replay scenes are accepted')
+    parameters = command.get('parameters', {})
+    validate_parameter_types(parameters)
+    return command.get('scene'), parameters
+
+
+def validate_parameter_types(parameters):
+    """参数必须是字符串值字典。"""
+    if not isinstance(parameters, dict):
+        raise ValueError('Invalid parameters')
+    if not string_parameters(parameters):
+        raise ValueError('Invalid parameters')
+
+
+def countdown(value):
+    """仅修改实时操作期限，保留剩余时间快照。"""
+    for event in value['queue']:
+        if event['event'] in ('room_status', 'game_status'):
+            event['status']['operating_seconds'] = 12
+
+
+def live_scene(game, self_id, name, parameters):
+    """恢复、倒计时和运行中房间共用牌桌快照。"""
+    if name != 'restore' and parameters:
+        raise ValueError('This scene has no parameters')
+    value = table(game, self_id, parameters)
+    apply_live_scene(value, name)
+    return value
+
+
+def apply_live_scene(value, name):
+    """按具名场景调整队列。"""
+    if name == 'countdown':
+        countdown(value)
+    elif name == 'room-running':
+        value['queue'] = value['queue'][:1]
+
+
+def required_parameters(raw):
+    """由模板占位符确定精确参数集合。"""
+    tokens = (('@street', 'street'), ('@cards', 'street'), ('@action', 'action'), ('@file', 'file'))
+    return {key for token, key in tokens if token in raw}
+
+
+def validate_asset(action, file):
+    """只允许登记的表情及道具文件。"""
+    allowed = {'sticker': {'angry', 'cry', 'drink', 'puchi', 'titter', 'smirk', 'handclap'},
+               'props': {'tomato', 'tea', 'water', 'flower', 'heart', 'good', 'beer'}}
+    if action not in allowed or file not in allowed[action]:
+        raise ValueError('Unknown asset')
+
+
+def validate_action(raw, action, file):
+    """资产场景验证文件，下注场景限制动作。"""
+    if '@file' in raw:
+        validate_asset(action, file)
+        return
+    if not any((action is None, action in ('call', 'raise', 'check', 'fold'))):
+        raise ValueError('Unknown action')
+
+
+def catalog_parameters(raw, parameters):
+    """校验模板所需参数和街道枚举。"""
+    if set(parameters) != required_parameters(raw):
+        raise ValueError('Invalid scene parameters')
+    street = parameters.get('street')
+    if not any((street is None, street in ('flop', 'turn', 'river'))):
+        raise ValueError('Unknown street')
+    validate_action(raw, parameters.get('action'), parameters.get('file'))
+
+
+def catalog_scene(game, self_id, name, parameters):
+    """从只读模板构造绑定本人及参数的事件。"""
+    catalog = load(game, 'replay')
+    if not isinstance(name, str) or name not in catalog:
+        raise ValueError('Unknown replay scene')
+    value = catalog[name]
+    catalog_parameters(json.dumps(value), parameters)
+    return replace(value, replacement_values(self_id, parameters))
+
+
+def replacement_values(self_id, parameters):
+    """将已验证的参数转换为模板值。"""
+    street = parameters.get('street')
+    return {'@self': self_id, '@street': street, '@cards': CARDS[:STREETS[street]] if street else [],
+            '@action': parameters.get('action'), '@file': parameters.get('file')}
 
 
 def replay_scene(game, command, self_id):
     """校验重放指令并生成绑定当前玩家的指定玩法场景。"""
-    if game not in ('texas', 'zhajinhua') or not isinstance(self_id, str) or not self_id:
-        raise ValueError('Unknown game or owner')
-    if not isinstance(command, dict) or not set(command) <= {'scene', 'parameters'}:
-        raise ValueError('Only named replay scenes are accepted')
-    name, parameters = command.get('scene'), command.get('parameters', {})
-    if not isinstance(parameters, dict) or any(not isinstance(value, str) for value in parameters.values()):
-        raise ValueError('Invalid parameters')
-    if name in ('restore', 'countdown', 'room-running'):
-        if name != 'restore' and parameters:
-            raise ValueError('This scene has no parameters')
-        value = table(game, self_id, parameters)
-        if name == 'countdown':
-            for event in value['queue']:
-                if event['event'] in ('room_status', 'game_status'):
-                    event['status']['operating_seconds'] = 12
-        elif name == 'room-running':
-            value['queue'] = value['queue'][:1]
-    else:
-        catalog = load(game, 'replay')
-        if not isinstance(name, str) or name not in catalog:
-            raise ValueError('Unknown replay scene')
-        value = catalog[name]
-        raw = json.dumps(value)
-        required = {key for token, key in (('@street', 'street'), ('@cards', 'street'), ('@action', 'action'), ('@file', 'file')) if token in raw}
-        if set(parameters) != required:
-            raise ValueError('Invalid scene parameters')
-        street, action, file = parameters.get('street'), parameters.get('action'), parameters.get('file')
-        if street is not None and street not in ('flop', 'turn', 'river'):
-            raise ValueError('Unknown street')
-        if '@file' in raw:
-            allowed = {'sticker': {'angry', 'cry', 'drink', 'puchi', 'titter', 'smirk', 'handclap'},
-                       'props': {'tomato', 'tea', 'water', 'flower', 'heart', 'good', 'beer'}}
-            if action not in allowed or file not in allowed[action]:
-                raise ValueError('Unknown asset')
-        elif action is not None and action not in ('call', 'raise', 'check', 'fold'):
-            raise ValueError('Unknown action')
-        value = replace(value, {'@self': self_id, '@street': street, '@cards': CARDS[:STREETS[street]] if street else [],
-                                '@action': action, '@file': file})
+    validate_owner(game, self_id)
+    name, parameters = validate_command(command)
+    build = live_scene if name in ('restore', 'countdown', 'room-running') else catalog_scene
+    value = build(game, self_id, name, parameters)
     if 'queue' in value:
         value['sent_at'] = datetime.now(timezone.utc).isoformat()
     return value
 
 
-def publish_scene(replay, room_id, command, game):
-    """先确认真实订阅和用户，再生成消息；保留原有发布方向、队列和房间隔离。"""
-    owners = {channel.rsplit('#', 1)[-1] for flow, channels in replay.subscriptions.values()
-              if flow.websocket.timestamp_end is None for channel in channels
-              if channel.startswith(f'{"texas_holdem" if game == "texas" else game}>{room_id}#')}
+def channel_owners(channels, prefix):
+    """仅提取当前玩法和房间频道的归属。"""
+    return {channel.rsplit('#', 1)[-1] for channel in channels if channel.startswith(prefix)}
+
+
+def live_owners(subscriptions, prefix):
+    """合并仍存活连接上的已确认房间归属。"""
+    owners = set()
+    for flow, channels in subscriptions.values():
+        if flow.websocket.timestamp_end is None:
+            owners.update(channel_owners(channels, prefix))
+    return owners
+
+
+def confirmed_owner(replay, room_id, game):
+    """同一房间必须且只能有一个已确认的存活归属。"""
+    stream = 'texas_holdem' if game == 'texas' else game
+    owners = live_owners(replay.subscriptions, f'{stream}>{room_id}#')
     if len(owners) != 1:
         raise ValueError('Expected one confirmed room owner')
-    owner = owners.pop()
+    return owners.pop()
+
+
+def publish_scene(replay, room_id, command, game):
+    """先确认真实订阅和用户，再生成消息；保留原有发布方向、队列和房间隔离。"""
+    owner = confirmed_owner(replay, room_id, game)
     if replay.self_id and replay.self_id != owner:
         raise ValueError('Another user owns this replay')
     replay.publish(room_id, replay_scene(game, command, owner))
+
+
+def string_parameters(parameters):
+    """逐项检查参数值类型。"""
+    return all(isinstance(value, str) for value in parameters.values())

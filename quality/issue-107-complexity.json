@@ -1,0 +1,6369 @@
+{
+  "issue": 107,
+  "beforeRevision": "f5edd3b3962ecd4006d4f90e3e8ab82a463f5682",
+  "tools": {
+    "python": "3.12.12",
+    "radon": "6.0.1",
+    "ruff": "0.15.12",
+    "mitmproxy": "12.2.3",
+    "playwright": "1.61.1"
+  },
+  "counting": {
+    "no_assert": true,
+    "independentFunctionsMethodsAsyncAndLambdas": true,
+    "nestedScopesAccumulateIntoParent": false
+  },
+  "limits": {
+    "testAndSupport": 3,
+    "standaloneTool": 6
+  },
+  "summary": {
+    "before": {
+      "functions": 192,
+      "violations": 75,
+      "maximum": 76
+    },
+    "after": {
+      "functions": 507,
+      "violations": 0,
+      "maximum": 6
+    }
+  },
+  "before": [
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 21,
+      "column": 1,
+      "name": "safe_path",
+      "complexity": 9,
+      "limit": 3,
+      "qualifiedName": "safe_path"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 34,
+      "column": 1,
+      "name": "safe_address",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "safe_address"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 43,
+      "column": 1,
+      "name": "safe_text",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "safe_text"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 59,
+      "column": 1,
+      "name": "safe_ipv6",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "safe_ipv6"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 68,
+      "column": 1,
+      "name": "node_name",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "node_name"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 76,
+      "column": 1,
+      "name": "candidates",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "candidates"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 87,
+      "column": 1,
+      "name": "release_origin_match",
+      "complexity": 9,
+      "limit": 3,
+      "qualifiedName": "release_origin_match"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 104,
+      "column": 1,
+      "name": "release_upstream_match",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "release_upstream_match"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 114,
+      "column": 1,
+      "name": "release_peer_match",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "release_peer_match"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 124,
+      "column": 1,
+      "name": "error_reason",
+      "complexity": 7,
+      "limit": 3,
+      "qualifiedName": "error_reason"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 141,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.__init__"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 147,
+      "column": 5,
+      "name": "server_event",
+      "complexity": 10,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_event"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 166,
+      "column": 5,
+      "name": "server_connect",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_connect"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 170,
+      "column": 5,
+      "name": "server_connected",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_connected"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 174,
+      "column": 5,
+      "name": "server_connect_error",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_connect_error"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 178,
+      "column": 5,
+      "name": "server_disconnected",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_disconnected"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 182,
+      "column": 5,
+      "name": "record",
+      "complexity": 10,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.record"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 203,
+      "column": 5,
+      "name": "snapshot",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.snapshot"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 207,
+      "column": 5,
+      "name": "request",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.request"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 216,
+      "column": 5,
+      "name": "response",
+      "complexity": 11,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.response"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 238,
+      "column": 5,
+      "name": "error",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.error"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 246,
+      "column": 5,
+      "name": "websocket_start",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.websocket_start"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 250,
+      "column": 5,
+      "name": "websocket_end",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.websocket_end"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 256,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 20,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.websocket_message"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 289,
+      "column": 5,
+      "name": "control",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.control"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 53,
+      "column": 19,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "safe_text.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 32,
+      "column": 1,
+      "name": "json_response",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "json_response"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 48,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.__init__"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 58,
+      "column": 5,
+      "name": "control",
+      "complexity": 9,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.control"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 89,
+      "column": 5,
+      "name": "mock_existing_username",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.mock_existing_username"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 97,
+      "column": 5,
+      "name": "matches_fault",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.matches_fault"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 105,
+      "column": 5,
+      "name": "mock_club_search_result",
+      "complexity": 11,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.mock_club_search_result"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 132,
+      "column": 5,
+      "name": "request",
+      "complexity": 11,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.request"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 16,
+      "column": 1,
+      "name": "load",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "load"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 21,
+      "column": 1,
+      "name": "table",
+      "complexity": 42,
+      "limit": 3,
+      "qualifiedName": "table"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 102,
+      "column": 1,
+      "name": "replace",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "replace"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 111,
+      "column": 1,
+      "name": "replay_scene",
+      "complexity": 30,
+      "limit": 3,
+      "qualifiedName": "replay_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 156,
+      "column": 1,
+      "name": "publish_scene",
+      "complexity": 9,
+      "limit": 3,
+      "qualifiedName": "publish_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 8,
+      "column": 1,
+      "name": "is_staging",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "is_staging"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 18,
+      "column": 1,
+      "name": "patch_result",
+      "complexity": 9,
+      "limit": 3,
+      "qualifiedName": "patch_result"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 42,
+      "column": 1,
+      "name": "patch_version",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "patch_version"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 53,
+      "column": 1,
+      "name": "prepare_profiles",
+      "complexity": 10,
+      "limit": 3,
+      "qualifiedName": "prepare_profiles"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 72,
+      "column": 1,
+      "name": "patch_profiles",
+      "complexity": 12,
+      "limit": 3,
+      "qualifiedName": "patch_profiles"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 44,
+      "column": 5,
+      "name": "change",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "patch_version.change"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 87,
+      "column": 5,
+      "name": "change",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "patch_profiles.change"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 30,
+      "column": 1,
+      "name": "data",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "data"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 35,
+      "column": 1,
+      "name": "respond",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "respond"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 44,
+      "column": 1,
+      "name": "result",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "result"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 49,
+      "column": 1,
+      "name": "clubs",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "clubs"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 57,
+      "column": 1,
+      "name": "applications",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "applications"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 65,
+      "column": 1,
+      "name": "parse_websocket_command",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "parse_websocket_command"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 80,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.__init__"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 96,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.status"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 101,
+      "column": 5,
+      "name": "control",
+      "complexity": 31,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.control"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 148,
+      "column": 5,
+      "name": "wait",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.wait"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 154,
+      "column": 5,
+      "name": "is_feedback",
+      "complexity": 12,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.is_feedback"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 167,
+      "column": 5,
+      "name": "blocks_payment",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.blocks_payment"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 172,
+      "column": 5,
+      "name": "blocked_write_error",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.blocked_write_error"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 180,
+      "column": 5,
+      "name": "request",
+      "complexity": 76,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 277,
+      "column": 5,
+      "name": "response",
+      "complexity": 27,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.response"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 316,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 24,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.websocket_message"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 356,
+      "column": 5,
+      "name": "slot_reply",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.slot_reply"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 369,
+      "column": 5,
+      "name": "slot_result",
+      "complexity": 8,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.slot_result"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 305,
+      "column": 13,
+      "name": "change",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.response.change"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 14,
+      "column": 5,
+      "name": "test_新节点标签与浏览器一致且重复脱敏保持稳定",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_新节点标签与浏览器一致且重复脱敏保持稳定"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 37,
+      "column": 5,
+      "name": "test_共用路径登记保留操作语义且重复清理不改变实体模板",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_共用路径登记保留操作语义且重复清理不改变实体模板"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 48,
+      "column": 5,
+      "name": "test_相对路径与事件名不保留任意连接资料或凭据",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_相对路径与事件名不保留任意连接资料或凭据"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 76,
+      "column": 5,
+      "name": "test_原因只识别已知错误首部而不扫描地址凭据或后续诊断",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_原因只识别已知错误首部而不扫描地址凭据或后续诊断"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 113,
+      "column": 5,
+      "name": "test_错误中的连接地址与主机不进入公开诊断",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_错误中的连接地址与主机不进入公开诊断"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 131,
+      "column": 5,
+      "name": "test_严格来源匹配包含协议和端口且响应编号只能来自本轮服务",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_严格来源匹配包含协议和端口且响应编号只能来自本轮服务"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 166,
+      "column": 5,
+      "name": "test_错误与服务端关闭文本不记录未知凭据或任意业务正文",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_错误与服务端关闭文本不记录未知凭据或任意业务正文"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 180,
+      "column": 5,
+      "name": "test_请求地址实际连接及模拟响应分别核验且不猜测无响应状态",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_请求地址实际连接及模拟响应分别核验且不猜测无响应状态"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 226,
+      "column": 5,
+      "name": "test_两个认证控制入口不进入业务请求响应或错误诊断",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_两个认证控制入口不进入业务请求响应或错误诊断"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 238,
+      "column": 5,
+      "name": "test_来源分类与主机脱敏",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_来源分类与主机脱敏"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 255,
+      "column": 5,
+      "name": "test_节点资料不保存地址或其他响应字段",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_节点资料不保存地址或其他响应字段"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 270,
+      "column": 5,
+      "name": "test_订阅确认与关闭仍可关联",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_订阅确认与关闭仍可关联"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 292,
+      "column": 5,
+      "name": "test_容量边界与错误脱敏",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_容量边界与错误脱敏"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 15,
+      "column": 1,
+      "name": "flow",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "flow"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 28,
+      "column": 1,
+      "name": "source_environment",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "source_environment"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 36,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 42,
+      "column": 5,
+      "name": "configure",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.configure"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 51,
+      "column": 5,
+      "name": "test_控制命令必须认证并匹配有效场景",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_控制命令必须认证并匹配有效场景"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 61,
+      "column": 5,
+      "name": "test_大厅只延迟首次请求且关闭场景后恢复透传",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_大厅只延迟首次请求且关闭场景后恢复透传"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 78,
+      "column": 5,
+      "name": "test_延迟不阻塞控制或无关请求",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_延迟不阻塞控制或无关请求"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 103,
+      "column": 5,
+      "name": "test_登录和俱乐部故障严格限定来源与路径",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_登录和俱乐部故障严格限定来源与路径"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 124,
+      "column": 5,
+      "name": "test_登录保留既有用户分支且不计为故障",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_登录保留既有用户分支且不计为故障"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 142,
+      "column": 5,
+      "name": "test_俱乐部搜索只返回指定的固定俱乐部",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_俱乐部搜索只返回指定的固定俱乐部"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 179,
+      "column": 5,
+      "name": "test_搜索未命中流量及预检均透传",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_搜索未命中流量及预检均透传"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 197,
+      "column": 5,
+      "name": "test_正常视觉模式不拦截任何候选节点或元数据",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_正常视觉模式不拦截任何候选节点或元数据"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 84,
+      "column": 9,
+      "name": "delay",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_延迟不阻塞控制或无关请求.delay"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 22,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 28,
+      "column": 5,
+      "name": "test_默认透传但商城和视觉环境拒绝订单写入",
+      "complexity": 7,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.test_默认透传但商城和视觉环境拒绝订单写入"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 54,
+      "column": 5,
+      "name": "test_长连接订单隔离保留订阅心跳读取和回复顺序",
+      "complexity": 9,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.test_长连接订单隔离保留订阅心跳读取和回复顺序"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 82,
+      "column": 5,
+      "name": "test_未命中长连接内容逐字透传且不处理服务端或已注入消息",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.test_未命中长连接内容逐字透传且不处理服务端或已注入消息"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 13,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 22,
+      "column": 5,
+      "name": "test_真实钩子类型记录连接及断开且同一连接的多请求可以关联",
+      "complexity": 7,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.test_真实钩子类型记录连接及断开且同一连接的多请求可以关联"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 50,
+      "column": 5,
+      "name": "test_未连接及连接到不同peer不猜测响应或实际来源",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.test_未连接及连接到不同peer不猜测响应或实际来源"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 62,
+      "column": 5,
+      "name": "test_其他目标和无效配置不收集也不改变真实连接",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.test_其他目标和无效配置不收集也不改变真实连接"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 77,
+      "column": 5,
+      "name": "test_连接事件共用有界时间线且超限可见",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.test_连接事件共用有界时间线且超限可见"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_http1_close.py",
+      "line": 15,
+      "column": 5,
+      "name": "client",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseHttp1CloseTests.client"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_http1_close.py",
+      "line": 28,
+      "column": 5,
+      "name": "test_完整正文后即关闭不等FIN且keepalive对照仍可复用",
+      "complexity": 12,
+      "limit": 3,
+      "qualifiedName": "ReleaseHttp1CloseTests.test_完整正文后即关闭不等FIN且keepalive对照仍可复用"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_http1_close.py",
+      "line": 45,
+      "column": 5,
+      "name": "test_提前断开不能因ConnectionClose而当作完整正文",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "ReleaseHttp1CloseTests.test_提前断开不能因ConnectionClose而当作完整正文"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 17,
+      "column": 1,
+      "name": "stop",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "stop"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 30,
+      "column": 5,
+      "name": "wait_for",
+      "complexity": 7,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.wait_for"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 46,
+      "column": 5,
+      "name": "diagnostics",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.diagnostics"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 58,
+      "column": 5,
+      "name": "server_events",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.server_events"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 62,
+      "column": 5,
+      "name": "test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态",
+      "complexity": 29,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 87,
+      "column": 31,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 100,
+      "column": 23,
+      "name": "<lambda>",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 119,
+      "column": 23,
+      "name": "<lambda>",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 124,
+      "column": 23,
+      "name": "<lambda>",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 147,
+      "column": 23,
+      "name": "<lambda>",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 18,
+      "column": 5,
+      "name": "scene",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.scene"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 22,
+      "column": 5,
+      "name": "test_texas_streets_preserve_order_cards_seats_and_owner",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_texas_streets_preserve_order_cards_seats_and_owner"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 40,
+      "column": 5,
+      "name": "test_layouts_keep_full_table_side_pots_and_observer_without_private_hand",
+      "complexity": 7,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_layouts_keep_full_table_side_pots_and_observer_without_private_hand"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 59,
+      "column": 5,
+      "name": "test_zhajinhua_seen_cards_double_own_bets_and_keep_opponent_blind",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_zhajinhua_seen_cards_double_own_bets_and_keep_opponent_blind"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 72,
+      "column": 5,
+      "name": "test_countdown_keeps_snapshot_timer_and_changes_only_live_operation_limit",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_countdown_keeps_snapshot_timer_and_changes_only_live_operation_limit"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 83,
+      "column": 5,
+      "name": "test_catalogs_are_used_and_all_parameter_choices_resolve_without_mutating_files",
+      "complexity": 9,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_catalogs_are_used_and_all_parameter_choices_resolve_without_mutating_files"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 103,
+      "column": 5,
+      "name": "test_response_payloads_unknown_scenes_and_unbounded_parameters_are_rejected",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_response_payloads_unknown_scenes_and_unbounded_parameters_are_rejected"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 116,
+      "column": 5,
+      "name": "test_publish_requires_one_confirmed_live_owner_and_keeps_direction_in_existing_replay",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_publish_requires_one_confirmed_live_owner_and_keeps_direction_in_existing_replay"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 13,
+      "column": 5,
+      "name": "test_主机必须与明确输入逐字匹配且损坏配置默认透传",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.test_主机必须与明确输入逐字匹配且损坏配置默认透传"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 24,
+      "column": 5,
+      "name": "metadata",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.metadata"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 33,
+      "column": 5,
+      "name": "test_字段覆盖保留压缩响应与未知字段",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.test_字段覆盖保留压缩响应与未知字段"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 46,
+      "column": 5,
+      "name": "test_版本覆盖保留新字段且不补造已删除字段",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.test_版本覆盖保留新字段且不补造已删除字段"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 57,
+      "column": 5,
+      "name": "test_混合资料保留真实账号且只补充明确请求的虚拟玩家",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.test_混合资料保留真实账号且只补充明确请求的虚拟玩家"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 31,
+      "column": 5,
+      "name": "do_GET",
+      "complexity": 16,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_GET"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 64,
+      "column": 5,
+      "name": "do_POST",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_POST"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 70,
+      "column": 5,
+      "name": "do_PUT",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_PUT"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 74,
+      "column": 5,
+      "name": "do_OPTIONS",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_OPTIONS"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 81,
+      "column": 5,
+      "name": "log_message",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.log_message"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 88,
+      "column": 5,
+      "name": "test_五个代理保留全部候选节点及真实健康结果",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.test_五个代理保留全部候选节点及真实健康结果"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 108,
+      "column": 5,
+      "name": "check_addon",
+      "complexity": 10,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_addon"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 154,
+      "column": 5,
+      "name": "check_metadata",
+      "complexity": 9,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_metadata"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 176,
+      "column": 5,
+      "name": "check_scenes",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_scenes"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 202,
+      "column": 5,
+      "name": "check_health",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_health"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 213,
+      "column": 5,
+      "name": "check_club_boundaries",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_club_boundaries"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 246,
+      "column": 5,
+      "name": "check_game_hold",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_game_hold"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 277,
+      "column": 5,
+      "name": "check_preflight",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_preflight"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 284,
+      "column": 5,
+      "name": "check_diagnostics",
+      "complexity": 8,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_diagnostics"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 300,
+      "column": 5,
+      "name": "fetch",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.fetch"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 25,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 31,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.control"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 38,
+      "column": 5,
+      "name": "request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.request"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 44,
+      "column": 5,
+      "name": "test_反馈来源必须显式配置且严格匹配协议主机端口",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_反馈来源必须显式配置且严格匹配协议主机端口"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 56,
+      "column": 5,
+      "name": "test_能量就绪计数只接受所属账号且切换场景重置",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_能量就绪计数只接受所属账号且切换场景重置"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 74,
+      "column": 5,
+      "name": "test_私人房资料的真实读取方法绑定归属且不修改上游响应",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_私人房资料的真实读取方法绑定归属且不修改上游响应"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 93,
+      "column": 5,
+      "name": "test_默认和未匹配流量含初始化均透传",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_默认和未匹配流量含初始化均透传"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 109,
+      "column": 5,
+      "name": "test_控制命令原子拒绝响应载荷错误阶段与其他归属",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_控制命令原子拒绝响应载荷错误阶段与其他归属"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 121,
+      "column": 5,
+      "name": "test_环境必须显式选择且保留真实登录健康与预检",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_环境必须显式选择且保留真实登录健康与预检"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 140,
+      "column": 5,
+      "name": "test_分页保留游标顺序与末页行为",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_分页保留游标顺序与末页行为"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 157,
+      "column": 5,
+      "name": "test_钱包空态只匹配所选账号的只读账单",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_钱包空态只匹配所选账号的只读账单"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 167,
+      "column": 5,
+      "name": "test_俱乐部列表夹具必须绑定唯一所属账号",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_俱乐部列表夹具必须绑定唯一所属账号"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 193,
+      "column": 5,
+      "name": "test_故障释放后重新读取真实上游",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_故障释放后重新读取真实上游"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 206,
+      "column": 5,
+      "name": "test_骨架详情保持虚拟批次的暂缓与释放",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_骨架详情保持虚拟批次的暂缓与释放"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 225,
+      "column": 5,
+      "name": "test_启动等待释放后不替换健康响应",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_启动等待释放后不替换健康响应"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 236,
+      "column": 5,
+      "name": "test_每日奖励仅在真实上游成功后修改所属账号金币",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_每日奖励仅在真实上游成功后修改所属账号金币"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 260,
+      "column": 5,
+      "name": "test_自动补充必须绑定成功建房且隔离所属写入",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_自动补充必须绑定成功建房且隔离所属写入"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 287,
+      "column": 5,
+      "name": "test_邀请面板只替换本人房屋的确切批次且保留真实资料",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_邀请面板只替换本人房屋的确切批次且保留真实资料"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 305,
+      "column": 5,
+      "name": "test_老虎机隔离未绑定与其他账号的旋转请求",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_老虎机隔离未绑定与其他账号的旋转请求"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 317,
+      "column": 5,
+      "name": "test_混合长连接批次保留订阅心跳与回复顺序",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_混合长连接批次保留订阅心跳与回复顺序"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 343,
+      "column": 5,
+      "name": "test_匹配场景隔离两种传输的写入",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_匹配场景隔离两种传输的写入"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 14,
+      "column": 5,
+      "name": "install_marker",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.install_marker"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 20,
+      "column": 5,
+      "name": "test_仅画面依赖可用时不能固定到端到端目录",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_仅画面依赖可用时不能固定到端到端目录"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 27,
+      "column": 5,
+      "name": "test_多项目已安装时优先使用调用方依赖而不串用版本",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_多项目已安装时优先使用调用方依赖而不串用版本"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 36,
+      "column": 5,
+      "name": "test_没有已安装依赖时明确失败而不跳过浏览器回归",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_没有已安装依赖时明确失败而不跳过浏览器回归"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 43,
+      "column": 5,
+      "name": "test_子项目缺少自身依赖时不能借用根目录其他版本",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_子项目缺少自身依赖时不能借用根目录其他版本"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 52,
+      "column": 5,
+      "name": "test_真实模块缺失保留阶段和原因但不输出任意启动参数",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_真实模块缺失保留阶段和原因但不输出任意启动参数"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 64,
+      "column": 5,
+      "name": "test_真实浏览器启动失败不能输出执行路径或凭据",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_真实浏览器启动失败不能输出执行路径或凭据"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 78,
+      "column": 5,
+      "name": "test_未知异常正文和伪造诊断字段不能进入断言说明",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_未知异常正文和伪造诊断字段不能进入断言说明"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 63,
+      "column": 1,
+      "name": "browser_working_directory",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "browser_working_directory"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 76,
+      "column": 1,
+      "name": "browser_failure_diagnostic",
+      "complexity": 8,
+      "limit": 3,
+      "qualifiedName": "browser_failure_diagnostic"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 94,
+      "column": 5,
+      "name": "do_OPTIONS",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_OPTIONS"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 107,
+      "column": 5,
+      "name": "do_GET",
+      "complexity": 4,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_GET"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 120,
+      "column": 5,
+      "name": "do_POST",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_POST"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 130,
+      "column": 5,
+      "name": "log_message",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.log_message"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 137,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 5,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 176,
+      "column": 5,
+      "name": "stop_upstream",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.stop_upstream"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 182,
+      "column": 5,
+      "name": "stop_proxy",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.stop_proxy"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 191,
+      "column": 5,
+      "name": "request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.request"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 202,
+      "column": 5,
+      "name": "control",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.control"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 206,
+      "column": 5,
+      "name": "browse",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.browse"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 220,
+      "column": 5,
+      "name": "test_独立依赖布局均能启动真实浏览器并保留预检负例",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.test_独立依赖布局均能启动真实浏览器并保留预检负例"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 237,
+      "column": 5,
+      "name": "test_上游预检无响应时当前房间仍通过本地预检读取空榜",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.test_上游预检无响应时当前房间仍通过本地预检读取空榜"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 249,
+      "column": 5,
+      "name": "test_不匹配预检仍依赖上游且真实业务失败保持失败",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.test_不匹配预检仍依赖上游且真实业务失败保持失败"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 18,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 24,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.control"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 31,
+      "column": 5,
+      "name": "request",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.request"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 37,
+      "column": 5,
+      "name": "test_非空流水必须显式选择并绑定账号且只拦截确切只读接口",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.test_非空流水必须显式选择并绑定账号且只拦截确切只读接口"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 54,
+      "column": 5,
+      "name": "test_两种币种各含四条逆序收支且余额连续并能独立切回空态",
+      "complexity": 8,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.test_两种币种各含四条逆序收支且余额连续并能独立切回空态"
+    },
+    {
+      "file": "e2e/mitmproxy/visual_control.py",
+      "line": 10,
+      "column": 1,
+      "name": "respond",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "respond"
+    },
+    {
+      "file": "e2e/mitmproxy/visual_control.py",
+      "line": 21,
+      "column": 1,
+      "name": "control",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "control"
+    },
+    {
+      "file": "e2e/mitmproxy/visual_control.py",
+      "line": 38,
+      "column": 1,
+      "name": "route_request",
+      "complexity": 6,
+      "limit": 3,
+      "qualifiedName": "route_request"
+    }
+  ],
+  "after": [
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 25,
+      "column": 1,
+      "name": "safe_path",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "safe_path"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 33,
+      "column": 1,
+      "name": "safe_address",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "safe_address"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 42,
+      "column": 1,
+      "name": "safe_text",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "safe_text"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 58,
+      "column": 1,
+      "name": "safe_ipv6",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "safe_ipv6"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 67,
+      "column": 1,
+      "name": "node_name",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "node_name"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 74,
+      "column": 1,
+      "name": "candidates",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "candidates"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 194,
+      "column": 1,
+      "name": "valid_path",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "valid_path"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 201,
+      "column": 1,
+      "name": "matching_path",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "matching_path"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 209,
+      "column": 1,
+      "name": "template_matches",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "template_matches"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 216,
+      "column": 1,
+      "name": "segment_matches",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "segment_matches"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 221,
+      "column": 1,
+      "name": "hashed_host",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "hashed_host"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 227,
+      "column": 1,
+      "name": "candidate_names",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "candidate_names"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 232,
+      "column": 1,
+      "name": "sanitized_text",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "sanitized_text"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 237,
+      "column": 1,
+      "name": "sanitized_value",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "sanitized_value"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 246,
+      "column": 1,
+      "name": "sanitized_list",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "sanitized_list"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 251,
+      "column": 1,
+      "name": "sanitized_scalar",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "sanitized_scalar"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 256,
+      "column": 1,
+      "name": "sanitized_entry",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "sanitized_entry"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 261,
+      "column": 1,
+      "name": "node_names",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "node_names"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 266,
+      "column": 1,
+      "name": "empty_nodes",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "empty_nodes"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 86,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.__init__"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 92,
+      "column": 5,
+      "name": "server_event",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_event"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 101,
+      "column": 5,
+      "name": "server_connect",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_connect"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 105,
+      "column": 5,
+      "name": "server_connected",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_connected"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 109,
+      "column": 5,
+      "name": "server_connect_error",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_connect_error"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 113,
+      "column": 5,
+      "name": "server_disconnected",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.server_disconnected"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 117,
+      "column": 5,
+      "name": "record",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.record"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 130,
+      "column": 5,
+      "name": "append_event",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.append_event"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 136,
+      "column": 5,
+      "name": "record_candidates",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.record_candidates"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 146,
+      "column": 5,
+      "name": "snapshot",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.snapshot"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 150,
+      "column": 5,
+      "name": "request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.request"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 159,
+      "column": 5,
+      "name": "response",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.response"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 168,
+      "column": 5,
+      "name": "error",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.error"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 174,
+      "column": 5,
+      "name": "websocket_start",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.websocket_start"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 178,
+      "column": 5,
+      "name": "websocket_end",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.websocket_end"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 185,
+      "column": 5,
+      "name": "control",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ConnectionDiagnostics.control"
+    },
+    {
+      "file": "e2e/mitmproxy/connection_diagnostics.py",
+      "line": 52,
+      "column": 19,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "safe_text.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 8,
+      "column": 1,
+      "name": "valid_release_origin",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "valid_release_origin"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 14,
+      "column": 1,
+      "name": "release_origin_match",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "release_origin_match"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 22,
+      "column": 1,
+      "name": "configured_origin_match",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "configured_origin_match"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 31,
+      "column": 1,
+      "name": "compare_origin",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "compare_origin"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 40,
+      "column": 1,
+      "name": "release_upstream_match",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "release_upstream_match"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 50,
+      "column": 1,
+      "name": "release_peer_match",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "release_peer_match"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 60,
+      "column": 1,
+      "name": "release_server",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "release_server"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 69,
+      "column": 1,
+      "name": "server_matches",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "server_matches"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 77,
+      "column": 1,
+      "name": "timeout_reason",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "timeout_reason"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 83,
+      "column": 1,
+      "name": "connection_failure",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "connection_failure"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 92,
+      "column": 1,
+      "name": "classify_error",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "classify_error"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 99,
+      "column": 1,
+      "name": "error_reason",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "error_reason"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 104,
+      "column": 1,
+      "name": "request_operation",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "request_operation"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 109,
+      "column": 1,
+      "name": "error_source",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "error_source"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 114,
+      "column": 1,
+      "name": "response_state",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "response_state"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 121,
+      "column": 1,
+      "name": "release_identifier",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "release_identifier"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_release.py",
+      "line": 129,
+      "column": 1,
+      "name": "verified_identifier",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "verified_identifier"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 8,
+      "column": 1,
+      "name": "integer_id",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "integer_id"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 13,
+      "column": 1,
+      "name": "error_code",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "error_code"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 18,
+      "column": 1,
+      "name": "message_source",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "message_source"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 25,
+      "column": 1,
+      "name": "outgoing_command",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "outgoing_command"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 33,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticSocket.websocket_message"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 40,
+      "column": 5,
+      "name": "read_socket_lines",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticSocket.read_socket_lines"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 48,
+      "column": 5,
+      "name": "socket_frame",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticSocket.socket_frame"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 58,
+      "column": 5,
+      "name": "correlate_command",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticSocket.correlate_command"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 65,
+      "column": 5,
+      "name": "is_reply",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticSocket.is_reply"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 69,
+      "column": 5,
+      "name": "remember_command",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticSocket.remember_command"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 75,
+      "column": 5,
+      "name": "record_reply",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticSocket.record_reply"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_socket.py",
+      "line": 82,
+      "column": 5,
+      "name": "record_command",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "DiagnosticSocket.record_command"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_test_server.py",
+      "line": 19,
+      "column": 5,
+      "name": "do_GET",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticHandler.do_GET"
+    },
+    {
+      "file": "e2e/mitmproxy/diagnostic_test_server.py",
+      "line": 30,
+      "column": 5,
+      "name": "log_message",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "DiagnosticHandler.log_message"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 32,
+      "column": 1,
+      "name": "json_response",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "json_response"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 48,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.__init__"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 58,
+      "column": 5,
+      "name": "control",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.control"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 66,
+      "column": 5,
+      "name": "mock_existing_username",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.mock_existing_username"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 74,
+      "column": 5,
+      "name": "matches_fault",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.matches_fault"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 82,
+      "column": 5,
+      "name": "mock_club_search_result",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.mock_club_search_result"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 89,
+      "column": 5,
+      "name": "request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.request"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 100,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.status"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 106,
+      "column": 5,
+      "name": "control_route",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.control_route"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 116,
+      "column": 5,
+      "name": "select_scenario",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.select_scenario"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 127,
+      "column": 5,
+      "name": "read_scenario",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.read_scenario"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 134,
+      "column": 5,
+      "name": "reset_scenario",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.reset_scenario"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 141,
+      "column": 5,
+      "name": "call_club_handler",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.call_club_handler"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 145,
+      "column": 5,
+      "name": "club_search",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.club_search"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 154,
+      "column": 5,
+      "name": "club_body",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.club_body"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 161,
+      "column": 5,
+      "name": "club_details",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.club_details"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 170,
+      "column": 5,
+      "name": "business_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.business_request"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 179,
+      "column": 5,
+      "name": "fault_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.fault_request"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 187,
+      "column": 5,
+      "name": "skip_fault",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.skip_fault"
+    },
+    {
+      "file": "e2e/mitmproxy/network_faults.py",
+      "line": 191,
+      "column": 5,
+      "name": "inject_fault",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaults.inject_fault"
+    },
+    {
+      "file": "e2e/mitmproxy/proxy_test_support.py",
+      "line": 6,
+      "column": 1,
+      "name": "json_lines",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "json_lines"
+    },
+    {
+      "file": "e2e/mitmproxy/proxy_test_support.py",
+      "line": 11,
+      "column": 1,
+      "name": "event_names",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "event_names"
+    },
+    {
+      "file": "e2e/mitmproxy/proxy_test_support.py",
+      "line": 16,
+      "column": 1,
+      "name": "events_named",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "events_named"
+    },
+    {
+      "file": "e2e/mitmproxy/proxy_test_support.py",
+      "line": 21,
+      "column": 1,
+      "name": "field_values",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "field_values"
+    },
+    {
+      "file": "e2e/mitmproxy/proxy_test_support.py",
+      "line": 26,
+      "column": 1,
+      "name": "instances",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "instances"
+    },
+    {
+      "file": "e2e/mitmproxy/proxy_test_support.py",
+      "line": 31,
+      "column": 1,
+      "name": "event_objects",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "event_objects"
+    },
+    {
+      "file": "e2e/mitmproxy/proxy_test_support.py",
+      "line": 36,
+      "column": 1,
+      "name": "occupied_count",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "occupied_count"
+    },
+    {
+      "file": "e2e/mitmproxy/proxy_test_support.py",
+      "line": 41,
+      "column": 1,
+      "name": "occupied_players",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "occupied_players"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 14,
+      "column": 1,
+      "name": "load",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "load"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 19,
+      "column": 1,
+      "name": "table",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "table"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 29,
+      "column": 1,
+      "name": "replace",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "replace"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 36,
+      "column": 1,
+      "name": "replace_mapping",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "replace_mapping"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 41,
+      "column": 1,
+      "name": "replace_sequence",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "replace_sequence"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 48,
+      "column": 1,
+      "name": "replace_scalar",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "replace_scalar"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 53,
+      "column": 1,
+      "name": "validate_owner",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_owner"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 61,
+      "column": 1,
+      "name": "validate_command",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_command"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 72,
+      "column": 1,
+      "name": "validate_parameter_types",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_parameter_types"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 80,
+      "column": 1,
+      "name": "countdown",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "countdown"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 87,
+      "column": 1,
+      "name": "live_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "live_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 96,
+      "column": 1,
+      "name": "apply_live_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "apply_live_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 104,
+      "column": 1,
+      "name": "required_parameters",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "required_parameters"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 110,
+      "column": 1,
+      "name": "validate_asset",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_asset"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 118,
+      "column": 1,
+      "name": "validate_action",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_action"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 127,
+      "column": 1,
+      "name": "catalog_parameters",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "catalog_parameters"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 137,
+      "column": 1,
+      "name": "catalog_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "catalog_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 147,
+      "column": 1,
+      "name": "replacement_values",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "replacement_values"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 154,
+      "column": 1,
+      "name": "replay_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "replay_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 165,
+      "column": 1,
+      "name": "channel_owners",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "channel_owners"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 170,
+      "column": 1,
+      "name": "live_owners",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "live_owners"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 179,
+      "column": 1,
+      "name": "confirmed_owner",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "confirmed_owner"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 188,
+      "column": 1,
+      "name": "publish_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "publish_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_scenes.py",
+      "line": 196,
+      "column": 1,
+      "name": "string_parameters",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "string_parameters"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 25,
+      "column": 1,
+      "name": "initial_queue",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "initial_queue"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 39,
+      "column": 1,
+      "name": "validate_parameters",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_parameters"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 47,
+      "column": 1,
+      "name": "validate_choice",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "validate_choice"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 53,
+      "column": 1,
+      "name": "texas_parameters",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "texas_parameters"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 61,
+      "column": 1,
+      "name": "layout_players",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "layout_players"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 67,
+      "column": 1,
+      "name": "layout_capacity",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "layout_capacity"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 72,
+      "column": 1,
+      "name": "seat_player",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "seat_player"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 82,
+      "column": 1,
+      "name": "update_seat",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "update_seat"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 89,
+      "column": 1,
+      "name": "update_seats",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "update_seats"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 98,
+      "column": 1,
+      "name": "layout_positions",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "layout_positions"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 105,
+      "column": 1,
+      "name": "update_texas_status",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "update_texas_status"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 115,
+      "column": 1,
+      "name": "table_statuses",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "table_statuses"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 120,
+      "column": 1,
+      "name": "operating_owner",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "operating_owner"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 125,
+      "column": 1,
+      "name": "texas_table",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "texas_table"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 135,
+      "column": 1,
+      "name": "remove_private_hand",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "remove_private_hand"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 141,
+      "column": 1,
+      "name": "public_events",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "public_events"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 146,
+      "column": 1,
+      "name": "zhajinhua_operation",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "zhajinhua_operation"
+    },
+    {
+      "file": "e2e/mitmproxy/replay_table.py",
+      "line": 154,
+      "column": 1,
+      "name": "zhajinhua_table",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "zhajinhua_table"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 9,
+      "column": 1,
+      "name": "configured_hosts",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "configured_hosts"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 17,
+      "column": 1,
+      "name": "is_staging",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "is_staging"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 25,
+      "column": 1,
+      "name": "successful_response",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "successful_response"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 30,
+      "column": 1,
+      "name": "successful_body",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "successful_body"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 35,
+      "column": 1,
+      "name": "changed_body",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "changed_body"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 43,
+      "column": 1,
+      "name": "write_body",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "write_body"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 50,
+      "column": 1,
+      "name": "apply_change",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "apply_change"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 61,
+      "column": 1,
+      "name": "patch_result",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "patch_result"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 73,
+      "column": 1,
+      "name": "patch_version",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "patch_version"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 84,
+      "column": 1,
+      "name": "profile_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "profile_request"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 92,
+      "column": 1,
+      "name": "owned_users",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "owned_users"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 99,
+      "column": 1,
+      "name": "prepare_profile_batch",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "prepare_profile_batch"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 113,
+      "column": 1,
+      "name": "prepare_profiles",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "prepare_profiles"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 123,
+      "column": 1,
+      "name": "selected_profiles",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "selected_profiles"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 131,
+      "column": 1,
+      "name": "merge_profile",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "merge_profile"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 136,
+      "column": 1,
+      "name": "patch_selected_profiles",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "patch_selected_profiles"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 148,
+      "column": 1,
+      "name": "patch_profiles",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "patch_profiles"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 159,
+      "column": 1,
+      "name": "valid_hosts",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "valid_hosts"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 164,
+      "column": 1,
+      "name": "matching_profiles",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "matching_profiles"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 169,
+      "column": 1,
+      "name": "patch_nonempty_profiles",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "patch_nonempty_profiles"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 75,
+      "column": 5,
+      "name": "change",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "patch_version.change"
+    },
+    {
+      "file": "e2e/mitmproxy/response_overrides.py",
+      "line": 138,
+      "column": 5,
+      "name": "change",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "patch_selected_profiles.change"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 8,
+      "column": 1,
+      "name": "command_object",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "command_object"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 15,
+      "column": 1,
+      "name": "validate_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 23,
+      "column": 1,
+      "name": "validate_owner_field",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_owner_field"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 29,
+      "column": 1,
+      "name": "validate_fields",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_fields"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 37,
+      "column": 1,
+      "name": "validate_room",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_room"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 45,
+      "column": 1,
+      "name": "validate_observed_room",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_observed_room"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 51,
+      "column": 1,
+      "name": "validate_user",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validate_user"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 61,
+      "column": 5,
+      "name": "control",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioControl.control"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 73,
+      "column": 5,
+      "name": "dispatch_control",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioControl.dispatch_control"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 81,
+      "column": 5,
+      "name": "read_status",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioControl.read_status"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 84,
+      "column": 5,
+      "name": "environment",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioControl.environment"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 90,
+      "column": 5,
+      "name": "select",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioControl.select"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 100,
+      "column": 5,
+      "name": "select_validated",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioControl.select_validated"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 111,
+      "column": 5,
+      "name": "reset_observations",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioControl.reset_observations"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_control.py",
+      "line": 117,
+      "column": 5,
+      "name": "wait",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioControl.wait"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_data.py",
+      "line": 23,
+      "column": 1,
+      "name": "data",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "data"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_data.py",
+      "line": 28,
+      "column": 1,
+      "name": "respond",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "respond"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_data.py",
+      "line": 37,
+      "column": 1,
+      "name": "result",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "result"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_data.py",
+      "line": 42,
+      "column": 1,
+      "name": "clubs",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "clubs"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_data.py",
+      "line": 50,
+      "column": 1,
+      "name": "applications",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "applications"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 17,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.__init__"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 33,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.status"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 38,
+      "column": 5,
+      "name": "slot_reply",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.slot_reply"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 46,
+      "column": 5,
+      "name": "owned_slot_reply",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.owned_slot_reply"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 55,
+      "column": 5,
+      "name": "slot_result",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.slot_result"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 61,
+      "column": 5,
+      "name": "slot_energy",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.slot_energy"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_fixtures.py",
+      "line": 70,
+      "column": 5,
+      "name": "slot_reward",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtures.slot_reward"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 12,
+      "column": 1,
+      "name": "valid_feedback_origin",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "valid_feedback_origin"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 19,
+      "column": 1,
+      "name": "json_body",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "json_body"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 27,
+      "column": 1,
+      "name": "slot_path",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "slot_path"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 32,
+      "column": 1,
+      "name": "kill",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "kill"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 41,
+      "column": 5,
+      "name": "is_feedback",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.is_feedback"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 49,
+      "column": 5,
+      "name": "feedback_matches",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.feedback_matches"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 56,
+      "column": 5,
+      "name": "blocks_payment",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.blocks_payment"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 62,
+      "column": 5,
+      "name": "payment_path",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.payment_path"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 68,
+      "column": 5,
+      "name": "blocked_write_error",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.blocked_write_error"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 74,
+      "column": 5,
+      "name": "registration_error",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.registration_error"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 80,
+      "column": 5,
+      "name": "own_club_list",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.own_club_list"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 88,
+      "column": 5,
+      "name": "environment_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.environment_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 97,
+      "column": 5,
+      "name": "chat_request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.chat_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 101,
+      "column": 5,
+      "name": "feedback_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.feedback_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 111,
+      "column": 5,
+      "name": "request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 120,
+      "column": 5,
+      "name": "skip_request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.skip_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 126,
+      "column": 5,
+      "name": "business_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.business_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 132,
+      "column": 5,
+      "name": "fixture_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.fixture_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 141,
+      "column": 5,
+      "name": "country_request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.country_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 148,
+      "column": 5,
+      "name": "scene_request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.scene_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 160,
+      "column": 5,
+      "name": "launch_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.launch_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 165,
+      "column": 5,
+      "name": "slot_request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.slot_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 170,
+      "column": 5,
+      "name": "matching_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.matching_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 176,
+      "column": 5,
+      "name": "club_empty_request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.club_empty_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 181,
+      "column": 5,
+      "name": "mall_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.mall_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 186,
+      "column": 5,
+      "name": "wallet_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.wallet_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 196,
+      "column": 5,
+      "name": "wallet_path",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.wallet_path"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 201,
+      "column": 5,
+      "name": "bonus_request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.bonus_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 207,
+      "column": 5,
+      "name": "invitation_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.invitation_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 217,
+      "column": 5,
+      "name": "invitation_batch",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.invitation_batch"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 221,
+      "column": 5,
+      "name": "skeleton_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.skeleton_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 228,
+      "column": 5,
+      "name": "club_identifiers",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.club_identifiers"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 232,
+      "column": 5,
+      "name": "skeleton_details",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.skeleton_details"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 239,
+      "column": 5,
+      "name": "pagination_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.pagination_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 246,
+      "column": 5,
+      "name": "pagination_path",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.pagination_path"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 251,
+      "column": 5,
+      "name": "pagination_reply",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.pagination_reply"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 261,
+      "column": 5,
+      "name": "processed_page",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.processed_page"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 267,
+      "column": 5,
+      "name": "failure_target",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.failure_target"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 273,
+      "column": 5,
+      "name": "failure_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.failure_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 280,
+      "column": 5,
+      "name": "record_failure",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.record_failure"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 286,
+      "column": 5,
+      "name": "rebuy_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.rebuy_request"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 296,
+      "column": 5,
+      "name": "wallet_statements",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.wallet_statements"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_http.py",
+      "line": 300,
+      "column": 5,
+      "name": "bonus_reply",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioHttp.bonus_reply"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 8,
+      "column": 1,
+      "name": "house_response",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "house_response"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 14,
+      "column": 1,
+      "name": "creation_response",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "creation_response"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 20,
+      "column": 1,
+      "name": "creation_action",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "creation_action"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 30,
+      "column": 1,
+      "name": "created_room",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "created_room"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 35,
+      "column": 1,
+      "name": "change_coin",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "change_coin"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 41,
+      "column": 1,
+      "name": "change_wallet",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "change_wallet"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 54,
+      "column": 5,
+      "name": "response",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioResponse.response"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 60,
+      "column": 5,
+      "name": "observe_response",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioResponse.observe_response"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 72,
+      "column": 5,
+      "name": "observe_owner",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioResponse.observe_owner"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 79,
+      "column": 5,
+      "name": "observe_house",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioResponse.observe_house"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 86,
+      "column": 5,
+      "name": "observe_creation",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioResponse.observe_creation"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_response.py",
+      "line": 93,
+      "column": 5,
+      "name": "patch_wallet",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioResponse.patch_wallet"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 10,
+      "column": 1,
+      "name": "command_payload",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "command_payload"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 16,
+      "column": 1,
+      "name": "parse_websocket_command",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "parse_websocket_command"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 28,
+      "column": 1,
+      "name": "client_text",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "client_text"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 33,
+      "column": 1,
+      "name": "inject_replies",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "inject_replies"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 40,
+      "column": 1,
+      "name": "write_forward",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "write_forward"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 50,
+      "column": 5,
+      "name": "socket_enabled",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioSocket.socket_enabled"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 56,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioSocket.websocket_message"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 65,
+      "column": 5,
+      "name": "socket_batch",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioSocket.socket_batch"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 74,
+      "column": 5,
+      "name": "socket_line",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioSocket.socket_line"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 84,
+      "column": 5,
+      "name": "finish_line",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioSocket.finish_line"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 93,
+      "column": 5,
+      "name": "socket_answer",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioSocket.socket_answer"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 100,
+      "column": 5,
+      "name": "rpc_answer",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioSocket.rpc_answer"
+    },
+    {
+      "file": "e2e/mitmproxy/scenario_socket.py",
+      "line": 106,
+      "column": 5,
+      "name": "business_answer",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioSocket.business_answer"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 14,
+      "column": 5,
+      "name": "test_新节点标签与浏览器一致且重复脱敏保持稳定",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_新节点标签与浏览器一致且重复脱敏保持稳定"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 37,
+      "column": 5,
+      "name": "test_共用路径登记保留操作语义且重复清理不改变实体模板",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_共用路径登记保留操作语义且重复清理不改变实体模板"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 45,
+      "column": 5,
+      "name": "test_相对路径与事件名不保留任意连接资料或凭据",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_相对路径与事件名不保留任意连接资料或凭据"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 70,
+      "column": 5,
+      "name": "test_原因只识别已知错误首部而不扫描地址凭据或后续诊断",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_原因只识别已知错误首部而不扫描地址凭据或后续诊断"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 107,
+      "column": 5,
+      "name": "test_错误中的连接地址与主机不进入公开诊断",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_错误中的连接地址与主机不进入公开诊断"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 125,
+      "column": 5,
+      "name": "test_严格来源匹配包含协议和端口且响应编号只能来自本轮服务",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_严格来源匹配包含协议和端口且响应编号只能来自本轮服务"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 140,
+      "column": 5,
+      "name": "test_错误与服务端关闭文本不记录未知凭据或任意业务正文",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_错误与服务端关闭文本不记录未知凭据或任意业务正文"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 154,
+      "column": 5,
+      "name": "test_请求地址实际连接及模拟响应分别核验且不猜测无响应状态",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_请求地址实际连接及模拟响应分别核验且不猜测无响应状态"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 173,
+      "column": 5,
+      "name": "test_两个认证控制入口不进入业务请求响应或错误诊断",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_两个认证控制入口不进入业务请求响应或错误诊断"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 185,
+      "column": 5,
+      "name": "test_来源分类与主机脱敏",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_来源分类与主机脱敏"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 197,
+      "column": 5,
+      "name": "test_节点资料不保存地址或其他响应字段",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_节点资料不保存地址或其他响应字段"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 212,
+      "column": 5,
+      "name": "test_订阅确认与关闭仍可关联",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_订阅确认与关闭仍可关联"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 234,
+      "column": 5,
+      "name": "test_容量边界与错误脱敏",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_容量边界与错误脱敏"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 245,
+      "column": 5,
+      "name": "check_path_template",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.check_path_template"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 252,
+      "column": 5,
+      "name": "check_known_path",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.check_known_path"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 258,
+      "column": 5,
+      "name": "check_release_origin",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.check_release_origin"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 282,
+      "column": 5,
+      "name": "check_actual_connection",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.check_actual_connection"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 313,
+      "column": 5,
+      "name": "record_source",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.record_source"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 322,
+      "column": 5,
+      "name": "assert_hidden",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.assert_hidden"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 327,
+      "column": 5,
+      "name": "expected_identifier",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.expected_identifier"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 331,
+      "column": 5,
+      "name": "assert_observed_status",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.assert_observed_status"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 15,
+      "column": 1,
+      "name": "flow",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "flow"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 28,
+      "column": 1,
+      "name": "source_environment",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "source_environment"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 36,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 42,
+      "column": 5,
+      "name": "configure",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.configure"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 51,
+      "column": 5,
+      "name": "test_控制命令必须认证并匹配有效场景",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_控制命令必须认证并匹配有效场景"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 61,
+      "column": 5,
+      "name": "test_大厅只延迟首次请求且关闭场景后恢复透传",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_大厅只延迟首次请求且关闭场景后恢复透传"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 78,
+      "column": 5,
+      "name": "test_延迟不阻塞控制或无关请求",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_延迟不阻塞控制或无关请求"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 103,
+      "column": 5,
+      "name": "test_登录和俱乐部故障严格限定来源与路径",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_登录和俱乐部故障严格限定来源与路径"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 124,
+      "column": 5,
+      "name": "test_登录保留既有用户分支且不计为故障",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_登录保留既有用户分支且不计为故障"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 142,
+      "column": 5,
+      "name": "test_俱乐部搜索只返回指定的固定俱乐部",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_俱乐部搜索只返回指定的固定俱乐部"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 179,
+      "column": 5,
+      "name": "test_搜索未命中流量及预检均透传",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_搜索未命中流量及预检均透传"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 192,
+      "column": 5,
+      "name": "test_正常视觉模式不拦截任何候选节点或元数据",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_正常视觉模式不拦截任何候选节点或元数据"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 207,
+      "column": 5,
+      "name": "check_search_passthrough",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.check_search_passthrough"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 216,
+      "column": 5,
+      "name": "check_visual_passthrough",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.check_visual_passthrough"
+    },
+    {
+      "file": "e2e/mitmproxy/test_network_faults.py",
+      "line": 84,
+      "column": 9,
+      "name": "delay",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "NetworkFaultTests.test_延迟不阻塞控制或无关请求.delay"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 23,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 29,
+      "column": 5,
+      "name": "test_默认透传但商城和视觉环境拒绝订单写入",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.test_默认透传但商城和视觉环境拒绝订单写入"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 44,
+      "column": 5,
+      "name": "test_长连接订单隔离保留订阅心跳读取和回复顺序",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.test_长连接订单隔离保留订阅心跳读取和回复顺序"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 49,
+      "column": 5,
+      "name": "test_未命中长连接内容逐字透传且不处理服务端或已注入消息",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.test_未命中长连接内容逐字透传且不处理服务端或已注入消息"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 66,
+      "column": 5,
+      "name": "check_payment_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.check_payment_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 73,
+      "column": 5,
+      "name": "check_payment_method",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.check_payment_method"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 85,
+      "column": 5,
+      "name": "check_socket_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.check_socket_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 103,
+      "column": 5,
+      "name": "payment_commands",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.payment_commands"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 112,
+      "column": 5,
+      "name": "command_text",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.command_text"
+    },
+    {
+      "file": "e2e/mitmproxy/test_payment_isolation.py",
+      "line": 116,
+      "column": 5,
+      "name": "assert_blocked_socket",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "PaymentIsolationTests.assert_blocked_socket"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 14,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 23,
+      "column": 5,
+      "name": "test_真实钩子类型记录连接及断开且同一连接的多请求可以关联",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.test_真实钩子类型记录连接及断开且同一连接的多请求可以关联"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 44,
+      "column": 5,
+      "name": "test_未连接及连接到不同peer不猜测响应或实际来源",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.test_未连接及连接到不同peer不猜测响应或实际来源"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 56,
+      "column": 5,
+      "name": "test_其他目标和无效配置不收集也不改变真实连接",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.test_其他目标和无效配置不收集也不改变真实连接"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 71,
+      "column": 5,
+      "name": "test_连接事件共用有界时间线且超限可见",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.test_连接事件共用有界时间线且超限可见"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 78,
+      "column": 5,
+      "name": "record_reused_request",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.record_reused_request"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 86,
+      "column": 5,
+      "name": "assert_tcp_event",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.assert_tcp_event"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_connection_lifecycle.py",
+      "line": 92,
+      "column": 5,
+      "name": "assert_no_connection_secrets",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseConnectionTests.assert_no_connection_secrets"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_http1_close.py",
+      "line": 16,
+      "column": 5,
+      "name": "client",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseHttp1CloseTests.client"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_http1_close.py",
+      "line": 29,
+      "column": 5,
+      "name": "test_完整正文后即关闭不等FIN且keepalive对照仍可复用",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseHttp1CloseTests.test_完整正文后即关闭不等FIN且keepalive对照仍可复用"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_http1_close.py",
+      "line": 34,
+      "column": 5,
+      "name": "test_提前断开不能因ConnectionClose而当作完整正文",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseHttp1CloseTests.test_提前断开不能因ConnectionClose而当作完整正文"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_http1_close.py",
+      "line": 44,
+      "column": 5,
+      "name": "check_complete_response",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseHttp1CloseTests.check_complete_response"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_http1_close.py",
+      "line": 59,
+      "column": 5,
+      "name": "assert_closed_connection",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseHttp1CloseTests.assert_closed_connection"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 18,
+      "column": 1,
+      "name": "stop",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "stop"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 31,
+      "column": 5,
+      "name": "wait_for",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.wait_for"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 42,
+      "column": 5,
+      "name": "diagnostics",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.diagnostics"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 54,
+      "column": 5,
+      "name": "server_events",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.server_events"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 58,
+      "column": 5,
+      "name": "test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 109,
+      "column": 5,
+      "name": "check_connect_failure",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.check_connect_failure"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 127,
+      "column": 5,
+      "name": "check_stream_cleanup",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.check_stream_cleanup"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 138,
+      "column": 5,
+      "name": "check_read_failure",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.check_read_failure"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 150,
+      "column": 5,
+      "name": "check_release_connections",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.check_release_connections"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 166,
+      "column": 5,
+      "name": "check_proxy_connections",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.check_proxy_connections"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 179,
+      "column": 5,
+      "name": "read_twice",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.read_twice"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 191,
+      "column": 5,
+      "name": "check_processes",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.check_processes"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 196,
+      "column": 5,
+      "name": "process_failure_reason",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.process_failure_reason"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 200,
+      "column": 5,
+      "name": "attempt",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.attempt"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 208,
+      "column": 5,
+      "name": "streams_closed",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.streams_closed"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 214,
+      "column": 5,
+      "name": "request_events",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.request_events"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 83,
+      "column": 31,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 96,
+      "column": 23,
+      "name": "<lambda>",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 129,
+      "column": 23,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.check_stream_cleanup.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 152,
+      "column": 23,
+      "name": "<lambda>",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.check_release_connections.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
+      "line": 175,
+      "column": 23,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReleaseLifecycleIntegrationTests.check_proxy_connections.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 19,
+      "column": 5,
+      "name": "scene",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.scene"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 23,
+      "column": 5,
+      "name": "test_texas_streets_preserve_order_cards_seats_and_owner",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_texas_streets_preserve_order_cards_seats_and_owner"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 41,
+      "column": 5,
+      "name": "test_layouts_keep_full_table_side_pots_and_observer_without_private_hand",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_layouts_keep_full_table_side_pots_and_observer_without_private_hand"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 60,
+      "column": 5,
+      "name": "test_zhajinhua_seen_cards_double_own_bets_and_keep_opponent_blind",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_zhajinhua_seen_cards_double_own_bets_and_keep_opponent_blind"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 68,
+      "column": 5,
+      "name": "test_countdown_keeps_snapshot_timer_and_changes_only_live_operation_limit",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_countdown_keeps_snapshot_timer_and_changes_only_live_operation_limit"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 73,
+      "column": 5,
+      "name": "test_catalogs_are_used_and_all_parameter_choices_resolve_without_mutating_files",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_catalogs_are_used_and_all_parameter_choices_resolve_without_mutating_files"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 79,
+      "column": 5,
+      "name": "test_response_payloads_unknown_scenes_and_unbounded_parameters_are_rejected",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_response_payloads_unknown_scenes_and_unbounded_parameters_are_rejected"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 92,
+      "column": 5,
+      "name": "test_publish_requires_one_confirmed_live_owner_and_keeps_direction_in_existing_replay",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.test_publish_requires_one_confirmed_live_owner_and_keeps_direction_in_existing_replay"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 119,
+      "column": 5,
+      "name": "check_seen_turn",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.check_seen_turn"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 128,
+      "column": 5,
+      "name": "check_countdown",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.check_countdown"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 135,
+      "column": 5,
+      "name": "check_timer_event",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.check_timer_event"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 142,
+      "column": 5,
+      "name": "check_catalog",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.check_catalog"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 149,
+      "column": 5,
+      "name": "check_catalog_template",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.check_catalog_template"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 157,
+      "column": 5,
+      "name": "visual_sources",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.visual_sources"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 162,
+      "column": 5,
+      "name": "template_parameters",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.template_parameters"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 170,
+      "column": 5,
+      "name": "action_parameters",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.action_parameters"
+    },
+    {
+      "file": "e2e/mitmproxy/test_replay_scenes.py",
+      "line": 177,
+      "column": 5,
+      "name": "example_action",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ReplaySceneTests.example_action"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 13,
+      "column": 5,
+      "name": "test_主机必须与明确输入逐字匹配且损坏配置默认透传",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.test_主机必须与明确输入逐字匹配且损坏配置默认透传"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 24,
+      "column": 5,
+      "name": "metadata",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.metadata"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 33,
+      "column": 5,
+      "name": "test_字段覆盖保留压缩响应与未知字段",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.test_字段覆盖保留压缩响应与未知字段"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 46,
+      "column": 5,
+      "name": "test_版本覆盖保留新字段且不补造已删除字段",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.test_版本覆盖保留新字段且不补造已删除字段"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides.py",
+      "line": 57,
+      "column": 5,
+      "name": "test_混合资料保留真实账号且只补充明确请求的虚拟玩家",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ResponseOverrideTests.test_混合资料保留真实账号且只补充明确请求的虚拟玩家"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 32,
+      "column": 5,
+      "name": "do_GET",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_GET"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 50,
+      "column": 5,
+      "name": "request_hostname",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "Upstream.request_hostname"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 54,
+      "column": 5,
+      "name": "response_body",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "Upstream.response_body"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 64,
+      "column": 5,
+      "name": "metadata_body",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "Upstream.metadata_body"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 70,
+      "column": 5,
+      "name": "metadata_servers",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "Upstream.metadata_servers"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 76,
+      "column": 5,
+      "name": "health_body",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "Upstream.health_body"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 82,
+      "column": 5,
+      "name": "health_delay",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.health_delay"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 86,
+      "column": 5,
+      "name": "response_status",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "Upstream.response_status"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 90,
+      "column": 5,
+      "name": "response_content",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "Upstream.response_content"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 94,
+      "column": 5,
+      "name": "do_POST",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_POST"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 100,
+      "column": 5,
+      "name": "do_PUT",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_PUT"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 104,
+      "column": 5,
+      "name": "do_OPTIONS",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_OPTIONS"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 111,
+      "column": 5,
+      "name": "log_message",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.log_message"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 118,
+      "column": 5,
+      "name": "test_五个代理保留全部候选节点及真实健康结果",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.test_五个代理保留全部候选节点及真实健康结果"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 138,
+      "column": 5,
+      "name": "check_addon",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_addon"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 165,
+      "column": 5,
+      "name": "check_metadata",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_metadata"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 170,
+      "column": 5,
+      "name": "check_scenes",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_scenes"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 196,
+      "column": 5,
+      "name": "check_health",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_health"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 207,
+      "column": 5,
+      "name": "check_club_boundaries",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_club_boundaries"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 229,
+      "column": 5,
+      "name": "check_game_hold",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_game_hold"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 260,
+      "column": 5,
+      "name": "check_preflight",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_preflight"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 267,
+      "column": 5,
+      "name": "check_diagnostics",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_diagnostics"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 282,
+      "column": 5,
+      "name": "fetch",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.fetch"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 296,
+      "column": 5,
+      "name": "check_metadata_path",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_metadata_path"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 303,
+      "column": 5,
+      "name": "check_metadata_method",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_metadata_method"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 308,
+      "column": 5,
+      "name": "check_metadata_query",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_metadata_query"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 321,
+      "column": 5,
+      "name": "check_club_scene",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_club_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 336,
+      "column": 5,
+      "name": "assert_health_diagnostic",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.assert_health_diagnostic"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 342,
+      "column": 5,
+      "name": "expected_status",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.expected_status"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 346,
+      "column": 5,
+      "name": "expected_servers",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.expected_servers"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 352,
+      "column": 5,
+      "name": "assert_metadata_body",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.assert_metadata_body"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 359,
+      "column": 5,
+      "name": "wait_proxy",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.wait_proxy"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 368,
+      "column": 5,
+      "name": "proxy_ready",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.proxy_ready"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 377,
+      "column": 5,
+      "name": "check_proxy_alive",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_proxy_alive"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 383,
+      "column": 5,
+      "name": "stop_proxy",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.stop_proxy"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 392,
+      "column": 5,
+      "name": "check_diagnostic_addon",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_diagnostic_addon"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 397,
+      "column": 5,
+      "name": "check_specific_scenes",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.check_specific_scenes"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 404,
+      "column": 5,
+      "name": "response_headers",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.response_headers"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 408,
+      "column": 5,
+      "name": "decode_content",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.decode_content"
+    },
+    {
+      "file": "e2e/mitmproxy/test_response_overrides_integration.py",
+      "line": 416,
+      "column": 5,
+      "name": "decode_body",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "LiveOverrideTests.decode_body"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 26,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 32,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.control"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 39,
+      "column": 5,
+      "name": "request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.request"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 45,
+      "column": 5,
+      "name": "test_反馈来源必须显式配置且严格匹配协议主机端口",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_反馈来源必须显式配置且严格匹配协议主机端口"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 57,
+      "column": 5,
+      "name": "test_能量就绪计数只接受所属账号且切换场景重置",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_能量就绪计数只接受所属账号且切换场景重置"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 75,
+      "column": 5,
+      "name": "test_私人房资料的真实读取方法绑定归属且不修改上游响应",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_私人房资料的真实读取方法绑定归属且不修改上游响应"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 80,
+      "column": 5,
+      "name": "test_默认和未匹配流量含初始化均透传",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_默认和未匹配流量含初始化均透传"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 88,
+      "column": 5,
+      "name": "test_控制命令原子拒绝响应载荷错误阶段与其他归属",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_控制命令原子拒绝响应载荷错误阶段与其他归属"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 100,
+      "column": 5,
+      "name": "test_环境必须显式选择且保留真实登录健康与预检",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_环境必须显式选择且保留真实登录健康与预检"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 119,
+      "column": 5,
+      "name": "test_分页保留游标顺序与末页行为",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_分页保留游标顺序与末页行为"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 136,
+      "column": 5,
+      "name": "test_钱包空态只匹配所选账号的只读账单",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_钱包空态只匹配所选账号的只读账单"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 146,
+      "column": 5,
+      "name": "test_俱乐部列表夹具必须绑定唯一所属账号",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_俱乐部列表夹具必须绑定唯一所属账号"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 151,
+      "column": 5,
+      "name": "test_故障释放后重新读取真实上游",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_故障释放后重新读取真实上游"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 164,
+      "column": 5,
+      "name": "test_骨架详情保持虚拟批次的暂缓与释放",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_骨架详情保持虚拟批次的暂缓与释放"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 183,
+      "column": 5,
+      "name": "test_启动等待释放后不替换健康响应",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_启动等待释放后不替换健康响应"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 194,
+      "column": 5,
+      "name": "test_每日奖励仅在真实上游成功后修改所属账号金币",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_每日奖励仅在真实上游成功后修改所属账号金币"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 218,
+      "column": 5,
+      "name": "test_自动补充必须绑定成功建房且隔离所属写入",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_自动补充必须绑定成功建房且隔离所属写入"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 245,
+      "column": 5,
+      "name": "test_邀请面板只替换本人房屋的确切批次且保留真实资料",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_邀请面板只替换本人房屋的确切批次且保留真实资料"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 263,
+      "column": 5,
+      "name": "test_老虎机隔离未绑定与其他账号的旋转请求",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_老虎机隔离未绑定与其他账号的旋转请求"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 275,
+      "column": 5,
+      "name": "test_混合长连接批次保留订阅心跳与回复顺序",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_混合长连接批次保留订阅心跳与回复顺序"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 301,
+      "column": 5,
+      "name": "test_匹配场景隔离两种传输的写入",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.test_匹配场景隔离两种传输的写入"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 317,
+      "column": 5,
+      "name": "check_house_method",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.check_house_method"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 335,
+      "column": 5,
+      "name": "check_default_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.check_default_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 347,
+      "column": 5,
+      "name": "check_club_scene",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.check_club_scene"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 372,
+      "column": 5,
+      "name": "expected_house_owner",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.expected_house_owner"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 376,
+      "column": 5,
+      "name": "expected_club_count",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.expected_club_count"
+    },
+    {
+      "file": "e2e/mitmproxy/test_scenario_fixtures.py",
+      "line": 380,
+      "column": 5,
+      "name": "club_ids",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ScenarioFixtureTests.club_ids"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 14,
+      "column": 5,
+      "name": "install_marker",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.install_marker"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 20,
+      "column": 5,
+      "name": "test_仅画面依赖可用时不能固定到端到端目录",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_仅画面依赖可用时不能固定到端到端目录"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 27,
+      "column": 5,
+      "name": "test_多项目已安装时优先使用调用方依赖而不串用版本",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_多项目已安装时优先使用调用方依赖而不串用版本"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 36,
+      "column": 5,
+      "name": "test_没有已安装依赖时明确失败而不跳过浏览器回归",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_没有已安装依赖时明确失败而不跳过浏览器回归"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 43,
+      "column": 5,
+      "name": "test_子项目缺少自身依赖时不能借用根目录其他版本",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_子项目缺少自身依赖时不能借用根目录其他版本"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 52,
+      "column": 5,
+      "name": "test_真实模块缺失保留阶段和原因但不输出任意启动参数",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_真实模块缺失保留阶段和原因但不输出任意启动参数"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 64,
+      "column": 5,
+      "name": "test_真实浏览器启动失败不能输出执行路径或凭据",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_真实浏览器启动失败不能输出执行路径或凭据"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_browser_launcher.py",
+      "line": 78,
+      "column": 5,
+      "name": "test_未知异常正文和伪造诊断字段不能进入断言说明",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementBrowserLauncherTests.test_未知异常正文和伪造诊断字段不能进入断言说明"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 64,
+      "column": 1,
+      "name": "browser_working_directory",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "browser_working_directory"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 71,
+      "column": 1,
+      "name": "browser_failure_diagnostic",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "browser_failure_diagnostic"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 79,
+      "column": 1,
+      "name": "browser_projects",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "browser_projects"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 85,
+      "column": 1,
+      "name": "installed_browser_project",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "installed_browser_project"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 93,
+      "column": 1,
+      "name": "browser_diagnostic_line",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "browser_diagnostic_line"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 103,
+      "column": 1,
+      "name": "validated_browser_diagnostic",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "validated_browser_diagnostic"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 113,
+      "column": 1,
+      "name": "page_response",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "page_response"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 122,
+      "column": 5,
+      "name": "do_OPTIONS",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_OPTIONS"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 135,
+      "column": 5,
+      "name": "do_GET",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_GET"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 148,
+      "column": 5,
+      "name": "do_POST",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.do_POST"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 158,
+      "column": 5,
+      "name": "log_message",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "Upstream.log_message"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 165,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 196,
+      "column": 5,
+      "name": "stop_upstream",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.stop_upstream"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 202,
+      "column": 5,
+      "name": "stop_proxy",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.stop_proxy"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 211,
+      "column": 5,
+      "name": "request",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.request"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 222,
+      "column": 5,
+      "name": "control",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.control"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 226,
+      "column": 5,
+      "name": "browse",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.browse"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 240,
+      "column": 5,
+      "name": "test_独立依赖布局均能启动真实浏览器并保留预检负例",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.test_独立依赖布局均能启动真实浏览器并保留预检负例"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 257,
+      "column": 5,
+      "name": "test_上游预检无响应时当前房间仍通过本地预检读取空榜",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.test_上游预检无响应时当前房间仍通过本地预检读取空榜"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 268,
+      "column": 5,
+      "name": "test_不匹配预检仍依赖上游且真实业务失败保持失败",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.test_不匹配预检仍依赖上游且真实业务失败保持失败"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 282,
+      "column": 5,
+      "name": "wait_proxy",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.wait_proxy"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 291,
+      "column": 5,
+      "name": "proxy_ready",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.proxy_ready"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 299,
+      "column": 5,
+      "name": "check_proxy_alive",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.check_proxy_alive"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 304,
+      "column": 5,
+      "name": "fixture_reads",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.fixture_reads"
+    },
+    {
+      "file": "e2e/mitmproxy/test_settlement_preflight.py",
+      "line": 309,
+      "column": 5,
+      "name": "fixture_read",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "SettlementPreflightTests.fixture_read"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 19,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.setUp"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 25,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.control"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 32,
+      "column": 5,
+      "name": "request",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.request"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 38,
+      "column": 5,
+      "name": "test_非空流水必须显式选择并绑定账号且只拦截确切只读接口",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.test_非空流水必须显式选择并绑定账号且只拦截确切只读接口"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 55,
+      "column": 5,
+      "name": "test_两种币种各含四条逆序收支且余额连续并能独立切回空态",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.test_两种币种各含四条逆序收支且余额连续并能独立切回空态"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 69,
+      "column": 5,
+      "name": "check_currency_records",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.check_currency_records"
+    },
+    {
+      "file": "e2e/mitmproxy/test_wallet_statements.py",
+      "line": 85,
+      "column": 5,
+      "name": "check_record_balance",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "WalletStatementTests.check_record_balance"
+    },
+    {
+      "file": "e2e/mitmproxy/visual_control.py",
+      "line": 10,
+      "column": 1,
+      "name": "respond",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "respond"
+    },
+    {
+      "file": "e2e/mitmproxy/visual_control.py",
+      "line": 21,
+      "column": 1,
+      "name": "control",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "control"
+    },
+    {
+      "file": "e2e/mitmproxy/visual_control.py",
+      "line": 34,
+      "column": 1,
+      "name": "route_request",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "route_request"
+    },
+    {
+      "file": "e2e/mitmproxy/visual_control.py",
+      "line": 44,
+      "column": 1,
+      "name": "dispatch_command",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "dispatch_command"
+    },
+    {
+      "file": "e2e/mitmproxy/visual_control.py",
+      "line": 53,
+      "column": 1,
+      "name": "route_control",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "route_control"
+    },
+    {
+      "file": "e2e/mitmproxy/visual_control.py",
+      "line": 61,
+      "column": 1,
+      "name": "route_business",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "route_business"
+    },
+    {
+      "file": "scripts/e2e-proxy-complexity.py",
+      "line": 28,
+      "column": 1,
+      "name": "adjacent_scope",
+      "complexity": 4,
+      "limit": 6,
+      "qualifiedName": "adjacent_scope"
+    },
+    {
+      "file": "scripts/e2e-proxy-complexity.py",
+      "line": 38,
+      "column": 1,
+      "name": "read_dependencies",
+      "complexity": 1,
+      "limit": 6,
+      "qualifiedName": "read_dependencies"
+    },
+    {
+      "file": "scripts/e2e-proxy-complexity.py",
+      "line": 43,
+      "column": 1,
+      "name": "scan",
+      "complexity": 4,
+      "limit": 6,
+      "qualifiedName": "scan"
+    },
+    {
+      "file": "scripts/e2e-proxy-complexity.py",
+      "line": 60,
+      "column": 1,
+      "name": "task_measured",
+      "complexity": 2,
+      "limit": 6,
+      "qualifiedName": "task_measured"
+    },
+    {
+      "file": "scripts/e2e-proxy-complexity.py",
+      "line": 65,
+      "column": 1,
+      "name": "extend_scope",
+      "complexity": 2,
+      "limit": 6,
+      "qualifiedName": "extend_scope"
+    },
+    {
+      "file": "scripts/e2e-proxy-complexity.py",
+      "line": 71,
+      "column": 1,
+      "name": "main",
+      "complexity": 3,
+      "limit": 6,
+      "qualifiedName": "main"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 32,
+      "column": 1,
+      "name": "function_complexity",
+      "complexity": 3,
+      "limit": 6,
+      "qualifiedName": "function_complexity"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 41,
+      "column": 1,
+      "name": "measurements",
+      "complexity": 3,
+      "limit": 6,
+      "qualifiedName": "measurements"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 54,
+      "column": 1,
+      "name": "adjacent_scope",
+      "complexity": 3,
+      "limit": 6,
+      "qualifiedName": "adjacent_scope"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 65,
+      "column": 1,
+      "name": "import_names",
+      "complexity": 5,
+      "limit": 6,
+      "qualifiedName": "import_names"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 73,
+      "column": 1,
+      "name": "import_directories",
+      "complexity": 3,
+      "limit": 6,
+      "qualifiedName": "import_directories"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 80,
+      "column": 1,
+      "name": "candidate_modules",
+      "complexity": 4,
+      "limit": 6,
+      "qualifiedName": "candidate_modules"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 91,
+      "column": 1,
+      "name": "local_dependencies",
+      "complexity": 6,
+      "limit": 6,
+      "qualifiedName": "local_dependencies"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 100,
+      "column": 1,
+      "name": "extend_scope",
+      "complexity": 2,
+      "limit": 6,
+      "qualifiedName": "extend_scope"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 108,
+      "column": 1,
+      "name": "scan",
+      "complexity": 6,
+      "limit": 6,
+      "qualifiedName": "scan"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 130,
+      "column": 1,
+      "name": "violations",
+      "complexity": 3,
+      "limit": 6,
+      "qualifiedName": "violations"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 135,
+      "column": 1,
+      "name": "main",
+      "complexity": 3,
+      "limit": 6,
+      "qualifiedName": "main"
+    },
+    {
+      "file": "scripts/python-tool-complexity.py",
+      "line": 24,
+      "column": 5,
+      "name": "visit_FunctionDef",
+      "complexity": 1,
+      "limit": 6,
+      "qualifiedName": "IsolatedComplexity.visit_FunctionDef"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 19,
+      "column": 1,
+      "name": "probe",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "probe"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 27,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.setUp"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 35,
+      "column": 5,
+      "name": "write",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.write"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 41,
+      "column": 5,
+      "name": "invalid",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.invalid"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 45,
+      "column": 5,
+      "name": "run_cli",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.run_cli"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 52,
+      "column": 5,
+      "name": "test_test_and_support_three_pass_four_fail",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_test_and_support_three_pass_four_fail"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 57,
+      "column": 5,
+      "name": "check_budget",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.check_budget"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 64,
+      "column": 5,
+      "name": "test_checker_tool_six_pass_seven_fail",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_checker_tool_six_pass_seven_fail"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 68,
+      "column": 5,
+      "name": "test_nested_async_class_lambda_and_defaults_are_independent",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_nested_async_class_lambda_and_defaults_are_independent"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 87,
+      "column": 5,
+      "name": "test_no_assert_uses_radon_decisions",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_no_assert_uses_radon_decisions"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 95,
+      "column": 5,
+      "name": "test_adjacent_test_and_transitive_extraction_inherit_three",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_adjacent_test_and_transitive_extraction_inherit_three"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 104,
+      "column": 5,
+      "name": "test_noqa_and_configuration_cannot_disable_cli",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_noqa_and_configuration_cannot_disable_cli"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 112,
+      "column": 5,
+      "name": "test_cli_success_is_a_nonempty_function_report",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_cli_success_is_a_nonempty_function_report"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 118,
+      "column": 5,
+      "name": "test_missing_dependency_is_nonzero",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_missing_dependency_is_nonzero"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 124,
+      "column": 5,
+      "name": "test_parse_failure_is_nonzero",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_parse_failure_is_nonzero"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 131,
+      "column": 5,
+      "name": "test_missing_required_file_is_nonzero",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_missing_required_file_is_nonzero"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 136,
+      "column": 5,
+      "name": "test_empty_scan_is_rejected",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_empty_scan_is_rejected"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 143,
+      "column": 5,
+      "name": "test_empty_task_with_nonempty_checker_is_nonzero",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_empty_task_with_nonempty_checker_is_nonzero"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 151,
+      "column": 5,
+      "name": "test_actual_scope_is_enforced_without_mutation",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_actual_scope_is_enforced_without_mutation"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 159,
+      "column": 5,
+      "name": "test_existing_lint_python_entry_blocks_over_limit_support",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_existing_lint_python_entry_blocks_over_limit_support"
+    }
+  ],
+  "validation": {
+    "targetedProxyTests": {
+      "passed": 79,
+      "failed": 0,
+      "skipped": 0
+    },
+    "gateTests": {
+      "passed": 14,
+      "covers": [
+        "test 3/4",
+        "tool 6/7",
+        "nested callbacks/classes/async/lambdas/defaults",
+        "transitive test support",
+        "noqa",
+        "parse error",
+        "missing dependency",
+        "missing file",
+        "empty scan",
+        "actual lint:python entry"
+      ]
+    },
+    "replayEquivalence": {
+      "cases": 134,
+      "result": "passed",
+      "ignoredFields": [
+        "sent_at"
+      ],
+      "scope": "两种玩法的全部街道、操作人、具名布局和回放目录参数组合；仅忽略实时生成的 sent_at，逐对象与 beforeRevision 源码比较。"
+    },
+    "commands": [
+      "npm run lint:python:proxy",
+      "node --test scripts/e2e-proxy-complexity.test.mjs scripts/python-tool-complexity.test.mjs",
+      "PYTHONPATH=e2e/mitmproxy /tmp/clrn-issue107-venv/bin/python -m unittest test_connection_diagnostics test_network_faults test_payment_isolation test_release_connection_lifecycle test_release_http1_close test_release_lifecycle_integration test_replay_scenes test_response_overrides test_response_overrides_integration test_scenario_fixtures test_settlement_browser_launcher test_settlement_preflight test_wallet_statements",
+      "PYTHONPATH=e2e/mitmproxy /tmp/clrn-issue107-venv/bin/python -m unittest test_sit_server_errors",
+      "/tmp/clrn-issue107-venv/bin/ruff check --no-cache --ignore-noqa e2e/mitmproxy/connection_diagnostics.py e2e/mitmproxy/network_faults.py e2e/mitmproxy/replay_scenes.py e2e/mitmproxy/response_overrides.py e2e/mitmproxy/scenario_fixtures.py e2e/mitmproxy/test_connection_diagnostics.py e2e/mitmproxy/test_network_faults.py e2e/mitmproxy/test_payment_isolation.py e2e/mitmproxy/test_release_connection_lifecycle.py e2e/mitmproxy/test_release_http1_close.py e2e/mitmproxy/test_release_lifecycle_integration.py e2e/mitmproxy/test_replay_scenes.py e2e/mitmproxy/test_response_overrides_integration.py e2e/mitmproxy/test_scenario_fixtures.py e2e/mitmproxy/test_settlement_preflight.py e2e/mitmproxy/test_wallet_statements.py e2e/mitmproxy/visual_control.py e2e/mitmproxy/diagnostic_release.py e2e/mitmproxy/diagnostic_socket.py e2e/mitmproxy/proxy_test_support.py e2e/mitmproxy/replay_table.py e2e/mitmproxy/scenario_control.py e2e/mitmproxy/scenario_data.py e2e/mitmproxy/scenario_http.py e2e/mitmproxy/scenario_response.py e2e/mitmproxy/scenario_socket.py scripts/e2e-proxy-complexity.py scripts/test_e2e_proxy_complexity.py",
+      "npx eslint scripts/e2e-proxy-complexity.test.mjs",
+      "git diff --check"
+    ],
+    "environmentSetup": "uv venv --python 3.12.12 /tmp/clrn-issue107-venv; uv pip install --python /tmp/clrn-issue107-venv/bin/python radon==6.0.1 mitmproxy==12.2.3 ruff==0.15.12; npm ci --ignore-scripts; npx playwright install chromium",
+    "runtimeScope": "已验证本机真实 mitmdump、生产 Node 发布服务和 Chromium 浏览器；未执行线上账号、固定游戏构建或真实设备 E2E。",
+    "fullTestSuiteRun": false
+  }
+}

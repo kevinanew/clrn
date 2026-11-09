@@ -13,7 +13,7 @@
     "lint:js": "npm run lint:e2e-complexity && npm run lint:visual-complexity && node scripts/quality.mjs javascript",
     "lint:e2e-complexity": "node scripts/e2e-complexity.mjs",
     "lint:visual-complexity": "node scripts/visual-complexity.mjs",
-    "lint:python": "npm run lint:python:lines && npm run lint:python:tools && node scripts/quality.mjs python",
+    "lint:python": "npm run lint:python:lines && npm run lint:python:tools && npm run lint:python:proxy && node scripts/quality.mjs python",
     "lint:python:lines": "node scripts/python-lines.mjs",
     "lint:python:tools": "uv run --no-project --python 3.12.12 --with radon==6.0.1 python scripts/python-tool-complexity.py && uvx --from ruff==0.15.12 ruff check --no-cache --ignore-noqa --config lint.mccabe.max-complexity=6 scripts/extract-web-package.py scripts/python-tool-complexity.py",
     "lint:shell": "node scripts/lint-shell.mjs",
@@ -22,7 +22,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p visual/tsconfig.json --noEmit",
     "lint:architecture": "node scripts/quality.mjs architecture",
     "lint:duplication": "node scripts/quality.mjs duplication",
-    "quality:report": "node scripts/quality.mjs report"
+    "quality:report": "node scripts/quality.mjs report",
+    "lint:python:proxy": "uv run --no-project --python 3.12.12 --with radon==6.0.1 python scripts/e2e-proxy-complexity.py && uvx --from ruff==0.15.12 ruff check --no-cache --ignore-noqa --config lint.mccabe.max-complexity=6 scripts/e2e-proxy-complexity.py"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

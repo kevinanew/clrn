@@ -3,6 +3,7 @@
 from decimal import Decimal
 import json
 import unittest
+from proxy_test_support import field_values
 from unittest.mock import patch
 from test_network_faults import flow, source_environment
 
@@ -56,26 +57,7 @@ class WalletStatementTests(unittest.IsolatedAsyncioTestCase):
         await self.control({'name': 'wallet-populated', 'userId': SELF})
         identifiers = set()
         for currency in ('coin', 'diamond'):
-            path = f'/v11/wallet/{SELF}/currency/{currency}/statement'
-            result = (await self.request(path)).response.json()['result']
-            self.assertEqual(result['currency_name'], currency, '外层币种必须匹配请求')
-            records = result['statements']
-            self.assertEqual(len(records), 4, '每种币种必须提供四条展示记录')
-            self.assertEqual({record['event'] for record in records}, {'deposit', 'withdraw'},
-                             '必须同时覆盖收入与支出')
-            self.assertEqual([record['create_at'] for record in records],
-                             sorted((record['create_at'] for record in records), reverse=True),
-                             '流水必须按时间逆序展示')
-            balance = Decimal(0)
-            for record in reversed(records):
-                self.assertEqual(record['currency_name'], currency, '条目不能串币种')
-                self.assertNotIn(record['statement_id'], identifiers, '流水标识必须跨币种唯一')
-                identifiers.add(record['statement_id'])
-                self.assertTrue(record['memo'], '每条流水必须有可读备注')
-                amount = Decimal(record['amount'])
-                self.assertGreater(amount, 0, '交易数量必须为正数，由事件决定收支方向')
-                balance += amount if record['event'] == 'deposit' else -amount
-                self.assertEqual(Decimal(record['balance']), balance, '每笔交易后的余额必须连续')
+            await self.check_currency_records(currency, identifiers)
         self.assertEqual(self.addon.status()['observed'], ['wallet:coin', 'wallet:diamond'],
                          '代理只记录币种命中，不记录真实用户标识')
         await self.control({'name': 'wallet-empty'})
@@ -83,3 +65,31 @@ class WalletStatementTests(unittest.IsolatedAsyncioTestCase):
             path = f'/v11/wallet/{SELF}/currency/{currency}/statement'
             self.assertEqual((await self.request(path)).response.json()['result'],
                              {'currency_name': currency, 'statements': []}, '空态不能遗留非空记录')
+
+    async def check_currency_records(self, currency, identifiers):
+        """验证币种、四条逆序收支以及跨币种唯一标识。"""
+        path = f'/v11/wallet/{SELF}/currency/{currency}/statement'
+        result = (await self.request(path)).response.json()['result']
+        self.assertEqual(result['currency_name'], currency, '外层币种必须匹配请求')
+        records = result['statements']
+        self.assertEqual(len(records), 4, '每种币种必须提供四条展示记录')
+        self.assertEqual({record['event'] for record in records}, {'deposit', 'withdraw'},
+                         '必须同时覆盖收入与支出')
+        self.assertEqual(field_values(records, 'create_at'),
+                         sorted(field_values(records, 'create_at'), reverse=True),
+                         '流水必须按时间逆序展示')
+        balance = Decimal(0)
+        for record in reversed(records):
+            balance = self.check_record_balance(record, currency, identifiers, balance)
+
+    def check_record_balance(self, record, currency, identifiers, balance):
+        """验证单笔数量、收支方向及连续余额。"""
+        self.assertEqual(record['currency_name'], currency, '条目不能串币种')
+        self.assertNotIn(record['statement_id'], identifiers, '流水标识必须跨币种唯一')
+        identifiers.add(record['statement_id'])
+        self.assertTrue(record['memo'], '每条流水必须有可读备注')
+        amount = Decimal(record['amount'])
+        self.assertGreater(amount, 0, '交易数量必须为正数，由事件决定收支方向')
+        balance += amount if record['event'] == 'deposit' else -amount
+        self.assertEqual(Decimal(record['balance']), balance, '每笔交易后的余额必须连续')
+        return balance

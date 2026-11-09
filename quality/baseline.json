@@ -1283,66 +1283,6 @@
       "reason": "既有页面准备离线单测：WebP 成功/损坏/失败资源，保留浏览器回归验证。"
     },
     {
-      "file": "e2e/mitmproxy/replay_scenes.py",
-      "rule": "C901",
-      "line": 21,
-      "column": 5,
-      "message": "`table` is too complex (19 > 10)",
-      "anchor": "c5e11bd297c20c7f3d2cb58cb9d69f60b0c35d4c2a5616688d369a9744a14bfc",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/mitmproxy/replay_scenes.py",
-      "rule": "C901",
-      "line": 111,
-      "column": 5,
-      "message": "`replay_scene` is too complex (17 > 10)",
-      "anchor": "4a083deb0e62aa50b45254c08a7292fe2a9d569b3a15d949c8db13885ac2e9d5",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/mitmproxy/scenario_fixtures.py",
-      "rule": "C901",
-      "line": 101,
-      "column": 9,
-      "message": "`control` is too complex (17 > 10)",
-      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/mitmproxy/scenario_fixtures.py",
-      "rule": "C901",
-      "line": 180,
-      "column": 15,
-      "message": "`request` is too complex (32 > 10)",
-      "anchor": "5495d068f027d1ec83e09f501f1be125b14aae8391f9ee0df71ac0fd3835da87",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/mitmproxy/scenario_fixtures.py",
-      "rule": "C901",
-      "line": 277,
-      "column": 9,
-      "message": "`response` is too complex (13 > 10)",
-      "anchor": "0b36d16cf8f925acd7a2b362e677c7c28d83808393d2e568f2ebefc6f734a0b0",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/mitmproxy/scenario_fixtures.py",
-      "rule": "C901",
-      "line": 316,
-      "column": 9,
-      "message": "`websocket_message` is too complex (12 > 10)",
-      "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "visual/cases/club/mitmproxy/addon.py",
       "rule": "C901",
       "line": 140,

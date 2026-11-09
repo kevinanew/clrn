@@ -13,6 +13,7 @@ import tempfile
 import threading
 import time
 import unittest
+from proxy_test_support import events_named, field_values
 from connection_diagnostics import node_name
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
@@ -31,25 +32,10 @@ class Upstream(BaseHTTPRequestHandler):
     def do_GET(self):
         """按路径提供节点列表、健康状态和场景上游响应。"""
         address = urlsplit(self.path)
-        hostname = address.hostname or self.headers['Host']
-        if address.path in METADATA_PATHS:
-            # 模拟真实 v12 数组与 v13 字典，以及不再提供首尔节点的后续列表。
-            candidates = SERVER_HOSTS[1:] if address.query == 'changed' else SERVER_HOSTS
-            servers = (list(candidates) if address.path == METADATA_PATHS[0]
-                       else {host: f'address-{index}' for index, host in enumerate(candidates)})
-            body = {'ok': True, 'new_envelope': 42, 'result': {'servers': servers, 'new_field': True}}
-        elif address.path == f'/v10/house/user/{OWNER}':
-            body = {'ok': True, 'result': {'house_id': 'offline-house', 'user_id': OWNER}}
-        elif address.path == '/v3/pay_action/do':
-            body = {'ok': True, 'result': {'room_id': ROOM}}
-        else:
-            # 首尔指标越界不影响香港的真实健康响应；洛杉矶的真实失败也不能被改成成功。
-            offline = hostname == SERVER_HOSTS[2]
-            body = {'backend_delay': 9999 if offline else 1065 if hostname == SERVER_HOSTS[0] else 100,
-                    'server_load': 'offline' if offline else 'normal', 'new_health': True}
-        status = 503 if address.query == 'failed' or hostname == SERVER_HOSTS[2] else 200
-        content = b'<html>upstream failure</html>' if address.query == 'html' else json.dumps(body).encode()
-        self.send_response(status)
+        hostname = self.request_hostname(address)
+        body = self.response_body(address, hostname)
+        content = self.response_content(address, body)
+        self.send_response(self.response_status(address, hostname))
         self.send_header('Content-Type', 'text/html' if address.query == 'html' else 'application/json')
         self.send_header('X-Upstream', 'real')
         self.send_header('ETag', 'upstream-version')
@@ -60,6 +46,50 @@ class Upstream(BaseHTTPRequestHandler):
         self.send_header('Content-Length', str(len(content)))
         self.end_headers()
         self.wfile.write(content)
+
+    def request_hostname(self, address):
+        """代理绝对 URL 优先于 Host 头。"""
+        return address.hostname or self.headers['Host']
+
+    def response_body(self, address, hostname):
+        """固定建房及房屋资料之外，提供元数据和真实健康对照。"""
+        if address.path in METADATA_PATHS:
+            return self.metadata_body(address)
+        fixed = {f'/v10/house/user/{OWNER}': {'ok': True, 'result': {'house_id': 'offline-house', 'user_id': OWNER}},
+                 '/v3/pay_action/do': {'ok': True, 'result': {'room_id': ROOM}}}
+        if address.path in fixed:
+            return fixed[address.path]
+        return self.health_body(hostname)
+
+    def metadata_body(self, address):
+        """模拟 v12 数组、v13 字典及后续候选列表变化。"""
+        candidates = SERVER_HOSTS[1:] if address.query == 'changed' else SERVER_HOSTS
+        servers = self.metadata_servers(address.path, candidates)
+        return {'ok': True, 'new_envelope': 42, 'result': {'servers': servers, 'new_field': True}}
+
+    def metadata_servers(self, path, candidates):
+        """保留不同版本的节点表示。"""
+        if path == METADATA_PATHS[0]:
+            return list(candidates)
+        return {host: f'address-{index}' for index, host in enumerate(candidates)}
+
+    def health_body(self, hostname):
+        """高延迟和离线节点仍返回原始上游数据。"""
+        offline = hostname == SERVER_HOSTS[2]
+        return {'backend_delay': self.health_delay(hostname),
+                'server_load': 'offline' if offline else 'normal', 'new_health': True}
+
+    def health_delay(self, hostname):
+        """只有指定两个节点偏离普通延迟。"""
+        return {SERVER_HOSTS[2]: 9999, SERVER_HOSTS[0]: 1065}.get(hostname, 100)
+
+    def response_status(self, address, hostname):
+        """失败查询和离线节点保持 HTTP 503。"""
+        return 503 if address.query == 'failed' or hostname == SERVER_HOSTS[2] else 200
+
+    def response_content(self, address, body):
+        """HTML 失败正文不被改成 JSON 成功。"""
+        return b'<html>upstream failure</html>' if address.query == 'html' else json.dumps(body).encode()
 
     def do_POST(self):
         """记录订单写入请求后复用本机响应路由。"""
@@ -120,58 +150,22 @@ class LiveOverrideTests(unittest.TestCase):
                 env={**os.environ, 'MITMPROXY_CONTROL_TOKEN': 'offline-token',
                      'MITMPROXY_API_HOSTS': '["node-0.service.invalid", "node-4.service.invalid", "node-7.service.invalid", "node-8.service.invalid", "node-15.service.invalid", "candidate-0.node-18.service.invalid", "candidate-1.node-18.service.invalid", "candidate-2.node-18.service.invalid"]'}, stdout=logs, stderr=logs)
             try:
-                deadline = time.monotonic() + 15
-                while True:
-                    try:
-                        status, _, _ = self.fetch(port, 'http://test-mitmproxy.invalid/status')
-                        self.assertEqual(status, 200)
-                        break
-                    except OSError:
-                        if process.poll() is not None or time.monotonic() >= deadline:
-                            logs.seek(0)
-                            self.fail('mitmdump 启动失败：' + logs.read().decode()[-2000:])
-                        time.sleep(0.1)
+                self.wait_proxy(port, process, logs)
                 self.fetch(port, 'http://test-mitmproxy.invalid/scenario', 'POST', {'scenario': 'visual-stable'})
                 self.assertEqual(self.fetch(port, 'http://fixtures-mitmproxy.invalid/fixtures/environment',
                                            'POST', {'visual': True})[0], 200)
                 self.check_metadata(port)
                 self.check_health(port)
-                if 'texas-holdem' in addon or 'zhajinhua' in addon:
-                    self.check_diagnostics(port)
+                self.check_diagnostic_addon(port, addon)
                 self.check_scenes(port)
-                if addon == 'e2e/mitmproxy/network_faults.py':
-                    self.check_club_boundaries(port)
-                if 'texas-holdem' in addon:
-                    self.check_game_hold(port)
+                self.check_specific_scenes(port, addon)
             finally:
-                process.terminate()
-                try:
-                    process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    process.wait(timeout=5)
+                self.stop_proxy(process)
 
     def check_metadata(self, port):
         """核验各版本节点元数据的数组、字典、压缩与失败响应契约。"""
         for path in METADATA_PATHS:
-            metadata = 'http://node-0.service.invalid' + path
-            for method in ('GET', 'POST'):
-                for query in ('', 'changed', 'compressed', 'failed', 'html'):
-                    with self.subTest(path=path, method=method, query=query):
-                        status, headers, body = self.fetch(port, metadata + '?' + query, method)
-                        self.assertEqual(status, 503 if query == 'failed' else 200)
-                        self.assertEqual(headers['etag'], 'upstream-version')
-                        self.assertEqual(headers['x-upstream'], 'real')
-                        self.assertEqual(headers['access-control-allow-origin'], 'https://node-3.service.invalid')
-                        if query == 'html':
-                            self.assertEqual(body, '<html>upstream failure</html>')
-                            continue
-                        candidates = SERVER_HOSTS[1:] if query == 'changed' else SERVER_HOSTS
-                        servers = (list(candidates) if path == METADATA_PATHS[0]
-                                   else {host: f'address-{index}' for index, host in enumerate(candidates)})
-                        self.assertEqual(body, {'ok': True, 'new_envelope': 42, 'result': {
-                            'servers': servers, 'new_field': True}})
-            self.check_preflight(port, metadata)
+            self.check_metadata_path(port, path)
 
     def check_scenes(self, port):
         """切换夹具场景并核验对应业务接口的拦截和透传。"""
@@ -215,18 +209,7 @@ class LiveOverrideTests(unittest.TestCase):
         api = 'http://node-0.service.invalid'
         control = 'http://fixtures-mitmproxy.invalid/fixtures/select'
         for name, count in (('club-empty', 0), ('club-skeleton', 2)):
-            self.assertEqual(self.fetch(port, control, 'POST', {'name': name, 'userId': OWNER})[0], 200)
-            _, headers, body = self.fetch(port, api + f'/v10/club?user_id={OWNER}')
-            self.assertNotIn('x-upstream', headers)
-            self.assertEqual(len(body['result']['clubs']), count)
-            for query in ('', '?user_id=', '?user_id=another-owner',
-                          f'?user_id={OWNER}&user_id=another-owner', '?failed'):
-                # 上游响应头和完整失败正文都必须保留，不能只以“无本地响应”代替透传证据。
-                status, headers, body = self.fetch(port, api + '/v10/club' + query)
-                self.assertEqual(status, 503 if query == '?failed' else 200)
-                self.assertEqual(headers['x-upstream'], 'real')
-                self.assertEqual(body, {'backend_delay': 100, 'server_load': 'normal', 'new_health': True})
-            self.check_preflight(port, api + f'/v10/club?user_id={OWNER}')
+            self.check_club_scene(port, api, control, name, count)
         self.assertEqual(self.fetch(port, control, 'POST', {'name': 'none'})[0], 200)
         self.assertEqual(self.fetch(port, api + f'/v10/club?user_id={OWNER}')[1]['x-upstream'], 'real')
         fault_control = 'http://test-mitmproxy.invalid/scenario'
@@ -236,7 +219,7 @@ class LiveOverrideTests(unittest.TestCase):
         for method, path in (('GET', '/v10/club/search?keyword=other'),
                              ('GET', '/v10/club/search?failed'), ('POST', '/v10/club/search?keyword=VisualClubSearch')):
             status, headers, body = self.fetch(port, api + path, method)
-            self.assertEqual(status, 503 if path.endswith('?failed') else 200)
+            self.assertEqual(status, self.expected_status(path))
             self.assertEqual(headers['x-upstream'], 'real')
             self.assertEqual(body, {'backend_delay': 100, 'server_load': 'normal', 'new_health': True})
         self.check_preflight(port, target)
@@ -287,13 +270,12 @@ class LiveOverrideTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(self.fetch(port, 'http://test-mitmproxy.invalid/diagnostics', token='wrong')[0], 403)
         events = diagnostic['events']
-        self.assertFalse(any(item['event'] == 'proxy.nodes-filtered' for item in events))
-        responses = [item for item in events if item['event'] == 'proxy.response']
+        self.assertFalse(events_named(events, 'proxy.nodes-filtered'))
+        responses = events_named(events, 'proxy.response')
         self.assertTrue(responses)
-        self.assertTrue(all(item['source'] == 'upstream' for item in responses))
+        self.assertEqual(set(field_values(responses, 'source')), {'upstream'})
         for host in SERVER_HOSTS:
-            self.assertTrue(any(item['node'] == node_name(host)
-                                and item['path'] == '/node/v1/status' for item in responses))
+            self.assert_health_diagnostic(responses, host)
         self.assertNotIn('node-10.service.invalid', json.dumps(diagnostic))
         self.assertNotIn('offline-token', json.dumps(diagnostic))
 
@@ -305,14 +287,135 @@ class LiveOverrideTests(unittest.TestCase):
                            {'X-E2E-Control-Token': token, 'Content-Type': 'application/json'})
             response = client.getresponse()
             content = response.read()
-            headers = {key.lower(): value for key, value in response.getheaders()}
-            if headers.get('content-encoding') == 'gzip':
-                content = gzip.decompress(content)
-            body = (json.loads(content) if headers.get('content-type', '').startswith('application/json')
-                    else content.decode()) if content else None
+            headers = self.response_headers(response)
+            body = self.decode_content(content, headers)
             return response.status, headers, body
         finally:
             client.close()
+
+    def check_metadata_path(self, port, path):
+        """验证同一元数据版本的请求方法及真实预检。"""
+        metadata = 'http://node-0.service.invalid' + path
+        for method in ('GET', 'POST'):
+            self.check_metadata_method(port, path, metadata, method)
+        self.check_preflight(port, metadata)
+
+    def check_metadata_method(self, port, path, metadata, method):
+        """验证普通、变更、压缩、失败及 HTML 响应。"""
+        for query in ('', 'changed', 'compressed', 'failed', 'html'):
+            self.check_metadata_query(port, path, metadata, method, query)
+
+    def check_metadata_query(self, port, path, metadata, method, query):
+        """核对真实 HTTP 状态、响应头及完整正文。"""
+        with self.subTest(path=path, method=method, query=query):
+            status, headers, body = self.fetch(port, metadata + '?' + query, method)
+            self.assertEqual(status, 503 if query == 'failed' else 200)
+            self.assertEqual(headers['etag'], 'upstream-version')
+            self.assertEqual(headers['x-upstream'], 'real')
+            self.assertEqual(headers['access-control-allow-origin'], 'https://node-3.service.invalid')
+            if query == 'html':
+                self.assertEqual(body, '<html>upstream failure</html>')
+                return
+            self.assert_metadata_body(body, path, query)
+
+    def check_club_scene(self, port, api, control, name, count):
+        """验证俱乐部场景的唯一账号绑定、查询及方法边界。"""
+        self.assertEqual(self.fetch(port, control, 'POST', {'name': name, 'userId': OWNER})[0], 200)
+        _, headers, body = self.fetch(port, api + f'/v10/club?user_id={OWNER}')
+        self.assertNotIn('x-upstream', headers)
+        self.assertEqual(len(body['result']['clubs']), count)
+        for query in ('', '?user_id=', '?user_id=another-owner',
+                      f'?user_id={OWNER}&user_id=another-owner', '?failed'):
+            # 上游响应头和完整失败正文都必须保留，不能只以“无本地响应”代替透传证据。
+            status, headers, body = self.fetch(port, api + '/v10/club' + query)
+            self.assertEqual(status, self.expected_status(query))
+            self.assertEqual(headers['x-upstream'], 'real')
+            self.assertEqual(body, {'backend_delay': 100, 'server_load': 'normal', 'new_health': True})
+        self.check_preflight(port, api + f'/v10/club?user_id={OWNER}')
+
+    def assert_health_diagnostic(self, responses, host):
+        """每个健康来源必须保留安全节点标签及接口语义。"""
+        health = events_named(responses, 'proxy.response')
+        health = [item for item in health if item['path'] == '/node/v1/status']
+        self.assertIn(node_name(host), field_values(health, 'node'))
+
+    def expected_status(self, query):
+        """原始上游失败查询必须保持 503。"""
+        return 503 if query.endswith('?failed') else 200
+
+    def expected_servers(self, path, candidates):
+        """分别验证数组及字典形式的完整候选节点。"""
+        if path == METADATA_PATHS[0]:
+            return list(candidates)
+        return {host: f'address-{index}' for index, host in enumerate(candidates)}
+
+    def assert_metadata_body(self, body, path, query):
+        """验证完整信封和新增字段均原样保留。"""
+        candidates = SERVER_HOSTS[1:] if query == 'changed' else SERVER_HOSTS
+        servers = self.expected_servers(path, candidates)
+        self.assertEqual(body, {'ok': True, 'new_envelope': 42, 'result': {
+            'servers': servers, 'new_field': True}})
+
+    def wait_proxy(self, port, process, logs):
+        """在原有十五秒预算内等待认证状态入口。"""
+        deadline = time.monotonic() + 15
+        while True:
+            if self.proxy_ready(port):
+                return
+            self.check_proxy_alive(process, deadline, logs)
+            time.sleep(0.1)
+
+    def proxy_ready(self, port):
+        """连接尚未就绪时重试，错误状态仍立即报告。"""
+        try:
+            status, _, _ = self.fetch(port, 'http://test-mitmproxy.invalid/status')
+            self.assertEqual(status, 200)
+            return True
+        except OSError:
+            return False
+
+    def check_proxy_alive(self, process, deadline, logs):
+        """进程退出或启动预算耗尽时报告真实日志。"""
+        if process.poll() is not None or time.monotonic() >= deadline:
+            logs.seek(0)
+            self.fail('mitmdump 启动失败：' + logs.read().decode()[-2000:])
+
+    def stop_proxy(self, process):
+        """终止代理并在原有清理预算内回收进程。"""
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
+
+    def check_diagnostic_addon(self, port, addon):
+        """仅牌局代理公开连接诊断入口。"""
+        if 'texas-holdem' in addon or 'zhajinhua' in addon:
+            self.check_diagnostics(port)
+
+    def check_specific_scenes(self, port, addon):
+        """保留网络故障代理及德州代理的专有场景对照。"""
+        if addon == 'e2e/mitmproxy/network_faults.py':
+            self.check_club_boundaries(port)
+        if 'texas-holdem' in addon:
+            self.check_game_hold(port)
+
+    def response_headers(self, response):
+        """将真实上游响应头规范化为小写键。"""
+        return {key.lower(): value for key, value in response.getheaders()}
+
+    def decode_content(self, content, headers):
+        """按真实响应头解压正文，空正文保留 None。"""
+        if not content:
+            return None
+        if headers.get('content-encoding') == 'gzip':
+            content = gzip.decompress(content)
+        return self.decode_body(content, headers)
+
+    def decode_body(self, content, headers):
+        """仅 JSON 类型解析为业务对象，其他正文按文本保留。"""
+        return json.loads(content) if headers.get('content-type', '').startswith('application/json') else content.decode()
 
 
 if __name__ == '__main__':

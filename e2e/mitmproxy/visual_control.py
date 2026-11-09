@@ -23,12 +23,8 @@ def control(proxy, flow, respond, command, status):
     if flow.request.headers.get('X-E2E-Control-Token') != proxy.token:
         respond(flow, {'error': 'Forbidden'}, 403)
         return
-    path = urlsplit(flow.request.path).path
     try:
-        if flow.request.method == 'POST':
-            command(path, json.loads(flow.request.content))
-        elif flow.request.method != 'GET' or path != '/status':
-            raise ValueError('Unknown command')
+        dispatch_command(flow, command)
     except (ValueError, KeyError, TypeError, AttributeError):
         respond(flow, {'error': 'Invalid replay command'}, 400)
         return
@@ -40,10 +36,29 @@ def route_request(proxy, flow, diagnostics, is_staging):
     if flow.response:
         return False
     if flow.request.host == CONTROL_HOST:
-        if flow.request.method == 'GET' and urlsplit(flow.request.path).path == '/diagnostics':
-            diagnostics.control(flow)
-        else:
-            proxy.control(flow)
+        route_control(proxy, flow, diagnostics)
         return False
+    return route_business(proxy, flow, is_staging)
+
+
+def dispatch_command(flow, command):
+    """POST 执行命令，只有 GET /status 可读取状态。"""
+    path = urlsplit(flow.request.path).path
+    if flow.request.method == 'POST':
+        command(path, json.loads(flow.request.content))
+    elif (flow.request.method, path) != ('GET', '/status'):
+        raise ValueError('Unknown command')
+
+
+def route_control(proxy, flow, diagnostics):
+    """诊断只接受精确的 GET 入口，其余控制交由代理验证。"""
+    if (flow.request.method, urlsplit(flow.request.path).path) == ('GET', '/diagnostics'):
+        diagnostics.control(flow)
+    else:
+        proxy.control(flow)
+
+
+def route_business(proxy, flow, is_staging):
+    """记录真实代理请求数，并限制具名视觉场景和来源。"""
     proxy.proxied_requests += 1
     return proxy.scenario == 'visual-stable' and is_staging(flow.request.host)
