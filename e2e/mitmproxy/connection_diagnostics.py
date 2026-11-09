@@ -14,6 +14,7 @@ from diagnostic_release import (release_origin_match, release_upstream_match, re
                                 error_reason, release_server, request_operation, error_source,
                                 response_state, release_identifier)
 from diagnostic_socket import DiagnosticSocket
+from account_connection_diagnostics import account_connection_fields
 
 CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 PATH_TEMPLATES = [(path, path.split('/')) for path in json.loads(
@@ -123,6 +124,7 @@ class ConnectionDiagnostics(DiagnosticSocket):
                  'operation': request_operation(flow), 'connectionId': str(flow.client_conn.id),
                  'upstreamConnectionId': str(flow.server_conn.id), **fields}
         entry['path'] = safe_path(entry['path'])
+        entry.update(account_connection_fields(flow))
         if 'reason' in entry:
             entry['reason'] = error_reason(entry['reason'])
         self.append_event(sanitized_entry(entry, flow.request.host))
