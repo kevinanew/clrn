@@ -57,7 +57,11 @@ test.describe('H5 弱网行为', /** 覆盖H5 弱网行为。 */ () => {
       .fill('weaknetwork');
     await page.locator('[data-testid="sign-in-button"]:visible').last().click();
 
-    await expect(page.locator('[data-testid="username-sign-in-error-alert"]')).toBeVisible();
+    // 断连后 SDK 会重新选线（每轮节点探测最多 5s），再执行一次登录回退请求。
+    // 等完整故障流程退出 loading，不能用默认 5s 在选线尚未结束时判定失败。
+    await expect(page.locator('[data-testid="username-sign-in-error-alert"]')).toBeVisible({
+      timeout: 45_000,
+    });
     await expect(page.locator('[data-testid="sign-in-button"]:visible').last()).toContainText(
       '登录或注册',
     );
