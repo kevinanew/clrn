@@ -12,13 +12,28 @@ type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'>;
 export async function readRequestJson(response: JsonResponse, operation: string) {
   const status = response.status();
   if (!response.ok()) throw requestFailure(operation, 'http-error', status);
-  let body;
-  try { body = await response.json(); }
+  const body = await parseResponseJson(response, operation, status);
+  assertBusinessSuccess(body, operation, status);
+  return body;
+}
+
+/** 在读取正文的边界保留实际响应状态并丢弃不可信错误。
+ * @param response - 真实响应。
+ * @param operation - 固定操作名。
+ * @param status - 已读取的 HTTP 状态。 */
+async function parseResponseJson(response: JsonResponse, operation: string, status: number) {
+  try { return await response.json(); }
   catch (error) {
     throw requestFailure(operation, error instanceof SyntaxError ? 'invalid-json' : 'body-read-failed', status);
   }
+}
+
+/** 业务失败不能被 HTTP 成功掩盖。
+ * @param body - 响应 JSON。
+ * @param operation - 固定操作名。
+ * @param status - 实际 HTTP 状态。 */
+function assertBusinessSuccess(body: any, operation: string, status: number): void {
   if (body?.ok !== true) throw requestFailure(operation, 'business-rejected', status);
-  return body;
 }
 
 /**

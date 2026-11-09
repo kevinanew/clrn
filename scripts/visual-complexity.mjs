@@ -2,21 +2,22 @@ import { ESLint } from 'eslint';
 import { relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repository, sourceFiles } from './source-files.mjs';
-import { visualSupportFiles, visualToolFiles, visualEntryFiles, animationSupportFiles, animationFiles } from './visual-complexity-scope.mjs';
+import { visualSupportFiles, visualToolFiles, visualEntryFiles, animationSupportFiles, animationFiles, browserSupportFiles, browserFiles } from './visual-complexity-scope.mjs';
 
 /**
  * 按显式范围列出本任务文件及检查实现，遗漏或删除源码时拒绝空跑。
  * @param animationsOnly - 是否只扫描动画范围与门禁实现。
  * @param entrypointsOnly - 是否只扫描视觉入口范围与门禁实现。
+ * @param browserOnly - 是否只扫描页面与浏览器支持范围。
  * @returns 本任务实际扫描的源码路径。
  */
-export function visualComplexityFiles(animationsOnly = false, entrypointsOnly = false) {
+export function visualComplexityFiles(animationsOnly = false, entrypointsOnly = false, browserOnly = false) {
   const files = sourceFiles();
-  const required = [...existingAnimationFiles(entrypointsOnly), ...existingVisualFiles(animationsOnly), 'eslint.config.mjs'];
+  const required = [...existingAnimationFiles(entrypointsOnly, browserOnly), ...existingVisualFiles(animationsOnly, browserOnly), ...existingBrowserFiles(animationsOnly, entrypointsOnly), 'eslint.config.mjs'];
   for (const file of required) {
     if (!files.includes(file)) throw new Error(`视觉复杂度检查缺少文件：${file}`);
   }
-  return [...new Set([...required, ...scopedSupportFiles(files, animationsOnly, entrypointsOnly), ...files.filter(/** 根据当前条目计算结果。
+  return [...new Set([...required, ...scopedSupportFiles(files, animationsOnly, entrypointsOnly, browserOnly), ...files.filter(/** 根据当前条目计算结果。
  * @param file - 当前回调参数。 */ file => /^scripts\/visual-complexity.*\.mjs$/.test(file))])];
 }
 
@@ -83,10 +84,7 @@ function functionMeasurements(result) {
 
 /** 执行独立门禁或打印完整测量结果，失败均返回非零状态。 */
 async function main() {
-  const animationsOnly = process.argv.includes('--animations');
-  const entrypointsOnly = process.argv.includes('--entrypoints');
-  if (animationsOnly && entrypointsOnly) throw new Error('--animations 与 --entrypoints 不能同时使用');
-  const files = visualComplexityFiles(animationsOnly, entrypointsOnly);
+  const files = commandFiles(process.argv);
   if (process.argv.includes('--report')) {
     console.log(JSON.stringify(await measureVisualComplexity(files), null, 2));
     return;
@@ -106,26 +104,54 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 /**
  * 动画定向入口独立于其他目录，普通入口仍保持既有全部范围。
  * @param animationsOnly - 是否只运行动画范围。
+ * @param browserOnly - 是否只扫描页面支持。
  * @returns 其他视觉模块的必要路径。
  */
-function existingVisualFiles(animationsOnly) { return animationsOnly ? [] : [...visualSupportFiles, ...visualToolFiles]; }
+function existingVisualFiles(animationsOnly, browserOnly) { return animationsOnly || browserOnly ? [] : [...visualSupportFiles, ...visualToolFiles]; }
 
 /**
  * 入口定向检查不依赖动画目录先清零。
  * @param entrypointsOnly - 是否只扫描视觉入口。
+ * @param browserOnly - 是否只扫描页面支持。
  * @returns 动画范围的必要路径。
  */
-function existingAnimationFiles(entrypointsOnly) { return entrypointsOnly ? [] : animationSupportFiles; }
+function existingAnimationFiles(entrypointsOnly, browserOnly) { return entrypointsOnly || browserOnly ? [] : animationSupportFiles; }
 
 /**
  * 默认入口保持全部视觉范围，各定向入口只扫描自己的辅助模块。
  * @param files - 当前源码路径。
  * @param animationsOnly - 是否只扫描动画。
  * @param entrypointsOnly - 是否只扫描视觉入口。
+ * @param browserOnly - 是否只扫描页面支持。
  * @returns 对应范围内原模块和新提取模块。
  */
-function scopedSupportFiles(files, animationsOnly, entrypointsOnly) {
-  const entries = animationsOnly ? [] : visualEntryFiles(files);
-  const animations = entrypointsOnly ? [] : animationFiles(files);
-  return [...entries, ...animations];
+function scopedSupportFiles(files, animationsOnly, entrypointsOnly, browserOnly) {
+  const entries = animationsOnly || browserOnly ? [] : visualEntryFiles(files);
+  const animations = entrypointsOnly || browserOnly ? [] : animationFiles(files);
+  return [...entries, ...animations, ...scopedBrowserFiles(files, animationsOnly, entrypointsOnly)];
+}
+
+/** 其他定向入口不依赖页面支持范围先清零。
+ * @param animationsOnly - 是否仅扫描动画。
+ * @param entrypointsOnly - 是否仅扫描视觉入口。
+ * @returns 页面支持原始必需文件。 */
+function existingBrowserFiles(animationsOnly, entrypointsOnly) { return animationsOnly || entrypointsOnly ? [] : browserSupportFiles; }
+
+/** 发现页面支持新增模块，使用与 ESLint override 相同的范围。
+ * @param files - 源码候选。
+ * @param animationsOnly - 是否仅扫描动画。
+ * @param entrypointsOnly - 是否仅扫描视觉入口。
+ * @returns 页面支持实际文件。 */
+function scopedBrowserFiles(files, animationsOnly, entrypointsOnly) { return animationsOnly || entrypointsOnly ? [] : browserFiles(files); }
+
+/** 定向模式互斥，默认入口仍覆盖全部已接入范围。
+ * @param args - 命令行参数。
+ * @returns 正式入口需要检查的文件。 */
+function commandFiles(args) {
+  const modes = ['--animations', '--entrypoints', '--browser-support'];
+  const selected = modes.filter(/** 按显式模式选择范围。
+   * @param mode - 定向参数。 */ mode => args.includes(mode));
+  if (selected.length > 1) throw new Error('复杂度定向模式不能同时使用');
+  return visualComplexityFiles(...modes.map(/** 保留已有 API 的参数顺序。
+   * @param mode - 定向参数。 */ mode => args.includes(mode)));
 }

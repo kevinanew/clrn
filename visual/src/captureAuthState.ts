@@ -129,12 +129,13 @@ async function createAuthContext(
 async function collectLocalStorageEntries(page: import('@playwright/test').Page) {
   const entries: Record<string, string> = await page.evaluate(/** 从页面收集全部本地存储项，供保存登录态使用。 */ () => {
     const all: Record<string, string> = {};
-    for (let i = 0; i < window.localStorage.length; i += 1) {
-      const key = window.localStorage.key(i);
-      if (key) {
-        all[key] = window.localStorage.getItem(key) || '';
-      }
-    }
+    Array.from({ length: window.localStorage.length }, /** 按顺序读取存储键。
+     * @param _value - 占位值。
+     * @param index - 存储索引。 */ (_value, index) => window.localStorage.key(index))
+      .filter(/** 仅收集存在的键。
+       * @param key - 存储键。 */ (key): key is string => Boolean(key))
+      .forEach(/** 保留空字符串回退。
+       * @param key - 存储键。 */ key => { all[key] = window.localStorage.getItem(key) || ''; });
     return all;
   });
   // 语言由各场景自行设置，不能带进注入态
@@ -205,36 +206,10 @@ async function captureAuthState(proxy: Mitmproxy): Promise<void> {
       const context = await createAuthContext(browser, proxy);
       try {
         authOutput('log', `AUTH STATE > 采集尝试 ${attempt}/${MAX_CAPTURE_ATTEMPTS}`);
-        const page = await context.newPage();
-        // 仅记录认证接口路径与状态，不输出凭据、请求正文或 token。
-        page.on('response', /** 监听登录、注册及用户名检查响应，输出业务状态诊断。
- * @param response - 当前收到的接口响应。 */ response => {
-          const pathname = new URL(response.url()).pathname;
-          if (/\/user\/(login|register|username\/is_existed)/.test(pathname)) {
-            void response.json().then(/** 仅输出认证响应的状态和错误类型，避免记录凭据正文。
- * @param body - 当前操作使用的 body。 */ body => {
-              authOutput('log', `AUTH HTTP > ${response.status()} ${pathname} ok=${String(body?.ok)} error_type=${String(body?.error_type || '')}`);
-            }).catch(/** 响应正文不可读时仅记录 HTTP 状态与路径。 */ () => authOutput('log', `AUTH HTTP > ${response.status()} ${pathname}`));
-          }
-        });
-        await page.goto(baseUrl, { waitUntil: 'load', timeout: 120000 });
-        authOutput('log', 'AUTH STATE > 页面加载完成');
-        await ensureAppReadyPastStaging(page);
-        authOutput('log', 'AUTH STATE > 大厅已就绪');
-        await page
-          .waitForFunction(/** 等待页面加载指示消失，确认登录采集可以继续。 */ () => !document.querySelector('[role="progressbar"]'), undefined, {
-            timeout: 60000,
-          })
-          .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-
-        await ensureSignedIn(page, { username, password });
-        authOutput('log', 'AUTH STATE > UI 登录完成，验证注入态');
-        const entries = await collectLocalStorageEntries(page);
-        const validatedEntries = await validateCapturedAuthState(browser, entries, proxy);
-        persistAuthState(validatedEntries);
+        await captureAttempt(browser, context, proxy);
         return;
       } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
+        lastError = asCaptureError(error);
         authOutput('warn',
           `AUTH STATE > 第 ${attempt}/${MAX_CAPTURE_ATTEMPTS} 次采集失败：${lastError.message}`,
         );
@@ -242,18 +217,67 @@ async function captureAuthState(proxy: Mitmproxy): Promise<void> {
         await context.close();
       }
 
-      if (attempt < MAX_CAPTURE_ATTEMPTS) {
-        await new Promise(/** 登录采集重试前等待两秒，留出页面和网络恢复时间。
- * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
-          setTimeout(resolve, 2000);
-        });
-      }
+      await waitBeforeCaptureRetry(attempt);
     }
 
-    throw lastError || new Error('登录态采集失败');
+    throw captureFailure(lastError);
   } finally {
     await browser.close();
   }
+}
+
+/** 保留失败次数之间的两秒等待，最后一次失败不再等待。
+ * @param attempt - 已执行次数。 */
+async function waitBeforeCaptureRetry(attempt: number): Promise<void> {
+  if (attempt < MAX_CAPTURE_ATTEMPTS) {
+    await new Promise(/** 登录采集重试前等待两秒，留出页面和网络恢复时间。
+ * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
+      setTimeout(resolve, 2000);
+    });
+  }
+}
+
+/** 保留原始 Error，非 Error 转换成可报告错误。
+ * @param error - 采集异常。 */
+function asCaptureError(error: unknown): Error { return error instanceof Error ? error : new Error(String(error)); }
+
+/** 次数用尽后传播最后一次错误。
+ * @param error - 最后一次采集错误。 */
+function captureFailure(error: Error | undefined): Error { return error || new Error('登录态采集失败'); }
+
+/** 在单独上下文中完成一次登录采集与新上下文验证。
+ * @param browser - 当前浏览器。
+ * @param context - 本轮上下文。
+ * @param proxy - 本轮代理。 */
+async function captureAttempt(browser: import('@playwright/test').Browser,
+  context: import('@playwright/test').BrowserContext, proxy: Mitmproxy): Promise<void> {
+  const page = await context.newPage();
+  // 仅记录认证接口路径与状态，不输出凭据、请求正文或 token。
+  page.on('response', /** 监听登录、注册及用户名检查响应，输出业务状态诊断。
+ * @param response - 当前收到的接口响应。 */ response => {
+    const pathname = new URL(response.url()).pathname;
+    if (/\/user\/(login|register|username\/is_existed)/.test(pathname)) {
+      void response.json().then(/** 仅输出认证响应的状态和错误类型，避免记录凭据正文。
+ * @param body - 当前操作使用的 body。 */ body => {
+        authOutput('log', `AUTH HTTP > ${response.status()} ${pathname} ok=${String(body?.ok)} error_type=${authErrorType(body)}`);
+      }).catch(/** 响应正文不可读时仅记录 HTTP 状态与路径。 */ () => authOutput('log', `AUTH HTTP > ${response.status()} ${pathname}`));
+    }
+  });
+  await page.goto(baseUrl, { waitUntil: 'load', timeout: 120000 });
+  authOutput('log', 'AUTH STATE > 页面加载完成');
+  await ensureAppReadyPastStaging(page);
+  authOutput('log', 'AUTH STATE > 大厅已就绪');
+  await page
+    .waitForFunction(/** 等待页面加载指示消失，确认登录采集可以继续。 */ () => !document.querySelector('[role="progressbar"]'), undefined, {
+      timeout: 60000,
+    })
+    .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
+
+  await ensureSignedIn(page, { username, password });
+  authOutput('log', 'AUTH STATE > UI 登录完成，验证注入态');
+  const entries = await collectLocalStorageEntries(page);
+  const validatedEntries = await validateCapturedAuthState(browser, entries, proxy);
+  persistAuthState(validatedEntries);
 }
 
 /** 使用仅固定地域环境和第三方内容的代理，执行真实登录态采集。 */
@@ -275,3 +299,7 @@ main().catch(/** 连续登录失败后删除无效登录态文件，并保留失
   }
   process.exitCode = 1;
 });
+
+/** 仅提取认证错误类型，不保存响应正文。
+ * @param body - 认证响应正文。 */
+function authErrorType(body: any): string { return String(body?.error_type || ''); }

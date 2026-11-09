@@ -39,26 +39,30 @@ async function readPersistedAuth(page: Page): Promise<PersistedAuth | null> {
       if (!raw) {
         return null;
       }
+      const fields = {
+        /** 安全读取可空对象字段。
+         * @param value - 缓存对象。
+         * @param key - 固定字段名。 */
+        property(value: any, key: string): unknown { return value?.[key]; },
+        /** 读取非空字符串字段，剔除空白。
+         * @param value - 缓存中的原始字段。 */
+        text(value: unknown): string {
+          return typeof value === 'string' ? value.trim() : '';
+        },
+        /** 解析用户和令牌字段，拒绝不完整的身份。
+         * @param raw - localStorage 原始 JSON。 */
+        parse(raw: string): PersistedAuth | null {
+          const parsed = JSON.parse(raw);
+          const token = fields.property(parsed, 'api_token');
+          const userId = fields.text(fields.property(parsed, 'user_id'));
+          const accessToken = fields.text(fields.property(token, 'access_token'));
+          const tokenType = fields.text(fields.property(token, 'token_type'));
+          if (![userId, accessToken, tokenType].every(Boolean)) return null;
+          return { userId, accessToken, tokenType };
+        },
+      };
       try {
-        const parsed = JSON.parse(raw);
-        const userId = parsed?.user_id;
-        const accessToken = parsed?.api_token?.access_token;
-        const tokenType = parsed?.api_token?.token_type;
-        if (
-          typeof userId !== 'string' ||
-          !userId.trim() ||
-          typeof accessToken !== 'string' ||
-          !accessToken.trim() ||
-          typeof tokenType !== 'string' ||
-          !tokenType.trim()
-        ) {
-          return null;
-        }
-        return {
-          userId: userId.trim(),
-          accessToken: accessToken.trim(),
-          tokenType: tokenType.trim(),
-        };
+        return fields.parse(raw);
       } catch {
         return null;
       }
@@ -85,32 +89,9 @@ async function waitForRestoredAppSignIn(page: Page): Promise<'signedIn' | 'signe
   let signedInSince: number | undefined;
 
   while (Date.now() < deadline) {
-    const persistedAuth = await readPersistedAuth(page);
-    if (!persistedAuth) {
-      return 'signedOut';
-    }
-
-    const signedOut = await page
-      .locator('[data-testid="hall-sign-in-button"]:visible')
-      .count()
-      .then(/** 将异步结果转换为`count > 0`，供后续步骤使用。
- * @param count - 当前操作使用的 count。 */ (count) => count > 0)
-      .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
-    const appRestoredSignedIn = await page
-      .locator('[data-testid="hall-auth-state-signed-in"]:visible')
-      .count()
-      .then(/** 将异步结果转换为`count > 0`，供后续步骤使用。
- * @param count - 当前操作使用的 count。 */ (count) => count > 0)
-      .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
-
-    if (appRestoredSignedIn && !signedOut) {
-      signedInSince ??= Date.now();
-      if (Date.now() - signedInSince >= APP_SIGN_IN_STABILITY_MS) {
-        return 'signedIn';
-      }
-    } else {
-      signedInSince = undefined;
-    }
+    const state = await restoredSignInPoll(page, signedInSince);
+    if (state.result) return state.result;
+    signedInSince = state.since;
     await page.waitForTimeout(ACCOUNT_CACHE_POLL_INTERVAL_MS);
   }
 
@@ -133,6 +114,15 @@ export async function waitForSignInState(
     return 'signedOut';
   }
 
+  const result = await validateAccountRequest(page, persistedAuth, options);
+  return finishAccountValidation(page, persistedAuth, result, options);
+}
+
+/** 发送账户请求并与缓存清除轮询竞速。
+ * @param page - 当前页面。
+ * @param persistedAuth - 请求开始时的认证缓存。
+ * @param options - 请求边界配置。 */
+async function validateAccountRequest(page: Page, persistedAuth: PersistedAuth, options: SignInValidationOptions) {
   const requestTimeoutMs = options.requestTimeoutMs ?? ACCOUNT_VALIDATION_TIMEOUT_MS;
   const apiBaseUrl = (options.apiBaseUrl ?? VISUAL_API_BASE_URL).replace(/\/$/, '');
   const accountUrl = `${apiBaseUrl}/v11/user/${encodeURIComponent(persistedAuth.userId)}/account`;
@@ -165,38 +155,98 @@ export async function waitForSignInState(
   const result = await Promise.race([requestResult, cacheCleared]);
   stopWatchingCache = true;
 
-  if (result.kind === 'signedOut') {
-    return 'signedOut';
-  }
-  const authAfterRequest = await readPersistedAuth(page);
-  if (!authAfterRequest) {
-    return 'signedOut';
-  }
-  if (result.kind === 'error') {
-    const message = requestErrorSummary(result.error, 'validate-account');
-    throw new Error(message);
-  }
-  if (result.kind === 'stopped') {
-    throw new Error('SIGN-IN > 账户接口校验被意外中止');
-  }
+  return result;
+}
 
-  const status = result.response.status();
-  if (status === 401) {
-    return 'signedOut';
-  }
-  if (status < 200 || status >= 300) {
-    throw requestFailure('validate-account', 'http-error', status);
-  }
+type AccountResult = Awaited<ReturnType<typeof validateAccountRequest>>;
 
-  if (
-    authAfterRequest.userId !== persistedAuth.userId ||
-    authAfterRequest.accessToken !== persistedAuth.accessToken ||
-    authAfterRequest.tokenType !== persistedAuth.tokenType
-  ) {
+/** 按响应种类保留请求错误和意外中止的原始处理。
+ * @param result - 竞速结果。 */
+function accountResponse(result: AccountResult): APIResponse {
+  if (result.kind === 'response') return result.response;
+  if (result.kind === 'error') throw new Error(requestErrorSummary(result.error, 'validate-account'));
+  throw new Error('SIGN-IN > 账户接口校验被意外中止');
+}
+
+/** 校验实际 HTTP 状态，401 仍由调用方判断登出。
+ * @param response - 真实账户响应。 */
+function successfulAccountResponse(response: APIResponse): boolean {
+  const status = response.status();
+  if (status === 401) return false;
+  if (!isSuccessStatus(status)) throw requestFailure('validate-account', 'http-error', status);
+  return true;
+}
+
+/** 确认请求前后的账户与令牌完全一致。
+ * @param before - 请求前缓存。
+ * @param after - 请求后缓存。 */
+function assertUnchangedAuth(before: PersistedAuth, after: PersistedAuth): void {
+  const keys = ['userId', 'accessToken', 'tokenType'] as const;
+  if (keys.some(/** 任意身份字段变化都不能复用本次账户校验。
+   * @param key - 身份字段名。 */ key => before[key] !== after[key])) {
     throw new Error('SIGN-IN > 账户接口校验期间登录缓存已变更，无法确认当前 token 有效');
   }
-  if (options.requireAppState) {
-    return waitForRestoredAppSignIn(page);
-  }
-  return 'signedIn';
 }
+
+/** HTTP 校验完成后按配置等待应用恢复。
+ * @param page - 当前页面。
+ * @param before - 请求前缓存。
+ * @param after - 请求后缓存。
+ * @param response - 账户响应。
+ * @param options - 应用恢复配置。 */
+async function finishValidResponse(page: Page, before: PersistedAuth, after: PersistedAuth,
+  response: APIResponse, options: SignInValidationOptions): Promise<'signedIn' | 'signedOut'> {
+  if (!successfulAccountResponse(response)) return 'signedOut';
+  assertUnchangedAuth(before, after);
+  return options.requireAppState ? waitForRestoredAppSignIn(page) : 'signedIn';
+}
+
+/** 缓存清除优先于请求错误；有效响应再核对身份隔离。
+ * @param page - 当前页面。
+ * @param before - 请求前缓存。
+ * @param result - 请求与缓存竞速结果。
+ * @param options - 应用恢复配置。 */
+async function finishAccountValidation(page: Page, before: PersistedAuth, result: AccountResult,
+  options: SignInValidationOptions): Promise<'signedIn' | 'signedOut'> {
+  if (result.kind === 'signedOut') return 'signedOut';
+  const after = await readPersistedAuth(page);
+  if (!after) return 'signedOut';
+  return finishValidResponse(page, before, after, accountResponse(result), options);
+}
+
+/** 读取真实大厅标记，失败仍视为未满足。
+ * @param page - 当前页面。
+ * @param selector - 登录或登出标记。 */
+async function hasAppMarker(page: Page, selector: string): Promise<boolean> {
+  return page.locator(selector).count().then(/** 至少一个标记才算存在。
+   * @param count - 标记数。 */ count => count > 0).catch(/** 读取失败继续轮询。 */ () => false);
+}
+
+/** 连续登录计时在任一登出标记出现时重置。
+ * @param page - 当前页面。
+ * @param since - 前一轮连续登录起点。 */
+async function restoredSignInSince(page: Page, since: number | undefined): Promise<number | undefined> {
+  const signedOut = await hasAppMarker(page, '[data-testid="hall-sign-in-button"]:visible');
+  const signedIn = await hasAppMarker(page, '[data-testid="hall-auth-state-signed-in"]:visible');
+  if (![signedIn, !signedOut].every(Boolean)) return undefined;
+  return since ?? Date.now();
+}
+
+/** 判定连续登录是否覆盖原有三秒稳定窗口。
+ * @param since - 连续登录起点。 */
+function isStableSignIn(since: number | undefined): boolean {
+  return since !== undefined && Date.now() - since >= APP_SIGN_IN_STABILITY_MS;
+}
+
+/** 每轮先检测缓存清除，再读取真实界面登录态。
+ * @param page - 当前页面。
+ * @param since - 前一轮连续登录起点。 */
+async function restoredSignInPoll(page: Page, since: number | undefined) {
+  if (!await readPersistedAuth(page)) return { result: 'signedOut' as const, since: undefined };
+  const next = await restoredSignInSince(page, since);
+  return { result: isStableSignIn(next) ? 'signedIn' as const : undefined, since: next };
+}
+
+/** 判断真实 HTTP 状态是否在原有成功区间。
+ * @param status - 响应状态。 */
+function isSuccessStatus(status: number): boolean { return status >= 200 && status < 300; }

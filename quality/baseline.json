@@ -983,46 +983,6 @@
       "reason": "现有遍历/等待控制流嵌套；须保留超时、清理和错误语义，逐位置迁移，当前深度与次数不得增加。"
     },
     {
-      "file": "visual/src/support/authValidation.ts",
-      "rule": "complexity",
-      "line": 37,
-      "column": 68,
-      "message": "Arrow function has a complexity of 14. Maximum allowed is 10.",
-      "anchor": "50b0a614eac9f99a033024d147dd75a02a5573165c4cfd8efa648e4358150a29",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/src/support/authValidation.ts",
-      "rule": "complexity",
-      "line": 127,
-      "column": 8,
-      "message": "Async function 'waitForSignInState' has a complexity of 16. Maximum allowed is 10.",
-      "anchor": "c49813d9686c5d7be33ce3782919ba2489196e8a8564b8138a32e47fdcd941ef",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/src/support/pageSetup.ts",
-      "rule": "complexity",
-      "line": 161,
-      "column": 8,
-      "message": "Async function 'setupContextForScenario' has a complexity of 12. Maximum allowed is 10.",
-      "anchor": "7c7529c806e29b2b9cd25f1e0183205bfe9fb2a02ffb45026807d585fb4d793d",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/src/support/preparePage.ts",
-      "rule": "complexity",
-      "line": 252,
-      "column": 8,
-      "message": "Async function 'preparePage' has a complexity of 22. Maximum allowed is 10.",
-      "anchor": "d8ebe90bd927b9abfa03d1d92263834291c1f4d966e8685b85684652e0776359",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "visual/src/support/requestError.test.ts",
       "rule": "quality/no-network-response",
       "line": 62,

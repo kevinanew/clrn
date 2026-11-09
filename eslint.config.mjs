@@ -4,7 +4,7 @@ import tsdoc from 'eslint-plugin-tsdoc';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import quality from './scripts/quality-rules.mjs';
-import { visualSupportPatterns, visualToolFiles, visualCheckFiles, visualCheckSupportFiles, animationSupportPatterns } from './scripts/visual-complexity-scope.mjs';
+import { visualSupportPatterns, visualToolFiles, visualCheckFiles, visualCheckSupportFiles, animationSupportPatterns, browserSupportPatterns } from './scripts/visual-complexity-scope.mjs';
 import { e2eSupportPatterns, e2eCheckPatterns } from './scripts/e2e-complexity-scope.mjs';
 import documentation from './scripts/documentation-rule.mjs';
 
@@ -70,7 +70,7 @@ export default [
     rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
   },
   {
-    files: [...visualSupportPatterns, ...animationSupportPatterns, ...visualCheckSupportFiles],
+    files: [...visualSupportPatterns, ...animationSupportPatterns, ...browserSupportPatterns, ...visualCheckSupportFiles],
     ignores: visualToolFiles,
     rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
   },

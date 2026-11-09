@@ -30,8 +30,9 @@ test('金币和钻石截图的实际场景名均选择非空流水代理',
         command: async (endpoint: string, payload: { name?: string }) => { commands.push({ endpoint, payload }); },
       } as unknown as Mitmproxy);
       await setupContextForScenario(context, scenario);
-      assert.equal(commands[1]?.endpoint, 'fixtures/select', '首次导航前必须选择网络场景');
-      assert.equal(commands[1]?.payload.name, 'wallet-populated', '必须使用非空流水夹具');
+      assert.equal(commands.length, 2, '环境配置后必须选择具名场景');
+      assert.equal(commands[1].endpoint, 'fixtures/select', '首次导航前必须选择网络场景');
+      assert.equal(commands[1].payload.name, 'wallet-populated', '必须使用非空流水夹具');
     }
   },
 );

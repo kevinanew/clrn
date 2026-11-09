@@ -59,15 +59,18 @@ export async function stabilizeVideos(page: Page): Promise<void> {
  */
 export async function stabilizeBackdropFilter(page: Page): Promise<void> {
   await page.evaluate(/** 遍历页面中使用背景滤镜的节点，固定其渲染样式。 */ () => {
+    const filters = {
+      /** 判断标准及 WebKit 背景滤镜是否实际启用。
+       * @param style - 元素计算样式。 */
+      enabled(style: CSSStyleDeclaration): boolean {
+        const backdrop = style.backdropFilter || (style as CSSStyleDeclaration & { webkitBackdropFilter?: string }).webkitBackdropFilter;
+        return ![undefined, '', 'none'].includes(backdrop);
+      },
+    };
     document.querySelectorAll('*').forEach(/** 对当前带背景滤镜的节点应用确定性样式，消除合成差异。
  * @param el - 当前匹配的页面元素。 */ (el) => {
       const style = window.getComputedStyle(el);
-      const backdrop =
-        style.backdropFilter ||
-        (style as CSSStyleDeclaration & { webkitBackdropFilter?: string }).webkitBackdropFilter;
-      if (!backdrop || backdrop === 'none') {
-        return;
-      }
+      if (!filters.enabled(style)) return;
       const htmlEl = el as HTMLElement;
       htmlEl.style.setProperty('backdrop-filter', 'none', 'important');
       htmlEl.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
@@ -138,13 +141,10 @@ export async function applyContentStabilizers(page: Page, scenario: VisualScenar
           document.querySelectorAll(selector).forEach(/** 根据节点类型写入输入框值或文本内容，保留相同内容不重复更新。
  * @param el - 当前匹配的页面元素。 */ (el) => {
             // RN Web 单行 TextInput 渲染成 <input>，textContent 对其无视觉效果，必须改设 value
-            if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-              if (el.value !== text) {
-                el.value = text;
-              }
-            } else if (el.textContent !== text) {
-              el.textContent = text;
-            }
+            const property = [HTMLInputElement, HTMLTextAreaElement].some(/** 输入框通过 value 显示内容。
+             * @param type - 原生输入框构造函数。 */ type => el instanceof type) ? 'value' : 'textContent';
+            const node = el as HTMLInputElement;
+            if (node[property] !== text) node[property] = text;
           });
         });
 
@@ -196,13 +196,27 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
      * 可见牌面的图集在加载期间透明，仍须等待其实际图片。
      * @param img - 待判断是否出现在当前画面的图片。
      */
+    const visibility = {
+      /** 牌面图集即使透明也依赖可见卡槽，应优先检查外层翻牌。
+       * @param img - 待检查的页面图片。 */
+      subject(img: HTMLImageElement): Element {
+        if (img.dataset.testid !== 'sprite-image-view') return img;
+        return visibility.spriteSubject(img);
+      },
+      /** 保留翻牌、精灵容器、原图的优先级。
+       * @param img - 精灵图片。 */
+      spriteSubject(img: HTMLImageElement): Element {
+        return img.closest('[data-testid="card-flip"]') || img.closest('[data-testid="sprite-image-container"]') || img;
+      },
+    };
+    /** 仅等待可见画面的图片，透明图集仍检查其可见卡槽。
+     * @param img - 页面图片。 */
     const isVisibleImage = (img: HTMLImageElement) => {
-      const subject = img.dataset.testid === 'sprite-image-view'
-        ? img.closest('[data-testid="card-flip"]') || img.closest('[data-testid="sprite-image-container"]') || img : img;
+      const subject = visibility.subject(img);
       if (!subject.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
       const rect = subject.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0 && rect.right > 0 && rect.bottom > 0
-        && rect.left < window.innerWidth && rect.top < window.innerHeight;
+      return [rect.width > 0, rect.height > 0, rect.right > 0, rect.bottom > 0,
+        rect.left < window.innerWidth, rect.top < window.innerHeight].every(Boolean);
     };
     /** 页面切换期间图片节点可能被替换，每次只读取当前文档中的可见节点。 */
     const currentImages = () => Array.from(document.images).filter(isVisibleImage);
@@ -238,19 +252,23 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
      * 判断同源构建图片是否仍无可解码的尺寸。
      * @param img - 待检查的页面图片。
      */
-    const isFailedLocalImage = (img: HTMLImageElement) => {
-      if (!img.src) {
-        return false;
-      }
-      try {
+    const imageState = {
+      /** 判定同源图片是否缺失解码尺寸。
+       * @param img - 页面图片。 */
+      failed(img: HTMLImageElement): boolean {
         const url = new URL(img.src, window.location.href);
-        return (
-          url.origin === window.location.origin &&
-          (img.naturalWidth === 0 || img.naturalHeight === 0)
-        );
-      } catch {
-        return false;
-      }
+        return url.origin === window.location.origin && imageState.undecoded(img);
+      },
+      /** 任一维度为零都表示图片不可用。
+       * @param img - 页面图片。 */
+      undecoded(img: HTMLImageElement): boolean { return img.naturalWidth === 0 || img.naturalHeight === 0; },
+    };
+    /** 丢弃空地址和非法 URL，保留真实同源缺图检查。
+     * @param img - 页面图片。 */
+    const isFailedLocalImage = (img: HTMLImageElement) => {
+      if (!img.src) return false;
+      try { return imageState.failed(img); }
+      catch { return false; }
     };
     // 本地代理偶尔会在并发取图时关闭连接。只对失败的同源图片重新请求一次；
     // 如果文件缺失或内容无法解码，第二次仍会在下面报错。
@@ -296,27 +314,18 @@ export async function lockPageWidth(page: Page, width: number): Promise<void> {
     };
     lock(document.documentElement);
     lock(document.body);
+    const preserved = {
+      /** 保留俱乐部双页轨道与钱包分页、扑克牌内部画布的固有宽度。
+       * @param el - 当前元素。 */
+      contains(el: Element): boolean {
+        if (el.closest('[data-testid="club-tab-screen"]')) return true;
+        return ['[data-testid="coin-transaction-record-view"]', '[data-testid="sprite-image-view"]'].some(/** 自身、祖先或后代属于受保护画布时均不裁切。
+         * @param selector - 受保护节点。 */ selector => Boolean(el.closest(selector) || el.querySelector(selector)));
+      },
+    };
     document.querySelectorAll('*').forEach(/** 固定普通溢出节点宽度，保留俱乐部和钱包双页轨道的原始布局。
  * @param el - 当前匹配的页面元素。 */ (el) => {
-      // 俱乐部通过平移双页轨道显示当前页。轨道宽度必须保留为两页之和，
-      // 否则第二页会被新增的 overflow 裁掉；页面视口及应用自身容器负责裁切。
-      if (el.closest('[data-testid="club-tab-screen"]')) {
-        return;
-      }
-      // 钱包也使用双页轨道；保留列表及其祖先的原始宽度，避免切换钻石时整页被裁空。
-      const coinTransactionList = '[data-testid="coin-transaction-record-view"]';
-      if (el.closest(coinTransactionList) || el.querySelector(coinTransactionList)) {
-        return;
-      }
-      // 扑克牌精灵图的内部画布天然宽于视口，不能改变画布或其裁切容器的尺寸；
-      // 否则移动端会按被截断的图集重新计算偏移，正面牌会移出卡槽。
-      if (
-        (el as HTMLElement).dataset.testid === 'sprite-image-view' ||
-        el.closest('[data-testid="sprite-image-view"]') ||
-        el.querySelector('[data-testid="sprite-image-view"]')
-      ) {
-        return;
-      }
+      if (preserved.contains(el)) return;
       if ((el as HTMLElement).scrollWidth > viewportWidth) {
         const htmlEl = el as HTMLElement;
         htmlEl.style.setProperty('max-width', `${viewportWidth}px`, 'important');
@@ -337,19 +346,41 @@ export async function assertMatchingArtworkVisible(page: Page): Promise<void> {
      * @param elements - 德州扑克和拼三张的图标元素。
      */
     (elements) => {
-      if (elements.length !== 2) throw new Error('大厅应包含两种游戏的扑克牌图标');
-      for (const [index, element] of elements.entries()) {
-        const artwork = element.getBoundingClientRect();
-        if (artwork.height <= 0) throw new Error('大厅扑克牌图标没有可见高度');
-        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
-          if (parent.dataset.testid === 'hall-content-list') break;
+      const checks = {
+        /** 保留 0.5px 容差，仅拒绝真实裁切。
+         * @param artwork - 图标边界。
+         * @param parent - 当前祖先。
+         * @param index - 图标序号。 */
+        clipping(artwork: DOMRect, parent: HTMLElement, index: number): void {
           const bounds = parent.getBoundingClientRect();
-          if (getComputedStyle(parent).overflowY !== 'visible'
-            && (artwork.top < bounds.top - 0.5 || artwork.bottom > bounds.bottom + 0.5)) {
+          const clipped = [artwork.top < bounds.top - 0.5, artwork.bottom > bounds.bottom + 0.5].some(Boolean);
+          if (getComputedStyle(parent).overflowY !== 'visible' && clipped) {
             throw new Error(`大厅第 ${index + 1} 个扑克牌图标被祖先容器裁切`);
           }
-        }
-      }
+        },
+        /** 列表内部祖先均须保留完整图标；列表本身允许滚动。
+         * @param element - 图标元素。
+         * @param index - 图标序号。 */
+        ancestors(element: Element, index: number): void {
+          const artwork = element.getBoundingClientRect();
+          if (artwork.height <= 0) throw new Error('大厅扑克牌图标没有可见高度');
+          checks.parents(element.parentElement, artwork, index);
+        },
+        /** 遍历至大厅滚动列表前停止。
+         * @param parent - 当前祖先。
+         * @param artwork - 图标边界。
+         * @param index - 图标序号。 */
+        parents(parent: HTMLElement | null, artwork: DOMRect, index: number): void {
+          for (; parent; parent = parent.parentElement) {
+            if (parent.dataset.testid === 'hall-content-list') break;
+            checks.clipping(artwork, parent, index);
+          }
+        },
+      };
+      if (elements.length !== 2) throw new Error('大厅应包含两种游戏的扑克牌图标');
+      elements.forEach(/** 分别检查两种游戏图标。
+       * @param element - 图标。
+       * @param index - 图标序号。 */ (element, index) => checks.ancestors(element, index));
     },
   );
 }

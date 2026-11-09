@@ -32,6 +32,7 @@ interface DiagnosticContext {
 }
 type DiagnosticInfo = Pick<TestInfo, 'title' | 'repeatEachIndex' | 'retry' | 'outputPath' | 'attach'>
   & { project: { name: string } };
+type RequestEntry = { requestId: string; node: string; path: string; operation: string; method: string; start: number; status?: number };
 const recordings = new WeakMap<object, DiagnosticRecorder>();
 
 /**
@@ -65,7 +66,7 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
   proxy: DiagnosticProxy = {}) {
   const recorder = new DiagnosticRecorder();
   recordings.set(page, recorder);
-  const requests = new Map<DiagnosticRequest, { requestId: string; node: string; path: string; operation: string; method: string; start: number; status?: number }>();
+  const requests = new Map<DiagnosticRequest, RequestEntry>();
   const pendingMetadata = new Set<Promise<unknown>>();
   let sequence = 0;
   let applicationEvents = 0;
@@ -95,33 +96,18 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
     entry.status = response.status();
     recorder.record('http.response', { ...entry, status: response.status(), response: 'received', elapsedMs: Date.now() - entry.start,
       source: response.fromServiceWorker() ? 'service-worker' : 'browser' });
-    // 仅读取节点列表响应；从不收集登录、钱包或游戏请求的正文。
-    if (/^\/public\/v1[23]\/metadata\/servers$/.test(entry.path)) {
-      const reading = response.json().then(/** 从元数据响应中提取候选节点并记录脱敏节点发现信息。
- * @param body - 当前操作使用的 body。 */ body => {
-        const servers = body?.result?.servers;
-        if (!servers || typeof servers !== 'object') return;
-        const names = Array.isArray(servers) ? servers : Object.keys(servers);
-        recorder.record('nodes.received', { ...entry, candidates: names.filter(/** 仅保留满足以下条件的条目：`typeof name === 'string'`。
- * @param name - 当前操作使用的 name。 */ name => typeof name === 'string').map(diagnosticNode) });
-      }).catch(/** 元数据正文不可读时记录明确事件，保留请求定位信息。 */ () => recorder.record('nodes.unreadable', entry));
-      pendingMetadata.add(reading);
-      void reading.finally(/** 元数据处理结束后从待处理集合移除该任务。 */ () => pendingMetadata.delete(reading));
-    }
+    collectMetadata(response, entry, recorder, pendingMetadata);
   });
   page.on('requestfinished', /** 请求正常结束时记录最终状态、响应接收情况与总耗时。
  * @param request - 当前发出的接口请求。 */ request => {
     const entry = requests.get(request);
-    if (entry) recorder.record('http.finished', { ...entry, status: entry.status ?? 'unavailable',
-      response: entry.status === undefined ? 'not-received' : 'received', elapsedMs: Date.now() - entry.start });
+    if (entry) recorder.record('http.finished', completedRequest(entry));
     requests.delete(request);
   });
   page.on('requestfailed', /** 请求失败时关联原始请求，记录安全原因、实际状态和耗时。
  * @param request - 当前发出的接口请求。 */ request => {
     const entry = requests.get(request);
-    if (entry) recorder.record('http.failed', { ...entry, status: entry.status ?? 'unavailable',
-      response: entry.status === undefined ? 'not-received' : 'received', elapsedMs: Date.now() - entry.start,
-      reason: request.failure()?.errorText || 'unknown' });
+    if (entry) recorder.record('http.failed', { ...completedRequest(entry), reason: failedRequestReason(request) });
     requests.delete(request);
   });
   page.on('websocket', /** 为 WebSocket 分配连接标识并监听错误与关闭事件。
@@ -150,16 +136,9 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
         timer = setTimeout(resolve, 2000);
       })]);
       clearTimeout(timer);
-      recorder.record(failure ? 'test.failure' : 'test.complete',
-        { reason: failure === undefined ? '' : safeDiagnosticReason(failure) });
-      for (const entry of requests.values()) recorder.record('http.pending', { ...entry, status: entry.status ?? 'unavailable',
-        response: entry.status === undefined ? 'not-received' : 'received', elapsedMs: Date.now() - entry.start });
-      if (proxy.diagnostics) {
-        try {
-          const history = await proxy.diagnostics();
-          recorder.merge(history.events, history.dropped);
-        } catch (error) { recorder.record('proxy.diagnostics-unavailable', { reason: safeDiagnosticReason(error) }); }
-      }
+      recordCompletion(recorder, failure);
+      recordPendingRequests(recorder, requests);
+      await mergeProxyDiagnostics(recorder, proxy);
       const title = `${info.title} / ${info.project.name} / repeat ${info.repeatEachIndex} / retry ${info.retry}`;
       const summary = recorder.markdown(title);
       const diagnosticPath = info.outputPath('connection-diagnostics.json');
@@ -171,3 +150,83 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
     },
   };
 }
+
+/** 只读取节点元数据正文，不采集业务请求正文。
+ * @param response - 真实响应。
+ * @param entry - 请求诊断定位。
+ * @param recorder - 当前记录器。
+ * @param pendingMetadata - 尚未完成的元数据读取。 */
+function collectMetadata(response: DiagnosticResponse, entry: RequestEntry, recorder: DiagnosticRecorder,
+  pendingMetadata: Set<Promise<unknown>>): void {
+  // 仅读取节点列表响应；从不收集登录、钱包或游戏请求的正文。
+  if (/^\/public\/v1[23]\/metadata\/servers$/.test(entry.path)) {
+    const reading = response.json().then(/** 从元数据响应中提取候选节点并记录脱敏节点发现信息。
+ * @param body - 当前操作使用的 body。 */ body => {
+      recordMetadata(body, entry, recorder);
+    }).catch(/** 元数据正文不可读时记录明确事件，保留请求定位信息。 */ () => recorder.record('nodes.unreadable', entry));
+    pendingMetadata.add(reading);
+    void reading.finally(/** 元数据处理结束后从待处理集合移除该任务。 */ () => pendingMetadata.delete(reading));
+  }
+}
+
+/** 校验节点列表的对象形状。
+ * @param servers - 原始元数据字段。 */
+function metadataCandidates(servers: unknown): unknown[] | null {
+  if (!isMetadataObject(servers)) return null;
+  return Array.isArray(servers) ? servers : Object.keys(servers);
+}
+
+/** 仅从节点响应中提取脱敏候选节点。
+ * @param body - 元数据响应。
+ * @param entry - 请求定位。
+ * @param recorder - 当前记录器。 */
+function recordMetadata(body: any, entry: RequestEntry, recorder: DiagnosticRecorder): void {
+  const names = metadataCandidates(metadataServers(body));
+  if (!names) return;
+  recorder.record('nodes.received', { ...entry, candidates: names.filter(/** 只记录字符串节点名。
+   * @param name - 元数据节点。 */ (name): name is string => typeof name === 'string').map(diagnosticNode) });
+}
+
+/** 安全读取可空元数据字段。
+ * @param body - 元数据响应。 */
+function metadataServers(body: any): unknown { return body?.result?.servers; }
+
+/** 同时保留已收到的实际状态及其响应接收标记。
+ * @param entry - 原始请求信息。 */
+function completedRequest(entry: RequestEntry) {
+  return { ...entry, status: entry.status ?? 'unavailable',
+    response: entry.status === undefined ? 'not-received' : 'received', elapsedMs: Date.now() - entry.start };
+}
+
+/** 丢弃底层异常结构，保留原有未知失败占位值。
+ * @param request - 实际失败请求。 */
+function failedRequestReason(request: DiagnosticRequest): string { return request.failure()?.errorText || 'unknown'; }
+
+/** 记录测试结果；未传错误时保留空原因。
+ * @param recorder - 当前记录器。
+ * @param failure - 失败原因。 */
+function recordCompletion(recorder: DiagnosticRecorder, failure: unknown): void {
+  recorder.record(failure ? 'test.failure' : 'test.complete', { reason: failure === undefined ? '' : safeDiagnosticReason(failure) });
+}
+
+/** 清理前保存尚未完成的真实请求。
+ * @param recorder - 当前记录器。
+ * @param requests - 尚未完成请求。 */
+function recordPendingRequests(recorder: DiagnosticRecorder, requests: Map<DiagnosticRequest, RequestEntry>): void {
+  for (const entry of requests.values()) recorder.record('http.pending', completedRequest(entry));
+}
+
+/** 代理诊断不可用时记录原因，避免覆盖原始失败。
+ * @param recorder - 当前记录器。
+ * @param proxy - 测试代理。 */
+async function mergeProxyDiagnostics(recorder: DiagnosticRecorder, proxy: DiagnosticProxy): Promise<void> {
+  if (!proxy.diagnostics) return;
+  try {
+    const history = await proxy.diagnostics();
+    recorder.merge(history.events, history.dropped);
+  } catch (error) { recorder.record('proxy.diagnostics-unavailable', { reason: safeDiagnosticReason(error) }); }
+}
+
+/** 元数据必须是非空对象，拒绝原始类型。
+ * @param servers - 原始节点列表。 */
+function isMetadataObject(servers: unknown): servers is object { return Boolean(servers) && typeof servers === 'object'; }

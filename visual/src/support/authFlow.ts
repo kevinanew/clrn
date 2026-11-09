@@ -29,9 +29,26 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
       return;
     }
 
-    if (await confirmStagingNotice(page)) {
+    await advanceStartup(page);
+  }
+
+  // 超时后输出现场，方便定位是白屏、报错页还是弹窗卡住
+  const currentUrl = page.url();
+  const bodyText = await page
+    .evaluate(/** 在页面中读取`(document.body?.innerText || '(empty body)').slice(0, 500)`，供测试判断当前界面状态。 */ () => (document.body?.innerText || '(empty body)').slice(0, 500))
+    .catch(/** 页面状态读取失败时返回明确的诊断占位文本。 */ () => '(evaluate failed)');
+  console.log(`DEBUG URL > ${currentUrl}`);
+  console.log(`DEBUG BODY > ${bodyText}`);
+
+  throw new Error('应用未能在超时内进入大厅（staging 弹窗或初始化卡住）');
+}
+
+/** 推进一轮启动提示或初始化重试，保持原有等待时序。
+ * @param page - 当前页面。 */
+async function advanceStartup(page: any): Promise<void> {
+  if (await confirmStagingNotice(page)) {
       await page.waitForTimeout(300);
-      continue;
+      return;
     }
 
     // LaunchScreen 的代理初始化错误使用取消/重试弹窗；取消会绕过初始化，
@@ -40,21 +57,10 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
     if (await startupRetry.isVisible().catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false)) {
       await startupRetry.click({ timeout: 3000, noWaitAfter: true }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
       await page.waitForTimeout(400);
-      continue;
+      return;
     }
 
     await page.waitForTimeout(400);
-  }
-
-  // 超时后输出现场，方便定位是白屏、报错页还是弹窗卡住
-  const currentUrl = page.url();
-  const bodyText = await page
-    .evaluate(/** 在页面中读取`document.body?.innerText?.slice(0, 500) || '(empty body)'`，供测试判断当前界面状态。 */ () => document.body?.innerText?.slice(0, 500) || '(empty body)')
-    .catch(/** 页面状态读取失败时返回明确的诊断占位文本。 */ () => '(evaluate failed)');
-  console.log(`DEBUG URL > ${currentUrl}`);
-  console.log(`DEBUG BODY > ${bodyText}`);
-
-  throw new Error('应用未能在超时内进入大厅（staging 弹窗或初始化卡住）');
 }
 
 /**
@@ -76,8 +82,14 @@ export async function dumpPageState(page: any, where: string): Promise<void> {
         .map(/** 将当前条目映射为`el.getAttribute('data-testid')`。
  * @param el - 当前匹配的页面元素。 */ (el) => el.getAttribute('data-testid'));
       // modal/弹窗一般挂在 #root 末尾，取根节点最后几个子树的摘要
-      const root = document.getElementById('root');
-      const tailSummaries = Array.from(root?.children[0]?.children || [])
+      const roots = {
+        /** 返回根容器第一棵子树的子节点，缺失时使用空列表。 */
+        children() {
+          const first = document.querySelector('#root > :first-child');
+          return first?.children || [];
+        },
+      };
+      const tailSummaries = Array.from(roots.children())
         .slice(-4)
         .map(/** 提取根容器末尾子树的标记和短文本，定位遮挡或异常弹层。
  * @param el - 当前匹配的页面元素。 */ (el) => {
@@ -146,14 +158,21 @@ export async function fillStableSignInCredentials(
     await page.waitForTimeout(300);
 
     if (
-      (await usernameInput.inputValue()) === credentials.username &&
-      (await passwordInput.inputValue()) === credentials.password
+      await credentialsMatch(usernameInput, passwordInput, credentials)
     ) {
       return;
     }
   }
 
   throw new Error('登录表单初始化持续覆盖测试凭据，无法安全提交登录请求');
+}
+
+/** 确认两个受控输入框仍保留本轮凭据。
+ * @param usernameInput - 用户名输入框。
+ * @param passwordInput - 密码输入框。
+ * @param credentials - 原始凭据。 */
+async function credentialsMatch(usernameInput: any, passwordInput: any, credentials: { username: string; password: string }): Promise<boolean> {
+  return (await usernameInput.inputValue()) === credentials.username && (await passwordInput.inputValue()) === credentials.password;
 }
 
 /**
@@ -227,14 +246,20 @@ export async function ensureSignedIn(
         if (!raw) {
           return false;
         }
-        try {
-          const parsed = JSON.parse(raw);
-          return Boolean(
-            parsed?.user_id && parsed?.api_token?.access_token && parsed?.api_token?.token_type,
-          );
-        } catch {
-          return false;
-        }
+        const auth = {
+          /** 安全读取缓存对象中的单个字段。
+           * @param value - 可空缓存对象。
+           * @param key - 字段名。 */
+          field(value: any, key: string) { return value?.[key]; },
+          /** 保留采集阶段对字段真值的原始判断。
+           * @param parsed - 解析后的认证缓存。 */
+          complete(parsed: any): boolean {
+            const token = auth.field(parsed, 'api_token');
+            return [auth.field(parsed, 'user_id'), auth.field(token, 'access_token'), auth.field(token, 'token_type')].every(Boolean);
+          },
+        };
+        try { return auth.complete(JSON.parse(raw)); }
+        catch { return false; }
       },
       USER_ATTRIBUTE_STORAGE_KEY,
       { timeout: 90000 },
@@ -273,17 +298,32 @@ export async function dismissSignedInPopups(page: any): Promise<void> {
   await page.waitForTimeout(500);
 
   for (let round = 0; round < 6; round += 1) {
-    let closedAny = false;
-    for (const selector of closeSelectors) {
-      const closeButton = page.locator(selector).first();
-      if (await closeButton.isVisible().catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false)) {
-        await closeButton.click().catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-        await page.waitForTimeout(400);
-        closedAny = true;
-      }
-    }
+    const closedAny = await dismissPopupRound(page, closeSelectors);
     if (!closedAny) {
       return;
     }
   }
+}
+
+/** 逐个关闭本轮可见弹窗；一次点击失败仍保留等待及后续检查。
+ * @param page - 当前页面。
+ * @param selectors - 按优先级排列的关闭按钮。 */
+async function dismissPopupRound(page: any, selectors: string[]): Promise<boolean> {
+  let closedAny = false;
+  for (const selector of selectors) {
+    const closed = await dismissPopup(page, selector);
+    closedAny = closed || closedAny;
+  }
+  return closedAny;
+}
+
+/** 关闭一个可选弹窗并保留原有 400ms 等待。
+ * @param page - 当前页面。
+ * @param selector - 关闭按钮选择器。 */
+async function dismissPopup(page: any, selector: string): Promise<boolean> {
+  const button = page.locator(selector).first();
+  if (!await button.isVisible().catch(/** 可见性读取失败视为不存在。 */ () => false)) return false;
+  await button.click().catch(/** 可选弹窗关闭失败交给后续就绪检查。 */ () => undefined);
+  await page.waitForTimeout(400);
+  return true;
 }

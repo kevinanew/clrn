@@ -3,7 +3,9 @@
  * 过 staging 弹窗、登录态确认、tab/子页导航、就绪等待、渲染稳定化、
  * 易变文本固定填充。
  */
-import type { Locator, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { clickByTestId, retryCreateRoomNavigation, ensureSelectorGone, resetScrollToStart } from './preparePageNavigation';
+export { ensureSelectorGone, resetScrollToStart, revealVirtualizedSettingsItem } from './preparePageNavigation';
 import type { VisualScenario } from '../../scenarioTypes';
 import { stabilizeVideos, stabilizeBackdropFilter, alignPersonalHouseTitlesToDevicePixels, applyContentStabilizers, assertMatchingArtworkVisible, ensureLocalImagesLoaded, lockPageWidth, scrollVisualReadyElementIntoView } from './pageStabilizers';
 import { accountPresentationRules } from '../../cases/account/presentation';
@@ -17,234 +19,6 @@ import {
 } from './authFlow';
 
 /**
- * 等待选择器不可见；若弹层因导航打断 dismiss 而卡住，
- * 先点 backdrop / Escape，仍不行则强制 display:none（仅截图稳定化）。
- *
- * 注意：整个 App 挂载在单一的 body 子节点 `#root` 下，且 BottomSheetModal 未走独立
- * 的顶层 portal——sheet 面板与 backdrop 在 DOM 里是两棵不相交的子树，二者最近公共
- * 祖先几乎顶到 `#root` 本身（含整个 App）。不能用「摘除公共祖先」兜底，那会连
- * `#root` 一起摘掉，截图变全白。兜底策略：
- * 1. 直接隐藏匹配节点（覆盖非 BottomSheet 弹层，如 club-more-popup / RN Modal）
- * 2. 若在 BottomSheet 内：再隐藏 `aria-label="Bottom Sheet"` 面板与 backdrop button
- * 3. 若在 PopUp/Modal 内：再隐藏祖先 `popup-backdrop`（透明全屏层，否则仍可能叠在截图上）
- * @param page - 执行操作的 Playwright 页面。
- * @param selector - 待操作元素的 CSS 选择器。
- */
-export async function ensureSelectorGone(page: Page, selector: string): Promise<void> {
-  const target = page.locator(selector).first();
-  try {
-    await target.waitFor({ state: 'hidden', timeout: 5000 });
-    return;
-  } catch {
-    // continue
-  }
-
-  const backdrop = page.getByRole('button', { name: /Bottom sheet backdrop/i }).first();
-  if (await backdrop.isVisible().catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false)) {
-    await backdrop.click({ force: true }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-  } else {
-    await page.keyboard.press('Escape').catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-  }
-
-  try {
-    await target.waitFor({ state: 'hidden', timeout: 5000 });
-    return;
-  } catch {
-    // continue
-  }
-
-  await page.evaluate(/** 隐藏残留弹层及其遮罩，避免导航后截图被透明拦截层遮挡。
- * @param goneSelector - 当前操作使用的 goneSelector。 */ (goneSelector: string) => {
-    document.querySelectorAll(goneSelector).forEach(/** 隐藏匹配节点及所属弹层面板、弹窗背景，保留应用根节点。
- * @param el - 当前匹配的页面元素。 */ (el) => {
-      const node = el as HTMLElement;
-      node.style.setProperty('display', 'none', 'important');
-
-      let sheet: HTMLElement | null = node;
-      while (sheet && sheet.getAttribute('aria-label') !== 'Bottom Sheet') {
-        sheet = sheet.parentElement;
-      }
-      sheet?.style.setProperty('display', 'none', 'important');
-
-      let popupBackdrop: HTMLElement | null = node.parentElement;
-      while (popupBackdrop && popupBackdrop.getAttribute('data-testid') !== 'popup-backdrop') {
-        popupBackdrop = popupBackdrop.parentElement;
-      }
-      popupBackdrop?.style.setProperty('display', 'none', 'important');
-    });
-    document.querySelectorAll('[role="button"][aria-label*="backdrop" i]').forEach(/** 隐藏仍然存在的背景按钮，解除残留遮罩的点击拦截。
- * @param el - 当前匹配的页面元素。 */ (el) => {
-      (el as HTMLElement).style.setProperty('display', 'none', 'important');
-    });
-  }, selector);
-
-  await target.waitFor({ state: 'hidden', timeout: 5000 });
-}
-
-/**
- * SectionList 在 RN Web 上会虚拟化列表项；「我的」页的商城等项目在首屏外时，
- * 对尚未挂载的 testID 调用 scrollIntoViewIfNeeded 无效。主动滚动 settings-list，
- * 让目标 cell 进入 DOM 后再点击。
- * @param page - 执行操作的 Playwright 页面。
- * @param target - 待滚动、侧滑或验证的元素定位器。
- */
-export async function revealVirtualizedSettingsItem(page: Page, target: Locator): Promise<void> {
-  // React Navigation 会保留非活动 tab 的 DOM；必须滚动当前可见列表，否则可能一直
-  // 操作隐藏的旧 settings-list，目标 cell 永远不会进入 DOM。
-  const settingsList = page.locator('[data-testid="settings-list"]:visible').last();
-  if (!(await settingsList.count())) {
-    return;
-  }
-
-  for (let attempt = 0; attempt < 12; attempt += 1) {
-    if (await target.count()) {
-      return;
-    }
-    await settingsList
-      .evaluate(/** 分段滚动当前设置列表并派发事件，唤醒尚未挂载的虚拟列表项。
- * @param el - 当前匹配的页面元素。 */ (el) => {
-        const node = el as HTMLElement;
-        node.scrollTop += Math.max(node.clientHeight * 0.75, 240);
-        node.dispatchEvent(new Event('scroll', { bubbles: true }));
-      })
-      .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-    await page.waitForTimeout(150);
-  }
-}
-
-/**
- * 恢复指定可见滚动容器的首屏位置。
- *
- * RN Web 的异步图片/列表布局可能让 scrollIntoViewIfNeeded 先按临时高度滚动，
- * 随后内容收缩却保留 scrollTop，最终把页面顶部内容裁出截图。复位后派发 scroll，
- * 让 FlatList 同步虚拟化窗口，再等两帧完成布局。
- * @param page - 执行操作的 Playwright 页面。
- * @param selector - 待操作元素的 CSS 选择器。
- */
-export async function resetScrollToStart(page: Page, selector: string): Promise<void> {
-  const scrollContainer = page.locator(`${selector}:visible`).last();
-  if (!(await scrollContainer.count())) {
-    return;
-  }
-
-  await scrollContainer.evaluate(/** 复位目标容器的横纵滚动位置，并通知虚拟列表更新。
- * @param el - 当前匹配的页面元素。 */ (el) => {
-    el.scrollTop = 0;
-    el.scrollLeft = 0;
-    el.dispatchEvent(new Event('scroll', { bubbles: true }));
-  });
-  await page.evaluate(
-    /** 在页面中读取`new Promise<void>((resolve) => { requestAnimationFrame(() => requestAnimationFrame(() => resolve())); })`，供测试判断当前界面状态。 */ () =>
-      new Promise<void>(/** 等待两个渲染帧，让滚动复位后的布局稳定。
- * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
-        requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => resolve()));
-      }),
-  );
-}
-
-/**
- * 点击 data-testid 元素并等待页面稳定（loading 消失）；被遮罩拦截时降级为 JS click
- * @param page - 执行操作的 Playwright 页面。
- * @param testId - 目标元素的测试标记。
- */
-async function clickByTestId(page: Page, testId: string): Promise<void> {
-  // 嵌套导航会留下同 testID 的隐藏节点；点击当前可见节点可避免无意义的超时与 JS 降级。
-  const target = page.locator(`[data-testid="${testId}"]:visible`).last();
-  // 常规节点会立即挂载；超过短暂初始化期仍不存在时，尝试唤醒「我的」页的虚拟列表项。
-  await target.waitFor({ state: 'attached', timeout: 3000 }).catch(/** 目标首次等待失败时滚动设置列表，使虚拟化入口挂载。 */ async () => {
-    await revealVirtualizedSettingsItem(page, target);
-  });
-  await target.waitFor({ state: 'attached', timeout: 60000 });
-  // 必须显式限时：对 Playwright 误判不可见的元素该调用会无限等待
-  await target.scrollIntoViewIfNeeded({ timeout: 5000 }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-  try {
-    // 短超时即可：可点击的元素通常瞬间完成；超时基本都是误判不可见，
-    // 长等无意义（之前 15s 白等），直接降级 JS click（已验证可靠）
-    // RN Web 导航会让 Playwright 误等一个不会结束的 scheduled navigation；
-    // 页面是否到达由后续 visualReadySelector 明确判断，这里只负责派发点击。
-    await target.click({ timeout: 3000, noWaitAfter: true });
-  } catch {
-    console.log(`DEBUG > click "${testId}" 降级为 JS click`);
-    // Playwright click 可能已经派发点击并触发导航，只是在等待过程中原节点被卸载。
-    // 不能再对同一个 Locator evaluate（它会等待已消失的节点直到 actionTimeout）。
-    const clicked = await page
-      .evaluate(/** 在页面中查找最后一个真实可见的目标节点并派发点击。
- * @param id - 当前操作使用的 id。 */ (id: string) => {
-        const candidates = Array.from(
-          document.querySelectorAll(`[data-testid="${CSS.escape(id)}"]`),
-        ) as HTMLElement[];
-        const visible = candidates.filter(/** 根据样式和布局尺寸筛选仍在展示的目标元素。
- * @param el - 当前匹配的页面元素。 */ (el) => {
-          const rect = el.getBoundingClientRect();
-          const style = window.getComputedStyle(el);
-          return (
-            style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
-            Number(style.opacity) !== 0 &&
-            rect.width > 0 &&
-            rect.height > 0
-          );
-        });
-        const current = visible.at(-1);
-        current?.click();
-        return Boolean(current);
-      }, testId)
-      .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
-    if (!clicked) {
-      console.log(`DEBUG > click "${testId}" 后节点已卸载，按已触发导航继续`);
-    }
-  }
-  await page.waitForTimeout(250);
-  await page
-    .waitForFunction(/** 等待进度条消失，确认点击后的页面加载完成。 */ () => !document.querySelector('[role="progressbar"]'), undefined, {
-      timeout: 60000,
-    })
-    .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-}
-
-/**
- * 选玩法弹层的 onPress 偶尔会完成 dismiss 却丢失 navigate，页面回到私人房详情。
- * 仅对建房表单场景重开弹层并重选一次；其它页面仍直接暴露真实导航失败。
- * @param page - 执行操作的 Playwright 页面。
- * @param scenario - 本次执行的视觉配置或代理故障场景。
- */
-async function retryCreateRoomNavigation(page: Page, scenario: VisualScenario): Promise<boolean> {
-  if (!scenario.pageLabel.startsWith('signed_in_create_room_form')) {
-    return false;
-  }
-
-  const gameTypeTestId = scenario.navClickTestIds.find(/** 查找满足以下条件的首个条目：`testId.startsWith('game-type-button-')`。
- * @param testId - 当前操作使用的 testId。 */ (testId) =>
-    testId.startsWith('game-type-button-'),
-  );
-  if (!gameTypeTestId) {
-    return false;
-  }
-
-  const createGameVisible = await page
-    .locator('[data-testid="create-game-button"]:visible')
-    .last()
-    .isVisible()
-    .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
-  if (!createGameVisible) {
-    const personalHouseCreateVisible = await page
-      .locator('[data-testid="personal-house-create"]:visible')
-      .last()
-      .isVisible()
-      .catch(/** 将检测失败视为条件不满足，交由调用方选择后续分支。 */ () => false);
-    if (!personalHouseCreateVisible) {
-      return false;
-    }
-    await clickByTestId(page, 'personal-house-create');
-  }
-
-  console.warn(`NAVIGATION RETRY > ${scenario.label} 重新打开玩法弹层并选择 ${gameTypeTestId}`);
-  await clickByTestId(page, 'create-game-button');
-  await clickByTestId(page, gameTypeTestId);
-  return true;
-}
-
-/**
  * 等待应用和认证就绪，执行场景导航与滚动定位，准备最终截图。
  * @param page - 执行操作的 Playwright 页面。
  * @param scenario - 本次执行的视觉配置或代理故障场景。
@@ -253,118 +27,14 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
   await page.waitForSelector('#root', { timeout: 60000 });
   await page.waitForLoadState('load');
 
-  if (!scenario.skipAppReadyCheck) {
-    await ensureAppReadyPastStaging(page);
-  }
-
-  if (scenario.waitForLoading) {
-    await page.waitForFunction(/** 等待场景初始化的加载指示消失。 */ () => !document.querySelector('[role="progressbar"]'), undefined, {
-      timeout: 60000,
-    });
-  }
-
-  if (scenario.signIn) {
-    // 已注入当前分片开始前采集的登录态。失效时直接终止场景，不能让并行 worker
-    // 各自走 UI 登录：同一账号的新 token 会使其它 worker 的 token 立即失效。
-    if ((await waitForSignInState(page)) !== 'signedIn') {
-      throw new Error(`SIGN-IN > ${scenario.label} 分片登录态未生效，请重新采集后重跑该分片`);
-    }
-    await dismissSignedInPopups(page);
-  }
-
-  // 底部 tab 不只有登录态可访问；游客私人房等场景也需要通过 tab 进入。
-  if (scenario.tabTestId) {
-    await clickByTestId(page, scenario.tabTestId);
-    if (scenario.signIn) {
-      await dismissSignedInPopups(page);
-    }
-  }
-
-  // 页内点击导航（打开登录页、进入「我的」tab 设置子页等）。
-  // 必须在此处（宽度锁定等稳定化步骤之前）执行：曾试过在流程末尾点击，
-  // 打开的登录 modal 会被随即卸载（排查记录见 scenarios.ts）
-  for (const navTestId of scenario.navClickTestIds) {
-    await clickByTestId(page, navTestId);
-    if (navTestId === 'personal-house-create' || navTestId === 'personal-house-join') {
-      // 私人房详情先显示缓存内容，focus 回调随后才进入刷新 skeleton。
-      // 留出刷新启动窗口；下一次点击/最终 ready 再等待刷新后的真实内容，
-      // 避免截到 skeleton，也减少刷新重渲染吞掉玩法选择导航的概率。
-      await page.waitForTimeout(1000);
-    }
-  }
-  if (scenario.navClickTestIds.length > 0) {
-    await dismissSignedInPopups(page);
-  }
-
-  if (scenario.visualReadySelector) {
-    const ready = page.locator(`${scenario.visualReadySelector}:visible`).last();
-    try {
-      await ready.waitFor({ state: 'attached', timeout: 60000 });
-    } catch (error) {
-      if (!(await retryCreateRoomNavigation(page, scenario))) {
-        await dumpPageState(page, 'visualReadySelector timeout');
-        throw error;
-      }
-      await ready.waitFor({ state: 'attached', timeout: 60000 });
-    }
-    await scrollVisualReadyElementIntoView(ready).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-  }
-
-  // 过渡弹层（如选玩法 BottomSheet）：选中后导航可能打断 dismiss，DOM 残留须主动清掉
-  if (scenario.visualGoneSelector) {
-    await ensureSelectorGone(page, scenario.visualGoneSelector);
-  }
-
-  if (scenario.readyText) {
-    try {
-      await page.getByText(scenario.readyText, { exact: true }).first().waitFor({
-        state: 'attached',
-        timeout: 60000,
-      });
-    } catch (error) {
-      await dumpPageState(page, 'readyText timeout');
-      throw error;
-    }
-  }
-
-  // 仅大厅本身依赖牌局注码。底部 tab 会保留大厅的 DOM；若对所有页面全局等待，
-  // 远端牌局接口慢/失败会让消息、私人房、我的等无关场景各白等一分钟。
-  if (
-    scenario.pageLabel === 'hall' ||
-    scenario.pageLabel === 'signed_in_hall' ||
-    scenario.pageLabel === 'signed_in_hall_match'
-  ) {
-    await page.waitForFunction(
-      /** 等待大厅全部可见房卡的盲注和带入文案完成真实数据填充。 */ () => {
-        const nodes = Array.from(
-          document.querySelectorAll(
-            '[data-testid="match-game-bet-info"], [data-testid="match-game-minimum-chip"]',
-          ),
-        ).filter(/** 根据样式、尺寸与视口交集筛选本次大厅可见的房卡数据节点。
- * @param el - 当前匹配的页面元素。 */ (el) => {
-          const rect = el.getBoundingClientRect();
-          const style = window.getComputedStyle(el);
-          return (
-            style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
-            Number(style.opacity) !== 0 &&
-            rect.width > 0 &&
-            rect.height > 0 &&
-            rect.bottom > 0 &&
-            rect.right > 0 &&
-            rect.top < window.innerHeight &&
-            rect.left < window.innerWidth
-          );
-        });
-        // 德州、炸金花各 4 张房卡，每张有盲注/带入两处动态文案，共 16 个。
-        // 只等到 8 个会在第一组刚完成时提前截图，使第二组仍显示 "--"。
-        return nodes.length >= 16 && nodes.every(/** 确认所有条目均满足：`el.textContent?.trim() !== '--'`。
- * @param el - 当前匹配的页面元素。 */ (el) => el.textContent?.trim() !== '--');
-      },
-      undefined,
-      { timeout: 60000 },
-    );
-  }
+  await waitForApp(page, scenario);
+  await validateScenarioSignIn(page, scenario);
+  await navigateScenarioTab(page, scenario);
+  await navigateScenarioPages(page, scenario);
+  await waitForVisualSelector(page, scenario);
+  await dismissScenarioOverlay(page, scenario);
+  await waitForScenarioText(page, scenario);
+  await waitForHallBets(page, scenario);
 
   await page.evaluate(/** 等待浏览器字体资源就绪，避免截图使用临时后备字体。 */ async () => {
     if (document.fonts && document.fonts.ready) {
@@ -394,4 +64,155 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
     await assertMatchingArtworkVisible(page);
   }
   // 不再额外 delay：toHaveScreenshot 自带「连续两帧一致才截图」的稳定等待
+}
+
+/** 等待启动大厅和场景要求的加载完成。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉场景。 */
+async function waitForApp(page: Page, scenario: VisualScenario): Promise<void> {
+  if (!scenario.skipAppReadyCheck) {
+    await ensureAppReadyPastStaging(page);
+  }
+
+  if (scenario.waitForLoading) {
+    await page.waitForFunction(/** 等待场景初始化的加载指示消失。 */ () => !document.querySelector('[role="progressbar"]'), undefined, {
+      timeout: 60000,
+    });
+  }
+}
+
+/** 验证已注入的真实登录态，失效时直接终止分片场景。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉场景。 */
+async function validateScenarioSignIn(page: Page, scenario: VisualScenario): Promise<void> {
+  if (scenario.signIn) {
+    // 已注入当前分片开始前采集的登录态。失效时直接终止场景，不能让并行 worker
+    // 各自走 UI 登录：同一账号的新 token 会使其它 worker 的 token 立即失效。
+    if ((await waitForSignInState(page)) !== 'signedIn') {
+      throw new Error(`SIGN-IN > ${scenario.label} 分片登录态未生效，请重新采集后重跑该分片`);
+    }
+    await dismissSignedInPopups(page);
+  }
+}
+
+/** 打开底部页签，并为登录场景清理可能的遮挡。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉场景。 */
+async function navigateScenarioTab(page: Page, scenario: VisualScenario): Promise<void> {
+  // 底部 tab 不只有登录态可访问；游客私人房等场景也需要通过 tab 进入。
+  if (scenario.tabTestId) {
+    await clickByTestId(page, scenario.tabTestId);
+    if (scenario.signIn) {
+      await dismissSignedInPopups(page);
+    }
+  }
+}
+
+/** 依次点击场景入口，在稳定化之前完成子页导航。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉场景。 */
+async function navigateScenarioPages(page: Page, scenario: VisualScenario): Promise<void> {
+  // 页内点击导航（打开登录页、进入「我的」tab 设置子页等）。
+  // 必须在此处（宽度锁定等稳定化步骤之前）执行：曾试过在流程末尾点击，
+  // 打开的登录 modal 会被随即卸载（排查记录见 scenarios.ts）
+  for (const navTestId of scenario.navClickTestIds) await navigateScenarioItem(page, navTestId);
+  if (scenario.navClickTestIds.length > 0) {
+    await dismissSignedInPopups(page);
+  }
+}
+
+/** 仅在场景声明就绪选择器时等待目标节点。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉场景。 */
+async function waitForVisualSelector(page: Page, scenario: VisualScenario): Promise<void> {
+  if (scenario.visualReadySelector) await waitForReadySelector(page, scenario);
+}
+
+/** 等待真实就绪节点，建房表单仅允许原有一次恢复。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉场景。 */
+async function waitForReadySelector(page: Page, scenario: VisualScenario): Promise<void> {
+  const ready = page.locator(`${scenario.visualReadySelector}:visible`).last();
+  try {
+    await ready.waitFor({ state: 'attached', timeout: 60000 });
+  } catch (error) {
+    if (!(await retryCreateRoomNavigation(page, scenario))) {
+      await dumpPageState(page, 'visualReadySelector timeout');
+      throw error;
+    }
+    await ready.waitFor({ state: 'attached', timeout: 60000 });
+  }
+  await scrollVisualReadyElementIntoView(ready).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
+}
+
+/** 清理场景指定的过渡弹层及其背景。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉场景。 */
+async function dismissScenarioOverlay(page: Page, scenario: VisualScenario): Promise<void> {
+  // 过渡弹层（如选玩法 BottomSheet）：选中后导航可能打断 dismiss，DOM 残留须主动清掉
+  if (scenario.visualGoneSelector) {
+    await ensureSelectorGone(page, scenario.visualGoneSelector);
+  }
+}
+
+/** 等待场景指定文案，超时保留现场诊断。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉场景。 */
+async function waitForScenarioText(page: Page, scenario: VisualScenario): Promise<void> {
+  if (scenario.readyText) {
+    try {
+      await page.getByText(scenario.readyText, { exact: true }).first().waitFor({
+        state: 'attached',
+        timeout: 60000,
+      });
+    } catch (error) {
+      await dumpPageState(page, 'readyText timeout');
+      throw error;
+    }
+  }
+}
+
+/** 仅为大厅场景等待全部十六处盲注和带入文案。
+ * @param page - 当前页面。
+ * @param scenario - 当前视觉场景。 */
+async function waitForHallBets(page: Page, scenario: VisualScenario): Promise<void> {
+  // 仅大厅本身依赖牌局注码。底部 tab 会保留大厅的 DOM；若对所有页面全局等待，
+  // 远端牌局接口慢/失败会让消息、私人房、我的等无关场景各白等一分钟。
+  if (['hall', 'signed_in_hall', 'signed_in_hall_match'].includes(scenario.pageLabel)) {
+    await page.waitForFunction(
+      /** 等待大厅全部可见房卡的盲注和带入文案完成真实数据填充。 */ () => {
+        const nodes = Array.from(
+          document.querySelectorAll(
+            '[data-testid="match-game-bet-info"], [data-testid="match-game-minimum-chip"]',
+          ),
+        ).filter(/** 根据样式、尺寸与视口交集筛选本次大厅可见的房卡数据节点。
+ * @param el - 当前匹配的页面元素。 */ (el) => {
+          const rect = el.getBoundingClientRect();
+          const style = window.getComputedStyle(el);
+          return [style.display !== 'none', style.visibility !== 'hidden', Number(style.opacity) !== 0,
+            rect.width > 0, rect.height > 0, rect.bottom > 0, rect.right > 0,
+            rect.top < window.innerHeight, rect.left < window.innerWidth].every(Boolean);
+        });
+        // 德州、炸金花各 4 张房卡，每张有盲注/带入两处动态文案，共 16 个。
+        // 只等到 8 个会在第一组刚完成时提前截图，使第二组仍显示 "--"。
+        return nodes.length >= 16 && nodes.every(/** 确认所有条目均满足：`el.textContent?.trim() !== '--'`。
+ * @param el - 当前匹配的页面元素。 */ (el) => el.textContent?.trim() !== '--');
+      },
+      undefined,
+      { timeout: 60000 },
+    );
+  }
+}
+
+/** 单次导航后为私人房刷新保留一秒启动窗口。
+ * @param page - 当前页面。
+ * @param navTestId - 当前导航入口。 */
+async function navigateScenarioItem(page: Page, navTestId: string): Promise<void> {
+  await clickByTestId(page, navTestId);
+  if (navTestId === 'personal-house-create' || navTestId === 'personal-house-join') {
+    // 私人房详情先显示缓存内容，focus 回调随后才进入刷新 skeleton。
+    // 留出刷新启动窗口；下一次点击/最终 ready 再等待刷新后的真实内容，
+    // 避免截到 skeleton，也减少刷新重渲染吞掉玩法选择导航的概率。
+    await page.waitForTimeout(1000);
+  }
 }

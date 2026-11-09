@@ -1,0 +1,5470 @@
+{
+  "issue": "https://github.com/kevinanew/clrn/issues/106",
+  "baselineRef": "f5edd3b3962ecd4006d4f90e3e8ab82a463f5682",
+  "metric": {
+    "engine": "ESLint",
+    "version": "10.12.0",
+    "variant": "classic",
+    "measurement": "complexity max=0; every function, method, getter, constructor and nested callback; default parameters, optional chaining and short-circuit expressions retained"
+  },
+  "budgets": {
+    "testAndSupport": 3,
+    "independentToolAndRootConfig": 6
+  },
+  "summary": {
+    "beforeFunctions": 244,
+    "beforeOverLimit": 37,
+    "beforeMaximum": 22,
+    "afterFunctions": 348,
+    "afterOverLimit": 0,
+    "afterMaximum": 3,
+    "gateBeforeFunctions": 63,
+    "gateAfterFunctions": 84,
+    "gateAfterOverLimit": 0
+  },
+  "files": [
+    {
+      "file": "visual/src/captureAuthState.ts",
+      "limit": 3,
+      "afterSHA256": "2d12a0fe89b7bb24f97513515d5286fa8b5fd5320b865f093423af7de205b6ce"
+    },
+    {
+      "file": "visual/src/support/authFlow.ts",
+      "limit": 3,
+      "afterSHA256": "12a229f1b80b6e5fe50adb42721d98797b1a44933f1e56966461205078c97897"
+    },
+    {
+      "file": "visual/src/support/authValidation.ts",
+      "limit": 3,
+      "afterSHA256": "1a83381a7a9487fca4a4509994beb09584407c3987befcaaf2450ad055d827df"
+    },
+    {
+      "file": "visual/src/support/connectionDiagnostics.ts",
+      "limit": 3,
+      "afterSHA256": "bf2df2a181f8e3961c537ca5bb92841284aa9e26e97fdba13afc70ff73fc4f57"
+    },
+    {
+      "file": "visual/src/support/networkFixture.ts",
+      "limit": 3,
+      "afterSHA256": "09ad73466d93a655bbfd6259d7d7c20211c7a3b890de4a3b7059accd6fd25f97"
+    },
+    {
+      "file": "visual/src/support/pageSetup.test.ts",
+      "limit": 3,
+      "afterSHA256": "6763fdcb92a26f5411da6aa386975e5d5b393e1afec9fbfd50914ed08e213b76"
+    },
+    {
+      "file": "visual/src/support/pageSetup.ts",
+      "limit": 3,
+      "afterSHA256": "ef95b2b3dd783d73751f7562b092caeb3aeea0ee874e03f575437e42daf8576c"
+    },
+    {
+      "file": "visual/src/support/pageStabilizers.ts",
+      "limit": 3,
+      "afterSHA256": "b58743033d88b4896bb3ddd19060e977495584176590cc6e6ea5ba2874ad4920"
+    },
+    {
+      "file": "visual/src/support/preparePage.ts",
+      "limit": 3,
+      "afterSHA256": "014cc9505a88300ff2fbfd03068d4b256834cb9900315f2bcc9fa1c0307a5264"
+    },
+    {
+      "file": "visual/src/support/requestError.test.ts",
+      "limit": 3,
+      "afterSHA256": "27e3f33f6b313424a968878f85da79650767e77fa385aa998809265b3eefeeb0"
+    },
+    {
+      "file": "visual/src/support/requestError.ts",
+      "limit": 3,
+      "afterSHA256": "8cce46b13e01ee3300e1b3c0f5ba817a09b0a68829985316a269135f1bf0400c"
+    },
+    {
+      "file": "visual/src/support/requestJson.ts",
+      "limit": 3,
+      "afterSHA256": "340af5f563c33b346e4c97247c54b1367beaa54e29abbd2b92535d8b761fe874"
+    },
+    {
+      "file": "visual/src/support/runWithContext.test.ts",
+      "limit": 3,
+      "afterSHA256": "f92b06c8e6c33f5ba736dd1d1f84ffa6887e0c502417bd65dc4b63138eb0ddb6"
+    },
+    {
+      "file": "visual/src/support/runWithContext.ts",
+      "limit": 3,
+      "afterSHA256": "6372b99e13db2151c326b71c72cfe61ac6bbb0dead0e9b8dfb83012980492761"
+    },
+    {
+      "file": "eslint.config.mjs",
+      "limit": 6,
+      "afterSHA256": "976f512ee89efc18c72cc25e4d3b0e44826b12dd6a7cf07514bdef378f58a575"
+    },
+    {
+      "file": "visual/src/support/authValidation.test.ts",
+      "limit": 3,
+      "afterSHA256": "a29a6badb4169e8900044a3240d43f65bc2b897075557dfa5c5998746827d786"
+    },
+    {
+      "file": "visual/src/support/pageSetupCache.test.ts",
+      "limit": 3,
+      "afterSHA256": "e60b2ab3b9f849c2cd469fdc9fa83e1e123bc1454e058fe0bea72fafca50cb96"
+    },
+    {
+      "file": "visual/src/support/preparePageNavigation.ts",
+      "limit": 3,
+      "afterSHA256": "7644d50fab9f1b202b06e654929297cc9fab9b6544d06bb85ba7c4e8fecfd837"
+    },
+    {
+      "file": "scripts/visual-complexity-animations.test.mjs",
+      "limit": 3,
+      "afterSHA256": "58e135e0f839d15509ceecf94dba35f74d9b236c6cc0afa4f41bb5da5feba5cf"
+    },
+    {
+      "file": "scripts/visual-complexity-browser.test.mjs",
+      "limit": 3,
+      "afterSHA256": "a75f0a362eb7aeccd1021eb9aab331bedb8f381d46a3aff340ab9547d2e6a5a3"
+    },
+    {
+      "file": "scripts/visual-complexity-entrypoints.test.mjs",
+      "limit": 3,
+      "afterSHA256": "571ad06d6e677a399633fbadf126aea9e0ade5832ccf02bb9e419c77db9f0540"
+    },
+    {
+      "file": "scripts/visual-complexity-fixture.mjs",
+      "limit": 3,
+      "afterSHA256": "f9daf6c657ec7b71805ea437bf4502100e7d9e3e1e478d499b3a4ccfe9958728"
+    },
+    {
+      "file": "scripts/visual-complexity-scope.mjs",
+      "limit": 6,
+      "afterSHA256": "bea5fdc5b315df11e03c8f5ac3f8cb63018b20dbab1b69dde961c26ad935c32d"
+    },
+    {
+      "file": "scripts/visual-complexity.mjs",
+      "limit": 6,
+      "afterSHA256": "7b1d80e2a05c5244d647673e8a0db2f862f78a046eaf60bc62e64d28661a2da5"
+    },
+    {
+      "file": "scripts/visual-complexity.test.mjs",
+      "limit": 3,
+      "afterSHA256": "3e8ee6e38a21352a5e47fe04344db7ccea5a673a51b3501f932fe3d1bc7d8f17"
+    }
+  ],
+  "namedReductions": [
+    {
+      "name": "preparePage",
+      "before": {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 252,
+        "column": 8,
+        "name": "Async function 'preparePage'",
+        "complexity": 22
+      },
+      "after": {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 26,
+        "column": 8,
+        "name": "Async function 'preparePage'",
+        "complexity": 3
+      }
+    },
+    {
+      "name": "waitForSignInState",
+      "before": {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 127,
+        "column": 8,
+        "name": "Async function 'waitForSignInState'",
+        "complexity": 16
+      },
+      "after": {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 108,
+        "column": 8,
+        "name": "Async function 'waitForSignInState'",
+        "complexity": 3
+      }
+    },
+    {
+      "name": "setupContextForScenario",
+      "before": {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 161,
+        "column": 8,
+        "name": "Async function 'setupContextForScenario'",
+        "complexity": 12
+      },
+      "after": {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 175,
+        "column": 8,
+        "name": "Async function 'setupContextForScenario'",
+        "complexity": 2
+      }
+    }
+  ],
+  "removedHistoricalEntries": [
+    {
+      "file": "visual/src/support/authValidation.ts",
+      "rule": "complexity",
+      "line": 37,
+      "column": 68,
+      "message": "Arrow function has a complexity of 14. Maximum allowed is 10.",
+      "anchor": "50b0a614eac9f99a033024d147dd75a02a5573165c4cfd8efa648e4358150a29",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/src/support/authValidation.ts",
+      "rule": "complexity",
+      "line": 127,
+      "column": 8,
+      "message": "Async function 'waitForSignInState' has a complexity of 16. Maximum allowed is 10.",
+      "anchor": "c49813d9686c5d7be33ce3782919ba2489196e8a8564b8138a32e47fdcd941ef",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/src/support/pageSetup.ts",
+      "rule": "complexity",
+      "line": 161,
+      "column": 8,
+      "message": "Async function 'setupContextForScenario' has a complexity of 12. Maximum allowed is 10.",
+      "anchor": "7c7529c806e29b2b9cd25f1e0183205bfe9fb2a02ffb45026807d585fb4d793d",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "visual/src/support/preparePage.ts",
+      "rule": "complexity",
+      "line": 252,
+      "column": 8,
+      "message": "Async function 'preparePage' has a complexity of 22. Maximum allowed is 10.",
+      "anchor": "d8ebe90bd927b9abfa03d1d92263834291c1f4d966e8685b85684652e0776359",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    }
+  ],
+  "validation": [
+    {
+      "command": "npm run lint:visual-complexity -- --browser-support",
+      "result": "passed; all scoped source, new helpers, adjacent tests, gate support and root config"
+    },
+    {
+      "command": "node --test scripts/visual-complexity-browser.test.mjs",
+      "result": "385 passed; native 3/4 and 6/7 boundaries; actual npm CLI rejection; nested callbacks, constructors/getters, default parameters, optional chains, short circuits, disable comments, parse failure and every required missing module"
+    },
+    {
+      "command": "node --test scripts/visual-complexity.test.mjs scripts/visual-complexity-entrypoints.test.mjs scripts/visual-complexity-animations.test.mjs",
+      "result": "97 passed; includes missing dependency exit and lint/pre-commit/CI wiring"
+    },
+    {
+      "command": "node --import tsx --test visual/src/support/authValidation.test.ts visual/src/support/pageSetup.test.ts visual/src/support/pageSetupCache.test.ts visual/src/support/requestError.test.ts visual/src/support/runWithContext.test.ts",
+      "result": "39 passed"
+    },
+    {
+      "command": "node_modules/.bin/tsc -p visual/tsconfig.json --noEmit",
+      "result": "passed"
+    },
+    {
+      "command": "node_modules/.bin/playwright test -c visual/playwright.config.ts visual/tests/authValidation.spec.ts visual/tests/preparePage.spec.ts visual/tests/guestClubReadiness.spec.ts visual/tests/localImages.spec.ts visual/tests/cardSpriteReadiness.spec.ts visual/tests/privateRoomPresentation.spec.ts --list",
+      "result": "46 cases collected"
+    },
+    {
+      "command": "node_modules/.bin/playwright test -c visual/playwright.config.ts visual/tests/authValidation.spec.ts visual/tests/preparePage.spec.ts visual/tests/guestClubReadiness.spec.ts visual/tests/localImages.spec.ts visual/tests/cardSpriteReadiness.spec.ts visual/tests/privateRoomPresentation.spec.ts --reporter=line",
+      "result": "46 passed"
+    },
+    {
+      "command": "node_modules/.bin/playwright test -c visual/playwright.config.ts visual/tests/preparePage.spec.ts --reporter=line",
+      "result": "18 passed after navigation module extraction"
+    }
+  ],
+  "runtime": {
+    "node": "v24.14.0",
+    "playwright": "1.61.1",
+    "platform": "darwin",
+    "verification": "Actual Chromium runs against local HTTP/DOM fixtures; includes genuine account requests to the local server and existing request/response error fixtures. No full test suite, screenshot baseline update, staging account capture or fixed application-build scene was run. Native interaction sequences, proxy protocol, animation rules, delays and retries retain their existing semantics."
+  },
+  "functionSnapshots": {
+    "before": [
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 39,
+        "column": 1,
+        "name": "Function 'authOutput'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 75,
+        "column": 1,
+        "name": "Async function 'createAuthContext'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 92,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 116,
+        "column": 8,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 129,
+        "column": 1,
+        "name": "Async function 'collectLocalStorageEntries'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 130,
+        "column": 96,
+        "name": "Arrow function",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 149,
+        "column": 1,
+        "name": "Function 'persistAuthState'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 166,
+        "column": 1,
+        "name": "Async function 'validateCapturedAuthState'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 173,
+        "column": 81,
+        "name": "Async arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 176,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 199,
+        "column": 1,
+        "name": "Async function 'captureAuthState'",
+        "complexity": 6
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 211,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 215,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 217,
+        "column": 56,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 225,
+        "column": 61,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 228,
+        "column": 54,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 247,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 260,
+        "column": 1,
+        "name": "Async function 'main'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 262,
+        "column": 46,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 269,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 15,
+        "column": 8,
+        "name": "Async function 'ensureAppReadyPastStaging'",
+        "complexity": 5
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 24,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 40,
+        "column": 82,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 41,
+        "column": 112,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 52,
+        "column": 104,
+        "name": "Arrow function",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 53,
+        "column": 44,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 65,
+        "column": 8,
+        "name": "Async function 'dumpPageState'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 67,
+        "column": 54,
+        "name": "Arrow function",
+        "complexity": 6
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 70,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 73,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 77,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 83,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 87,
+        "column": 32,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 99,
+        "column": 46,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 109,
+        "column": 8,
+        "name": "Async function 'fillByTestId'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 119,
+        "column": 1,
+        "name": "Async function 'inputByTestId'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 123,
+        "column": 44,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 136,
+        "column": 8,
+        "name": "Async function 'fillStableSignInCredentials'",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 165,
+        "column": 8,
+        "name": "Async function 'usernameOrEmailSubmitButton'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 183,
+        "column": 8,
+        "name": "Async function 'waitForUsernameOrEmailSubmitEnabled'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 195,
+        "column": 8,
+        "name": "Async function 'ensureSignedIn'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 208,
+        "column": 104,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 225,
+        "column": 68,
+        "name": "Arrow function",
+        "complexity": 10
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 248,
+        "column": 110,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 257,
+        "column": 8,
+        "name": "Async function 'dismissSignedInPopups'",
+        "complexity": 5
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 279,
+        "column": 83,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 280,
+        "column": 77,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 34,
+        "column": 1,
+        "name": "Async function 'readPersistedAuth'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 37,
+        "column": 68,
+        "name": "Arrow function",
+        "complexity": 14
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 66,
+        "column": 46,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 73,
+        "column": 8,
+        "name": "Async function 'isSignedIn'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 83,
+        "column": 1,
+        "name": "Async function 'waitForRestoredAppSignIn'",
+        "complexity": 7
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 97,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 98,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 103,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 104,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 127,
+        "column": 8,
+        "name": "Async function 'waitForSignInState'",
+        "complexity": 16
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 150,
+        "column": 60,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 152,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 154,
+        "column": 71,
+        "name": "Async arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 43,
+        "column": 8,
+        "name": "Function 'recordDiagnostic'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 53,
+        "column": 8,
+        "name": "Function 'recordBlockedTarget'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 64,
+        "column": 8,
+        "name": "Async function 'installConnectionDiagnostics'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 74,
+        "column": 66,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 83,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 92,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 101,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 6
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 106,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 107,
+        "column": 52,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 109,
+        "column": 59,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 113,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 120,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 6
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 128,
+        "column": 38,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 133,
+        "column": 46,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 134,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 138,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 139,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 146,
+        "column": 5,
+        "name": "Async method 'save'",
+        "complexity": 9
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 149,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/networkFixture.ts",
+        "line": 13,
+        "column": 3,
+        "name": "Async method 'network'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/networkFixture.ts",
+        "line": 19,
+        "column": 3,
+        "name": "Async method 'proxy'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/networkFixture.ts",
+        "line": 27,
+        "column": 39,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 27,
+        "column": 1,
+        "name": "Function 'injectAuthState'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 30,
+        "column": 56,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 41,
+        "column": 1,
+        "name": "Function 'buildAuthStateArgs'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 49,
+        "column": 8,
+        "name": "Function 'readAuthStateEntries'",
+        "complexity": 6
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 66,
+        "column": 8,
+        "name": "Async function 'fixNavigatorLanguage'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 68,
+        "column": 62,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 72,
+        "column": 9,
+        "name": "Method 'get'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 77,
+        "column": 9,
+        "name": "Method 'get'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 93,
+        "column": 8,
+        "name": "Async function 'disableAnimations'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 119,
+        "column": 8,
+        "name": "Function 'buildStorageStateForScenario'",
+        "complexity": 5
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 130,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 148,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 161,
+        "column": 8,
+        "name": "Async function 'setupContextForScenario'",
+        "complexity": 12
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 185,
+        "column": 128,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 211,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 212,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 219,
+        "column": 75,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 221,
+        "column": 56,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 13,
+        "column": 12,
+        "name": "Async arrow function",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 19,
+        "column": 16,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 23,
+        "column": 25,
+        "name": "Async method 'addInitScript'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 30,
+        "column": 9,
+        "name": "Async method 'command'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 43,
+        "column": 1,
+        "name": "Async function 'serializedScript'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 51,
+        "column": 5,
+        "name": "Async method 'addInitScript'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 57,
+        "column": 132,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 69,
+        "column": 141,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 78,
+        "column": 7,
+        "name": "Method 'appendChild'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 83,
+        "column": 5,
+        "name": "Method 'getElementById'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 84,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 86,
+        "column": 5,
+        "name": "Method 'createElement'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 92,
+        "column": 5,
+        "name": "Method 'addEventListener'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 107,
+        "column": 138,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 112,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 9,
+        "column": 8,
+        "name": "Async function 'stabilizeVideos'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 10,
+        "column": 66,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 12,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 26,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 28,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 30,
+        "column": 34,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 60,
+        "column": 8,
+        "name": "Async function 'stabilizeBackdropFilter'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 61,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 63,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 78,
+        "column": 141,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 80,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 81,
+        "column": 64,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 81,
+        "column": 122,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 93,
+        "column": 8,
+        "name": "Async function 'alignPersonalHouseTitlesToDevicePixels'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 94,
+        "column": 55,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 101,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 120,
+        "column": 8,
+        "name": "Async function 'applyContentStabilizers'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 133,
+        "column": 8,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 135,
+        "column": 24,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 137,
+        "column": 62,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 139,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 5
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 152,
+        "column": 54,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 154,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 192,
+        "column": 8,
+        "name": "Async function 'ensureLocalImagesLoaded'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 193,
+        "column": 72,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 199,
+        "column": 52,
+        "name": "Arrow function",
+        "complexity": 10
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 208,
+        "column": 30,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 213,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 214,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 217,
+        "column": 25,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 229,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 232,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 241,
+        "column": 56,
+        "name": "Arrow function",
+        "complexity": 5
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 258,
+        "column": 45,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 271,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 285,
+        "column": 8,
+        "name": "Async function 'lockPageWidth'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 287,
+        "column": 77,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 292,
+        "column": 36,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 300,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 8
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 333,
+        "column": 8,
+        "name": "Async function 'assertMatchingArtworkVisible'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 339,
+        "column": 16,
+        "name": "Arrow function",
+        "complexity": 9
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 361,
+        "column": 8,
+        "name": "Async function 'scrollVisualReadyElementIntoView'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 363,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 33,
+        "column": 8,
+        "name": "Async function 'ensureSelectorGone'",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 43,
+        "column": 76,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 44,
+        "column": 85,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 46,
+        "column": 83,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 57,
+        "column": 74,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 59,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 7
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 76,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 91,
+        "column": 8,
+        "name": "Async function 'revealVirtualizedSettingsItem'",
+        "complexity": 4
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 105,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 110,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 124,
+        "column": 8,
+        "name": "Async function 'resetScrollToStart'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 131,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 137,
+        "column": 141,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 139,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 140,
+        "column": 64,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 140,
+        "column": 122,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 150,
+        "column": 1,
+        "name": "Async function 'clickByTestId'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 154,
+        "column": 110,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 159,
+        "column": 100,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 172,
+        "column": 44,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 177,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 5
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 192,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 199,
+        "column": 54,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 202,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 211,
+        "column": 1,
+        "name": "Async function 'retryCreateRoomNavigation'",
+        "complexity": 5
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 217,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 228,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 234,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 252,
+        "column": 8,
+        "name": "Async function 'preparePage'",
+        "complexity": 22
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 261,
+        "column": 58,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 310,
+        "column": 93,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 338,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 344,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 9
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 362,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 369,
+        "column": 65,
+        "name": "Async arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/requestError.ts",
+        "line": 8,
+        "column": 8,
+        "name": "Function 'requestErrorSummary'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 22,
+        "column": 1,
+        "name": "Function 'privateOutput'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 28,
+        "column": 118,
+        "name": "Async arrow function",
+        "complexity": 5
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 33,
+        "column": 26,
+        "name": "Method 'status'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 33,
+        "column": 65,
+        "name": "Method 'ok'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 34,
+        "column": 9,
+        "name": "Method 'headers'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 34,
+        "column": 69,
+        "name": "Method 'url'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 35,
+        "column": 9,
+        "name": "Async method 'json'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 36,
+        "column": 9,
+        "name": "Async method 'dispose'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 37,
+        "column": 25,
+        "name": "Async method 'put'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 39,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 47,
+        "column": 23,
+        "name": "Async method 'put'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 49,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 59,
+        "column": 51,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 62,
+        "column": 90,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 64,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 75,
+        "column": 51,
+        "name": "Async arrow function",
+        "complexity": 6
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 77,
+        "column": 69,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 79,
+        "column": 46,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 82,
+        "column": 21,
+        "name": "Async method 'exposeBinding'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 82,
+        "column": 70,
+        "name": "Async method 'addInitScript'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 86,
+        "column": 51,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 88,
+        "column": 5,
+        "name": "Method 'outputPath'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 91,
+        "column": 5,
+        "name": "Async method 'attach'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 97,
+        "column": 80,
+        "name": "Async method 'diagnostics'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 103,
+        "column": 21,
+        "name": "Method 'url'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 104,
+        "column": 5,
+        "name": "Method 'method'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 104,
+        "column": 41,
+        "name": "Method 'resourceType'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 105,
+        "column": 5,
+        "name": "Method 'failure'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 107,
+        "column": 29,
+        "name": "Method 'request'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 107,
+        "column": 68,
+        "name": "Method 'status'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 107,
+        "column": 103,
+        "name": "Method 'fromServiceWorker'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 109,
+        "column": 36,
+        "name": "Method 'url'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 122,
+        "column": 58,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 128,
+        "column": 58,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 146,
+        "column": 94,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 148,
+        "column": 20,
+        "name": "Async method 'evaluate'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 152,
+        "column": 89,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 153,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 12,
+        "column": 8,
+        "name": "Async function 'readRequestJson'",
+        "complexity": 6
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 30,
+        "column": 8,
+        "name": "Async function 'fetchRequestJson'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 32,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 35,
+        "column": 40,
+        "name": "Method 'status'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 35,
+        "column": 86,
+        "name": "Method 'ok'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 36,
+        "column": 5,
+        "name": "Method 'json'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.ts",
+        "line": 8,
+        "column": 8,
+        "name": "Async function 'runWithContext'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 6,
+        "column": 58,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 7,
+        "column": 101,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 11,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 16,
+        "column": 7,
+        "name": "Async method 'close'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 21,
+        "column": 96,
+        "name": "Async arrow function",
+        "complexity": 1
+      }
+    ],
+    "after": [
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 39,
+        "column": 1,
+        "name": "Function 'authOutput'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 75,
+        "column": 1,
+        "name": "Async function 'createAuthContext'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 92,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 116,
+        "column": 8,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 129,
+        "column": 1,
+        "name": "Async function 'collectLocalStorageEntries'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 130,
+        "column": 96,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 134,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 136,
+        "column": 52,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 138,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 150,
+        "column": 1,
+        "name": "Function 'persistAuthState'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 167,
+        "column": 1,
+        "name": "Async function 'validateCapturedAuthState'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 174,
+        "column": 81,
+        "name": "Async arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 177,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 200,
+        "column": 1,
+        "name": "Async function 'captureAuthState'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 231,
+        "column": 1,
+        "name": "Async function 'waitBeforeCaptureRetry'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 234,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 242,
+        "column": 1,
+        "name": "Function 'asCaptureError'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 246,
+        "column": 1,
+        "name": "Function 'captureFailure'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 252,
+        "column": 1,
+        "name": "Async function 'captureAttempt'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 257,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 261,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 263,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 271,
+        "column": 55,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 274,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 284,
+        "column": 1,
+        "name": "Async function 'main'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 286,
+        "column": 46,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 293,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/captureAuthState.ts",
+        "line": 305,
+        "column": 1,
+        "name": "Function 'authErrorType'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 15,
+        "column": 8,
+        "name": "Async function 'ensureAppReadyPastStaging'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 24,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 38,
+        "column": 105,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 39,
+        "column": 44,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 48,
+        "column": 1,
+        "name": "Async function 'advanceStartup'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 57,
+        "column": 82,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 58,
+        "column": 112,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 71,
+        "column": 8,
+        "name": "Async function 'dumpPageState'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 73,
+        "column": 54,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 76,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 79,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 83,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 87,
+        "column": 9,
+        "name": "Method 'children'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 95,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 99,
+        "column": 32,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 111,
+        "column": 46,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 121,
+        "column": 8,
+        "name": "Async function 'fillByTestId'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 131,
+        "column": 1,
+        "name": "Async function 'inputByTestId'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 135,
+        "column": 44,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 148,
+        "column": 8,
+        "name": "Async function 'fillStableSignInCredentials'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 174,
+        "column": 1,
+        "name": "Async function 'credentialsMatch'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 184,
+        "column": 8,
+        "name": "Async function 'usernameOrEmailSubmitButton'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 202,
+        "column": 8,
+        "name": "Async function 'waitForUsernameOrEmailSubmitEnabled'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 214,
+        "column": 8,
+        "name": "Async function 'ensureSignedIn'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 227,
+        "column": 104,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 244,
+        "column": 68,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 253,
+        "column": 11,
+        "name": "Method 'field'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 256,
+        "column": 11,
+        "name": "Method 'complete'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 273,
+        "column": 110,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 282,
+        "column": 8,
+        "name": "Async function 'dismissSignedInPopups'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 311,
+        "column": 1,
+        "name": "Async function 'dismissPopupRound'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 323,
+        "column": 1,
+        "name": "Async function 'dismissPopup'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 325,
+        "column": 63,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authFlow.ts",
+        "line": 326,
+        "column": 58,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 34,
+        "column": 1,
+        "name": "Async function 'readPersistedAuth'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 37,
+        "column": 68,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 46,
+        "column": 9,
+        "name": "Method 'property'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 49,
+        "column": 9,
+        "name": "Method 'text'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 54,
+        "column": 9,
+        "name": "Method 'parse'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 70,
+        "column": 46,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 77,
+        "column": 8,
+        "name": "Async function 'isSignedIn'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 87,
+        "column": 1,
+        "name": "Async function 'waitForRestoredAppSignIn'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 108,
+        "column": 8,
+        "name": "Async function 'waitForSignInState'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 125,
+        "column": 1,
+        "name": "Async function 'validateAccountRequest'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 140,
+        "column": 60,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 142,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 144,
+        "column": 71,
+        "name": "Async arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 165,
+        "column": 1,
+        "name": "Function 'accountResponse'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 173,
+        "column": 1,
+        "name": "Function 'successfulAccountResponse'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 183,
+        "column": 1,
+        "name": "Function 'assertUnchangedAuth'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 186,
+        "column": 33,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 197,
+        "column": 1,
+        "name": "Async function 'finishValidResponse'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 209,
+        "column": 1,
+        "name": "Async function 'finishAccountValidation'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 220,
+        "column": 1,
+        "name": "Async function 'hasAppMarker'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 222,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 222,
+        "column": 75,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 228,
+        "column": 1,
+        "name": "Async function 'restoredSignInSince'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 237,
+        "column": 1,
+        "name": "Function 'isStableSignIn'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 244,
+        "column": 1,
+        "name": "Async function 'restoredSignInPoll'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/authValidation.ts",
+        "line": 252,
+        "column": 1,
+        "name": "Function 'isSuccessStatus'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 44,
+        "column": 8,
+        "name": "Function 'recordDiagnostic'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 54,
+        "column": 8,
+        "name": "Function 'recordBlockedTarget'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 65,
+        "column": 8,
+        "name": "Async function 'installConnectionDiagnostics'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 75,
+        "column": 66,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 84,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 93,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 102,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 108,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 114,
+        "column": 38,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 119,
+        "column": 46,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 120,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 124,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 125,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 132,
+        "column": 5,
+        "name": "Async method 'save'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 135,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 159,
+        "column": 1,
+        "name": "Function 'collectMetadata'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 164,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 166,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 168,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 174,
+        "column": 1,
+        "name": "Function 'metadataCandidates'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 183,
+        "column": 1,
+        "name": "Function 'recordMetadata'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 187,
+        "column": 53,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 192,
+        "column": 1,
+        "name": "Function 'metadataServers'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 196,
+        "column": 1,
+        "name": "Function 'completedRequest'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 203,
+        "column": 1,
+        "name": "Function 'failedRequestReason'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 208,
+        "column": 1,
+        "name": "Function 'recordCompletion'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 215,
+        "column": 1,
+        "name": "Function 'recordPendingRequests'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 222,
+        "column": 1,
+        "name": "Async function 'mergeProxyDiagnostics'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/connectionDiagnostics.ts",
+        "line": 232,
+        "column": 1,
+        "name": "Function 'isMetadataObject'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/networkFixture.ts",
+        "line": 13,
+        "column": 3,
+        "name": "Async method 'network'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/networkFixture.ts",
+        "line": 19,
+        "column": 3,
+        "name": "Async method 'proxy'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/networkFixture.ts",
+        "line": 27,
+        "column": 39,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 13,
+        "column": 12,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 19,
+        "column": 16,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 23,
+        "column": 25,
+        "name": "Async method 'addInitScript'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 30,
+        "column": 9,
+        "name": "Async method 'command'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 44,
+        "column": 1,
+        "name": "Async function 'serializedScript'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 52,
+        "column": 5,
+        "name": "Async method 'addInitScript'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 58,
+        "column": 132,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 70,
+        "column": 141,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 79,
+        "column": 7,
+        "name": "Method 'appendChild'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 84,
+        "column": 5,
+        "name": "Method 'getElementById'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 85,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 87,
+        "column": 5,
+        "name": "Method 'createElement'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 93,
+        "column": 5,
+        "name": "Method 'addEventListener'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 108,
+        "column": 138,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.test.ts",
+        "line": 113,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 27,
+        "column": 1,
+        "name": "Function 'injectAuthState'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 30,
+        "column": 56,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 41,
+        "column": 1,
+        "name": "Function 'buildAuthStateArgs'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 49,
+        "column": 8,
+        "name": "Function 'readAuthStateEntries'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 63,
+        "column": 1,
+        "name": "Function 'hasAuthEntries'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 70,
+        "column": 1,
+        "name": "Function 'safeCacheEntries'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 72,
+        "column": 32,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 73,
+        "column": 32,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 79,
+        "column": 1,
+        "name": "Function 'scenarioCacheEntries'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 89,
+        "column": 8,
+        "name": "Async function 'fixNavigatorLanguage'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 91,
+        "column": 62,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 95,
+        "column": 9,
+        "name": "Method 'get'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 100,
+        "column": 9,
+        "name": "Method 'get'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 116,
+        "column": 8,
+        "name": "Async function 'disableAnimations'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 142,
+        "column": 8,
+        "name": "Function 'buildStorageStateForScenario'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 162,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 175,
+        "column": 8,
+        "name": "Async function 'setupContextForScenario'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 189,
+        "column": 128,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 204,
+        "column": 1,
+        "name": "Async function 'configureAnimations'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 210,
+        "column": 1,
+        "name": "Function 'scenarioUser'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 217,
+        "column": 1,
+        "name": "Function 'scenarioUserPayload'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 225,
+        "column": 1,
+        "name": "Async function 'configureScenarioProxy'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 244,
+        "column": 1,
+        "name": "Async function 'injectScenarioCache'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 255,
+        "column": 1,
+        "name": "Async function 'injectSignedInCache'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 264,
+        "column": 1,
+        "name": "Async function 'injectGuestCache'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetup.ts",
+        "line": 271,
+        "column": 1,
+        "name": "Function 'authEntriesField'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 9,
+        "column": 8,
+        "name": "Async function 'stabilizeVideos'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 10,
+        "column": 66,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 12,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 26,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 28,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 30,
+        "column": 34,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 60,
+        "column": 8,
+        "name": "Async function 'stabilizeBackdropFilter'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 61,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 65,
+        "column": 7,
+        "name": "Method 'enabled'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 71,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 81,
+        "column": 141,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 83,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 84,
+        "column": 64,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 84,
+        "column": 122,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 96,
+        "column": 8,
+        "name": "Async function 'alignPersonalHouseTitlesToDevicePixels'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 97,
+        "column": 55,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 104,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 123,
+        "column": 8,
+        "name": "Async function 'applyContentStabilizers'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 136,
+        "column": 8,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 138,
+        "column": 24,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 140,
+        "column": 62,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 142,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 145,
+        "column": 49,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 152,
+        "column": 54,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 154,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 192,
+        "column": 8,
+        "name": "Async function 'ensureLocalImagesLoaded'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 193,
+        "column": 72,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 202,
+        "column": 7,
+        "name": "Method 'subject'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 208,
+        "column": 7,
+        "name": "Method 'spriteSubject'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 214,
+        "column": 52,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 222,
+        "column": 30,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 227,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 228,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 231,
+        "column": 25,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 243,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 246,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 258,
+        "column": 7,
+        "name": "Method 'failed'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 264,
+        "column": 7,
+        "name": "Method 'undecoded'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 268,
+        "column": 56,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 276,
+        "column": 45,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 289,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 303,
+        "column": 8,
+        "name": "Async function 'lockPageWidth'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 305,
+        "column": 77,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 310,
+        "column": 36,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 320,
+        "column": 7,
+        "name": "Method 'contains'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 323,
+        "column": 49,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 327,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 342,
+        "column": 8,
+        "name": "Async function 'assertMatchingArtworkVisible'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 348,
+        "column": 16,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 354,
+        "column": 9,
+        "name": "Method 'clipping'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 364,
+        "column": 9,
+        "name": "Method 'ancestors'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 373,
+        "column": 9,
+        "name": "Method 'parents'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 383,
+        "column": 51,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 392,
+        "column": 8,
+        "name": "Async function 'scrollVisualReadyElementIntoView'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageStabilizers.ts",
+        "line": 394,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 26,
+        "column": 8,
+        "name": "Async function 'preparePage'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 39,
+        "column": 65,
+        "name": "Async arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 72,
+        "column": 1,
+        "name": "Async function 'waitForApp'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 78,
+        "column": 58,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 87,
+        "column": 1,
+        "name": "Async function 'validateScenarioSignIn'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 101,
+        "column": 1,
+        "name": "Async function 'navigateScenarioTab'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 114,
+        "column": 1,
+        "name": "Async function 'navigateScenarioPages'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 127,
+        "column": 1,
+        "name": "Async function 'waitForVisualSelector'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 134,
+        "column": 1,
+        "name": "Async function 'waitForReadySelector'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 145,
+        "column": 91,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 151,
+        "column": 1,
+        "name": "Async function 'dismissScenarioOverlay'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 161,
+        "column": 1,
+        "name": "Async function 'waitForScenarioText'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 178,
+        "column": 1,
+        "name": "Async function 'waitForHallBets'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 183,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 189,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 199,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePage.ts",
+        "line": 210,
+        "column": 1,
+        "name": "Async function 'navigateScenarioItem'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 22,
+        "column": 1,
+        "name": "Function 'privateOutput'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 31,
+        "column": 109,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 33,
+        "column": 26,
+        "name": "Method 'status'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 33,
+        "column": 65,
+        "name": "Method 'ok'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 34,
+        "column": 9,
+        "name": "Method 'headers'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 34,
+        "column": 69,
+        "name": "Method 'url'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 35,
+        "column": 9,
+        "name": "Async method 'json'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 36,
+        "column": 9,
+        "name": "Async method 'dispose'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 37,
+        "column": 25,
+        "name": "Async method 'put'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 39,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 48,
+        "column": 74,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 49,
+        "column": 23,
+        "name": "Async method 'put'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 51,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 61,
+        "column": 51,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 64,
+        "column": 90,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 66,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 77,
+        "column": 51,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 79,
+        "column": 69,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 81,
+        "column": 46,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 84,
+        "column": 21,
+        "name": "Async method 'exposeBinding'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 84,
+        "column": 70,
+        "name": "Async method 'addInitScript'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 88,
+        "column": 51,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 90,
+        "column": 5,
+        "name": "Method 'outputPath'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 93,
+        "column": 5,
+        "name": "Async method 'attach'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 99,
+        "column": 80,
+        "name": "Async method 'diagnostics'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 105,
+        "column": 21,
+        "name": "Method 'url'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 106,
+        "column": 5,
+        "name": "Method 'method'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 106,
+        "column": 41,
+        "name": "Method 'resourceType'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 107,
+        "column": 5,
+        "name": "Method 'failure'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 109,
+        "column": 29,
+        "name": "Method 'request'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 109,
+        "column": 68,
+        "name": "Method 'status'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 109,
+        "column": 103,
+        "name": "Method 'fromServiceWorker'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 111,
+        "column": 36,
+        "name": "Method 'url'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 124,
+        "column": 58,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 130,
+        "column": 58,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 142,
+        "column": 94,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 144,
+        "column": 20,
+        "name": "Async method 'evaluate'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 148,
+        "column": 89,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 149,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestError.test.ts",
+        "line": 161,
+        "column": 1,
+        "name": "Function 'assertDiagnosticOutputs'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/requestError.ts",
+        "line": 8,
+        "column": 8,
+        "name": "Function 'requestErrorSummary'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 12,
+        "column": 8,
+        "name": "Async function 'readRequestJson'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 24,
+        "column": 1,
+        "name": "Async function 'parseResponseJson'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 35,
+        "column": 1,
+        "name": "Function 'assertBusinessSuccess'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 45,
+        "column": 8,
+        "name": "Async function 'fetchRequestJson'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 47,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 50,
+        "column": 40,
+        "name": "Method 'status'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 50,
+        "column": 86,
+        "name": "Method 'ok'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/requestJson.ts",
+        "line": 51,
+        "column": 5,
+        "name": "Method 'json'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 6,
+        "column": 58,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 7,
+        "column": 101,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 11,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 16,
+        "column": 7,
+        "name": "Async method 'close'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.test.ts",
+        "line": 21,
+        "column": 96,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/runWithContext.ts",
+        "line": 8,
+        "column": 8,
+        "name": "Async function 'runWithContext'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 13,
+        "column": 1,
+        "name": "Function 'authPage'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 18,
+        "column": 5,
+        "name": "Async method 'evaluate'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 24,
+        "column": 5,
+        "name": "Async method 'waitForTimeout'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 26,
+        "column": 46,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 37,
+        "column": 68,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 38,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 39,
+        "column": 36,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 45,
+        "column": 68,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 47,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 50,
+        "column": 57,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 54,
+        "column": 16,
+        "name": "Method 'status'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 65,
+        "column": 88,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 67,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 68,
+        "column": 37,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/authValidation.test.ts",
+        "line": 70,
+        "column": 18,
+        "name": "Method 'status'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 22,
+        "column": 1,
+        "name": "Function 'scriptContext'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 27,
+        "column": 5,
+        "name": "Async method 'addInitScript'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 36,
+        "column": 1,
+        "name": "Function 'applyScripts'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 41,
+        "column": 5,
+        "name": "Method 'setItem'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 48,
+        "column": 59,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 49,
+        "column": 65,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 55,
+        "column": 39,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 65,
+        "column": 34,
+        "name": "Async method 'command'",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 77,
+        "column": 49,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/pageSetupCache.test.ts",
+        "line": 78,
+        "column": 67,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 19,
+        "column": 8,
+        "name": "Async function 'ensureSelectorGone'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 33,
+        "column": 74,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 37,
+        "column": 7,
+        "name": "Method 'hide'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 42,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 50,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 65,
+        "column": 8,
+        "name": "Async function 'revealVirtualizedSettingsItem'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 85,
+        "column": 8,
+        "name": "Async function 'resetScrollToStart'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 92,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 98,
+        "column": 141,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 100,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 101,
+        "column": 64,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 101,
+        "column": 122,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 111,
+        "column": 8,
+        "name": "Async function 'clickByTestId'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 115,
+        "column": 110,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 120,
+        "column": 100,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 133,
+        "column": 44,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 138,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 148,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 155,
+        "column": 54,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 158,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 167,
+        "column": 8,
+        "name": "Async function 'retryCreateRoomNavigation'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 169,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 186,
+        "column": 1,
+        "name": "Async function 'selectorHidden'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 193,
+        "column": 1,
+        "name": "Async function 'dismissBackdrop'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 195,
+        "column": 76,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 196,
+        "column": 85,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 198,
+        "column": 83,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 206,
+        "column": 1,
+        "name": "Async function 'scrollSettingsUntilMounted'",
+        "complexity": 3
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 213,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 218,
+        "column": 50,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 225,
+        "column": 1,
+        "name": "Async function 'reopenCreateGame'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 230,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 237,
+        "column": 1,
+        "name": "Async function 'reopenPersonalHouse'",
+        "complexity": 2
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 242,
+        "column": 48,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "visual/src/support/preparePageNavigation.ts",
+        "line": 253,
+        "column": 1,
+        "name": "Async function 'reopenCreateRoom'",
+        "complexity": 2
+      }
+    ],
+    "gateBefore": [
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 16,
+        "column": 1,
+        "name": "Function 'probe'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 21,
+        "column": 65,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 24,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 34,
+        "column": 75,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 37,
+        "column": 42,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 41,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 54,
+        "column": 1,
+        "name": "Function 'assertGateStatus'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 58,
+        "column": 73,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 15,
+        "column": 1,
+        "name": "Function 'probe'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 50,
+        "column": 1,
+        "name": "Function 'descendantPaths'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 53,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 54,
+        "column": 56,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 58,
+        "column": 72,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 61,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 65,
+        "column": 64,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 67,
+        "column": 36,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 73,
+        "column": 108,
+        "name": "Async arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 78,
+        "column": 41,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 89,
+        "column": 107,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 116,
+        "column": 73,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 127,
+        "column": 65,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 144,
+        "column": 51,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 156,
+        "column": 52,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 12,
+        "column": 8,
+        "name": "Function 'isolatedVisualRepository'",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 28,
+        "column": 1,
+        "name": "Function 'isGateSource'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 38,
+        "column": 8,
+        "name": "Function 'runVisualGate'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 52,
+        "column": 8,
+        "name": "Function 'assertVisualGateStatus'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 71,
+        "column": 1,
+        "name": "Function 'restoreProbe'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 40,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 51,
+        "column": 1,
+        "name": "Function 'moduleStem'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 58,
+        "column": 8,
+        "name": "Function 'visualEntryFiles'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 60,
+        "column": 36,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 61,
+        "column": 38,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 80,
+        "column": 8,
+        "name": "Function 'animationFiles'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 82,
+        "column": 36,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 13,
+        "column": 8,
+        "name": "Function 'visualComplexityFiles'",
+        "complexity": 5
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 20,
+        "column": 34,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 28,
+        "column": 8,
+        "name": "Async function 'checkVisualComplexity'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 31,
+        "column": 38,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 40,
+        "column": 8,
+        "name": "Async function 'checkVisualComplexityText'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 51,
+        "column": 1,
+        "name": "Function 'isGateMessage'",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 61,
+        "column": 8,
+        "name": "Async function 'measureVisualComplexity'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 74,
+        "column": 1,
+        "name": "Function 'functionMeasurements'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 77,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 78,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 85,
+        "column": 1,
+        "name": "Async function 'main'",
+        "complexity": 6
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 96,
+        "column": 38,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 97,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 111,
+        "column": 1,
+        "name": "Function 'existingVisualFiles'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 118,
+        "column": 1,
+        "name": "Function 'existingAnimationFiles'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 127,
+        "column": 1,
+        "name": "Function 'scopedSupportFiles'",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 18,
+        "column": 1,
+        "name": "Async function 'messages'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 27,
+        "column": 1,
+        "name": "Function 'probe'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 36,
+        "column": 1,
+        "name": "Function 'hasComplexity'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 38,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 42,
+        "column": 62,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 49,
+        "column": 64,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 62,
+        "column": 66,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 69,
+        "column": 64,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 73,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 77,
+        "column": 56,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 80,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 84,
+        "column": 73,
+        "name": "Arrow function",
+        "complexity": 1
+      }
+    ],
+    "gateAfter": [
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 16,
+        "column": 1,
+        "name": "Function 'probe'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 21,
+        "column": 65,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 24,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 34,
+        "column": 75,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 37,
+        "column": 42,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 41,
+        "column": 57,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 54,
+        "column": 1,
+        "name": "Function 'assertGateStatus'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-animations.test.mjs",
+        "line": 58,
+        "column": 73,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 13,
+        "column": 1,
+        "name": "Function 'probe'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 20,
+        "column": 1,
+        "name": "Function 'descendants'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 23,
+        "column": 45,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 33,
+        "column": 80,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 37,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 41,
+        "column": 87,
+        "name": "Async arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 54,
+        "column": 1,
+        "name": "Async function 'assertSupportConfigs'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 83,
+        "column": 71,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 92,
+        "column": 70,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 106,
+        "column": 61,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 117,
+        "column": 59,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-browser.test.mjs",
+        "line": 130,
+        "column": 62,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 15,
+        "column": 1,
+        "name": "Function 'probe'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 50,
+        "column": 1,
+        "name": "Function 'descendantPaths'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 53,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 54,
+        "column": 56,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 58,
+        "column": 72,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 61,
+        "column": 47,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 65,
+        "column": 64,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 67,
+        "column": 36,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 73,
+        "column": 108,
+        "name": "Async arrow function",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 78,
+        "column": 41,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 89,
+        "column": 107,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 116,
+        "column": 73,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 127,
+        "column": 65,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 144,
+        "column": 51,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-entrypoints.test.mjs",
+        "line": 156,
+        "column": 52,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 12,
+        "column": 8,
+        "name": "Function 'isolatedVisualRepository'",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 28,
+        "column": 1,
+        "name": "Function 'isGateSource'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 38,
+        "column": 8,
+        "name": "Function 'runVisualGate'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 52,
+        "column": 8,
+        "name": "Function 'assertVisualGateStatus'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-fixture.mjs",
+        "line": 71,
+        "column": 1,
+        "name": "Function 'restoreProbe'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 40,
+        "column": 43,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 51,
+        "column": 1,
+        "name": "Function 'moduleStem'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 58,
+        "column": 8,
+        "name": "Function 'visualEntryFiles'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 60,
+        "column": 36,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 61,
+        "column": 38,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 80,
+        "column": 8,
+        "name": "Function 'animationFiles'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 82,
+        "column": 36,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 104,
+        "column": 34,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 112,
+        "column": 8,
+        "name": "Function 'browserFiles'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 114,
+        "column": 34,
+        "name": "Arrow function",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity-scope.mjs",
+        "line": 115,
+        "column": 35,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 14,
+        "column": 8,
+        "name": "Function 'visualComplexityFiles'",
+        "complexity": 6
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 21,
+        "column": 34,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 29,
+        "column": 8,
+        "name": "Async function 'checkVisualComplexity'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 32,
+        "column": 38,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 41,
+        "column": 8,
+        "name": "Async function 'checkVisualComplexityText'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 52,
+        "column": 1,
+        "name": "Function 'isGateMessage'",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 62,
+        "column": 8,
+        "name": "Async function 'measureVisualComplexity'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 75,
+        "column": 1,
+        "name": "Function 'functionMeasurements'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 78,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 79,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 86,
+        "column": 1,
+        "name": "Async function 'main'",
+        "complexity": 4
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 94,
+        "column": 38,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 95,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 110,
+        "column": 1,
+        "name": "Function 'existingVisualFiles'",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 118,
+        "column": 1,
+        "name": "Function 'existingAnimationFiles'",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 128,
+        "column": 1,
+        "name": "Function 'scopedSupportFiles'",
+        "complexity": 5
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 138,
+        "column": 1,
+        "name": "Function 'existingBrowserFiles'",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 145,
+        "column": 1,
+        "name": "Function 'scopedBrowserFiles'",
+        "complexity": 3
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 150,
+        "column": 1,
+        "name": "Function 'commandFiles'",
+        "complexity": 2
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 153,
+        "column": 34,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.mjs",
+        "line": 156,
+        "column": 34,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 18,
+        "column": 1,
+        "name": "Async function 'messages'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 27,
+        "column": 1,
+        "name": "Function 'probe'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 36,
+        "column": 1,
+        "name": "Function 'hasComplexity'",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 38,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 42,
+        "column": 62,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 49,
+        "column": 64,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 62,
+        "column": 66,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 69,
+        "column": 64,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 73,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 77,
+        "column": 56,
+        "name": "Async arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 80,
+        "column": 40,
+        "name": "Arrow function",
+        "complexity": 1
+      },
+      {
+        "file": "scripts/visual-complexity.test.mjs",
+        "line": 84,
+        "column": 73,
+        "name": "Arrow function",
+        "complexity": 1
+      }
+    ]
+  }
+}

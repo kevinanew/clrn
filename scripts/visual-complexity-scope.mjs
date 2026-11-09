@@ -81,3 +81,36 @@ export function animationFiles(files) {
   return files.filter(/** 根据同名前缀覆盖完整动画辅助模块。
    * @param file - 当前源码路径。 */ file => /^visual\/animations\/(?:timeline|walletMask).*\.ts$/.test(file));
 }
+
+/** Issue 106 的视觉页面与浏览器支持；全部属于测试辅助，统一使用上限 3。 */
+export const browserSupportFiles = [
+  'visual/src/captureAuthState.ts',
+  'visual/src/support/authFlow.ts',
+  'visual/src/support/authValidation.ts',
+  'visual/src/support/connectionDiagnostics.ts',
+  'visual/src/support/networkFixture.ts',
+  'visual/src/support/pageSetup.test.ts',
+  'visual/src/support/pageSetup.ts',
+  'visual/src/support/pageStabilizers.ts',
+  'visual/src/support/preparePage.ts',
+  'visual/src/support/requestError.test.ts',
+  'visual/src/support/requestError.ts',
+  'visual/src/support/requestJson.ts',
+  'visual/src/support/runWithContext.test.ts',
+  'visual/src/support/runWithContext.ts',
+];
+const browserModuleStems = [...new Set(browserSupportFiles.map(moduleStem))];
+export const browserSupportPatterns = browserModuleStems.flatMap(/** 覆盖相邻测试、提取模块及同名前缀目录的全部后代。
+ * @param stem - 模块公共前缀。 */ stem => [
+  `${stem}*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}`,
+  `${stem}*/**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}`,
+]);
+
+/** 从同一显式范围发现所有页面支持源码，不按文件后缀放宽预算。
+ * @param files - 当前源码候选路径。
+ * @returns 页面支持范围的实际源码。 */
+export function browserFiles(files) {
+  return files.filter(/** 只纳入本范围前缀下的 JS/TS 源码。
+   * @param file - 候选路径。 */ file => /\.[cm]?[jt]sx?$/.test(file) && browserModuleStems.some(/** 匹配原模块前缀。
+    * @param stem - 模块前缀。 */ stem => file.startsWith(stem)));
+}

@@ -49,8 +49,8 @@ function buildAuthStateArgs(entries: Record<string, string>): AuthStateArgs {
 export function readAuthStateEntries(): Record<string, string> | null {
   try {
     const raw = JSON.parse(fs.readFileSync(AUTH_STATE_PATH, 'utf8'));
-    const entries = raw?.entries;
-    if (entries && typeof entries === 'object' && Object.keys(entries).length > 0) {
+    const entries = authEntriesField(raw);
+    if (hasAuthEntries(entries)) {
       return entries as Record<string, string>;
     }
   } catch {
@@ -58,6 +58,29 @@ export function readAuthStateEntries(): Record<string, string> | null {
   }
   return null;
 }
+/** 验证缓存是非空对象，保留损坏文件的回退语义。
+ * @param entries - 文件中的认证条目。 */
+function hasAuthEntries(entries: unknown): boolean {
+  if (!entries || typeof entries !== 'object') return false;
+  return Object.keys(entries).length > 0;
+}
+
+/** 仅复制允许跨未登录场景复用的缓存。
+ * @param entries - 已采集的认证缓存。 */
+function safeCacheEntries(entries: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(SAFE_CACHE_KEYS.filter(/** 不复制缺失的键。
+   * @param key - 白名单键。 */ key => entries[key] !== undefined).map(/** 保留真实缓存值。
+   * @param key - 白名单键。 */ key => [key, entries[key]]));
+}
+
+/** 根据场景身份选择认证缓存或安全缓存。
+ * @param signIn - 是否需要登录态。
+ * @param entries - 采集缓存，可能缺失。 */
+function scenarioCacheEntries(signIn: boolean, entries: Record<string, string> | null): Record<string, string> {
+  if (!entries) return {};
+  return signIn ? entries : safeCacheEntries(entries);
+}
+
 /**
  * 将 Chromium 的 `en-US@posix` 语言值规范化，避免 Intl 或 react-native-localize 抛错。
  * @param context - 首次导航前配置的浏览器上下文。
@@ -123,16 +146,7 @@ export function buildStorageStateForScenario(
   const authEntries = readAuthStateEntries();
   const entries: Record<string, string> = {};
 
-  if (scenario.signIn && authEntries) {
-    Object.assign(entries, authEntries);
-  } else if (!scenario.signIn && authEntries) {
-    SAFE_CACHE_KEYS.forEach(/** 仅复制允许复用的认证缓存项，避免跨场景带入任意状态。
- * @param key - 当前操作使用的 key。 */ (key) => {
-      if (authEntries[key] !== undefined) {
-        entries[key] = authEntries[key];
-      }
-    });
-  }
+  Object.assign(entries, scenarioCacheEntries(scenario.signIn, authEntries));
 
   Object.assign(entries, {
     [LANGUAGE_STORAGE_KEY]: scenario.locale,
@@ -165,20 +179,10 @@ export async function setupContextForScenario(
   options: { animations?: 'allow' | 'disabled'; navigatorLocale?: string } = {},
 ): Promise<void> {
   await fixNavigatorLanguage(context, options.navigatorLocale);
-  if (options.animations !== 'allow') await disableAnimations(context);
+  await configureAnimations(context, options.animations);
   await scenarioProxy(context).command('fixtures/environment', { visual: true });
-  const scenes: Record<string, string> = {
-    signed_in_daily_bonus: 'daily-bonus', signed_in_club: 'club-empty',
-    signed_in_club_rooms: 'club-empty', signed_in_club_more: 'club-empty',
-    signed_in_club_search: 'club-empty', signed_in_mall: 'mall',
-    signed_in_currency_transaction: 'wallet-populated',
-    signed_in_currency_transaction_diamond: 'wallet-populated',
-  };
   const authEntries = readAuthStateEntries();
-  if (scenes[scenario.pageLabel]) {
-    const userId: string | undefined = JSON.parse(authEntries?.['save.user.origin.data.from.server.key'] || '{}').user_id;
-    await selectScenario(context, scenes[scenario.pageLabel], userId ? { userId } : {});
-  }
+  await configureScenarioProxy(context, scenario, authEntries);
 
   await context.addInitScript(
     /** 在新上下文中写入场景语言和固定设备 ID，稳定启动导航。
@@ -191,37 +195,77 @@ export async function setupContextForScenario(
     { locale: scenario.locale, langKey: LANGUAGE_STORAGE_KEY, deviceId: scenario.deviceId },
   );
 
-  if (scenario.signIn) {
-    // 注入当前分片开始前采集的登录态（localStorage），免去逐场景 UI 登录；
-    // 语言键已在采集时剔除，不会覆盖上面的语言设置
-    if (authEntries) {
-      const authStateArgs = buildAuthStateArgs(authEntries);
-      await context.addInitScript(injectAuthState, authStateArgs);
-      // Playwright 的 page fixture 已在 beforeEach 创建。也注册到该页面，确保其
-      // 下一次导航一定带上登录态，而不是只影响随后新建的 page。
-      if (page) {
-        await page.addInitScript(injectAuthState, authStateArgs);
-      }
-    }
-
-  } else if (authEntries) {
-    // 未登录场景也复用与登录无关的安全缓存键（主题等）
-    const safeEntries = Object.fromEntries(
-      SAFE_CACHE_KEYS.filter(/** 仅保留满足以下条件的条目：`authEntries[key] !== undefined`。
- * @param key - 当前操作使用的 key。 */ (key) => authEntries[key] !== undefined).map(/** 将当前条目映射为`[ key, authEntries[key], ]`。
- * @param key - 当前操作使用的 key。 */ (key) => [
-        key,
-        authEntries[key],
-      ]),
-    );
-    if (Object.keys(safeEntries).length > 0) {
-      await context.addInitScript(/** 在页面启动前注入本次场景需要的本地存储项。
- * @param entries - 当前操作使用的 entries。 */ (entries: Record<string, string>) => {
-        Object.entries(entries).forEach(/** 将当前存储键值写入浏览器本地存储。
- * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([key, value]) => {
-          window.localStorage.setItem(key, value);
-        });
-      }, safeEntries);
-    }
-  }
+  await injectScenarioCache(context, scenario, authEntries, page);
 }
+
+/** 应用显式动画选项。
+ * @param context - 当前上下文。
+ * @param animations - 场景动画模式。 */
+async function configureAnimations(context: BrowserContext, animations: 'allow' | 'disabled' | undefined): Promise<void> {
+  if (animations !== 'allow') await disableAnimations(context);
+}
+
+/** 从认证缓存读取代理场景账户参数，缺失时仍使用空参数。
+ * @param entries - 采集认证缓存。 */
+function scenarioUser(entries: Record<string, string> | null): { userId?: string } {
+  const raw = entries?.['save.user.origin.data.from.server.key'] || '{}';
+  return scenarioUserPayload(JSON.parse(raw).user_id);
+}
+
+/** 保留代理账户参数的真值选择规则。
+ * @param userId - 原始缓存用户 ID。 */
+function scenarioUserPayload(userId: string | undefined): { userId?: string } {
+  return userId ? { userId } : {};
+}
+
+/** 仅为具名页面选择网络夹具，其余保持默认透传。
+ * @param context - 当前上下文。
+ * @param scenario - 视觉场景。
+ * @param authEntries - 本轮认证缓存。 */
+async function configureScenarioProxy(context: BrowserContext, scenario: VisualScenario, authEntries: Record<string, string> | null): Promise<void> {
+  const scenes: Record<string, string> = {
+    signed_in_daily_bonus: 'daily-bonus', signed_in_club: 'club-empty',
+    signed_in_club_rooms: 'club-empty', signed_in_club_more: 'club-empty',
+    signed_in_club_search: 'club-empty', signed_in_mall: 'mall',
+    signed_in_currency_transaction: 'wallet-populated',
+    signed_in_currency_transaction_diamond: 'wallet-populated',
+  };
+  if (scenes[scenario.pageLabel]) {
+    await selectScenario(context, scenes[scenario.pageLabel], scenarioUser(authEntries));
+  }
+
+}
+
+/** 根据身份注入缓存，缺失缓存时由后续认证校验明确失败。
+ * @param context - 当前上下文。
+ * @param scenario - 视觉场景。
+ * @param authEntries - 本轮采集缓存。
+ * @param page - 已创建的页面。 */
+async function injectScenarioCache(context: BrowserContext, scenario: VisualScenario,
+  authEntries: Record<string, string> | null, page: Page | undefined): Promise<void> {
+  if (!authEntries) return;
+  if (scenario.signIn) return injectSignedInCache(context, authEntries, page);
+  await injectGuestCache(context, authEntries);
+}
+
+/** 同时覆盖上下文和已存在页面的下一次导航。
+ * @param context - 当前上下文。
+ * @param entries - 完整认证缓存。
+ * @param page - 已创建的页面。 */
+async function injectSignedInCache(context: BrowserContext, entries: Record<string, string>, page: Page | undefined): Promise<void> {
+  const args = buildAuthStateArgs(entries);
+  await context.addInitScript(injectAuthState, args);
+  if (page) await page.addInitScript(injectAuthState, args);
+}
+
+/** 只在存在白名单缓存时为游客注册初始化脚本。
+ * @param context - 当前上下文。
+ * @param entries - 认证缓存。 */
+async function injectGuestCache(context: BrowserContext, entries: Record<string, string>): Promise<void> {
+  const safeEntries = safeCacheEntries(entries);
+  if (Object.keys(safeEntries).length > 0) await context.addInitScript(injectAuthState, buildAuthStateArgs(safeEntries));
+}
+
+/** 安全读取认证文件的条目字段。
+ * @param raw - 解析后的文件内容。 */
+function authEntriesField(raw: any): unknown { return raw?.entries; }

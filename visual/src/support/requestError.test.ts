@@ -25,10 +25,10 @@ function privateOutput(output: string) {
   }
 }
 
-test('余额和观察者上层不传播地址、任意响应头、业务文本或嵌套 cause，保留 HTTP 状态', /** 验证余额和观察者上层不传播地址、任意响应头、业务文本或嵌套 cause，保留 HTTP 状态。 */ async () => {
-  for (const operation of ['room-read-diamonds', 'texas-enter']) {
-    for (const [status, body, reason] of [[500, secret, 'http-error'], [201, secret, 'invalid-json'],
-      [200, { ok: false, reason: secret, errors: { [secret]: secret } }, 'business-rejected']] as const) {
+for (const operation of ['room-read-diamonds', 'texas-enter']) {
+  for (const [status, body, reason] of [[500, secret, 'http-error'], [201, secret, 'invalid-json'],
+    [200, { ok: false, reason: secret, errors: { [secret]: secret } }, 'business-rejected']] as const) {
+    test(`${operation} HTTP ${status} ${reason} 保留状态并丢弃地址、响应头与业务文本`, /** 保留每种操作与失败阶段的脱敏及响应释放断言。 */ async () => {
       let disposed = false;
       const response = { status: /** 返回本例真实状态。 */ () => status, ok: /** 按状态判断成功。 */ () => status < 300,
         headers: /** 注入不可信头。 */ () => ({ 'content-type': secret }), url: /** 注入保留地址。 */ () => secret,
@@ -43,7 +43,9 @@ test('余额和观察者上层不传播地址、任意响应头、业务文本�
         return true;
       });
       assert.equal(disposed, true);
-    }
+    });
+  }
+  test(`${operation} 无响应时丢弃原始异常和嵌套 cause`, /** 网络失败仍须传播安全错误。 */ async () => {
     const request = { put: /** 注入网络失败。 */ async () => { throw new Error(secret, { cause: new Error(secret) }); } } as unknown as APIRequestContext;
     await assert.rejects(operation === 'texas-enter' ? enterTexasRoom({ request }, room) : ensureRoomBalance(request, account), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ error => {
@@ -52,8 +54,8 @@ test('余额和观察者上层不传播地址、任意响应头、业务文本�
       privateOutput(error.stack || '');
       return true;
     });
-  }
-});
+  });
+}
 
 test('清理仍拒绝 HTTP500、业务失败、非 JSON 和无响应，不能误报成功', /** 验证清理仍拒绝 HTTP500、业务失败、非 JSON 和无响应，不能误报成功。
  * @param context - 当前浏览器或测试上下文。 */ async context => {
@@ -131,13 +133,7 @@ test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告�
     assert.equal(proxy.releaseRequestId, 'unverified');
     assert.ok(terminal.length > 0);
     assert.ok(attachments.length > 0);
-    for (const output of [json, markdown, ...attachments, ...terminal]) {
-      privateOutput(output);
-      assert.ok(output.includes(failure.message));
-      assert.ok(output.includes('"upstreamMatch":"different"') || output.includes('"upstreamMatch": "different"'));
-      assert.ok(output.includes('"upstreamMatch":"not-applicable"') || output.includes('"upstreamMatch": "not-applicable"'));
-      assert.ok(output.includes('"upstreamMatch":"unavailable"') || output.includes('"upstreamMatch": "unavailable"'));
-    }
+    assertDiagnosticOutputs([json, markdown, ...attachments, ...terminal], failure.message);
   }
   privateOutput(requestErrorSummary(new Error(secret), 'room-create'));
 });
@@ -158,3 +154,16 @@ test('读取建房会话失败或包含合成凭据的损坏 JSON 不能传播�
     });
   }
 });
+
+/** 核对所有终端、文件、附件中的脱敏内容和代理映射状态。
+ * @param outputs - 各诊断出口内容。
+ * @param message - 应保留的安全请求错误。 */
+function assertDiagnosticOutputs(outputs: string[], message: string): void {
+  for (const output of outputs) {
+    privateOutput(output);
+    assert.ok(output.includes(message));
+    for (const state of ['different', 'not-applicable', 'unavailable']) {
+      assert.match(output, new RegExp(`"upstreamMatch": ?"${state}"`));
+    }
+  }
+}
