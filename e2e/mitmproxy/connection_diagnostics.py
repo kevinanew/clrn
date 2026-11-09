@@ -67,10 +67,10 @@ def safe_ipv6(match):
 
 def node_name(value):
     """将主机名映射为稳定的私有来源指纹，避免泄露连接资料。"""
-    if re.fullmatch(r'laiwan_prd-[a-f0-9]{12}', value):
+    if re.fullmatch(r'laiwan_proxy-[a-f0-9]{12}', value):
         return value
     host = urlsplit(value if '://' in value else 'https://' + value).hostname or 'unknown'
-    return 'laiwan_prd-' + hashlib.sha256(host.encode()).hexdigest()[:12]
+    return 'laiwan_proxy-' + hashlib.sha256(host.encode()).hexdigest()[:12]
 
 
 def candidates(flow):
@@ -239,7 +239,7 @@ class ConnectionDiagnostics:
         """为业务请求记录安全错误原因，避免猜测未收到的响应状态。"""
         if flow.request.host not in CONTROL_HOSTS:
             self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
-                        source='release-static' if release_origin_match(flow) == 'matched' else 'laiwan_prd',
+                        source='release-static' if release_origin_match(flow) == 'matched' else 'laiwan_proxy',
                         status=flow.response.status_code if flow.response else 'unavailable',
                         response='received' if flow.response else 'not-received')
 

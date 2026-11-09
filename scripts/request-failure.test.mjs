@@ -47,7 +47,7 @@ test('三阶段 HTTP500、超时、连接失败、解析失败及业务拒绝保
       await assert.rejects(prepareTestAccountCoins({ username: session.username, password: 'synthetic-password' }, 'synthetic-admin'), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ error => {
         checkPrivate(error);
-        assert.match(error.message, new RegExp(`method=${method} operation=${operation} source=laiwan_prd status=${status} .*reason=${reason}$`));
+        assert.match(error.message, new RegExp(`method=${method} operation=${operation} source=laiwan_proxy status=${status} .*reason=${reason}$`));
         assert.match(error.message, status === 'unavailable' ? /response=not-received/ : /response=received/);
         assert.equal(safeDiagnosticReason(new Error(sensitive, { cause: error })), error.message);
         return true;
@@ -61,7 +61,7 @@ test('三阶段 HTTP500、超时、连接失败、解析失败及业务拒绝保
 test('操作、原因及诊断消息均采用允许列表；不猜测未知异常中的 HTTP 状态', /** 验证操作、原因及诊断消息均采用允许列表；不猜测未知异常中的 HTTP 状态。 */ () => {
   checkPrivate(requestFailure(sensitive, sensitive, 500));
   assert.match(requestFailure(sensitive, sensitive).message, /operation=unknown-request/);
-  assert.equal(safeDiagnosticReason('接口请求失败：method=UNKNOWN operation=unknown-request source=laiwan_prd status=499 response=received reason=http-error'),
+  assert.equal(safeDiagnosticReason('接口请求失败：method=UNKNOWN operation=unknown-request source=laiwan_proxy status=499 response=received reason=http-error'),
     'detail=withheld reason=request-failed', '任意后端文字不能伪造一个本进程未收到的状态');
   const raw = new Error(`HTTP 503 ${sensitive}`, { cause: { status: 500, message: sensitive } });
   assert.equal(safeDiagnosticReason(raw), 'detail=withheld reason=request-failed');
@@ -82,7 +82,7 @@ test('私有接口、本地Release及UI状态使用固定逻辑来源，未知�
     checkPrivate(error);
   }
   assert.match(requestFailure('prepare-account-login', 'http-error', 500).message,
-    /method=POST operation=prepare-account-login source=laiwan_prd status=500 response=received/);
+    /method=POST operation=prepare-account-login source=laiwan_proxy status=500 response=received/);
   for (const [operation, method, source] of [
     ['room-read-session', 'LOCAL', 'browser-state'],
     ['existing-account-setup', 'LOCAL', 'browser-ui'],
@@ -115,7 +115,7 @@ test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不
       assert.equal(error.code, undefined);
       assert.equal(requestFailureReason(error), 'connection-failed');
       const failure = requestFailure('room-read-diamonds', requestFailureReason(error));
-      assert.match(failure.message, /method=PUT operation=room-read-diamonds source=laiwan_prd status=unavailable response=not-received reason=connection-failed$/);
+      assert.match(failure.message, /method=PUT operation=room-read-diamonds source=laiwan_proxy status=unavailable response=not-received reason=connection-failed$/);
       checkPrivate(failure);
       assert.equal(safeDiagnosticReason(new Error(sensitive, { cause: failure })), failure.message);
       assert.equal(requestFailureReason(new Error(sensitive, { cause: error })), 'connection-failed');
@@ -141,7 +141,7 @@ test('Playwright 重试耗尽的固定断连包装仍保留连接失败，不能
       const raw = new Error(`apiRequestContext.${method}: Failed after 3 attempt(s): Error: socket hang up${ending}`);
       assert.equal(requestFailureReason(raw), 'connection-failed');
       const failure = requestFailure('existing-account-session', requestFailureReason(raw));
-      assert.match(failure.message, /method=GET operation=existing-account-session source=laiwan_prd status=unavailable response=not-received reason=connection-failed$/);
+      assert.match(failure.message, /method=GET operation=existing-account-session source=laiwan_proxy status=unavailable response=not-received reason=connection-failed$/);
       assert.equal(safeDiagnosticReason(new Error(sensitive, { cause: failure })), failure.message);
       checkPrivate(failure);
     }

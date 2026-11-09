@@ -9,11 +9,13 @@ test('连接地址与认证参数不进入诊断，节点标签与 Python 保持
   const host = 'api.fixture.invalid';
   const address = `wss://user:password@${host}:9443/private-entry?access_token=secret#credential`;
   const node = diagnosticNode(host);
-  assert.equal(node, 'laiwan_prd-d5e6a40756c6', 'Python 代理对同一保留地址也生成此标签');
-  assert.match(node, /^laiwan_prd-[a-f0-9]{12}$/);
+  assert.equal(node, 'laiwan_proxy-d5e6a40756c6', 'Python 代理对同一保留地址也生成此标签');
+  assert.match(node, /^laiwan_proxy-[a-f0-9]{12}$/);
   assert.equal(diagnosticText(address), node);
   assert.equal(diagnosticNode(address), node);
   assert.equal(diagnosticNode(node), node, '重复清理不能破坏代理节点关联');
+  assert.equal(diagnosticText(`failed ${node}`), `failed ${node}`);
+  assert.equal(diagnosticText(diagnosticText(address)), node);
   assert.notEqual(diagnosticNode('other.invalid'), node);
   const fields = diagnosticFields({ event: 'http.failed', node: host,
     path: '/public/v1/hall_matching/available.json?token=secret',
@@ -32,6 +34,20 @@ test('连接地址与认证参数不进入诊断，节点标签与 Python 保持
   for (const value of [host, 'secret', 'password', 'credential', 'other', '192.0.2.10',
     '2001:db8::10', '2001:db8::20', '8443', '9443', '/private-entry']) assert.ok(!result.includes(value), value);
   assert.ok(!('body' in fields));
+});
+
+test('新标签在代理历史合并后保持稳定并保留请求关联和真实状态', /** 验证新节点标签经过记录、合并及再次脱敏后仍可关联。 */ () => {
+  const node = 'laiwan_proxy-d5e6a40756c6';
+  const fields = { node, candidates: [node], selected: node, excluded: [node], before: [node], after: [node],
+    source: 'laiwan_proxy', requestId: 'fixture-request-1', connectionId: 'fixture-connection-1',
+    operation: 'proxied-request', method: 'GET', path: '/node/v1/status', status: 503, response: 'received' };
+  assert.deepEqual(diagnosticFields(diagnosticFields(fields)), fields);
+  const recorder = new DiagnosticRecorder();
+  recorder.merge([{ event: 'proxy.response', ...fields }]);
+  assert.deepEqual(diagnosticFields(recorder.snapshot().events[0]), {
+    event: 'proxy.response', ...fields, observedAt: recorder.snapshot().events[0].observedAt,
+  });
+  assert.ok(recorder.markdown('case').includes(node));
 });
 
 test('区分候选、真实健康响应、模拟响应、缓存和 WebSocket 尝试', /** 验证区分候选、真实健康响应、模拟响应、缓存和 WebSocket 尝试。 */ () => {

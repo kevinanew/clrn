@@ -21,7 +21,7 @@ async function expectValidationFailure(
  * @param failure - 当前操作使用的 failure。 */ failure => failure);
   expect(error).toBeInstanceOf(Error);
   if (!(error instanceof Error)) throw new Error('认证失败用例必须抛出错误');
-  expect(error.message).toBe(`账户接口校验失败：method=GET operation=validate-account source=laiwan_prd status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}`);
+  expect(error.message).toBe(`账户接口校验失败：method=GET operation=validate-account source=laiwan_proxy status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}`);
   expect(error.cause).toBeUndefined();
   const output = inspect(error, { depth: 20 });
   assertNoSecrets(output);
