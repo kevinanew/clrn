@@ -7,7 +7,8 @@ import re
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
-from data import CLUB, HOUSE, PLAYER, all_records, detail, records, replay, rooms, round_data, settlements
+from data import HOUSE, PLAYER
+from record_routes import RecordFixtures
 
 # mitmdump 将 addon 目录加入 sys.path；三个独立代理共用字段覆盖工具。
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
@@ -24,7 +25,7 @@ def respond(flow, result, status=200, wrapped=True):
     respond_json(flow, data, status)
 
 
-class GameRecordProxy:
+class GameRecordProxy(RecordFixtures):
     """提供战绩新旧版本的分页、编辑、删除与重放展示夹具。"""
     def __init__(self):
         """初始化token、scenario、user_id、version、mode等状态。"""
@@ -48,171 +49,174 @@ class GameRecordProxy:
                 'recordRequests': self.counts, 'faultRequests': self.faults, 'deleted': self.deleted}
 
     def control(self, flow):
-        """验证令牌并执行战绩场景切换、模式设置和状态读取。"""
+        """验证控制令牌后执行命令，非法输入仍返回 400。"""
         if flow.request.headers.get('X-E2E-Control-Token') != self.token:
             respond(flow, {'error': 'Forbidden'}, 403, False)
             return
-        path = urlsplit(flow.request.path).path
+        self.control_command(flow)
+
+    def control_command(self, flow):
+        """保持原有控制错误传播到 HTTP 响应的边界。"""
         try:
-            if flow.request.method == 'POST':
-                body = json.loads(flow.request.content)
-                if path == '/scenario' and body.get('scenario') in (None, 'visual-stable'):
-                    self.scenario = body['scenario']
-                    self.user_id = None
-                    self.deleted = []
-                    self.hold.set()
-                elif path == '/records/release':
-                    self.hold.set()
-                elif self.scenario == 'visual-stable' and path in ('/records/configure', '/records/mode'):
-                    mode = body.get('mode')
-                    hold = body.get('hold', False)
-                    if mode not in MODES or not isinstance(hold, bool):
-                        raise ValueError('Invalid mode')
-                    if path == '/records/configure':
-                        user_id, version = body.get('userId'), body.get('version')
-                        if not isinstance(user_id, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,128}', user_id):
-                            raise ValueError('Invalid user')
-                        if version not in ('legacy', 'v2'):
-                            raise ValueError('Invalid version')
-                        self.user_id, self.version = user_id, version
-                        self.deleted, self.counts, self.faults = [], {}, {}
-                    self.mode = mode
-                    self.hold.clear() if hold else self.hold.set()
-                else:
-                    raise ValueError('Unknown command')
-            elif flow.request.method != 'GET' or path != '/status':
-                raise ValueError('Unknown command')
+            self.command(flow.request.method, urlsplit(flow.request.path).path, flow.request.content)
         except (ValueError, KeyError, TypeError, AttributeError):
             respond(flow, {'error': 'Invalid command'}, 400, False)
             return
         respond(flow, self.status(), wrapped=False)
 
-    def fixture(self, path, method, body, query):
-        """根据战绩版本、分页游标与已删除记录构造当前接口结果。"""
-        user = self.user_id
-        source = all_records() if self.mode == 'paged' else records()
-        data = [record for record in source if record['play_session_id'] not in self.deleted
-                and (self.mode != 'no-hands' or record['all_round_count'] == 0)]
-        ids = {record['play_session_id'] for record in all_records()}
-        if not user:
-            return None
-        if path == f'/v10/texas_holdem/user/{user}/game_records' and method == 'GET':
-            selected = [] if self.mode == 'empty' else data
-            next_page = None
-            if self.mode == 'paged':
-                if query.get('next_page') == ['visual-page-2']:
-                    selected = data[20:]
-                else:
-                    selected, next_page = data[:20], 'visual-page-2'
-            return {'next_page': next_page, 'items': [
-                {'room_id': item['play_session_id'], 'create_at': item['create_at']} for item in selected]}
-        if path == f'/v11/game_log/{user}/play_session_record/recent' and method == 'PUT':
-            if body.get('user_id') != user:
-                return None
-            return {'records': [] if self.mode == 'empty' else data}
-        session_path = f'/v11/game_log/{user}/play_session_record/'
-        if path.startswith(session_path) and method == 'GET' and path[len(session_path):] in ids:
-            return detail(user, path[len(session_path):])
-        round_path = f'/v11/game_log/{user}/round/'
-        if path.startswith(round_path) and method == 'GET' and path[len(round_path):].removesuffix('-round') in ids:
-            return round_data(user, path[len(round_path):].removesuffix('-round'))
-        if path == '/v1/room' and method == 'PUT' and set(body.get('rooms', [])) <= ids:
-            return {room_id: rooms()[room_id] for room_id in body['rooms']}
-        if path.startswith('/v1/room/') and method == 'GET' and path[9:] in ids:
-            room = rooms()[path[9:]]
-            if path.endswith('private'):
-                room['room_status'] = 'open'
-                room['timer_status'] = 'timing'
-                room['remaining_seconds'] = 3600
-            return room
-        if path in ('/v1/game_log/room/settlement', '/v11/game_log/room/settlement') and method == 'PUT':
-            requested = body.get('room_ids', [])
-            if not set(requested) <= ids:
-                return None
-            return {'rooms_settlements': {room_id: settlements(user, room_id) for room_id in requested}}
-        if path == f'/v1/game_log/user/{user}/rooms/settlement' and method == 'PUT':
-            requested = body.get('room_ids', [])
-            if not set(requested) <= ids:
-                return None
-            return {'rooms_settlement': [dict(settlements(user, room_id)[0], room_id=room_id)
-                                        for room_id in requested if settlements(user, room_id)]}
-        if path == '/v10/club' and method == 'GET' and query.get('user_id') == [user]:
-            return {'clubs': [{'id': CLUB, 'club_id': CLUB, 'name': 'Visual Club', 'room_amount': 0}]}
-        if path == '/v10/clubs' and method == 'PUT' and body.get('club_ids') == [CLUB]:
-            return [{'club_id': CLUB, 'name': 'Visual Club', 'avatar': '', 'room_amount': 0}]
-        if path == '/v10/profile/users' and method == 'PUT' and set(body.get('users', [])) <= {PLAYER, HOUSE}:
-            return {player: {'user_id': player, 'nickname': 'Opponent',
-                             'avatarPath': ''} for player in body['users']}
-        if path.startswith(f'/v1/game_log/user/{user}/room/') and method == 'DELETE':
-            room_id = path.rsplit('/', 1)[-1]
-            if room_id in ids:
-                if self.mode != 'delete-error':
-                    self.deleted.append(room_id)
-                return {}
-        for room_id in ids:
-            if path == f'/v1/game_log/room/{room_id}/game_amount' and method == 'GET':
-                return {'game_amount': 0 if room_id.endswith('empty') else 3}
-            if path == f'/v1/game_log/room/{room_id}/game' and method == 'PUT':
-                return {'results': [] if room_id.endswith('empty') else [
-                    {'game_id': f'{room_id}-game-{i}', 'game_number': i} for i in body['game_numbers']]}
-            if path == f'/v1/game_log/room/{room_id}/settlement' and method == 'GET':
-                return {'settlements': settlements(user, room_id)}
-        if path == '/v1/game_log/room/game_amount' and method == 'PUT' and set(body.get('room_ids', [])) <= ids:
-            return {'results': [{'room_id': room_id, 'game_amount': 0 if room_id.endswith('empty') else 3}
-                                for room_id in body['room_ids']]}
-        if path == f'/v1/game_log/user/{user}/games' and method == 'PUT':
-            game_ids = body.get('game_ids', [])
-            if not set(game_ids) <= {f'{session}-game-{i}' for session in ids for i in range(1, 4)}:
-                return None
-            return {'results': [replay(user, int(game_id.rsplit('-', 1)[-1]), game_id.rsplit('-game-', 1)[0])
-                                for game_id in game_ids]}
-        return None
+    def command(self, method, path, content):
+        """POST 解析命令，GET 只接受状态入口。"""
+        if method == 'POST':
+            self.post_command(path, json.loads(content))
+        elif (method, path) != ('GET', '/status'):
+            raise ValueError('Unknown command')
+
+    def post_command(self, path, body):
+        """场景命令优先于其余控制入口。"""
+        if path == '/scenario' and body.get('scenario') in (None, 'visual-stable'):
+            self.set_scenario(body)
+            return
+        self.record_command(path, body)
+
+    def record_command(self, path, body):
+        """释放无需活动场景，其余入口校验场景后处理。"""
+        if path == '/records/release':
+            self.hold.set()
+            return
+        self.configure_command(path, body)
+
+    def set_scenario(self, body):
+        """切换场景时清除账号及删除状态并释放等待请求。"""
+        self.scenario = body['scenario']
+        self.user_id = None
+        self.deleted = []
+        self.hold.set()
+
+    def configure_command(self, path, body):
+        """仅活动场景接受模式和账号配置。"""
+        self.validate_configure(path)
+        mode, hold = body.get('mode'), body.get('hold', False)
+        self.validate_mode(mode, hold)
+        if path == '/records/configure':
+            self.configure_user(body)
+        self.mode = mode
+        self.hold.clear() if hold else self.hold.set()
+
+    def validate_configure(self, path):
+        """未知控制路径和无活动场景均拒绝。"""
+        if self.scenario != 'visual-stable' or path not in ('/records/configure', '/records/mode'):
+            raise ValueError('Unknown command')
+
+    def validate_mode(self, mode, hold):
+        """模式和挂起开关保持原有枚举与类型。"""
+        if mode not in MODES or not isinstance(hold, bool):
+            raise ValueError('Invalid mode')
+
+    def configure_user(self, body):
+        """校验完整账号和版本后才修改状态及计数。"""
+        user_id, version = body.get('userId'), body.get('version')
+        if not isinstance(user_id, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,128}', user_id):
+            raise ValueError('Invalid user')
+        self.configure_version(user_id, version)
+
+    def configure_version(self, user_id, version):
+        """非法版本不会部分更新账号。"""
+        if version not in ('legacy', 'v2'):
+            raise ValueError('Invalid version')
+        self.user_id, self.version = user_id, version
+        self.deleted, self.counts, self.faults = [], {}, {}
+
+    def active_request(self, flow):
+        """只处理有效视觉场景的 staging 流量。"""
+        return self.scenario == 'visual-stable' and is_staging(flow.request.host)
 
     def response(self, flow):
-        """在限定真实响应中稳定战绩展示字段并统计命中次数。"""
-        if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
-            return
-        if not self.user_id:
+        """有效场景且账号绑定后，稳定资料和战绩版本响应。"""
+        if not self.active_request(flow) or not self.user_id:
             return
         path = urlsplit(flow.request.path).path
+        self.patch_response(flow, path)
+
+    def patch_response(self, flow, path):
+        """资料与版本使用独立的精确路由。"""
         if path == '/v10/profile/users':
             self.stabilized += patch_profiles(flow, self.user_id, {
-                player: {'user_id': player, 'nickname': 'Opponent', 'avatarPath': ''}
-                for player in (PLAYER, HOUSE)})
-        if flow.request.method == 'GET' and path == '/public/v11/game_log/available.json':
+                player: {'user_id': player, 'nickname': 'Opponent', 'avatarPath': ''} for player in (PLAYER, HOUSE)})
+        self.patch_record_version(flow, path)
+
+    def patch_record_version(self, flow, path):
+        """只覆盖公开版本文件的 GET。"""
+        if (flow.request.method, path) == ('GET', '/public/v11/game_log/available.json'):
             self.stabilized += patch_version(flow, 'v11' if self.version == 'v2' else 'v1')
 
     async def request(self, flow):
-        """处理战绩控制流量与限定业务请求，按模式挂起或返回夹具。"""
+        """控制与业务请求分流，保留真实透传计数和场景边界。"""
         if flow.response:
             return
         if flow.request.host == CONTROL_HOST:
             self.control(flow)
             return
         self.proxied += 1
-        if self.scenario != 'visual-stable' or not is_staging(flow.request.host):
+        await self.business_request(flow)
+
+    async def business_request(self, flow):
+        """优先准备真实资料读取，再按当前模式生成战绩。"""
+        if not self.active_request(flow):
             return
+        if self.prepare_read(flow):
+            return
+        await self.record_request(flow)
+
+    def prepare_read(self, flow):
+        """只有绑定账号可以准备混合玩家资料请求。"""
+        return self.user_id and prepare_profiles(flow, self.user_id, (PLAYER, HOUSE))
+
+    async def record_request(self, flow):
+        """结构错误继续透传，只有命中夹具才记数及等待。"""
         url = urlsplit(flow.request.path)
-        path, method = url.path, flow.request.method
-        if self.user_id and prepare_profiles(flow, self.user_id, (PLAYER, HOUSE)):
-            return
-        try:
-            body = json.loads(flow.request.content or b'{}')
-            fixture = self.fixture(path, method, body, parse_qs(url.query))
-        except (ValueError, TypeError, KeyError, AttributeError):
-            return
+        fixture = self.read_fixture(flow, url)
         if fixture is None:
             return
+        path, method = url.path, flow.request.method
         self.counts[path] = self.counts.get(path, 0) + 1
         is_list = path.endswith('/game_records') or path.endswith('/recent')
-        if is_list and (self.mode != 'paged' or parse_qs(url.query).get('next_page')):
+        await self.wait_list(is_list, url)
+        self.respond_record(flow, path, method, fixture, is_list)
+
+    def read_fixture(self, flow, url):
+        """保留原有 JSON 和数据错误捕获范围。"""
+        try:
+            body = json.loads(flow.request.content or b'{}')
+            return self.fixture(url.path, flow.request.method, body, parse_qs(url.query))
+        except (ValueError, TypeError, KeyError, AttributeError):
+            return None
+
+    async def wait_list(self, is_list, url):
+        """分页首页不挂起，续页和其他列表遵守原等待事件。"""
+        if is_list and self.held_page(url):
             await self.hold.wait()
-        fail = ((self.mode == 'list-error' and is_list)
-                or (self.mode == 'detail-error' and '/play_session_record/' in path and not is_list)
-                or (self.mode == 'delete-error' and method == 'DELETE'))
-        if fail:
+
+    def held_page(self, url):
+        """分页模式仅固定游标查询触发等待。"""
+        return self.mode != 'paged' or parse_qs(url.query).get('next_page')
+
+    def should_fail(self, path, method, is_list):
+        """固定故障模式只作用于原有接口类别。"""
+        failures = {
+            # 列表故障只匹配列表请求。
+            'list-error': lambda: is_list,
+            # 详情故障排除 recent 列表入口。
+            'detail-error': lambda: '/play_session_record/' in path and not is_list,
+            # 删除故障只匹配 DELETE 方法。
+            'delete-error': lambda: method == 'DELETE',
+        }
+        # 未配置的模式不触发故障。
+        return failures.get(self.mode, lambda: False)()
+
+    def respond_record(self, flow, path, method, fixture, is_list):
+        """保持列表 HTTP 503 和其他业务错误的不同语义。"""
+        if self.should_fail(path, method, is_list):
             self.faults[path] = self.faults.get(path, 0) + 1
-            # 旧版 HTTP 5xx 会触发节点切换；业务错误避免把节点状态失败冒充删除错误。
             status = 503 if self.mode == 'list-error' else 200
             respond(flow, {'ok': False, 'error_type': 'visual_record_unavailable',
                            'error_message': 'Visual record service unavailable',

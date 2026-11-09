@@ -30,20 +30,53 @@ def game(self_id):
 
 
 def fixture(path, method, content, room_id, self_id):
-    """根据房间、用户、路径和方法提供结算与牌局重放结果。"""
+    """只为已绑定房间和用户提供日志。"""
     if not room_id or not self_id:
         return None
+    return room_fixture(path, method, content, room_id, self_id)
+
+
+def room_fixture(path, method, content, room_id, self_id):
+    """结算 GET 和日志 PUT 分开处理，保持正文解析时机。"""
     if method == 'GET' and path == f'/v1/game_log/room/{room_id}/settlement':
-        return {'settlements': [{'user_id': player_id, 'buy_in_amount': 1000,
-                                'game_round_amount': 10, 'settlement_amount': 180 if index == 0 else -180}
-                               for index, player_id in enumerate([self_id, *PLAYER_IDS])]}
+        return {'settlements': settlement_players(self_id)}
+    return write_fixture(path, method, content, room_id, self_id)
+
+
+def settlement_players(self_id):
+    """保持当前玩家和四个虚拟对手的结算数据。"""
+    return [{'user_id': player_id, 'buy_in_amount': 1000, 'game_round_amount': 10,
+             'settlement_amount': 180 if index == 0 else -180}
+            for index, player_id in enumerate([self_id, *PLAYER_IDS])]
+
+
+def write_fixture(path, method, content, room_id, self_id):
+    """只对 PUT 解析正文。"""
     if method != 'PUT':
         return None
     body = json.loads(content or b'{}')
-    if path == '/v1/game_log/room/game_amount' and body.get('room_ids') == [room_id]:
-        return {'results': [{'room_id': room_id, 'game_amount': 1}]}
-    if path == f'/v1/game_log/room/{room_id}/game' and body.get('game_numbers') == [1]:
-        return {'results': [{'game_id': GAME_ID}]}
-    if path == f'/v1/game_log/user/{self_id}/games' and body.get('game_ids') == [GAME_ID]:
-        return {'results': [game(self_id)]}
+    return log_request(path, body, room_id, self_id)
+
+
+def log_request(path, body, room_id, self_id):
+    """固定请求路径和值对应固定日志响应。"""
+    routes = {
+        # 房间计数只在固定批次校验后生成。
+        '/v1/game_log/room/game_amount': ('room_ids', [room_id], lambda: {
+            'results': [{'room_id': room_id, 'game_amount': 1}]}),
+        # 局号列表只在请求匹配后构造。
+        f'/v1/game_log/room/{room_id}/game': ('game_numbers', [1], lambda: {'results': [{'game_id': GAME_ID}]}),
+        # 重放数据在固定 game_ids 校验后构造。
+        f'/v1/game_log/user/{self_id}/games': ('game_ids', [GAME_ID], lambda: {'results': [game(self_id)]}),
+    }
+    route = routes.get(path)
+    if route is not None:
+        return matched_result(body, *route)
+    return None
+
+
+def matched_result(body, key, expected, build):
+    """批次必须与固定查询完全相同。"""
+    if body.get(key) == expected:
+        return build()
     return None

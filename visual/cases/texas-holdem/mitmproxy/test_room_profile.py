@@ -67,22 +67,32 @@ class RoomProfileTests(unittest.TestCase):
                 self.assertIsNone(self.profile_request(**options).response)
 
     def test_释放场景或更换房间玩家后必须重新真实读取(self):
-        """验证释放场景或更换房间玩家后必须重新真实读取。"""
+        """每种归属或生命周期变化都清除原规则。"""
         for change in ('release', 'scenario', 'room', 'self'):
             with self.subTest(change=change):
                 self.addon.texas.room_id, self.addon.texas.self_id = ROOM, SELF
                 self.record()
-                if change in ('release', 'scenario'):
-                    path = '/texas/release' if change == 'release' else '/scenario'
-                    body = {} if change == 'release' else {'scenario': 'visual-stable'}
-                    command = flow('http://test-mitmproxy.invalid' + path, 'POST',
-                                   json.dumps(body).encode(), 'test-token')
-                    self.addon.request(command)
-                    self.assertEqual(command.response.status_code, 200)
-                    self.addon.texas.room_id, self.addon.texas.self_id = ROOM, SELF
-                elif change == 'room':
-                    self.addon.texas.room_id = OTHER
-                else:
-                    self.addon.texas.self_id = OTHER
+                self.change_owner(change)
                 self.assertIsNone(self.profile_request().response)
                 self.addon.room_profile.release()
+
+    def change_owner(self, change):
+        """分别执行控制命令和房间或玩家变化。"""
+        changes = {
+            # 通过释放控制命令验证缓存清理。
+            'release': lambda: self.clear_control('/texas/release', {}),
+            # 通过重新配置相同场景验证缓存清理。
+            'scenario': lambda: self.clear_control('/scenario', {'scenario': 'visual-stable'}),
+            # 仅改变房间标识验证房间归属隔离。
+            'room': lambda: setattr(self.addon.texas, 'room_id', OTHER),
+            # 仅改变当前玩家验证账号归属隔离。
+            'self': lambda: setattr(self.addon.texas, 'self_id', OTHER),
+        }
+        changes[change]()
+
+    def clear_control(self, path, body):
+        """通过认证控制入口释放，再恢复同一房间账号以验证缓存失效。"""
+        command = flow('http://test-mitmproxy.invalid' + path, 'POST', json.dumps(body).encode(), 'test-token')
+        self.addon.request(command)
+        self.assertEqual(command.response.status_code, 200)
+        self.addon.texas.room_id, self.addon.texas.self_id = ROOM, SELF

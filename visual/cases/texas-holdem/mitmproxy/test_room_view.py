@@ -1,10 +1,21 @@
 """大厅配置只属于本次创建的隔离房间，禁止吞真实房间的写操作。"""
 import json
 import unittest
+from itertools import product
 from mitmproxy import http
 from room_view import RoomView
 from test_texas_replay import flow, ROOM, OTHER, SELF
 from game_log import fixture as log_fixture, GAME_ID
+
+
+def expected_building(room, method):
+    """大厅覆盖仅发生在确切房间 GET。"""
+    return 'hall' if (room, method) == (ROOM, 'GET') else 'house'
+
+
+def guest_changed(room, method, ok):
+    """游客只覆盖本房间的成功 GET。"""
+    return (room, method) == (ROOM, 'GET') and ok
 
 
 class RoomViewTests(unittest.TestCase):
@@ -21,15 +32,14 @@ class RoomViewTests(unittest.TestCase):
         created.response = http.Response.make(200, json.dumps({'ok': True, 'result': {'room_id': ROOM}}).encode())
         view.response(created, '/v3/pay_action/do')
         self.assertEqual(view.room_id, ROOM)
-        for room in (OTHER, ROOM):
-            for method in ('GET', 'PUT', 'DELETE'):
-                request = flow(f'https://node-0.service.invalid/v1/room/{room}', method)
-                original = {'ok': True, 'result': {'building_type': 'house', 'creator_id': SELF,
-                                                'game_config': {'currency': 'chip'}}}
-                request.response = http.Response.make(200, json.dumps(original).encode())
-                view.response(request, f'/v1/room/{room}')
-                result = json.loads(request.response.content)['result']
-                self.assertEqual(result['building_type'], 'hall' if room == ROOM and method == 'GET' else 'house')
+        for room, method in product((OTHER, ROOM), ('GET', 'PUT', 'DELETE')):
+            request = flow(f'https://node-0.service.invalid/v1/room/{room}', method)
+            original = {'ok': True, 'result': {'building_type': 'house', 'creator_id': SELF,
+                                            'game_config': {'currency': 'chip'}}}
+            request.response = http.Response.make(200, json.dumps(original).encode())
+            view.response(request, f'/v1/room/{room}')
+            result = json.loads(request.response.content)['result']
+            self.assertEqual(result['building_type'], expected_building(room, method))
         self.assertEqual(view.self_id, SELF)
         view.configure(None)
         self.assertIsNone(view.room_id)
@@ -76,18 +86,16 @@ class RoomViewTests(unittest.TestCase):
         view = RoomView()
         view.configure('guest')
         view.room_id, view.self_id = ROOM, SELF
-        for room in (ROOM, OTHER):
-            for method in ('GET', 'PUT', 'DELETE'):
-                for ok in (True, False):
-                    path = f'/v1/room/{room}'
-                    request = flow(f'https://node-0.service.invalid{path}', method)
-                    original = {'ok': ok, 'result': {'creator_id': SELF, 'admin_ids': [SELF]}}
-                    request.response = http.Response.make(200, json.dumps(original).encode())
-                    view.response(request, path)
-                    result = json.loads(request.response.content)['result']
-                    changed = room == ROOM and method == 'GET' and ok
-                    self.assertEqual(result['creator_id'] != SELF, changed)
-                    self.assertEqual(result['admin_ids'], [] if changed else [SELF])
+        for room, method, ok in product((ROOM, OTHER), ('GET', 'PUT', 'DELETE'), (True, False)):
+            path = f'/v1/room/{room}'
+            request = flow(f'https://node-0.service.invalid{path}', method)
+            original = {'ok': ok, 'result': {'creator_id': SELF, 'admin_ids': [SELF]}}
+            request.response = http.Response.make(200, json.dumps(original).encode())
+            view.response(request, path)
+            result = json.loads(request.response.content)['result']
+            changed = guest_changed(room, method, ok)
+            self.assertEqual(result['creator_id'] != SELF, changed)
+            self.assertEqual(result['admin_ids'], [] if changed else [SELF])
         self.assertEqual(view.self_id, SELF)
 
     def test_记录不能替换其他房间或用户数据(self):

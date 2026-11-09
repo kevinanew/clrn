@@ -1,0 +1,5644 @@
+{
+  "issue": 109,
+  "beforeRevision": "f5edd3b3962ecd4006d4f90e3e8ab82a463f5682",
+  "tools": {
+    "python": "3.12.12",
+    "radon": "6.0.1",
+    "ruff": "0.15.12",
+    "mitmproxy": "12.2.3"
+  },
+  "counting": {
+    "no_assert": true,
+    "independentFunctionsMethodsAsyncAndLambdas": true,
+    "nestedScopesAccumulateIntoParent": false
+  },
+  "limits": {
+    "testAndSupport": 3,
+    "standaloneTool": 6
+  },
+  "summary": {
+    "beforeFunctions": 201,
+    "beforeViolations": 54,
+    "beforeMaximum": 76,
+    "afterFunctions": 479,
+    "afterViolations": 0,
+    "afterSupportMaximum": 3,
+    "afterToolMaximum": 4
+  },
+  "migrations": [
+    {
+      "from": {
+        "file": "visual/cases/game-record/mitmproxy/addon.py",
+        "name": "fixture"
+      },
+      "to": {
+        "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+        "name": "fixture"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+        "name": "command"
+      },
+      "to": {
+        "file": "visual/cases/fixture_protocol.py",
+        "name": "command"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+        "name": "publish"
+      },
+      "to": {
+        "file": "visual/cases/replay_transport.py",
+        "name": "publish"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+        "name": "is_replay_publication"
+      },
+      "to": {
+        "file": "visual/cases/replay_transport.py",
+        "name": "is_replay_publication"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+        "name": "websocket_message"
+      },
+      "to": {
+        "file": "visual/cases/replay_transport.py",
+        "name": "websocket_message"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+        "name": "websocket_end"
+      },
+      "to": {
+        "file": "visual/cases/replay_transport.py",
+        "name": "websocket_end"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+        "name": "command"
+      },
+      "to": {
+        "file": "visual/cases/fixture_protocol.py",
+        "name": "command"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+        "name": "publish"
+      },
+      "to": {
+        "file": "visual/cases/replay_transport.py",
+        "name": "publish"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+        "name": "is_replay_publication"
+      },
+      "to": {
+        "file": "visual/cases/replay_transport.py",
+        "name": "is_replay_publication"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+        "name": "websocket_message"
+      },
+      "to": {
+        "file": "visual/cases/replay_transport.py",
+        "name": "websocket_message"
+      }
+    },
+    {
+      "from": {
+        "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+        "name": "websocket_end"
+      },
+      "to": {
+        "file": "visual/cases/replay_transport.py",
+        "name": "websocket_end"
+      }
+    }
+  ],
+  "before": [
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 54,
+      "column": 1,
+      "name": "respond",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 68,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 77,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 87,
+      "column": 5,
+      "name": "control",
+      "complexity": 12,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 114,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 11,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 140,
+      "column": 5,
+      "name": "joined_clubs_fixture",
+      "complexity": 15,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 165,
+      "column": 5,
+      "name": "request",
+      "complexity": 6,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 15,
+      "column": 1,
+      "name": "make_flow",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 31,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 38,
+      "column": 5,
+      "name": "test_有数据的房间响应保持契约",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 66,
+      "column": 5,
+      "name": "test_无关请求必须透传",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 81,
+      "column": 5,
+      "name": "test_控制命令必须认证",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 89,
+      "column": 5,
+      "name": "enable_joined_clubs",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 97,
+      "column": 5,
+      "name": "test_已加入列表包含三个完整俱乐部",
+      "complexity": 5,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 121,
+      "column": 5,
+      "name": "test_已加入列表不得影响其他账号和场景",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 151,
+      "column": 5,
+      "name": "test_已加入列表必须绑定账号且控制请求需要认证",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 21,
+      "column": 1,
+      "name": "respond",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 29,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 44,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 50,
+      "column": 5,
+      "name": "control",
+      "complexity": 18,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 90,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 76,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 171,
+      "column": 5,
+      "name": "response",
+      "complexity": 9,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 185,
+      "column": 5,
+      "name": "request",
+      "complexity": 22,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 18,
+      "column": 1,
+      "name": "records",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 33,
+      "column": 1,
+      "name": "all_records",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 46,
+      "column": 1,
+      "name": "rooms",
+      "complexity": 8,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 68,
+      "column": 1,
+      "name": "settlements",
+      "complexity": 5,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 78,
+      "column": 1,
+      "name": "detail",
+      "complexity": 6,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 91,
+      "column": 1,
+      "name": "round_data",
+      "complexity": 13,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 116,
+      "column": 1,
+      "name": "replay",
+      "complexity": 6,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 17,
+      "column": 1,
+      "name": "flow",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 32,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 41,
+      "column": 5,
+      "name": "request",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 47,
+      "column": 5,
+      "name": "result",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 51,
+      "column": 5,
+      "name": "test_房间名称遵守界面创建限制",
+      "complexity": 7,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 62,
+      "column": 5,
+      "name": "test_列表包含未开局且无结算的记录",
+      "complexity": 4,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 78,
+      "column": 5,
+      "name": "test_其他账号主机与方法必须透传",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 90,
+      "column": 5,
+      "name": "test_混合未知房间与资料请求必须透传",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 98,
+      "column": 5,
+      "name": "test_认证控制先验证再改变状态",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 110,
+      "column": 5,
+      "name": "test_分页记录不能遗漏或重复",
+      "complexity": 7,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 133,
+      "column": 5,
+      "name": "test_加载闸门释放无需固定等待",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 142,
+      "column": 5,
+      "name": "test_删除失败保留记录且成功后移除",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 156,
+      "column": 5,
+      "name": "test_新版列表与详情故障保持独立",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 168,
+      "column": 5,
+      "name": "test_当前资料与版本保留真实字段及错误",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 29,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 41,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 45,
+      "column": 5,
+      "name": "command",
+      "complexity": 15,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 76,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 84,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 89,
+      "column": 5,
+      "name": "websocket_end",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 93,
+      "column": 5,
+      "name": "response",
+      "complexity": 14,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 114,
+      "column": 5,
+      "name": "prepare_read",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 123,
+      "column": 5,
+      "name": "request",
+      "complexity": 10,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 159,
+      "column": 5,
+      "name": "respond_replay",
+      "complexity": 11,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 10,
+      "column": 1,
+      "name": "game",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 32,
+      "column": 1,
+      "name": "fixture",
+      "complexity": 15,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 51,
+      "column": 1,
+      "name": "round_data",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 12,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 16,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 22,
+      "column": 5,
+      "name": "configure",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 28,
+      "column": 5,
+      "name": "response",
+      "complexity": 10,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 38,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 9,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 8,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 12,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 17,
+      "column": 5,
+      "name": "key",
+      "complexity": 9,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 31,
+      "column": 5,
+      "name": "read",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 38,
+      "column": 5,
+      "name": "observe",
+      "complexity": 8,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 10,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 16,
+      "column": 5,
+      "name": "configure",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 22,
+      "column": 5,
+      "name": "response",
+      "complexity": 27,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 58,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 7,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 20,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 29,
+      "column": 5,
+      "name": "request",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 36,
+      "column": 5,
+      "name": "test_回放绑定实际订阅房间而不依赖固定节点",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 56,
+      "column": 5,
+      "name": "test_只读夹具不掩盖写入或其他用户",
+      "complexity": 4,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 80,
+      "column": 5,
+      "name": "test_屏蔽夹具只匹配回放玩家与已知方法",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 90,
+      "column": 5,
+      "name": "test_其他环境来源与关闭场景始终透传",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 101,
+      "column": 5,
+      "name": "test_损坏或未认证控制不能改变回放",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 113,
+      "column": 5,
+      "name": "test_新版战绩控制必须认证且可释放",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 142,
+      "column": 5,
+      "name": "test_共用闸门优先生效且释放后仍隔离写入",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 155,
+      "column": 9,
+      "name": "select",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 162,
+      "column": 9,
+      "name": "request",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 12,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 16,
+      "column": 5,
+      "name": "enter",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 23,
+      "column": 5,
+      "name": "test_版本覆盖必须显式启用且只读",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 35,
+      "column": 5,
+      "name": "test_仅成功进入已创建房间才记录会话",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 49,
+      "column": 5,
+      "name": "test_战绩严格匹配用户会话与局次",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 12,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 16,
+      "column": 5,
+      "name": "profile_request",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 25,
+      "column": 5,
+      "name": "record",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 35,
+      "column": 5,
+      "name": "test_成功规则读取原样复用且保留当前来源的跨域头",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 44,
+      "column": 5,
+      "name": "test_错误与不完整规则不能被补为成功",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 59,
+      "column": 5,
+      "name": "test_其他认证来源房间方法主机和查询必须透传",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 69,
+      "column": 5,
+      "name": "test_释放场景或更换房间玩家后必须重新真实读取",
+      "complexity": 6,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 12,
+      "column": 5,
+      "name": "test_仅成功创建才能绑定确切房间读取",
+      "complexity": 5,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 38,
+      "column": 5,
+      "name": "test_其他支付失败创建与第二房间不能绑定界面",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 62,
+      "column": 5,
+      "name": "test_房间详情不能以未验证创建者覆盖本人身份",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 74,
+      "column": 5,
+      "name": "test_访客身份仅修改已创建房间的成功读取",
+      "complexity": 7,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 93,
+      "column": 5,
+      "name": "test_记录不能替换其他房间或用户数据",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 44,
+      "column": 9,
+      "name": "created",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 14,
+      "column": 1,
+      "name": "flow",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 30,
+      "column": 1,
+      "name": "socket_flow",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 37,
+      "column": 1,
+      "name": "message",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 47,
+      "column": 5,
+      "name": "test_未订阅连接的房间资料读取透传且不得补空成功响应",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 61,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 70,
+      "column": 5,
+      "name": "test_发布必须等待订阅成功确认",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 89,
+      "column": 5,
+      "name": "test_服务端取消订阅移除已确认频道且保留原帧",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 99,
+      "column": 5,
+      "name": "test_客户端取消订阅和连接关闭清除待确认状态",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 113,
+      "column": 5,
+      "name": "test_发布面向浏览器且必须匹配活动房间",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 130,
+      "column": 5,
+      "name": "test_混合批次保留心跳与无关调用且仅隔离回放房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 151,
+      "column": 5,
+      "name": "test_推送过滤保留远程调用与已注入消息",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 163,
+      "column": 5,
+      "name": "test_资料按归属匹配且释放后清除夹具",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 174,
+      "column": 5,
+      "name": "test_推送过滤保留其他数据流取消订阅与损坏结果",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 185,
+      "column": 5,
+      "name": "test_取消订阅与已关闭连接不能收到回放",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 194,
+      "column": 5,
+      "name": "test_创建房间在订阅前隔离且释放后恢复流量",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 213,
+      "column": 5,
+      "name": "test_支付调用匹配动作房间路径与方法并保留玩法契约",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 233,
+      "column": 5,
+      "name": "test_活动创建房间不能被其他已订阅房间替换",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 243,
+      "column": 5,
+      "name": "test_实时通信响应保留聊天室字段且不匹配其他房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 255,
+      "column": 5,
+      "name": "test_切换场景释放回放且控制必须认证",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 218,
+      "column": 9,
+      "name": "command",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 13,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 21,
+      "column": 5,
+      "name": "request",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 27,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 33,
+      "column": 5,
+      "name": "test_界面控制必须认证并匹配房间与有效状态",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 42,
+      "column": 5,
+      "name": "test_申请行与分页仅匹配当前房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 60,
+      "column": 5,
+      "name": "test_选择写入不能影响其他房间",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 73,
+      "column": 5,
+      "name": "test_支付隔离严格匹配房间方法与确切动作",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 86,
+      "column": 5,
+      "name": "test_调用错误注入浏览器且释放后重置",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 13,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 24,
+      "column": 5,
+      "name": "preflight",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 35,
+      "column": 5,
+      "name": "test_已有虚拟玩家资料钱包及统计读取具有对应预检且不依赖上游",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 56,
+      "column": 5,
+      "name": "test_真实用户写入节点探测及未登记路径的预检保持透传",
+      "complexity": 5,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 76,
+      "column": 5,
+      "name": "test_其他主机场景及释放后的预检不沿用许可",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 85,
+      "column": 5,
+      "name": "test_页面来源配置缺失损坏或带凭据时不处理预检",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 14,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 24,
+      "column": 5,
+      "name": "arm_created_room",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 29,
+      "column": 5,
+      "name": "publish",
+      "complexity": 12,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 51,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 58,
+      "column": 5,
+      "name": "is_replay_publication",
+      "complexity": 5,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 67,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 53,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 132,
+      "column": 5,
+      "name": "websocket_end",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 137,
+      "column": 5,
+      "name": "is_replay_rpc",
+      "complexity": 14,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 159,
+      "column": 5,
+      "name": "rpc_result",
+      "complexity": 6,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 176,
+      "column": 5,
+      "name": "profile",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 183,
+      "column": 5,
+      "name": "http_fixture",
+      "complexity": 13,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 9,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 13,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 18,
+      "column": 5,
+      "name": "configure",
+      "complexity": 5,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 28,
+      "column": 5,
+      "name": "rpc_result",
+      "complexity": 7,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 39,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 16,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/virtual_player_preflight.py",
+      "line": 15,
+      "column": 1,
+      "name": "respond_virtual_player_preflight",
+      "complexity": 17,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 23,
+      "column": 1,
+      "name": "respond_settlement_preflight",
+      "complexity": 15,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 56,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 65,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 69,
+      "column": 5,
+      "name": "command",
+      "complexity": 11,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 89,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 97,
+      "column": 5,
+      "name": "response",
+      "complexity": 20,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 123,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 128,
+      "column": 5,
+      "name": "websocket_end",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 132,
+      "column": 5,
+      "name": "request",
+      "complexity": 13,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 17,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 24,
+      "column": 5,
+      "name": "creation",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 33,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 39,
+      "column": 5,
+      "name": "test_仅成功创建拼三张房间才能绑定回放",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 52,
+      "column": 5,
+      "name": "test_回放必须绑定已创建房间且控制已认证",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 79,
+      "column": 5,
+      "name": "test_空排行榜仅用于已创建房间的读取",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 101,
+      "column": 5,
+      "name": "test_接口夹具保留写入其他用户与主机",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 119,
+      "column": 5,
+      "name": "preflight",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 128,
+      "column": 5,
+      "name": "test_空榜预检只允许当前房间与本轮页面的必要读取",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 143,
+      "column": 5,
+      "name": "test_其他来源方法请求头场景与未绑定房间的预检保持透传",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 167,
+      "column": 5,
+      "name": "test_本轮页面来源配置缺失损坏或带凭据时预检保持透传",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 176,
+      "column": 5,
+      "name": "test_本人资料保持真实且混合批次仅补充虚拟对手",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 14,
+      "column": 1,
+      "name": "flow",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 30,
+      "column": 1,
+      "name": "socket_flow",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 37,
+      "column": 1,
+      "name": "message",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 47,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 56,
+      "column": 5,
+      "name": "test_操作奖励必须绑定房间且释放后重置",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 77,
+      "column": 5,
+      "name": "test_发布必须等待订阅成功确认",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 96,
+      "column": 5,
+      "name": "test_服务端取消订阅移除已确认频道且保留原帧",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 106,
+      "column": 5,
+      "name": "test_客户端取消订阅和连接关闭清除待确认状态",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 120,
+      "column": 5,
+      "name": "test_发布面向浏览器且必须匹配活动房间",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 137,
+      "column": 5,
+      "name": "test_混合批次保留心跳与无关调用且仅隔离回放房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 158,
+      "column": 5,
+      "name": "test_推送过滤保留远程调用与已注入消息",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 170,
+      "column": 5,
+      "name": "test_资料按归属匹配且释放后清除夹具",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 181,
+      "column": 5,
+      "name": "test_推送过滤保留其他数据流取消订阅与损坏结果",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 192,
+      "column": 5,
+      "name": "test_取消订阅与已关闭连接不能收到回放",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 201,
+      "column": 5,
+      "name": "test_连接池仅在激活后隔离所属房间且释放后恢复流量",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 226,
+      "column": 5,
+      "name": "test_活动回放不能被其他已订阅房间替换",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 237,
+      "column": 5,
+      "name": "test_实时通信响应保留聊天室字段且不匹配其他房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 250,
+      "column": 5,
+      "name": "test_切换场景释放回放且控制必须认证",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 13,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 23,
+      "column": 5,
+      "name": "publish",
+      "complexity": 12,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 45,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 51,
+      "column": 5,
+      "name": "set_operation_reward",
+      "complexity": 4,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 57,
+      "column": 5,
+      "name": "is_replay_publication",
+      "complexity": 5,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 66,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 50,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 130,
+      "column": 5,
+      "name": "websocket_end",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 135,
+      "column": 5,
+      "name": "is_replay_rpc",
+      "complexity": 8,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 149,
+      "column": 5,
+      "name": "rpc_result",
+      "complexity": 5,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 162,
+      "column": 5,
+      "name": "profile",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 169,
+      "column": 5,
+      "name": "http_fixture",
+      "complexity": 12,
+      "limit": 3
+    }
+  ],
+  "after": [
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 20,
+      "column": 1,
+      "name": "source_with_complexity",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 28,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 37,
+      "column": 5,
+      "name": "write",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 43,
+      "column": 5,
+      "name": "copy",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 49,
+      "column": 5,
+      "name": "run_cli",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 54,
+      "column": 5,
+      "name": "run_prepared",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 59,
+      "column": 5,
+      "name": "test_support_three_passes_four_fails",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 67,
+      "column": 5,
+      "name": "test_tool_six_passes_seven_fails",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 75,
+      "column": 5,
+      "name": "test_cli_tool_boundary",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 83,
+      "column": 5,
+      "name": "test_nested_scopes_are_independent",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 107,
+      "column": 5,
+      "name": "test_assertions_do_not_count_and_defaults_are_scanned",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 117,
+      "column": 5,
+      "name": "test_adjacent_and_transitive_helpers_use_three",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 128,
+      "column": 5,
+      "name": "test_unrelated_scope_does_not_need_to_be_clean",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 133,
+      "column": 5,
+      "name": "test_disabling_comments_cannot_bypass_cli",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 141,
+      "column": 5,
+      "name": "test_parse_error_and_required_file_missing_fail",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 152,
+      "column": 5,
+      "name": "test_empty_scan_fails",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 159,
+      "column": 5,
+      "name": "test_missing_radon_fails",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 166,
+      "column": 5,
+      "name": "test_actual_lint_python_entry_blocks_support_four",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "scripts/test_visual_proxy_complexity.py",
+      "line": 176,
+      "column": 5,
+      "name": "prepare_lint_entry",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "scripts/visual-proxy-complexity.py",
+      "line": 23,
+      "column": 1,
+      "name": "initial_scope",
+      "complexity": 4,
+      "limit": 6
+    },
+    {
+      "file": "scripts/visual-proxy-complexity.py",
+      "line": 37,
+      "column": 1,
+      "name": "read_scope",
+      "complexity": 4,
+      "limit": 6
+    },
+    {
+      "file": "scripts/visual-proxy-complexity.py",
+      "line": 54,
+      "column": 1,
+      "name": "scan",
+      "complexity": 3,
+      "limit": 6
+    },
+    {
+      "file": "scripts/visual-proxy-complexity.py",
+      "line": 66,
+      "column": 1,
+      "name": "main",
+      "complexity": 3,
+      "limit": 6
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 54,
+      "column": 1,
+      "name": "respond",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 68,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 77,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 87,
+      "column": 5,
+      "name": "control",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 97,
+      "column": 5,
+      "name": "control_request",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 104,
+      "column": 5,
+      "name": "scenario_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 112,
+      "column": 5,
+      "name": "configure_scenario",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 123,
+      "column": 5,
+      "name": "valid_user",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 129,
+      "column": 5,
+      "name": "scenario_user",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 133,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 139,
+      "column": 5,
+      "name": "club_fixture",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 146,
+      "column": 5,
+      "name": "single_club_list",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 152,
+      "column": 5,
+      "name": "put_fixture",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 158,
+      "column": 5,
+      "name": "parse_put",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 166,
+      "column": 5,
+      "name": "single_club_batch",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 172,
+      "column": 5,
+      "name": "single_club",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 181,
+      "column": 5,
+      "name": "single_club_rooms",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 187,
+      "column": 5,
+      "name": "joined_clubs_fixture",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 194,
+      "column": 5,
+      "name": "joined_read",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 201,
+      "column": 5,
+      "name": "joined_list",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 207,
+      "column": 5,
+      "name": "joined_batch",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 220,
+      "column": 5,
+      "name": "joined_result",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 224,
+      "column": 5,
+      "name": "request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 234,
+      "column": 5,
+      "name": "business_request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/addon.py",
+      "line": 245,
+      "column": 5,
+      "name": "active_request",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 15,
+      "column": 1,
+      "name": "make_flow",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 169,
+      "column": 1,
+      "name": "club_values",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 31,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 38,
+      "column": 5,
+      "name": "test_有数据的房间响应保持契约",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 66,
+      "column": 5,
+      "name": "test_无关请求必须透传",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 81,
+      "column": 5,
+      "name": "test_控制命令必须认证",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 89,
+      "column": 5,
+      "name": "enable_joined_clubs",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 97,
+      "column": 5,
+      "name": "assert_club_profiles",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 105,
+      "column": 5,
+      "name": "test_已加入列表包含三个完整俱乐部",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 125,
+      "column": 5,
+      "name": "test_已加入列表不得影响其他账号和场景",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/club/mitmproxy/test_addon.py",
+      "line": 155,
+      "column": 5,
+      "name": "test_已加入列表必须绑定账号且控制请求需要认证",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 7,
+      "column": 1,
+      "name": "local_release_origin",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 16,
+      "column": 1,
+      "name": "release_origin",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 23,
+      "column": 1,
+      "name": "clean_origin",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 30,
+      "column": 1,
+      "name": "has_url_extras",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 36,
+      "column": 1,
+      "name": "is_read_preflight",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 41,
+      "column": 1,
+      "name": "preflight_headers",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 51,
+      "column": 1,
+      "name": "preflight_response",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 59,
+      "column": 1,
+      "name": "send_preflight",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 74,
+      "column": 1,
+      "name": "creation_action",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 83,
+      "column": 1,
+      "name": "is_create_action",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 89,
+      "column": 1,
+      "name": "successful_result",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 97,
+      "column": 1,
+      "name": "successful_flow",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 105,
+      "column": 5,
+      "name": "command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 111,
+      "column": 5,
+      "name": "scenario_command",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/fixture_protocol.py",
+      "line": 119,
+      "column": 5,
+      "name": "game_command",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 22,
+      "column": 1,
+      "name": "respond",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 30,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 45,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 51,
+      "column": 5,
+      "name": "control",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 58,
+      "column": 5,
+      "name": "control_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 67,
+      "column": 5,
+      "name": "command",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 74,
+      "column": 5,
+      "name": "post_command",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 81,
+      "column": 5,
+      "name": "record_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 88,
+      "column": 5,
+      "name": "set_scenario",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 95,
+      "column": 5,
+      "name": "configure_command",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 105,
+      "column": 5,
+      "name": "validate_configure",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 110,
+      "column": 5,
+      "name": "validate_mode",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 115,
+      "column": 5,
+      "name": "configure_user",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 122,
+      "column": 5,
+      "name": "configure_version",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 129,
+      "column": 5,
+      "name": "active_request",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 133,
+      "column": 5,
+      "name": "response",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 140,
+      "column": 5,
+      "name": "patch_response",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 147,
+      "column": 5,
+      "name": "patch_record_version",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 152,
+      "column": 5,
+      "name": "request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 162,
+      "column": 5,
+      "name": "business_request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 170,
+      "column": 5,
+      "name": "prepare_read",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 174,
+      "column": 5,
+      "name": "record_request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 186,
+      "column": 5,
+      "name": "read_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 194,
+      "column": 5,
+      "name": "wait_list",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 199,
+      "column": 5,
+      "name": "held_page",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 203,
+      "column": 5,
+      "name": "should_fail",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 216,
+      "column": 5,
+      "name": "respond_record",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 207,
+      "column": 27,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 209,
+      "column": 29,
+      "name": "<lambda>",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 211,
+      "column": 29,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/addon.py",
+      "line": 214,
+      "column": 40,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 18,
+      "column": 1,
+      "name": "records",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 33,
+      "column": 1,
+      "name": "all_records",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 46,
+      "column": 1,
+      "name": "rooms",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 51,
+      "column": 1,
+      "name": "room_data",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 71,
+      "column": 1,
+      "name": "building_kind",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 76,
+      "column": 1,
+      "name": "variation",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 83,
+      "column": 1,
+      "name": "settlements",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 93,
+      "column": 1,
+      "name": "detail",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 104,
+      "column": 1,
+      "name": "round_data",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 125,
+      "column": 1,
+      "name": "replay",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 151,
+      "column": 1,
+      "name": "find_record",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 156,
+      "column": 1,
+      "name": "stake_tracker",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/data.py",
+      "line": 164,
+      "column": 1,
+      "name": "game_spec",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 6,
+      "column": 1,
+      "name": "record_ids",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 11,
+      "column": 1,
+      "name": "game_amount",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 19,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 28,
+      "column": 5,
+      "name": "routes",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 47,
+      "column": 5,
+      "name": "selected_records",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 51,
+      "column": 5,
+      "name": "source_records",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 55,
+      "column": 5,
+      "name": "include_record",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 61,
+      "column": 5,
+      "name": "list_records",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 65,
+      "column": 5,
+      "name": "legacy_list",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 72,
+      "column": 5,
+      "name": "paged_list",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 78,
+      "column": 5,
+      "name": "legacy_page",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 83,
+      "column": 5,
+      "name": "recent",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 89,
+      "column": 5,
+      "name": "session_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 96,
+      "column": 5,
+      "name": "record_detail",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 105,
+      "column": 5,
+      "name": "build_detail",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 110,
+      "column": 5,
+      "name": "room_batch",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 116,
+      "column": 5,
+      "name": "room_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 122,
+      "column": 5,
+      "name": "room_read",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 131,
+      "column": 5,
+      "name": "settlement_batch",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 138,
+      "column": 5,
+      "name": "user_settlements",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 145,
+      "column": 5,
+      "name": "nonempty_settlements",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 150,
+      "column": 5,
+      "name": "club_list",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 156,
+      "column": 5,
+      "name": "club_batch",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 162,
+      "column": 5,
+      "name": "profile_batch",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 168,
+      "column": 5,
+      "name": "delete_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 174,
+      "column": 5,
+      "name": "delete_room",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 182,
+      "column": 5,
+      "name": "room_log",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 190,
+      "column": 5,
+      "name": "log_route",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 204,
+      "column": 5,
+      "name": "room_games",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 210,
+      "column": 5,
+      "name": "amount_batch",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 216,
+      "column": 5,
+      "name": "games",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 223,
+      "column": 5,
+      "name": "allowed_games",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 227,
+      "column": 5,
+      "name": "game_replay",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 33,
+      "column": 69,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 40,
+      "column": 35,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 195,
+      "column": 47,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 197,
+      "column": 40,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/record_routes.py",
+      "line": 199,
+      "column": 46,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 17,
+      "column": 1,
+      "name": "flow",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 30,
+      "column": 1,
+      "name": "field_values",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 35,
+      "column": 1,
+      "name": "name_length",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 40,
+      "column": 1,
+      "name": "unit_width",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 47,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 56,
+      "column": 5,
+      "name": "request",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 62,
+      "column": 5,
+      "name": "result",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 66,
+      "column": 5,
+      "name": "test_房间名称遵守界面创建限制",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 75,
+      "column": 5,
+      "name": "test_列表包含未开局且无结算的记录",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 91,
+      "column": 5,
+      "name": "test_其他账号主机与方法必须透传",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 103,
+      "column": 5,
+      "name": "test_混合未知房间与资料请求必须透传",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 111,
+      "column": 5,
+      "name": "test_认证控制先验证再改变状态",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 123,
+      "column": 5,
+      "name": "test_分页记录不能遗漏或重复",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 146,
+      "column": 5,
+      "name": "test_加载闸门释放无需固定等待",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 155,
+      "column": 5,
+      "name": "test_删除失败保留记录且成功后移除",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 169,
+      "column": 5,
+      "name": "test_新版列表与详情故障保持独立",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/game-record/mitmproxy/test_addon.py",
+      "line": 181,
+      "column": 5,
+      "name": "test_当前资料与版本保留真实字段及错误",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 9,
+      "column": 1,
+      "name": "valid_uuid",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 14,
+      "column": 1,
+      "name": "channel_matches",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 19,
+      "column": 1,
+      "name": "encode_frames",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 24,
+      "column": 1,
+      "name": "replace_frames",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 31,
+      "column": 1,
+      "name": "rpc_data",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 39,
+      "column": 1,
+      "name": "object_data",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 45,
+      "column": 1,
+      "name": "rpc_path",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 55,
+      "column": 1,
+      "name": "virtual_profiles",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 63,
+      "column": 1,
+      "name": "profile_batch",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 70,
+      "column": 1,
+      "name": "registered_players",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 75,
+      "column": 1,
+      "name": "path_player",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 80,
+      "column": 1,
+      "name": "chat_result",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 90,
+      "column": 5,
+      "name": "validate_publish",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 96,
+      "column": 5,
+      "name": "validate_owner",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 101,
+      "column": 5,
+      "name": "flow_targets",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 107,
+      "column": 5,
+      "name": "channel_targets",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 111,
+      "column": 5,
+      "name": "publish",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 119,
+      "column": 5,
+      "name": "publish_targets",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 130,
+      "column": 5,
+      "name": "is_replay_publication",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 137,
+      "column": 5,
+      "name": "publication_result",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 141,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 148,
+      "column": 5,
+      "name": "parse_message",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 156,
+      "column": 5,
+      "name": "decode_frames",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 160,
+      "column": 5,
+      "name": "route_frames",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 169,
+      "column": 5,
+      "name": "object_frames",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 173,
+      "column": 5,
+      "name": "client_frames",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 180,
+      "column": 5,
+      "name": "client_subscription",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 186,
+      "column": 5,
+      "name": "channel_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 191,
+      "column": 5,
+      "name": "subscription_command",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 198,
+      "column": 5,
+      "name": "subscribe",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 203,
+      "column": 5,
+      "name": "unsubscribe",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 209,
+      "column": 5,
+      "name": "pending_channel",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 213,
+      "column": 5,
+      "name": "block_rpcs",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 219,
+      "column": 5,
+      "name": "blocked_frames",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 223,
+      "column": 5,
+      "name": "reply_blocked",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 230,
+      "column": 5,
+      "name": "rpc_replies",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 234,
+      "column": 5,
+      "name": "count_blocked",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 237,
+      "column": 5,
+      "name": "rpc_reply",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 241,
+      "column": 5,
+      "name": "inject_replies",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 246,
+      "column": 5,
+      "name": "server_frames",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 253,
+      "column": 5,
+      "name": "server_subscription",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 260,
+      "column": 5,
+      "name": "confirm_subscription",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 267,
+      "column": 5,
+      "name": "server_unsubscribe",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 273,
+      "column": 5,
+      "name": "unsubscribe_result",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 278,
+      "column": 5,
+      "name": "is_unsubscribe",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 282,
+      "column": 5,
+      "name": "filter_publications",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 286,
+      "column": 5,
+      "name": "websocket_end",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/replay_transport.py",
+      "line": 291,
+      "column": 5,
+      "name": "room_rpc",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 32,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 44,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 48,
+      "column": 5,
+      "name": "active_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 63,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 71,
+      "column": 5,
+      "name": "replay_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 77,
+      "column": 5,
+      "name": "records_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 83,
+      "column": 5,
+      "name": "ui_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 90,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 98,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 103,
+      "column": 5,
+      "name": "websocket_end",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 107,
+      "column": 5,
+      "name": "response",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 112,
+      "column": 5,
+      "name": "observe_response",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 122,
+      "column": 5,
+      "name": "patch_players",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 130,
+      "column": 5,
+      "name": "virtual_profiles",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 134,
+      "column": 5,
+      "name": "patch_version",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 141,
+      "column": 5,
+      "name": "observe_records",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 148,
+      "column": 5,
+      "name": "bind_created_view",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 154,
+      "column": 5,
+      "name": "bind_view_player",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 159,
+      "column": 5,
+      "name": "prepare_read",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 168,
+      "column": 5,
+      "name": "request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 177,
+      "column": 5,
+      "name": "read_request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 187,
+      "column": 5,
+      "name": "send_fixture",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 195,
+      "column": 5,
+      "name": "respond_ui",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 205,
+      "column": 5,
+      "name": "respond_view",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 214,
+      "column": 5,
+      "name": "view_fixture",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 221,
+      "column": 5,
+      "name": "respond_replay",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 229,
+      "column": 5,
+      "name": "blacklist_request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 235,
+      "column": 5,
+      "name": "respond_blacklist",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 244,
+      "column": 5,
+      "name": "replay_read",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 248,
+      "column": 5,
+      "name": "respond_http_fixture",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 51,
+      "column": 34,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 53,
+      "column": 36,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 55,
+      "column": 37,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/addon.py",
+      "line": 57,
+      "column": 32,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 10,
+      "column": 1,
+      "name": "game",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 32,
+      "column": 1,
+      "name": "fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 39,
+      "column": 1,
+      "name": "room_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 46,
+      "column": 1,
+      "name": "settlement_players",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 53,
+      "column": 1,
+      "name": "write_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 61,
+      "column": 1,
+      "name": "log_request",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 78,
+      "column": 1,
+      "name": "matched_result",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 65,
+      "column": 66,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 68,
+      "column": 68,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/game_log.py",
+      "line": 70,
+      "column": 71,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 78,
+      "column": 1,
+      "name": "round_data",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 12,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 16,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 22,
+      "column": 5,
+      "name": "configure",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 28,
+      "column": 5,
+      "name": "response",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 33,
+      "column": 5,
+      "name": "can_observe",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 37,
+      "column": 5,
+      "name": "is_enter",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 41,
+      "column": 5,
+      "name": "bind_session",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 48,
+      "column": 5,
+      "name": "accept_session",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 53,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 59,
+      "column": 5,
+      "name": "session_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 65,
+      "column": 5,
+      "name": "record_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/records_v2.py",
+      "line": 71,
+      "column": 5,
+      "name": "round_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 13,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 17,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 22,
+      "column": 5,
+      "name": "key",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 32,
+      "column": 5,
+      "name": "matches_read",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 39,
+      "column": 5,
+      "name": "matches_path",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 43,
+      "column": 5,
+      "name": "authorization_key",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 50,
+      "column": 5,
+      "name": "read",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 57,
+      "column": 5,
+      "name": "observe",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 65,
+      "column": 5,
+      "name": "cache_response",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_profile.py",
+      "line": 73,
+      "column": 5,
+      "name": "cache_body",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 10,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 16,
+      "column": 5,
+      "name": "configure",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 22,
+      "column": 5,
+      "name": "response",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 28,
+      "column": 5,
+      "name": "read_response",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 36,
+      "column": 5,
+      "name": "apply_response",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 45,
+      "column": 5,
+      "name": "is_creation",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 49,
+      "column": 5,
+      "name": "bind_created",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 57,
+      "column": 5,
+      "name": "bind_identifiers",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 62,
+      "column": 5,
+      "name": "patch_room",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 69,
+      "column": 5,
+      "name": "patch_mode",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 77,
+      "column": 5,
+      "name": "patch_hall",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 83,
+      "column": 5,
+      "name": "patch_guest",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 88,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/room_view.py",
+      "line": 94,
+      "column": 5,
+      "name": "hall_fixture",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 20,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 29,
+      "column": 5,
+      "name": "request",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 36,
+      "column": 5,
+      "name": "test_回放绑定实际订阅房间而不依赖固定节点",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 56,
+      "column": 5,
+      "name": "test_只读夹具不掩盖写入或其他用户",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 79,
+      "column": 5,
+      "name": "assert_write_passthrough",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 84,
+      "column": 5,
+      "name": "test_屏蔽夹具只匹配回放玩家与已知方法",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 94,
+      "column": 5,
+      "name": "test_其他环境来源与关闭场景始终透传",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 105,
+      "column": 5,
+      "name": "test_损坏或未认证控制不能改变回放",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 117,
+      "column": 5,
+      "name": "test_新版战绩控制必须认证且可释放",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 146,
+      "column": 5,
+      "name": "test_共用闸门优先生效且释放后仍隔离写入",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 159,
+      "column": 9,
+      "name": "select",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_addon.py",
+      "line": 166,
+      "column": 9,
+      "name": "request",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 12,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 16,
+      "column": 5,
+      "name": "enter",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 23,
+      "column": 5,
+      "name": "test_版本覆盖必须显式启用且只读",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 35,
+      "column": 5,
+      "name": "test_仅成功进入已创建房间才记录会话",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_records_v2.py",
+      "line": 49,
+      "column": 5,
+      "name": "test_战绩严格匹配用户会话与局次",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 12,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 16,
+      "column": 5,
+      "name": "profile_request",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 25,
+      "column": 5,
+      "name": "record",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 35,
+      "column": 5,
+      "name": "test_成功规则读取原样复用且保留当前来源的跨域头",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 44,
+      "column": 5,
+      "name": "test_错误与不完整规则不能被补为成功",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 59,
+      "column": 5,
+      "name": "test_其他认证来源房间方法主机和查询必须透传",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 69,
+      "column": 5,
+      "name": "test_释放场景或更换房间玩家后必须重新真实读取",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 79,
+      "column": 5,
+      "name": "change_owner",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 93,
+      "column": 5,
+      "name": "clear_control",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 83,
+      "column": 24,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 85,
+      "column": 25,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 87,
+      "column": 21,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_profile.py",
+      "line": 89,
+      "column": 21,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 11,
+      "column": 1,
+      "name": "expected_building",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 16,
+      "column": 1,
+      "name": "guest_changed",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 23,
+      "column": 5,
+      "name": "test_仅成功创建才能绑定确切房间读取",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 48,
+      "column": 5,
+      "name": "test_其他支付失败创建与第二房间不能绑定界面",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 72,
+      "column": 5,
+      "name": "test_房间详情不能以未验证创建者覆盖本人身份",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 84,
+      "column": 5,
+      "name": "test_访客身份仅修改已创建房间的成功读取",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 101,
+      "column": 5,
+      "name": "test_记录不能替换其他房间或用户数据",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_room_view.py",
+      "line": 54,
+      "column": 9,
+      "name": "created",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 14,
+      "column": 1,
+      "name": "flow",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 30,
+      "column": 1,
+      "name": "socket_flow",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 37,
+      "column": 1,
+      "name": "message",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 47,
+      "column": 5,
+      "name": "test_未订阅连接的房间资料读取透传且不得补空成功响应",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 61,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 70,
+      "column": 5,
+      "name": "test_发布必须等待订阅成功确认",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 89,
+      "column": 5,
+      "name": "test_服务端取消订阅移除已确认频道且保留原帧",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 99,
+      "column": 5,
+      "name": "test_客户端取消订阅和连接关闭清除待确认状态",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 113,
+      "column": 5,
+      "name": "test_发布面向浏览器且必须匹配活动房间",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 130,
+      "column": 5,
+      "name": "test_混合批次保留心跳与无关调用且仅隔离回放房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 151,
+      "column": 5,
+      "name": "test_推送过滤保留远程调用与已注入消息",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 163,
+      "column": 5,
+      "name": "test_资料按归属匹配且释放后清除夹具",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 174,
+      "column": 5,
+      "name": "test_推送过滤保留其他数据流取消订阅与损坏结果",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 185,
+      "column": 5,
+      "name": "test_取消订阅与已关闭连接不能收到回放",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 194,
+      "column": 5,
+      "name": "test_创建房间在订阅前隔离且释放后恢复流量",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 213,
+      "column": 5,
+      "name": "test_支付调用匹配动作房间路径与方法并保留玩法契约",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 233,
+      "column": 5,
+      "name": "test_活动创建房间不能被其他已订阅房间替换",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 243,
+      "column": 5,
+      "name": "test_实时通信响应保留聊天室字段且不匹配其他房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 255,
+      "column": 5,
+      "name": "test_切换场景释放回放且控制必须认证",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_texas_replay.py",
+      "line": 218,
+      "column": 9,
+      "name": "command",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 13,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 21,
+      "column": 5,
+      "name": "request",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 27,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 33,
+      "column": 5,
+      "name": "test_界面控制必须认证并匹配房间与有效状态",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 42,
+      "column": 5,
+      "name": "test_申请行与分页仅匹配当前房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 60,
+      "column": 5,
+      "name": "test_选择写入不能影响其他房间",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 73,
+      "column": 5,
+      "name": "test_支付隔离严格匹配房间方法与确切动作",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_ui_states.py",
+      "line": 86,
+      "column": 5,
+      "name": "test_调用错误注入浏览器且释放后重置",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 13,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 24,
+      "column": 5,
+      "name": "preflight",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 35,
+      "column": 5,
+      "name": "test_已有虚拟玩家资料钱包及统计读取具有对应预检且不依赖上游",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 56,
+      "column": 5,
+      "name": "test_真实用户写入节点探测及未登记路径的预检保持透传",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 73,
+      "column": 5,
+      "name": "assert_real_player_preflights",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 80,
+      "column": 5,
+      "name": "test_其他主机场景及释放后的预检不沿用许可",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/test_virtual_player_preflight.py",
+      "line": 89,
+      "column": 5,
+      "name": "test_页面来源配置缺失损坏或带凭据时不处理预检",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 22,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 32,
+      "column": 5,
+      "name": "arm_created_room",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 37,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 44,
+      "column": 5,
+      "name": "is_replay_rpc",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 53,
+      "column": 5,
+      "name": "pay_rpc",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 60,
+      "column": 5,
+      "name": "pay_action",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 67,
+      "column": 5,
+      "name": "allowed_action",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 75,
+      "column": 5,
+      "name": "inject",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 79,
+      "column": 5,
+      "name": "target_flow",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 87,
+      "column": 5,
+      "name": "has_room_channel",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 91,
+      "column": 5,
+      "name": "rpc_result",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 98,
+      "column": 5,
+      "name": "operation_result",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 107,
+      "column": 5,
+      "name": "profile",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 114,
+      "column": 5,
+      "name": "http_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 122,
+      "column": 5,
+      "name": "player_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 131,
+      "column": 5,
+      "name": "wallet_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
+      "line": 139,
+      "column": 5,
+      "name": "statistics",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 9,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 13,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 18,
+      "column": 5,
+      "name": "configure",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 26,
+      "column": 5,
+      "name": "validate_states",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 33,
+      "column": 5,
+      "name": "rpc_result",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 40,
+      "column": 5,
+      "name": "error_path",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 44,
+      "column": 5,
+      "name": "error_result",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 53,
+      "column": 5,
+      "name": "fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 63,
+      "column": 5,
+      "name": "settings_fixture",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 74,
+      "column": 5,
+      "name": "application_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 82,
+      "column": 5,
+      "name": "application_page",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 90,
+      "column": 5,
+      "name": "application_statuses",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 96,
+      "column": 5,
+      "name": "application",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/ui_states.py",
+      "line": 102,
+      "column": 5,
+      "name": "next_page",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/virtual_player_preflight.py",
+      "line": 19,
+      "column": 1,
+      "name": "respond_virtual_player_preflight",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/texas-holdem/mitmproxy/virtual_player_preflight.py",
+      "line": 26,
+      "column": 1,
+      "name": "respond_read_preflight",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 25,
+      "column": 1,
+      "name": "respond_settlement_preflight",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 36,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 45,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 49,
+      "column": 5,
+      "name": "active_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 58,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 63,
+      "column": 5,
+      "name": "replay_command",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 70,
+      "column": 5,
+      "name": "validate_created",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 75,
+      "column": 5,
+      "name": "reward_command",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 79,
+      "column": 5,
+      "name": "status",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 87,
+      "column": 5,
+      "name": "response",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 93,
+      "column": 5,
+      "name": "observe_response",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 100,
+      "column": 5,
+      "name": "patch_players",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 108,
+      "column": 5,
+      "name": "virtual_profiles",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 112,
+      "column": 5,
+      "name": "is_creation",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 118,
+      "column": 5,
+      "name": "observe_creation",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 127,
+      "column": 5,
+      "name": "bind_created",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 135,
+      "column": 5,
+      "name": "bind_successful",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 140,
+      "column": 5,
+      "name": "websocket_message",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 145,
+      "column": 5,
+      "name": "websocket_end",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 149,
+      "column": 5,
+      "name": "request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 159,
+      "column": 5,
+      "name": "is_settlement",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 163,
+      "column": 5,
+      "name": "respond_settlement",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 171,
+      "column": 5,
+      "name": "read_request",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 178,
+      "column": 5,
+      "name": "prepare_read",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 182,
+      "column": 5,
+      "name": "replay_read",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 186,
+      "column": 5,
+      "name": "respond_read",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/addon.py",
+      "line": 194,
+      "column": 5,
+      "name": "send_fixture",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 17,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 24,
+      "column": 5,
+      "name": "creation",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 33,
+      "column": 5,
+      "name": "control",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 39,
+      "column": 5,
+      "name": "test_仅成功创建拼三张房间才能绑定回放",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 52,
+      "column": 5,
+      "name": "test_回放必须绑定已创建房间且控制已认证",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 79,
+      "column": 5,
+      "name": "test_空排行榜仅用于已创建房间的读取",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 101,
+      "column": 5,
+      "name": "test_接口夹具保留写入其他用户与主机",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 119,
+      "column": 5,
+      "name": "preflight",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 128,
+      "column": 5,
+      "name": "test_空榜预检只允许当前房间与本轮页面的必要读取",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 143,
+      "column": 5,
+      "name": "test_其他来源方法请求头场景与未绑定房间的预检保持透传",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 167,
+      "column": 5,
+      "name": "test_本轮页面来源配置缺失损坏或带凭据时预检保持透传",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_addon.py",
+      "line": 176,
+      "column": 5,
+      "name": "test_本人资料保持真实且混合批次仅补充虚拟对手",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 14,
+      "column": 1,
+      "name": "flow",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 30,
+      "column": 1,
+      "name": "socket_flow",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 37,
+      "column": 1,
+      "name": "message",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 47,
+      "column": 5,
+      "name": "setUp",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 56,
+      "column": 5,
+      "name": "test_操作奖励必须绑定房间且释放后重置",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 77,
+      "column": 5,
+      "name": "test_发布必须等待订阅成功确认",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 96,
+      "column": 5,
+      "name": "test_服务端取消订阅移除已确认频道且保留原帧",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 106,
+      "column": 5,
+      "name": "test_客户端取消订阅和连接关闭清除待确认状态",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 120,
+      "column": 5,
+      "name": "test_发布面向浏览器且必须匹配活动房间",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 137,
+      "column": 5,
+      "name": "test_混合批次保留心跳与无关调用且仅隔离回放房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 158,
+      "column": 5,
+      "name": "test_推送过滤保留远程调用与已注入消息",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 170,
+      "column": 5,
+      "name": "test_资料按归属匹配且释放后清除夹具",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 181,
+      "column": 5,
+      "name": "test_推送过滤保留其他数据流取消订阅与损坏结果",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 192,
+      "column": 5,
+      "name": "test_取消订阅与已关闭连接不能收到回放",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 201,
+      "column": 5,
+      "name": "test_连接池仅在激活后隔离所属房间且释放后恢复流量",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 226,
+      "column": 5,
+      "name": "test_活动回放不能被其他已订阅房间替换",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 237,
+      "column": 5,
+      "name": "test_实时通信响应保留聊天室字段且不匹配其他房间",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/test_zhajinhua_replay.py",
+      "line": 250,
+      "column": 5,
+      "name": "test_切换场景释放回放且控制必须认证",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 21,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 31,
+      "column": 5,
+      "name": "release",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 37,
+      "column": 5,
+      "name": "set_operation_reward",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 44,
+      "column": 5,
+      "name": "validate_reward",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 49,
+      "column": 5,
+      "name": "count_blocked",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 53,
+      "column": 5,
+      "name": "is_replay_rpc",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 57,
+      "column": 5,
+      "name": "inject",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 61,
+      "column": 5,
+      "name": "target_flow",
+      "complexity": 1,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 65,
+      "column": 5,
+      "name": "rpc_result",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 74,
+      "column": 5,
+      "name": "reward_path",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 79,
+      "column": 5,
+      "name": "profile",
+      "complexity": 2,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 86,
+      "column": 5,
+      "name": "http_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 94,
+      "column": 5,
+      "name": "player_fixture",
+      "complexity": 3,
+      "limit": 3
+    },
+    {
+      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
+      "line": 103,
+      "column": 5,
+      "name": "wallet_fixture",
+      "complexity": 2,
+      "limit": 3
+    }
+  ],
+  "historicalEntries": {
+    "resolvedC901": 5,
+    "removedDuplicateFingerprints": [
+      "3e4d0f44e25e352b",
+      "ae17b06350ddd87f",
+      "b71bbf2bcccb2407",
+      "c6e0a0649bee31c8",
+      "cb1c0269e23c65f9",
+      "d3a2d144ce7d6049"
+    ]
+  },
+  "validation": {
+    "static": "npm run lint:python:visual-proxies",
+    "targetedTests": "node --test scripts/visual-proxy-complexity.test.mjs",
+    "pythonUnitTests": {
+      "club": 6,
+      "game-record": 10,
+      "texas-holdem": 43,
+      "zhajinhua": 22,
+      "gate": 12,
+      "total": 93
+    },
+    "gateNegativeCases": [
+      "support 3 accepted / 4 rejected",
+      "tool 6 accepted / 7 rejected (scan and CLI)",
+      "nested function, async, class method and lambda measured independently",
+      "default and decorator lambdas scanned; assertions ignored",
+      "adjacent arbitrary helpers and transitive packages scanned with limit 3",
+      "noqa and Ruff disable settings cannot bypass CLI",
+      "parse failure, missing required files, empty scan and missing Radon fail",
+      "actual npm run lint:python blocks support complexity 4 before quality baseline"
+    ],
+    "ruff": "uvx --from ruff==0.15.12 ruff check --no-cache visual/cases/{club,game-record,texas-holdem,zhajinhua}/mitmproxy visual/cases/{replay_transport,fixture_protocol}.py scripts/{visual-proxy-complexity,test_visual_proxy_complexity}.py",
+    "strictRuff": "uvx --from ruff==0.15.12 ruff check --no-cache --isolated --ignore-noqa --select C901 --config lint.mccabe.max-complexity=3 visual/cases/{club,game-record,texas-holdem,zhajinhua}/mitmproxy visual/cases/{replay_transport,fixture_protocol}.py scripts/test_visual_proxy_complexity.py",
+    "eslint": "npx eslint scripts/visual-proxy-complexity.test.mjs",
+    "duplication": "npm run lint:duplication",
+    "collectedOnly": {
+      "command": "npx playwright test --config visual/playwright.config.ts visual/cases/club visual/cases/game-record visual/cases/texas-holdem visual/cases/zhajinhua --list",
+      "tests": 45,
+      "files": 4
+    },
+    "fixtureContractComparison": {
+      "baseline": "HEAD:visual/cases/game-record/mitmproxy/data.py",
+      "comparisons": 141,
+      "result": "identical records/all_records/rooms and settlements/detail/round_data/replay for all 23 sessions and three replay indexes"
+    },
+    "fixedBuild": {
+      "preparedBy": "node scripts/prepare-release-web.mjs",
+      "applicationCommit": "5d11c3e118f47538497cae30cca1799bd69d7977",
+      "releaseTag": "web-staging-200001901-5d11c3e118f4",
+      "archiveAndBuildMetadataVerified": true,
+      "representativeVisualRun": "not run: Docker daemon unavailable (docker info could not connect to local Docker socket)"
+    },
+    "runtime": "Real mitmproxy HTTPFlow/WebSocket unit tests passed; fixed-build browser/device visual success is not claimed. No full test suite or snapshot baseline updates.",
+    "documentation": {
+      "checker": "scripts/check-documentation.py (JSON stdin: all 29 scoped Python paths)",
+      "findings": 0,
+      "maximumPythonLines": 296
+    }
+  }
+}

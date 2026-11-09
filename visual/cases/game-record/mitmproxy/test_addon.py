@@ -27,6 +27,21 @@ def flow(path, method='GET', body=None, token=None, host='node-0.service.invalid
 
 
 
+def field_values(items, key):
+    """按原序投影列表标识，保留分页相等性断言。"""
+    return [item[key] for item in items]
+
+
+def name_length(units):
+    """按界面 UTF-16 字符单元规则计算房间名长度。"""
+    return sum(unit_width(units[i], units[i + 1]) for i in range(0, len(units), 2))
+
+
+def unit_width(low, high):
+    """ASCII 单元宽一，其他宽二。"""
+    return 1 if low < 128 and high == 0 else 2
+
+
 class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
     """验证战绩夹具的新旧版本、分页、编辑和响应边界。"""
     def setUp(self):
@@ -53,11 +68,9 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         """验证房间名称遵守界面创建限制。"""
         for record in all_records():
             units = record['name'].encode('utf-16-le')
-            length = sum(1 if units[i] < 128 and units[i + 1] == 0 else 2
-                         for i in range(0, len(units), 2))
+            length = name_length(units)
             self.assertLessEqual(length, 20, record['name'])
-        self.assertEqual(len(next(record['name'] for record in all_records()
-                                  if record['play_session_id'] == PREFIX + 'large')), 20)
+        self.assertEqual(len({record['play_session_id']: record['name'] for record in all_records()}[PREFIX + 'large']), 20)
 
     async def test_列表包含未开局且无结算的记录(self):
         """验证列表包含未开局且无结算的记录。"""
@@ -66,7 +79,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn(room_id, [item['room_id'] for item in legacy['items']])
         v2 = self.result(await self.request(f'/v11/game_log/{SELF}/play_session_record/recent',
                                             'PUT', {'user_id': SELF}))
-        unstarted = next(record for record in v2['records'] if record['play_session_id'] == room_id)
+        unstarted = {record['play_session_id']: record for record in v2['records']}[room_id]
         self.assertEqual(unstarted['all_round_count'], 0)
         settlements = self.result(await self.request('/v1/game_log/room/settlement', 'PUT',
                                                       {'room_ids': [room_id]}))
@@ -114,18 +127,18 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         first = self.result(await self.request(path))
         second = self.result(await self.request(path + '?next_page=' + first['next_page']))
         self.assertIsNone(second['next_page'])
-        ids = [item['room_id'] for item in first['items'] + second['items']]
-        self.assertEqual(ids, [record['play_session_id'] for record in all_records()])
+        ids = field_values(first['items'] + second['items'], 'room_id')
+        self.assertEqual(ids, field_values(all_records(), 'play_session_id'))
         self.assertEqual(len(first['items']), 20)
         v2 = self.result(await self.request(f'/v11/game_log/{SELF}/play_session_record/recent',
                                             'PUT', {'user_id': SELF}))
-        self.assertEqual([record['play_session_id'] for record in v2['records']], ids)
+        self.assertEqual(field_values(v2['records'], 'play_session_id'), ids)
         self.assertEqual(len(set(ids)), 23)
         # 删除状态跨模式保留；旧版删除成功后分页应为 20 + 2 条。
         self.proxy.deleted = [PREFIX + 'club']
         first = self.result(await self.request(path))
         second = self.result(await self.request(path + '?next_page=' + first['next_page']))
-        remaining = [item['room_id'] for item in first['items'] + second['items']]
+        remaining = field_values(first['items'] + second['items'], 'room_id')
         self.assertEqual(len(first['items']), 20)
         self.assertEqual(len(second['items']), 2)
         self.assertEqual(remaining, [room_id for room_id in ids if room_id != PREFIX + 'club'])

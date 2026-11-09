@@ -44,13 +44,17 @@ def all_records():
 
 
 def rooms():
-    """将战绩会话转换为按房间 ID 索引的房间资料。"""
-    return {record['play_session_id']: {
+    """按会话 ID 索引固定房间资料。"""
+    return {record['play_session_id']: room_data(record) for record in all_records()}
+
+
+def room_data(record):
+    """转换单条战绩，保留固定房间规则。"""
+    return {
         'room_id': record['play_session_id'], 'room_name': record['name'],
         'created_at': record['create_at'], 'creator_id': HOUSE,
         'building_id': CLUB if 'club_id' in record['building'] else HOUSE,
-        'building_type': next(kind for kind in ('club', 'house', 'hall')
-                              if f'{kind}_id' in record['building']),
+        'building_type': building_kind(record),
         'game_type': 'zhajinhua' if record['game_profile']['game_type'].startswith('Zha') else 'texas_holdem',
         'room_status': 'closed', 'timer_status': 'time_out', 'booking_seconds': 3600,
         'remaining_seconds': 0, 'options': {
@@ -60,14 +64,25 @@ def rooms():
         },
         'game_config': {'currency': record['game_profile']['currency_name'],
                         'small_blind': 1, 'big_blind': 2, 'boot': 5, 'seat_quantity': 6,
-                        'variation': 'six_plus_holdem' if record['play_session_id'].endswith('short')
-                        else ('zhajinhua' if record['play_session_id'].endswith('club') else 'texas_holdem')},
-    } for record in all_records()}
+                        'variation': variation(record)},
+    }
+
+
+def building_kind(record):
+    """沿用俱乐部、私人房、大厅的查找顺序。"""
+    return next(kind for kind in ('club', 'house', 'hall') if f'{kind}_id' in record['building'])
+
+
+def variation(record):
+    """会话后缀区分短牌、拼三张和普通德州。"""
+    if record['play_session_id'].endswith('short'):
+        return 'six_plus_holdem'
+    return 'zhajinhua' if record['play_session_id'].endswith('club') else 'texas_holdem'
 
 
 def settlements(user_id, room_id):
     """为非空战绩房间构造各玩家的结算明细。"""
-    record = next(record for record in all_records() if record['play_session_id'] == room_id)
+    record = find_record(room_id)
     if not record['all_round_count']:
         return []
     return [{'user_id': player, 'settlement_amount': record['score'] * sign,
@@ -77,64 +92,90 @@ def settlements(user_id, room_id):
 
 def detail(user_id, session):
     """按战绩会话构造详情入口、轮次和玩法资料。"""
-    record = next(record for record in all_records() if record['play_session_id'] == session)
+    record = find_record(session)
     return {'all_round_id': [] if session.endswith('empty') else [session + '-round'],
             'game_profile': {'#settings': {'small_blind': 1, 'big_blind': 2, 'boot': 5}},
             'scoreboard': [{'player_id': player['user_id'], 'score': player['settlement_amount'],
                             'round_count': player['game_round_amount']}
                            for player in settlements(user_id, session)],
-            'stake_tracker': [] if session.endswith('empty') else [
-                {'at': record['create_at'], 'fund_in': 1000, 'fund_out': 0},
-                {'at': '2026-01-02T13:00:00Z', 'fund_in': 0, 'fund_out': 820}]}
+            'stake_tracker': stake_tracker(session, record)}
 
 
 def round_data(user_id, session):
     """为指定战绩会话生成对应玩法的座位与公开牌面数据。"""
-    zjh = session.endswith('club')
-    return {'game_type': 'zhajinhua' if zjh else 'texas_holdem',
+    spec = game_spec(session)
+    return {'game_type': spec['game'],
             'seats': {'1': user_id, '2': PLAYER},
-            'all_seat_public': {'1': {'position': 'BTN', 'public_hole_card': 'as,ad,ah' if zjh else 'as,ad'},
-                                '2': {'position': 'SB', 'public_hole_card': 'kh,ks,kd' if zjh else 'kh,ks'}},
-            'user_secret': {'hole_card': 'as,ad,ah' if zjh else 'as,ad'},
+            'all_seat_public': {'1': {'position': 'BTN', 'public_hole_card': spec['self_card']},
+                                '2': {'position': 'SB', 'public_hole_card': spec['other_card']}},
+            'user_secret': {'hole_card': spec['self_card']},
             'actions': [
-                {'name': 'ante' if zjh else 'small_blind', 'seat': '2', 'bet': 1, 'stack': 999},
-                {'name': 'ante' if zjh else 'big_blind', 'seat': '1', 'bet': 2, 'stack': 998},
+                {'name': spec['small'], 'seat': '2', 'bet': 1, 'stack': 999},
+                {'name': spec['big'], 'seat': '1', 'bet': 2, 'stack': 998},
                 {'name': 'call', 'seat': '2', 'street_bet': 20, 'stack': 980},
-                *([{'name': 'pot_update', 'action_name': 'pot_update', 'pot_amount': 180}] if zjh else []),
-                *([] if zjh else [
-                    {'name': 'flop', 'community_card_1_to_3': 'ah,kd,7c'},
-                    {'name': 'turn', 'community_card_4': '2s'},
-                    {'name': 'river', 'community_card_5': 'qs', 'pots': [180]}]),
-                {'name': 'showdown', 'seat': '1', 'hole_card': 'as,ad,ah' if zjh else 'as,ad',
+                *spec['round_actions'],
+                {'name': 'showdown', 'seat': '1', 'hole_card': spec['self_card'],
                  'best_hand_cards': 'as,ad,ah', 'hand_strength': 'three_of_a_kind'},
-                {'name': 'showdown', 'seat': '2', 'hole_card': 'kh,ks,kd' if zjh else 'kh,ks',
+                {'name': 'showdown', 'seat': '2', 'hole_card': spec['other_card'],
                  'best_hand_cards': 'kh,ks,kd', 'hand_strength': 'three_of_a_kind'},
-                {'name': 'settlement' if zjh else 'award', 'seat': '1', 'net': 90, 'prize': 180},
-                {'name': 'settlement' if zjh else 'award', 'seat': '2', 'net': -90, 'prize': 0}]}
+                {'name': spec['award'], 'seat': '1', 'net': 90, 'prize': 180},
+                {'name': spec['award'], 'seat': '2', 'net': -90, 'prize': 0}]}
 
 
 def replay(user_id, index=1, session=PREFIX + 'private'):
     """构造绑定当前用户的指定轮次牌局重放结果。"""
     net = (180, -90, 0)[index - 1]
-    zjh = session.endswith('club')
+    spec = game_spec(session)
     players = [{'player_id': user_id, 'seat_number': 1, 'position': 'D', 'stack': 1000},
                {'player_id': PLAYER, 'seat_number': 2, 'position': 'SB', 'stack': 1000}]
     return {'game_id': f'{session}-game-{index}', 'game_number': index,
             'start_at': '2026-01-01T12:00:00Z', 'game_at': '2026-01-01T12:00:00Z',
             'actions': [
-                {'action_name': 'begin_play', 'game': {'variation': 'zha_jin_hua' if zjh else 'texas_holdem'},
+                {'action_name': 'begin_play', 'game': {'variation': spec['variation']},
                  'table': {'players': players}},
                 {'action_name': 'deal_hole_card', 'player_id': user_id, 'hole_card': ['as', 'ad']},
                 {'action_name': 'call', 'player_id': PLAYER, 'amount': 20, 'stack': 980},
-                {'action_name': 'pot_update' if zjh else 'pots_updated', 'pot_amount': 180, 'pots': [180]},
-                *([{'action_name': 'start_round', 'round': 1}] if zjh else [
-                    {'action_name': 'start_street', 'street': 'river', 'community_card': ['ah', 'kd', '7c', '2s', 'qs']}]),
+                {'action_name': spec['pot'], 'pot_amount': 180, 'pots': [180]},
+                spec['replay_street'],
                 {'action_name': 'showdown', 'players': [
-                    dict(players[0], hole_card=['as', 'ad', 'ah'] if zjh else ['as', 'ad'],
+                    dict(players[0], hole_card=spec['self_card'].split(','),
                          strength_cards=['as', 'ad', 'ah'], hand_strength='three_of_a_kind',
                          is_max_strength=True, is_winner=True),
-                    dict(players[1], hole_card=['kh', 'ks', 'kd'] if zjh else ['kh', 'ks'],
+                    dict(players[1], hole_card=spec['other_card'].split(','),
                          strength_cards=['kh', 'ks', 'kd'], hand_strength='three_of_a_kind',
                          is_max_strength=False, is_winner=False)]},
                 {'action_name': 'settlement', 'players': [
                     dict(players[0], net=net), dict(players[1], net=-net)]}]}
+
+
+def find_record(session):
+    """查找固定会话，缺失时保留 StopIteration。"""
+    return next(record for record in all_records() if record['play_session_id'] == session)
+
+
+def stake_tracker(session, record):
+    """空局无资金轨迹，其他局保留固定入金出金时点。"""
+    if session.endswith('empty'):
+        return []
+    return [{'at': record['create_at'], 'fund_in': 1000, 'fund_out': 0},
+            {'at': '2026-01-02T13:00:00Z', 'fund_in': 0, 'fund_out': 820}]
+
+
+def game_spec(session):
+    """两种玩法的固定字段与街道事件表。"""
+    specs = {
+        False: {'game': 'texas_holdem', 'variation': 'texas_holdem', 'self_card': 'as,ad',
+                'other_card': 'kh,ks', 'small': 'small_blind', 'big': 'big_blind', 'award': 'award',
+                'pot': 'pots_updated',
+                'round_actions': [{'name': 'flop', 'community_card_1_to_3': 'ah,kd,7c'},
+                                  {'name': 'turn', 'community_card_4': '2s'},
+                                  {'name': 'river', 'community_card_5': 'qs', 'pots': [180]}],
+                'replay_street': {'action_name': 'start_street', 'street': 'river',
+                                  'community_card': ['ah', 'kd', '7c', '2s', 'qs']}},
+        True: {'game': 'zhajinhua', 'variation': 'zha_jin_hua', 'self_card': 'as,ad,ah',
+               'other_card': 'kh,ks,kd', 'small': 'ante', 'big': 'ante', 'award': 'settlement',
+               'pot': 'pot_update',
+               'round_actions': [{'name': 'pot_update', 'action_name': 'pot_update', 'pot_amount': 180}],
+               'replay_street': {'action_name': 'start_round', 'round': 1}},
+    }
+    return specs[session.endswith('club')]

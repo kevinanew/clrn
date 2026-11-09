@@ -1,16 +1,24 @@
 """在真实房间连接上回放德州消息，禁止把夹具操作发送到游戏服务。"""
 
-import json
 import re
+import sys
+from pathlib import Path
 from mitmproxy import ctx
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from replay_transport import (ReplayTransport, rpc_path, virtual_profiles,
+                              path_player, chat_result, rpc_data, valid_uuid as valid_uuid)  # noqa: E402
 
 UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 PLAYER_IDS = [f"00000000-0000-4000-8000-{index:012d}" for index in range(1, 5)]
 TABLE_PLAYER_IDS = [f"00000000-0000-4000-8000-{index:012d}" for index in range(1, 9)]
 
 
-class TexasReplay:
+class TexasReplay(ReplayTransport):
     """为当前德州房间管理订阅、帧重放与限定读取夹具。"""
+    game = 'texas_holdem'
+    label = 'Texas'
+
     def __init__(self):
         """初始化subscriptions、pending_subscriptions、room_id、replayed_messages、self_id等状态。"""
         self.subscriptions = {}
@@ -26,28 +34,6 @@ class TexasReplay:
         self.room_id = self.created_room_id = room_id
         self.self_id = self_id
 
-    def publish(self, room_id, data):
-        """校验房间与数据后向已确认订阅该房间的浏览器发布重放。"""
-        if not isinstance(room_id, str) or not re.fullmatch(UUID, room_id, re.I) or not isinstance(data, dict):
-            raise ValueError("Invalid replay")
-        if self.room_id and room_id != self.room_id:
-            raise ValueError('Another room already owns this replay')
-        targets = [
-            (flow, channel) for flow, channels in self.subscriptions.values()
-            if flow.websocket.timestamp_end is None
-            for channel in channels
-            if re.fullmatch(rf"texas_holdem>{room_id}#{UUID}", channel, re.I)
-        ]
-        if not targets:
-            raise ValueError("No subscribed Texas room")
-        self.room_id = room_id
-        self.self_id = targets[0][1].rsplit('#', 1)[-1]
-        # Centrifuge v2 JSON 协议：无 id 的消息是服务端推送，type=0 表示 publication。
-        for flow, channel in targets:
-            payload = {"result": {"type": 0, "channel": channel, "data": {"data": data}}}
-            ctx.master.commands.call("inject.websocket", flow, True, json.dumps(payload).encode(), True)
-            self.replayed_messages += 1
-
     def release(self):
         """清除活动房间、当前玩家、创建房间与界面状态绑定。"""
         self.room_id = None
@@ -55,123 +41,68 @@ class TexasReplay:
         self.created_room_id = None
         self.ui_states = None
 
-    def is_replay_publication(self, frame):
-        """判断推送是否属于当前重放房间的数据流，保留无关帧。"""
-        result = frame.get('result')
-        if 'id' in frame or not isinstance(result, dict) or result.get('type', 0) != 0:
-            return False
-        channel = result.get('channel')
-        return isinstance(channel, str) and re.fullmatch(
-            rf'texas_holdem>{self.room_id}#{UUID}', channel, re.I) is not None
-
-    def websocket_message(self, flow):
-        """跟踪订阅确认与取消，只隔离当前房间的限定帧和 RPC。"""
-        message = flow.websocket.messages[-1]
-        if not message.is_text or message.injected:
-            return
-        try:
-            frames = [json.loads(line) for line in message.text.splitlines() if line]
-        except (ValueError, TypeError):
-            return
-        if not all(isinstance(frame, dict) for frame in frames):
-            return
-        if message.from_client:
-            channels = self.subscriptions.setdefault(flow.id, (flow, set()))[1]
-            pending = self.pending_subscriptions.setdefault(flow.id, {})
-            for frame in frames:
-                params = frame.get("params") or {}
-                if not isinstance(params, dict):
-                    continue
-                if (frame.get("method") == 1 and isinstance(frame.get('id'), int)
-                        and frame['id'] > 0 and isinstance(params.get("channel"), str)):
-                    pending[frame['id']] = params['channel']
-                if frame.get("method") == 2 and isinstance(params.get('channel'), str):
-                    channel = params.get('channel')
-                    channels.discard(channel)
-                    for command_id in [command_id for command_id, target in pending.items() if target == channel]:
-                        pending.pop(command_id)
-            # 本次新建的房间须在订阅前隔离自动入座；其他回放仍要求目标频道所在连接。
-            target_flow = self.room_id and (self.created_room_id == self.room_id or any(
-                channel.startswith(f"texas_holdem>{self.room_id}#") for channel in channels))
-            blocked = [frame for frame in frames if target_flow and self.is_replay_rpc(frame)]
-            if blocked:
-                kept = [frame for frame in frames if frame not in blocked]
-                message.content = "\n".join(json.dumps(frame) for frame in kept).encode()
-                if not kept:
-                    message.drop()
-                replies = [{"id": frame["id"], "result": {"data": self.rpc_result(frame)}}
-                           for frame in blocked if "id" in frame]
-                if replies:
-                    ctx.master.commands.call("inject.websocket", flow, True,
-                                             "\n".join(json.dumps(reply) for reply in replies).encode(), True)
-        else:
-            channels = self.subscriptions.setdefault(flow.id, (flow, set()))[1]
-            pending = self.pending_subscriptions.setdefault(flow.id, {})
-            for frame in frames:
-                command_id = frame.get('id') if isinstance(frame.get('id'), int) else None
-                if command_id in pending:
-                    channel = pending.pop(command_id)
-                    if 'error' not in frame and isinstance(frame.get('result'), dict):
-                        channels.add(channel)
-                    else:
-                        channels.discard(channel)
-                result = frame.get('result')
-                if ('id' not in frame and isinstance(result, dict) and result.get('type') == 3
-                        and isinstance(result.get('channel'), str)):
-                    channel = result.get('channel')
-                    channels.discard(channel)
-                    for command_id in [command_id for command_id, target in pending.items() if target == channel]:
-                        pending.pop(command_id)
-            if self.room_id:
-                # 实际服务仍保持等待状态；丢弃其游戏推送，防止覆盖正在截图的固定对局。
-                kept = [frame for frame in frames if not self.is_replay_publication(frame)]
-                message.content = "\n".join(json.dumps(frame) for frame in kept).encode()
-                if not kept:
-                    message.drop()
-
-    def websocket_end(self, flow):
-        """连接关闭时清除已确认及待确认的房间订阅。"""
-        self.subscriptions.pop(flow.id, None)
-        self.pending_subscriptions.pop(flow.id, None)
-
     def is_replay_rpc(self, frame):
-        """判断 WebSocket RPC 是否为当前重放房间支持的读取或支付动作。"""
-        if frame.get("method") != 9:
+        """房间和聊天读取之外，仅隔离两种限定支付动作。"""
+        path = rpc_path(frame)
+        if not isinstance(path, str):
             return False
-        params = frame.get("params") or {}
-        data = params.get("data") if isinstance(params, dict) else None
-        if not isinstance(data, dict) or not isinstance(data.get('path'), str):
+        if self.room_rpc(path):
+            return True
+        return self.pay_rpc(frame, path)
+
+    def pay_rpc(self, frame, path):
+        """支付 RPC 必须使用固定路径和 POST 方法。"""
+        data = rpc_data(frame)
+        if (path, data.get('method')) != ('/v3/pay_action/do', 'POST'):
             return False
-        if re.match(rf"/v\d+/texas_holdem/room/{self.room_id}(?:/|$)", data['path']):
-            return True
-        if re.match(rf"/v1/chat_room/{self.room_id}(?:/|$)", data['path']):
-            return True
-        body = data.get('json') or {}
+        return self.pay_action(data.get('json') or {})
+
+    def pay_action(self, body):
+        """只接受当前房间的公共牌查看和操作时间支付夹具。"""
         action = body.get('action_url') if isinstance(body, dict) else None
-        if data['path'] != '/v3/pay_action/do' or data.get('method') != 'POST' or not isinstance(action, dict):
+        if not isinstance(action, dict):
             return False
+        return self.allowed_action(action)
+
+    def allowed_action(self, action):
+        """支付动作表保持固定版本和占位符路径。"""
         allowed = (
             ('PUT', '/v10/texas_holdem/room/$room_id$/game/$game_id$/check_community_card'),
             ('POST', '/v10/texas_holdem/room/$room_id$/game/$game_id$/operating_time'),
         )
         return action.get('room_id') == self.room_id and (action.get('method'), action.get('path')) in allowed
 
+    def inject(self, flow, content):
+        """通过当前代理的 mitmproxy 上下文向浏览器注入。"""
+        ctx.master.commands.call('inject.websocket', flow, True, content, True)
+
+    def target_flow(self, channels):
+        """新建房间在订阅前即隔离，其他回放要求本连接频道。"""
+        if not self.room_id:
+            return False
+        if self.created_room_id == self.room_id:
+            return True
+        return self.has_room_channel(channels)
+
+    def has_room_channel(self, channels):
+        """沿用原有大小写敏感的连接归属前缀。"""
+        return any(channel.startswith(f'texas_holdem>{self.room_id}#') for channel in channels)
+
     def rpc_result(self, frame):
-        """根据当前界面状态与 RPC 路径生成对应的重放结果。"""
+        """优先使用界面错误，否则生成房间操作结果。"""
         error = self.ui_states.rpc_result(frame) if self.ui_states else None
         if error is not None:
             return error
-        path = frame['params']['data']['path']
+        return self.operation_result(frame['params']['data']['path'])
+
+    def operation_result(self, path):
+        """保持聊天、经验与升级响应协议。"""
         if path.startswith(f'/v1/chat_room/{self.room_id}/'):
-            return {'ok': True, 'result': {
-                'users': [self.self_id] if self.self_id else [], 'user_id': self.self_id,
-                'can_audio': True, 'can_video': True, 'has_joined': path.endswith('/join')}}
-        # 支付夹具不扣钻；操作结果仍遵守应用的经验/升级协议。
+            return chat_result(path, self.self_id)
         props = {'add_level_experience': 12}
         if path.endswith('/call'):
             props['level_up'] = {'new_level': 6}
-        return {'ok': True, 'result': {
-            **props, 'community_card': ['ah', 'kd', '7c', '2s', 'qs']}}
+        return {'ok': True, 'result': {**props, 'community_card': ['ah', 'kd', '7c', '2s', 'qs']}}
 
     def profile(self, player_id):
         """为本人或已登记虚拟对手构造稳定的展示资料。"""
@@ -180,26 +111,34 @@ class TexasReplay:
                 "bio": "TestPlayer", "user_level": {"App:coin": {"level": 5, "progress": 0.5}},
                 "last_used_nickname": ""}
 
-    def http_fixture(self, path, body=b""):
-        """根据请求路径与批次只补充已登记虚拟玩家的资料和钱包读取。"""
+    def http_fixture(self, path, body=b''):
+        """只补充已登记虚拟玩家的资料和钱包读取。"""
         if not self.room_id:
             return None
-        identifiers = TABLE_PLAYER_IDS
         if path == '/v10/profile/users':
-            requested = json.loads(body).get('users', [])
-            if requested and all(identifier in identifiers for identifier in requested):
-                return {identifier: self.profile(identifier) for identifier in requested}
-            return None
-        player_id = next((identifier for identifier in identifiers if identifier in path), None)
+            return virtual_profiles(body, TABLE_PLAYER_IDS, self.profile)
+        return self.player_fixture(path)
+
+    def player_fixture(self, path):
+        """路径必须包含已登记玩家标识。"""
+        player_id = path_player(path, TABLE_PLAYER_IDS)
         if not player_id:
             return None
-        if re.fullmatch(rf"/v10/profile/{UUID}", path):
+        if re.fullmatch(rf'/v10/profile/{UUID}', path):
             return self.profile(player_id)
-        if re.fullmatch(rf"/v10/wallet/{UUID}/currency/coin", path):
-            return {"balance": 12345}
-        if re.fullmatch(rf"/v1/texas_statistics/player/{UUID}/rounds/(100|1000)", path):
-            return {"total_hands": int(path.rsplit("/", 1)[-1]), "vpip": 0.25, "pfr": 0.18,
-                    "af": 2.5, "c_bet": 0.6, "fold_to_c_bet": 0.4, "fold_to_steal": 0.5,
-                    "fold_to_three_bet": 0.5, "steal": 0.3, "three_bet": 0.08,
-                    "win_rate": 0.2, "win_rate_vp": 0.3, "win_rate_wtsd": 0.5, "wtsd": 0.3}
+        return self.wallet_fixture(path)
+
+    def wallet_fixture(self, path):
+        """只匹配固定钱包和统计路径。"""
+        if re.fullmatch(rf'/v10/wallet/{UUID}/currency/coin', path):
+            return {'balance': 12345}
+        if re.fullmatch(rf'/v1/texas_statistics/player/{UUID}/rounds/(100|1000)', path):
+            return self.statistics(path)
         return None
+
+    def statistics(self, path):
+        """构造固定玩家的德州统计资料。"""
+        return {"total_hands": int(path.rsplit("/", 1)[-1]), "vpip": 0.25, "pfr": 0.18,
+                "af": 2.5, "c_bet": 0.6, "fold_to_c_bet": 0.4, "fold_to_steal": 0.5,
+                "fold_to_three_bet": 0.5, "steal": 0.3, "three_bet": 0.08,
+                "win_rate": 0.2, "win_rate_vp": 0.3, "win_rate_wtsd": 0.5, "wtsd": 0.3}

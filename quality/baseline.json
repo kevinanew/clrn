@@ -1341,56 +1341,6 @@
       "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
       "kind": "migration",
       "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/club/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 140,
-      "column": 9,
-      "message": "`joined_clubs_fixture` is too complex (11 > 10)",
-      "anchor": "c7780985da79e73f84a6039eec771da8baad6c61a18e900129d7ebb1dad184d4",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/game-record/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 50,
-      "column": 9,
-      "message": "`control` is too complex (12 > 10)",
-      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/game-record/mitmproxy/addon.py",
-      "rule": "C901",
-      "line": 90,
-      "column": 9,
-      "message": "`fixture` is too complex (29 > 10)",
-      "anchor": "7de657de29b3eaf426a39d572478423df92353b81965ce44ec896cdeb93fe75b",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/texas-holdem/mitmproxy/texas_replay.py",
-      "rule": "C901",
-      "line": 67,
-      "column": 9,
-      "message": "`websocket_message` is too complex (20 > 10)",
-      "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/zhajinhua/mitmproxy/zhajinhua_replay.py",
-      "rule": "C901",
-      "line": 66,
-      "column": 9,
-      "message": "`websocket_message` is too complex (20 > 10)",
-      "anchor": "c936ec5a7bac14a94a49aad941b9361475d12c6d28526b84652158fe422daea1",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
     }
   ]
 }

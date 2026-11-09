@@ -26,23 +26,50 @@ class RecordsV2:
         self.enabled, self.empty = True, empty
 
     def response(self, flow, path, room_id):
-        """从当前房间成功入场响应中记录真实战绩会话标识。"""
-        if not self.enabled or not room_id or flow.request.method != 'PUT' or (
-            path != f'/v10/texas_holdem/room/{room_id}/enter') or not flow.response:
-            return
+        """只观察已启用且绑定房间的入场响应。"""
+        if self.can_observe(room_id) and self.is_enter(flow, path, room_id):
+            self.bind_session(flow)
+
+    def can_observe(self, room_id):
+        """没有房间或未启用时不读取响应。"""
+        return self.enabled and bool(room_id)
+
+    def is_enter(self, flow, path, room_id):
+        """保留 PUT 和确切入场路径约束。"""
+        return flow.request.method == 'PUT' and path == f'/v10/texas_holdem/room/{room_id}/enter' and bool(flow.response)
+
+    def bind_session(self, flow):
+        """先解析响应，错误由调用方处理。"""
         body = json.loads(flow.response.content)
         session = body.get('result', {}).get('play_session_id') if body.get('ok') is True else None
-        if flow.response.status_code == 200 and isinstance(session, str) and re.fullmatch(r'[A-Za-z0-9_-]{1,128}', session):
+        if flow.response.status_code == 200:
+            self.accept_session(session)
+
+    def accept_session(self, session):
+        """只接受原有长度和字符范围的会话标识。"""
+        if isinstance(session, str) and re.fullmatch(r'[A-Za-z0-9_-]{1,128}', session):
             self.session_id = session
 
     def fixture(self, path, method, self_id):
-        """仅为已启用且绑定当前用户和会话的 GET 读取提供战绩夹具。"""
+        """只为当前用户和会话提供 GET 读取。"""
         if not self.enabled or method != 'GET':
             return None
+        return self.session_fixture(path, self_id)
+
+    def session_fixture(self, path, self_id):
+        """未绑定用户或会话保持透传。"""
         if not self_id or not self.session_id:
             return None
+        return self.record_fixture(path, self_id)
+
+    def record_fixture(self, path, self_id):
+        """明确区分详情入口与非空轮次。"""
         if path == f'/v11/game_log/{self_id}/play_session_record/{self.session_id}':
             return {'all_round_id': [] if self.empty else [ROUND]}
+        return self.round_fixture(path, self_id)
+
+    def round_fixture(self, path, self_id):
+        """空态不得伪造轮次读取。"""
         if not self.empty and path == f'/v11/game_log/{self_id}/round/{ROUND}':
             return round_data(self_id)
         return None

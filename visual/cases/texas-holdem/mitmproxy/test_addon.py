@@ -59,8 +59,7 @@ class TexasAddonTests(unittest.TestCase):
         for path in (f'/v10/profile/{player}', f'/v10/wallet/{player}/currency/coin',
                      f'/v1/texas_statistics/player/{player}/rounds/100'):
             self.assertIsNotNone(self.request(path).response)
-            for method in ('PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS'):
-                self.assertIsNone(self.request(path, method).response)
+            self.assert_write_passthrough(path)
         self.assertIsNone(self.request(f'/v10/profile/{OTHER}').response)
         self.assertIsNone(self.request('/v10/profile/users', 'PUT', {'users': [player, OTHER]}).response)
         profiles = self.request('/v10/profile/users', 'PUT', {'users': [player, SELF]})
@@ -76,6 +75,11 @@ class TexasAddonTests(unittest.TestCase):
         for path in (f'/v10/profile/{SELF}', f'/v10/wallet/{SELF}/currency/coin',
                      f'/v1/texas_statistics/player/{SELF}/rounds/100'):
             self.assertIsNone(self.request(path).response)
+
+    def assert_write_passthrough(self, path):
+        """所有写入及预检方法继续透传。"""
+        for method in ('PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS'):
+            self.assertIsNone(self.request(path, method).response)
 
     def test_屏蔽夹具只匹配回放玩家与已知方法(self):
         """验证屏蔽夹具只匹配回放玩家与已知方法。"""

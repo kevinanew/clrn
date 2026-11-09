@@ -55,10 +55,7 @@ class VirtualPlayerPreflightTests(unittest.TestCase):
 
     def test_真实用户写入节点探测及未登记路径的预检保持透传(self):
         """验证真实用户写入节点探测及未登记路径的预检保持透传。"""
-        for player in (SELF, OTHER):
-            for path in (f'/v10/profile/{player}', f'/v10/wallet/{player}/currency/coin',
-                         f'/v1/texas_statistics/player/{player}/rounds/100'):
-                self.assertIsNone(self.preflight(path).response)
+        self.assert_real_player_preflights()
         for path in ('/node/v1/status', '/v10/profile/users',
                      f'/v10/texas_holdem/room/{ROOM}/enter',
                      f'/v10/profile/{TABLE_PLAYER_IDS[0]}/extra',
@@ -72,6 +69,13 @@ class VirtualPlayerPreflightTests(unittest.TestCase):
                         {'Access-Control-Request-Headers': 'authorization,,content-type'}):
             with self.subTest(headers=headers):
                 self.assertIsNone(self.preflight(**headers).response)
+
+    def assert_real_player_preflights(self):
+        """真实账号的资料、钱包和统计预检保持透传。"""
+        for player in (SELF, OTHER):
+            for path in (f'/v10/profile/{player}', f'/v10/wallet/{player}/currency/coin',
+                         f'/v1/texas_statistics/player/{player}/rounds/100'):
+                self.assertIsNone(self.preflight(path).response)
 
     def test_其他主机场景及释放后的预检不沿用许可(self):
         """验证其他主机场景及释放后的预检不沿用许可。"""

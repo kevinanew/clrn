@@ -94,6 +94,14 @@ class ClubRoomVisualProxyTests(unittest.TestCase):
         self.proxy.request(control)
         self.assertEqual(control.response.status_code, 200, '已加入列表场景应成功启用')
 
+    def assert_club_profiles(self, clubs):
+        """逐个核对头像读取与批量资料一致。"""
+        for club in clubs:
+            profile = make_flow(f"/v10/club/{club['id']}/profile")
+            self.proxy.request(profile)
+            self.assertEqual(json.loads(profile.response.content)['result'], club,
+                             '虚拟头像查询应返回相同资料并保留默认头像')
+
     def test_已加入列表包含三个完整俱乐部(self):
         """列表、批量资料和头像查询使用同一组虚拟俱乐部，房间为空且不访问上游。"""
         self.enable_joined_clubs()
@@ -105,15 +113,11 @@ class ClubRoomVisualProxyTests(unittest.TestCase):
         details = make_flow('/v10/clubs', 'PUT', {'club_ids': JOINED_CLUB_IDENTIFIERS})
         self.proxy.request(details)
         clubs = json.loads(details.response.content)['result']
-        self.assertEqual([club['name'] for club in clubs], ['星光俱乐部', '周末俱乐部', '好友俱乐部'],
+        self.assertEqual(club_values(clubs, 'name'), ['星光俱乐部', '周末俱乐部', '好友俱乐部'],
                          '三张卡片应有不同且稳定的名称')
-        self.assertEqual([club['member_count'] for club in clubs], [18, 36, 72],
+        self.assertEqual(club_values(clubs, 'member_count'), [18, 36, 72],
                          '三张卡片应有不同的成员人数')
-        for club in clubs:
-            profile = make_flow(f"/v10/club/{club['id']}/profile")
-            self.proxy.request(profile)
-            self.assertEqual(json.loads(profile.response.content)['result'], club,
-                             '虚拟头像查询应返回相同资料并保留默认头像')
+        self.assert_club_profiles(clubs)
         rooms = make_flow('/v2/building/rooms', 'PUT', {'building_ids': JOINED_CLUB_IDENTIFIERS})
         self.proxy.request(rooms)
         self.assertEqual(json.loads(rooms.response.content)['result'], [], '本场景不附带牌局')
@@ -160,3 +164,8 @@ class ClubRoomVisualProxyTests(unittest.TestCase):
         self.proxy.request(unauthenticated)
         self.assertEqual(unauthenticated.response.status_code, 403, '无控制令牌时应拒绝启用')
         self.assertIsNone(self.proxy.scenario, '拒绝后不得启用场景')
+
+
+def club_values(clubs, key):
+    """保留卡片顺序投影指定字段。"""
+    return [club[key] for club in clubs]
