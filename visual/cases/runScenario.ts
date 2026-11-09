@@ -7,6 +7,7 @@ import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
 import { preparePage } from '../src/support/preparePage';
 import { assertGuestClubReady } from './club/guestReadiness';
+import { withSharePageDiagnostics } from './sharePageDiagnostics';
 
 import { visualBaseUrl as baseUrl } from '../target';
 const backAccessibilityLabels = {
@@ -40,6 +41,7 @@ export async function runVisualScenario(
   const page = await context.newPage();
 
   try {
+    await withSharePageDiagnostics(scenario, context, page, options.network, /** 执行原场景并在失败后保存只读诊断。 */ async () => {
     await setupContextForScenario(context, scenario, page);
     await page.goto(scenario.path);
     await preparePage(page, scenario);
@@ -93,6 +95,7 @@ export async function runVisualScenario(
       expect(accessibilityLabel).toBe(backAccessibilityLabels[scenario.locale]);
     }
     await expect(page).toHaveScreenshot(`${scenario.label}.png`);
+    });
   } finally {
     await context.close();
   }
