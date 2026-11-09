@@ -6,7 +6,7 @@ import { applyContentStabilizers } from '../src/support/pageStabilizers';
 test('私人房号只稳定展示文字并保留三语言标签、图标和复制行为', /** 验证私人房号只稳定展示文字并保留三语言标签、图标和复制行为。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   const scenario = buildScenarios({ VISUAL_SUITE: 'app', VISUAL_LOCALES: 'zh-Hant' })
-    .find(/** 查找满足以下条件的首个条目：`item.pageLabel === 'signed_in_private_room_join'`。
+    .find(/** 定位加入私人房场景，核对房号输入页的展示配置。
  * @param item - 当前遍历的条目。 */ item => item.pageLabel === 'signed_in_private_room_join')!;
   for (const label of ['房间号', '房間號', 'Room number']) {
     await page.setContent(`<button data-testid="copy-house-number-button" onclick="this.dataset.copied='523204023'">
@@ -26,7 +26,7 @@ test('私人房号只稳定展示文字并保留三语言标签、图标和复�
 test('私人房资料未就绪时拒绝伪造房号，游客和其他场景保持原样', /** 验证私人房资料未就绪时拒绝伪造房号，游客和其他场景保持原样。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   const scenario = buildScenarios({ VISUAL_SUITE: 'app', VISUAL_LOCALES: 'zh-Hant' })
-    .find(/** 查找满足以下条件的首个条目：`item.pageLabel === 'signed_in_private_room_join'`。
+    .find(/** 定位加入私人房场景，验证布局准备不改变页面内容。
  * @param item - 当前遍历的条目。 */ item => item.pageLabel === 'signed_in_private_room_join')!;
   await page.setContent('<button data-testid="copy-house-number-button"><div dir="auto">房間號: </div></button>');
   await expect(privateRoomPresentationRules(page, scenario)).rejects.toThrow('私人房页必须先显示真实的九位房号');

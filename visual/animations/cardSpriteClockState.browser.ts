@@ -36,20 +36,20 @@ test('时钟现场只读保留嵌套零延时、动画帧和周期回调，回�
     if (frozen.status !== 'observed') throw new Error('固定 Playwright 版本必须支持时钟取证');
     assert.equal(frozen.running, false);
     assert.equal(frozen.virtualTime, Date.parse('2026-01-01T00:00:01Z'));
-    assert.ok(frozen.timers.some(/** 判断是否存在满足以下条件的条目：`timer.type === 'Timeout' && timer.delay === 0 && timer.remaining === 1`。
+    assert.ok(frozen.timers.some(/** 确认零延时定时器保留最小剩余时间，避免恢复时丢失回调。
  * @param timer - 当前操作使用的 timer。 */ timer => timer.type === 'Timeout' && timer.delay === 0 && timer.remaining === 1));
-    assert.ok(frozen.timers.some(/** 判断是否存在满足以下条件的条目：`timer.type === 'Interval' && timer.remaining === 80`。
+    assert.ok(frozen.timers.some(/** 确认循环定时器保留冻结前的剩余延时。
  * @param timer - 当前操作使用的 timer。 */ timer => timer.type === 'Interval' && timer.remaining === 80));
-    assert.ok(frozen.timers.some(/** 判断是否存在满足以下条件的条目：`timer.type === 'AnimationFrame' && timer.remaining > 0`。
+    assert.ok(frozen.timers.some(/** 确认动画帧回调保留可恢复的等待时间。
  * @param timer - 当前操作使用的 timer。 */ timer => timer.type === 'AnimationFrame' && timer.remaining > 0));
     assert.doesNotMatch(JSON.stringify(frozen), /fixture-private-secret|setTimeout|nestedCallback/);
     assert.ok(frozen.timers.every(/** 确认所有条目均满足：`/^callback-[a-f0-9]{16}$/.test(timer.callback)`。
  * @param timer - 当前操作使用的 timer。 */ timer => /^callback-[a-f0-9]{16}$/.test(timer.callback)));
     await page.clock.runFor(0);
     assert.deepEqual(await cardSpriteClockState(page), frozen, '重复取证与 runFor(0) 都不能推进未来计时器');
-    assert.equal(await page.evaluate(/** 在页面中读取`(window as typeof window & { nestedCallback?: string }).nestedCallback`，供测试判断当前界面状态。 */ () => (window as typeof window & { nestedCallback?: string }).nestedCallback), undefined);
+    assert.equal(await page.evaluate(/** 读取嵌套回调标记，核对时钟推进前的回调状态。 */ () => (window as typeof window & { nestedCallback?: string }).nestedCallback), undefined);
     await page.clock.runFor(1);
-    assert.equal(await page.evaluate(/** 在页面中读取`(window as typeof window & { nestedCallback?: string }).nestedCallback`，供测试判断当前界面状态。 */ () => (window as typeof window & { nestedCallback?: string }).nestedCallback), 'fixture-private-secret');
+    assert.equal(await page.evaluate(/** 读取嵌套回调标记，验证恢复后嵌套回调得到执行。 */ () => (window as typeof window & { nestedCallback?: string }).nestedCallback), 'fixture-private-secret');
     await page.clock.resume();
     const running = await cardSpriteClockState(page);
     assert.ok(running.status === 'observed' && running.running);

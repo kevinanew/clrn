@@ -10,7 +10,7 @@ test('staging notice fades and scales in on launch', /** 验证启动时 staging
  * @param root0 - 当前调用提供的页面、账号或其他夹具。
  * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   const scenario = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SUITE: 'app' })
-    .find(/** 查找满足以下条件的首个条目：`item.pageLabel === 'hall' && item.viewport.label === info.project.name`。
+    .find(/** 按当前视口选择大厅场景，准备对话框动画测试。
  * @param item - 当前遍历的条目。 */ item => item.pageLabel === 'hall' && item.viewport.label === info.project.name)!;
   await setupContextForScenario(context, scenario, page, { animations: 'allow' });
   await page.clock.install({ time: CLOCK_START });
@@ -20,7 +20,7 @@ test('staging notice fades and scales in on launch', /** 验证启动时 staging
   const dialog = page.getByTestId('staging-dialog');
   const title = page.getByTestId('staging-dialog-title');
   await expect(title).toBeAttached({ timeout: 60_000 });
-  await page.evaluate(/** 在页面中读取`document.fonts.ready.then(() => undefined)`，供测试判断当前界面状态。 */ () => document.fonts.ready.then(/** 将异步结果转换为`undefined`，供后续步骤使用。 */ () => undefined));
+  await page.evaluate(/** 等待对话框所用字体加载，避免采样期间文本重排。 */ () => document.fonts.ready.then(/** 将异步结果转换为`undefined`，供后续步骤使用。 */ () => undefined));
   await ensureLocalImagesLoaded(page);
   expect((await appearance(title))[0].opacity).toBe(0);
   await captureTimeline(page, info, 'staging-notice-enter', title,

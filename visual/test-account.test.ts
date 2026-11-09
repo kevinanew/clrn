@@ -5,7 +5,7 @@ import { getVisualDeviceId, canTopUpVisualAccount } from './test-account';
 import accounts from '../scripts/ci-test-accounts.json';
 
 test('100 个 Web CI 账号使用不同设备，同一账号重跑和大小写变化保持一致', /** 验证100 个 Web CI 账号使用不同设备，同一账号重跑和大小写变化保持一致。 */ () => {
-  const devices = accounts.accounts.map(/** 将当前条目映射为`getVisualDeviceId({ VISUAL_USERNAME: username })`。
+  const devices = accounts.accounts.map(/** 按视觉账号计算设备标识，验证账号间的设备隔离。
  * @param username - 当前操作使用的 username。 */ username => getVisualDeviceId({ VISUAL_USERNAME: username }));
   assert.equal(new Set(devices).size, 100);
   for (const [index, username] of accounts.accounts.entries()) {
@@ -13,7 +13,7 @@ test('100 个 Web CI 账号使用不同设备，同一账号重跑和大小写�
     assert.equal(getVisualDeviceId({ VISUAL_USERNAME: username.toUpperCase() }), devices[index]);
   }
   assert.equal(getVisualDeviceId({ VISUAL_DEVICE_ID: 'explicit-device' }), 'explicit-device');
-  assert.equal(new Set(['app', 'texas', 'zhajinhua'].map(/** 将当前条目映射为`getVisualDeviceId({ VISUAL_SUITE: suite })`。
+  assert.equal(new Set(['app', 'texas', 'zhajinhua'].map(/** 按视觉套件计算默认设备标识，验证套件间的身份隔离。
  * @param suite - 当前操作使用的 suite。 */ suite => getVisualDeviceId({ VISUAL_SUITE: suite }))).size, 3);
 });
 

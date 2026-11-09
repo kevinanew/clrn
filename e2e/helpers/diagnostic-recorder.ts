@@ -82,7 +82,7 @@ export class DiagnosticRecorder {
     }
     const lines = [`### ${diagnosticText(title).replace(/[\r\n|<>]/g, ' ')}`, '',
       `事件 ${events.length} 条；截断 ${this.dropped} 条。浏览器发出请求不等于上游已收到。`,
-      events.some(/** 判断是否存在满足以下条件的条目：`item.source === 'application'`。
+      events.some(/** 识别应用来源事件，判断是否已取得应用侧观测。
  * @param item - 当前遍历的条目。 */ item => item.source === 'application') ? '已采集应用选线与缓存决策。' :
         '当前构建未提供应用决策事件：缓存命中、未尝试原因和主动线路切换无法确定。', '',
       '| 节点 | 浏览器健康探测 | 上游健康响应 | 模拟健康响应 | 缓存命中 | WebSocket 尝试 |',

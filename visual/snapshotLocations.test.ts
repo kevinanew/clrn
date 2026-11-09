@@ -19,13 +19,13 @@ test('every active scenario has one baseline beside its feature spec', /** 验�
   }
 
   const actual = readdirSync(path.join(__dirname, 'cases'), { withFileTypes: true })
-    .filter(/** 仅保留满足以下条件的条目：`entry.isDirectory() && entry.name !== '_shared'`。
+    .filter(/** 选取独立视觉套件目录，排除共用支持目录。
  * @param entry - 当前处理的记录条目。 */ entry => entry.isDirectory() && entry.name !== '_shared')
     .flatMap(/** 收集每个视觉套件快照目录中的 PNG 路径。
  * @param entry - 当前处理的记录条目。 */ entry => readdirSync(path.join(__dirname, 'cases', entry.name, 'snapshots'))
-      .filter(/** 仅保留满足以下条件的条目：`file.endsWith('.png')`。
+      .filter(/** 选取截图 PNG 文件，核对基准文件的存放位置。
  * @param file - 当前源码或资源路径。 */ file => file.endsWith('.png'))
-      .map(/** 将当前条目映射为`path.join(__dirname, 'cases', entry.name, 'snapshots', file)`。
+      .map(/** 构造各套件截图基准的完整路径，供位置约定检查。
  * @param file - 当前源码或资源路径。 */ file => path.join(__dirname, 'cases', entry.name, 'snapshots', file)));
   assert.equal(expected.size, scenarios.reduce(/** 按每个场景包含的快照状态累计预期基准数量。
  * @param sum - 当前操作使用的 sum。

@@ -79,7 +79,7 @@ async function openAuthFixture(page: Page, origin: string): Promise<void> {
  * @param auth - 需要写入的完整或无效认证缓存。 */
 async function setPersistedAuth(page: Page, auth: unknown = COMPLETE_AUTH): Promise<void> {
   await page.evaluate(
-    /** 在页面中读取`window.localStorage.setItem(storageKey, JSON.stringify(value))`，供测试判断当前界面状态。
+    /** 向本地存储写入指定认证记录，构造登录态校验场景。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ storageKey, value }) => window.localStorage.setItem(storageKey, JSON.stringify(value)),
     { storageKey: AUTH_STORAGE_KEY, value: auth },
   );
@@ -208,7 +208,7 @@ test('app cache removal after a successful account check is signed out', /** 验
     const state = waitForSignInState(page, { apiBaseUrl: server.origin, requireAppState: true });
     await page.waitForTimeout(200);
     await page.evaluate(
-      /** 在页面中读取`window.localStorage.removeItem(storageKey)`，供测试判断当前界面状态。
+      /** 删除本地认证记录，验证登录态失效时的处理。
  * @param storageKey - 当前操作使用的 storageKey。 */ (storageKey) => window.localStorage.removeItem(storageKey),
       AUTH_STORAGE_KEY,
     );
@@ -276,7 +276,7 @@ test('clearing auth cache while account validation is pending returns signed out
     const state = waitForSignInState(page, { apiBaseUrl: server.origin });
     await page.waitForTimeout(200);
     await page.evaluate(
-      /** 在页面中读取`window.localStorage.removeItem(storageKey)`，供测试判断当前界面状态。
+      /** 删除认证记录，验证缓存恢复流程不会继续使用失效会话。
  * @param storageKey - 当前操作使用的 storageKey。 */ (storageKey) => window.localStorage.removeItem(storageKey),
       AUTH_STORAGE_KEY,
     );
@@ -310,7 +310,7 @@ test('a failing optional level request does not affect successful account valida
     await openAuthFixture(page, server.origin);
     await setPersistedAuth(page);
     const levelResponseStatus = page.evaluate(
-      /** 在页面中读取`(await fetch('/v10/profile/visual-user')).status`，供测试判断当前界面状态。 */ async () => (await fetch('/v10/profile/visual-user')).status,
+      /** 发起资料请求并返回真实状态码，核对认证失败行为。 */ async () => (await fetch('/v10/profile/visual-user')).status,
     );
     await expect(levelResponseStatus).resolves.toBe(503);
     await expect(waitForSignInState(page, { apiBaseUrl: server.origin })).resolves.toBe('signedIn');

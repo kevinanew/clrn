@@ -34,7 +34,7 @@ test('当前旋转处于不同阶段时，下一轮首帧、运动和重复周�
       const reel = page.locator('#reel');
       assert.equal(await reel.getAttribute('style'), 'transform: translateY(-300px);', `准备阶段偏移 ${offset}ms`);
       await page.clock.runFor(160);
-      const translation = await reel.evaluate(/** 在页面中读取`new DOMMatrixReadOnly(getComputedStyle(node).transform).m42`，供测试判断当前界面状态。
+      const translation = await reel.evaluate(/** 读取老虎机横幅的纵向平移量，核对预热后的布局位置。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
       assert.ok(translation > -300 && translation < 0, '160ms 必须处于运动中，不能停在首帧或直接跳到终帧');
       await page.clock.runFor(1040);

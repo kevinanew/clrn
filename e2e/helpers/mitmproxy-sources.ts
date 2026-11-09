@@ -27,7 +27,7 @@ async function feedbackOrigin(environment: NodeJS.ProcessEnv): Promise<string | 
   for (const file of await readdir(directory)) {
     if (!/^index-.*\.js$/.test(file)) continue;
     const source = await readFile(path.join(directory, file), 'utf8');
-    const component = source.split('\n').find(/** 查找满足以下条件的首个条目：`line.includes('testID:"feedback-user-report-screen"')`。
+    const component = source.split('\n').find(/** 在构建脚本中定位反馈页面，供代理源码定位使用。
  * @param line - 当前操作使用的 line。 */ line => line.includes('testID:"feedback-user-report-screen"'));
     const address = component?.match(/isStagingEnvironment\(\)\?'(https:\/\/[^']+)'/)?.[1];
     if (address) return origin(new URL(address).origin);

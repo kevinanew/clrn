@@ -23,7 +23,7 @@ export async function captureImageFrames(page: Page, info: TestInfo, name: strin
       data: Uint8Array; type: string; preferAnimation: boolean;
     }) => Decoder }).ImageDecoder;
     if (!Constructor) throw new Error('当前浏览器不支持动画图片逐帧解码');
-    const decoder = new Constructor({ data: Uint8Array.from(atob(encoded), /** 为当前索引构造`char.charCodeAt(0)`。
+    const decoder = new Constructor({ data: Uint8Array.from(atob(encoded), /** 将 Base64 解码后的字符转换为字节，交给图像解码器。
  * @param char - 当前操作使用的 char。 */ char => char.charCodeAt(0)),
       type: 'image/webp', preferAnimation: true });
     try {
@@ -44,13 +44,13 @@ export async function captureImageFrames(page: Page, info: TestInfo, name: strin
       return result;
     } finally { decoder.close(); }
   }, bytes.toString('base64'));
-  expect(new Set(frames.map(/** 将当前条目映射为`frame.png`。
+  expect(new Set(frames.map(/** 提取各帧 PNG 内容，核对动画包含不同画面。
  * @param frame - 当前操作使用的 frame。 */ frame => frame.png)).size, '动画素材必须包含不同图像帧').toBeGreaterThan(1);
   for (const frame of frames) {
     expect(Buffer.from(frame.png, 'base64')).toMatchSnapshot(`asset-${name}-${frame.index}frame.png`,
       imageComparisonOptions(0));
   }
-  const timing = frames.map(/** 将当前条目映射为`frame`。
+  const timing = frames.map(/** 去除 PNG 内容，保留帧时刻、时长与尺寸供元数据基准比较。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ png: _png, ...frame }) => frame);
   expect(JSON.stringify(timing, null, 2)).toMatchSnapshot(`asset-${name}-timing.json`);
   await info.attach(`${name}-asset-timing`, { body: JSON.stringify(timing), contentType: 'application/json' });

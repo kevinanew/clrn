@@ -21,7 +21,7 @@ function results(suites: JSONReportSuite[]): { title: string; result: JSONReport
  * @param suite - 当前操作使用的 suite。 */ suite => [...suite.specs.flatMap(/** 展开当前条目对应的`spec.tests.flatMap(item => item.results.map(result => ({ title: spec.title, result })))`。
  * @param spec - 当前操作使用的 spec。 */ spec => spec.tests.flatMap(/** 展开当前条目对应的`item.results.map(result => ({ title: spec.title, result }))`。
  * @param item - 当前遍历的条目。 */ item =>
-    item.results.map(/** 将当前条目映射为`{ title: spec.title, result }`。
+    item.results.map(/** 把遮罩用例标题与执行结果关联，定位失败场景。
  * @param result - 当前操作使用的 result。 */ result => ({ title: spec.title, result })))), ...results(suite.suites || [])]);
 }
 
@@ -98,10 +98,10 @@ test('数字遮罩保留图标像素，支持裁切和缩放，透明、移出�
       await panel.evaluate(/** 清除钱包面板测试样式，恢复下一项检查的初始布局。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => { (node as HTMLElement).style.cssText = ''; });
     }
-    await panel.locator('.number').first().evaluate(/** 在页面中读取`node.remove()`，供测试判断当前界面状态。
+    await panel.locator('.number').first().evaluate(/** 移除遮罩测试中的目标节点，验证节点卸载时的恢复行为。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.remove());
     await assert.rejects(maskNumericFields(await page.screenshot({ clip }), masks, clip), /数字节点必须完整/);
-    await panel.evaluate(/** 在页面中读取`node.remove()`，供测试判断当前界面状态。
+    await panel.evaluate(/** 移除遮罩测试中的另一个节点，核对重复卸载处理。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.remove());
     const original = await page.screenshot({ clip });
     assert.deepEqual(PNG.sync.read((await maskNumericFields(original, masks, clip)).png).data, PNG.sync.read(original).data);
@@ -214,7 +214,7 @@ async function assertMaskedBalances(page: Page, panel: Locator, masks: WalletMas
     const actual = PNG.sync.read(masked.png);
     const before = PNG.sync.read(original);
     const boxes = await panel.locator('.number').evaluateAll(/** 读取钱包数字节点的真实边界，用于核对遮罩区域。
- * @param nodes - 当前匹配的页面节点集合。 */ nodes => nodes.map(/** 将当前条目映射为`node.getBoundingClientRect().toJSON()`。
+ * @param nodes - 当前匹配的页面节点集合。 */ nodes => nodes.map(/** 读取所有目标节点的边界矩形，核对遮罩覆盖范围。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.getBoundingClientRect().toJSON()));
     assertOutsideMaskUnchanged(actual, before, boxes, scale, clip);
     assert.deepEqual(actual.data, first ?? actual.data, '不同位数的余额必须得到完全相同的遮罩图');

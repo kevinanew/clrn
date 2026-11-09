@@ -31,7 +31,7 @@ test('空私人房只检查归属及列表，不执行删除', /** 验证空私�
  * @param context - 当前浏览器或测试上下文。 */ async context => {
   const requests = network(context, [house, []]);
   await prepareTestAccountRooms(session);
-  assert.deepEqual(requests.map(/** 将当前条目映射为`request.method`。
+  assert.deepEqual(requests.map(/** 提取清理请求的方法，核对房间清理调用顺序。
  * @param request - 当前发出的接口请求。 */ request => request.method), ['PUT', 'PUT']);
   assert.deepEqual(JSON.parse(requests[1].body), { building_ids: [house.house_id] });
 });
@@ -43,7 +43,7 @@ test('本账号空闲测试房必须复查详情、删除并回读为空', /** �
     // 真实列表响应省略官方标志，删除资格必须由详情里的明确 false 补齐。
     const requests = network(context, [house, [{ ...current, is_official: undefined }], current, undefined, []]);
     await prepareTestAccountRooms(session);
-    assert.deepEqual(requests.map(/** 将当前条目映射为`[new URL(request.url).pathname, request.method]`。
+    assert.deepEqual(requests.map(/** 提取请求路径与方法，核对房间清理的接口选择。
  * @param request - 当前发出的接口请求。 */ request => [new URL(request.url).pathname, request.method]), [
       [`/v10/house/user/${session.userId}`, 'PUT'], ['/v2/building/rooms', 'PUT'],
       [`/v1/room/${room.room_id}`, 'GET'], [`/v1/room/${room.room_id}`, 'DELETE'], ['/v2/building/rooms', 'PUT'],

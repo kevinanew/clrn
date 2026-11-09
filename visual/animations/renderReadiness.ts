@@ -22,6 +22,6 @@ export async function settleLayout(page: Page): Promise<void> {
  * @param page - 时钟已暂停且弹层已挂载的页面。
  */
 export async function resetViewportScroll(page: Page): Promise<void> {
-  await page.evaluate(/** 在页面中读取`window.scrollTo({ left: 0, top: 0, behavior: 'instant' })`，供测试判断当前界面状态。 */ () => window.scrollTo({ left: 0, top: 0, behavior: 'instant' }));
+  await page.evaluate(/** 将窗口立即恢复到文档原点，消除截图前的滚动偏移。 */ () => window.scrollTo({ left: 0, top: 0, behavior: 'instant' }));
   await settleLayout(page);
 }

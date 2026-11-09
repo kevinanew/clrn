@@ -61,7 +61,7 @@ export async function captureHallVariants(page: Page, scenario: VisualScenario, 
   // 操作回复收起加时按钮，再用真实恢复消息显示冷却中的按钮。
   await table(page, proxy, room, self);
   // 直接跳过五秒而不执行心跳定时器，再运行一秒更新冷却倒计时。
-  await page.clock.setSystemTime((await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now())) + 5000);
+  await page.clock.setSystemTime((await page.evaluate(/** 读取德州大厅截图的当前页面时刻，保持动画时间一致。 */ () => Date.now())) + 5000);
   await page.clock.runFor(1000);
   await expect(visible(page, 'texas-holdem-delay-operation-button')).toContainText(':');
   await snapshot('delay_cooldown');

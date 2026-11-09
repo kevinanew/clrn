@@ -8,7 +8,7 @@ import { unique } from './page';
  */
 export async function formInput(page: Page, testId: string): Promise<Locator> {
   const root = await unique(page, testId);
-  if (await root.evaluate(/** 在页面中读取`element.matches('input, textarea')`，供测试判断当前界面状态。
+  if (await root.evaluate(/** 判断控件是否为原生输入框，选择合适的表单填写方式。
  * @param element - 当前匹配的页面元素。 */ element => element.matches('input, textarea'))) return root;
   const input = root.locator('input, textarea').filter({ visible: true });
   await expect(input, `${testId} 内应只有一个输入框`).toHaveCount(1);

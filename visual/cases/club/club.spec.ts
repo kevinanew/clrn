@@ -5,7 +5,7 @@ import { buildScenarios } from '../../scenarios';
 import { runVisualScenario } from '../runScenario';
 import { runClubSearchResultScenario } from './searchResult';
 
-for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'club'`。
+for (const scenario of buildScenarios().filter(/** 选取俱乐部场景，注册俱乐部页面截图用例。
  * @param item - 当前遍历的条目。 */ item => item.group === 'club')) {
   if (scenario.pageLabel === 'signed_in_club_populated') {
     test(scenario.label, /** 执行已加入俱乐部列表截图，并核验列表读取确实经过本轮代理。

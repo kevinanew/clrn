@@ -38,17 +38,17 @@ test('正常时钟图集等待保留原生定时器和 CSS，持续回退仍失�
         document.querySelector<HTMLElement>('[data-testid="sprite-image-content"]')!.style.opacity = '1';
       }, 80);
     });
-    const before = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
+    const before = await page.evaluate(/** 记录牌面时钟测试开始时的冻结时间。 */ () => Date.now());
     await advanceCardSpriteClock(page, 16);
     await waitForTexasCardSprites(page, '[data-testid="community_card"]');
-    assert.ok(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()) > before);
-    assert.deepEqual(await page.evaluate(/** 在页面中读取`document.getAnimations().map(animation => animation.playState)`，供测试判断当前界面状态。 */ () => document.getAnimations().map(/** 将当前条目映射为`animation.playState`。
+    assert.ok(await page.evaluate(/** 读取牌面采样后的时间，验证采样未推进页面时钟。 */ () => Date.now()) > before);
+    assert.deepEqual(await page.evaluate(/** 读取页面动画播放状态，核对牌面独立时钟的冻结效果。 */ () => document.getAnimations().map(/** 读取页面各动画的播放状态，核对独立时钟冻结效果。
  * @param animation - 当前操作使用的 animation。 */ animation => animation.playState)), ['running']);
     await page.locator('[data-testid="sprite-image-fallback"]').evaluate(/** 重新显示牌面后备图，验证就绪检查能识别精灵尚未提交。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => { (node as HTMLElement).style.display = 'flex'; });
     await assert.rejects(waitForTexasCardSprites(page, '[data-testid="community_card"]'), /德州可见牌面应显示完整图集/);
     await observeCardSpriteClockControl(page);
-    assert.equal(await page.locator('[data-testid="sprite-image-fallback"]').evaluate(/** 在页面中读取`getComputedStyle(node).display`，供测试判断当前界面状态。
+    assert.equal(await page.locator('[data-testid="sprite-image-fallback"]').evaluate(/** 读取目标元素的 display 样式，核对牌面等待期间的可见性。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => getComputedStyle(node).display), 'flex');
   } finally { await browser.close(); }
 });

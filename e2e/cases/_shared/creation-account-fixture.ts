@@ -21,7 +21,7 @@ export const test = base.extend<{ newAccount: CreationAccount }>({
     const walletToken = await readTestApiToken();
     const { session, username } = await prepareCreationAccount(page, context);
     await setCreationDiamondBalance(session, walletToken);
-    await expect.poll(/** 重复读取`readDiamondBalance(page, session)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, session), {
+    await expect.poll(/** 轮询钻石余额，确认创建专用账号的准备结果已生效。 */ () => readDiamondBalance(page, session), {
       message: '创建用例开始前应有 60 钻',
     }).toBe(60);
     const account: CreationAccount = { ...session, username, diamondBalance: 60 };

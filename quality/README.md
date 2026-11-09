@@ -155,7 +155,11 @@ Ruff C901 不能通过 noqa 隐藏。改变阈值、扫描范围、工具配置�
 
 Ruff 0.15.12 启用 D100–D107 与 D419；独立扫描使用 isolated、ignore-noqa，
 AST 检查补齐 Ruff 不要求的具名私有实现，并通过 tokenize 识别 lambda 附近的真实用途注释。
-Shell 检查入口及具名函数前的用途注释。当前没有 Swift，未来发现 Swift 会明确要求接入检查，不能静默漏扫。
+Shell 使用 tree-sitter 0.25.2 与 tree-sitter-bash 0.25.1 解析真实函数定义，检查入口及每个实现前的用途注释；
+覆盖子 shell、条件体、多行声明与嵌套函数，不把字符串和 heredoc 正文当实现。解析错误直接失败。
+解析依赖固定在 `scripts/documentation-requirements.txt`，由文档入口的 uv 命令加载，
+也通过 `requirements-dev.txt` 纳入本地和 CI 的开发环境安装。
+当前没有 Swift，未来发现 Swift 会明确要求接入检查，不能静默漏扫。
 Python 补充工具固定使用 3.12.12；语法错误、工具缺失和空扫描都导致非零退出。
 
 在 `4e15d4d` 源码上重新测量的结果如下，详细计数见 [documentation-measurement.json](documentation-measurement.json)。
@@ -184,3 +188,18 @@ ESLint 历史锚点允许解析器识别的行内 TSDoc 跨行后还原原始源
 `node --test scripts/documentation.test.mjs` 包含有效中英文说明、各实现语法、空摘要、标签、链接、示例、
 非法 TSDoc、匿名回调借用说明、行内禁用、空扫描和工具缺失的负例，并调用 Python 规则测试验证私有方法、
 lambda、Shell、语法失败与文档投影。测试中的业务代码和普通字符串必须保留；既有原生 jscpd 负例继续验证第三份副本失败。
+
+2026-11-10 在 `1a728766d00ef75a76029ce004a98716ae44637a` 上复测，已有门禁报告
+JS/TS 378、Python 59、Shell 3 个有效文件，均为 0 项文档诊断，没有 Swift 源码。
+本次在此基础上改写 505 条机械复述表达式的摘要，明确筛选、轮询、页面操作和断言的具体用途；
+133 个仅改说明的 JS/TS 文件与基准提交的代码词元完全一致。
+补充的负例发现并修复了计算属性名借用属性值说明、纯 HTML 链接被当作摘要、
+Python 仅含 reStructuredText 示例以及 Shell 非花括号函数体漏扫的问题。
+lambda 与 Shell 注释同样拒绝标签和链接充当摘要，也不能借用上一条语句的行尾说明或字符串中的伪注释。
+修改后相同范围仍为 0 项诊断；
+本次与首次实现的测量分别记录在报告的 `followUp` 和原有字段中。
+
+本次只执行 `node --test scripts/documentation.test.mjs scripts/lint.test.mjs`：
+16 个 Node 用例通过，其中包含 10 个 Python 定向用例；同时通过 `npm run lint` 与 `npm run typecheck`。
+新增真实 CLI 验证覆盖全部八种 JS/TS 扩展名、有效扫描计数和 Python/Shell 解析失败，
+没有执行完整单元测试、浏览器或设备回归。

@@ -29,6 +29,46 @@
     "shell": { "files": 3, "diagnostics": 0 },
     "swift": { "files": 0 }
   },
+  "followUp": {
+    "date": "2026-11-10",
+    "beforeRevision": "1a728766d00ef75a76029ce004a98716ae44637a",
+    "before": {
+      "javascript": { "files": 378, "diagnostics": 0 },
+      "python": { "files": 59, "ruffDocumentationDiagnostics": 0, "astDiagnostics": 0, "lambdaDiagnostics": 0 },
+      "shell": { "files": 3, "diagnostics": 0 },
+      "swift": { "files": 0 }
+    },
+    "after": {
+      "javascript": { "files": 378, "diagnostics": 0 },
+      "python": { "files": 59, "ruffDocumentationDiagnostics": 0, "astDiagnostics": 0, "lambdaDiagnostics": 0 },
+      "shell": { "files": 3, "diagnostics": 0 },
+      "swift": { "files": 0 }
+    },
+    "purposeSummariesRewritten": 505,
+    "documentationOnlyJavascriptFiles": 133,
+    "codeTokenEqualityVerified": true,
+    "shellParser": { "tree-sitter": "0.25.2", "tree-sitter-bash": "0.25.1" },
+    "closedGaps": [
+      "Computed property keys cannot borrow documentation from the property's function value.",
+      "HTML anchors alone do not provide TSDoc purpose text.",
+      "Python reStructuredText examples and link-only lambda comments do not provide purpose text; trailing comments on previous statements cannot be borrowed.",
+      "Shell subshell, conditional and nested function bodies are parsed; strings and heredocs are not implementations.",
+      "Shell tags, links, string contents and syntax errors cannot be reported as valid purpose comments."
+    ],
+    "validation": {
+      "focusedTests": "node --test scripts/documentation.test.mjs scripts/lint.test.mjs",
+      "nodeTests": 16,
+      "pythonTestsIncludedByNode": 10,
+      "static": "npm run lint",
+      "types": "npm run typecheck",
+      "fullTestSuiteRun": false
+    },
+    "notes": [
+      "The base revision already contained the original documentation implementation; its repository diagnostics were zero.",
+      "This pass improves mechanical summaries and adds negative probes for gaps that the previous rules accepted.",
+      "Before and after counts are current measurements; the original 2026-11-05 measurements above are retained as history."
+    ]
+  },
   "commands": {
     "documentation": "npm run lint:docs",
     "negativeProbes": "node --test scripts/documentation.test.mjs",

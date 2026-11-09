@@ -5,7 +5,7 @@ import test from 'node:test';
 test('全部已迁移的英文动画帧必须存在，禁止保留旧中文动画基准', /** 验证全部已迁移的英文动画帧必须存在，禁止保留旧中文动画基准。 */ () => {
   const expected = JSON.parse(readFileSync(new URL('./baseline-inventory.json', import.meta.url), 'utf8'));
   const actual = readdirSync(new URL('./snapshots/', import.meta.url))
-    .filter(/** 仅保留满足以下条件的条目：`name.endsWith('.png') && !name.startsWith('asset-')`。
+    .filter(/** 只盘点截图基准，排除作为页面素材使用的 asset 图片。
  * @param name - 当前操作使用的 name。 */ name => name.endsWith('.png') && !name.startsWith('asset-')).sort();
   assert.ok(expected.length > 0, '动画基准清单不得为空');
   assert.equal(new Set(expected).size, expected.length, '动画基准清单不得重复');

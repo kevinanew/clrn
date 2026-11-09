@@ -23,14 +23,14 @@ function lint(source) {
 }
 
 test('普通、异步、生成器、方法、构造器和访问器都必须有自身说明', /** 覆盖全部有实现体的函数语法，并验证有效技术摘要。 */ () => {
-  for (const source of [
-    'function read() {}', 'async function read() {}', 'function* values() { yield 1; }',
-    'const read = function () {};', 'const read = async () => 1;',
-    'class Cache { constructor() {} get value() { return 1; } set value(next) {} *values() {} }',
-    'const cache = { read() {}, get value() { return 1; }, write: () => {} };',
-    'function outer() { function inner() {} return () => inner(); }',
-  ]) assert.ok(lint(source).some(/** 确认当前语法形式产生缺失文档诊断。
-   * @param item - 当前规则诊断。 */ item => item.messageId === 'missing'), source);
+  for (const [source, count] of [
+    ['function read() {}', 1], ['async function read() {}', 1], ['function* values() { yield 1; }', 1],
+    ['const read = function () {};', 1], ['const read = async () => 1;', 1],
+    ['class Cache { constructor() {} get value() { return 1; } set value(next) {} *values() {} }', 4],
+    ['const cache = { read() {}, get value() { return 1; }, write: () => {} };', 3],
+    ['function outer() { function inner() {} return () => inner(); }', 3],
+  ]) assert.equal(lint(source).filter(/** 逐个统计缺少自身说明的实现，防止只检查外层节点。
+   * @param item - 当前规则诊断。 */ item => item.messageId === 'missing').length, count, source);
   assert.deepEqual(lint(`
     /** Read the cached value. */ async function read() { return 1; }
     /** 依次提供缓存值。 */ function* values() { yield 1; }
@@ -58,6 +58,7 @@ test('重复检查的文档投影保留代码、普通注释和字符串中的�
 test('空摘要、仅标签、链接、示例与非法 TSDoc 均失败', /** 确认格式合法与用途非空是分别执行的约束。 */ () => {
   for (const doc of ['', '   ', '@param value - 输入。', '{@link https://example.invalid}',
     'https://example.invalid', '[参考资料](https://example.invalid)', '[参考资料][source]',
+    '<a href="https://example.invalid">参考资料</a>', '<A href="https://example.invalid"><b>Cache</b></A>',
     '@example\n```ts\nread();\n```', '\n```ts\nread();\n```', '!!!']) {
     assert.ok(lint(`/** ${doc} */ function read(value) { return value; }`)
       .some(/** 确认没有正文的注释被识别为空摘要。
@@ -69,6 +70,17 @@ test('空摘要、仅标签、链接、示例与非法 TSDoc 均失败', /** 确
     '/** 读取数值。 @param {number} value - 输入。 */ function read(value) { return value; }',
   ]) assert.ok(lint(source).some(/** 确认所有文档块都经过参考解析器。
    * @param item - 当前规则诊断。 */ item => item.messageId === 'syntax'), source);
+});
+
+test('HTML 链接外的用途正文仍有效，计算属性名不能借用属性值的文档', /** 核对摘要正文与对象属性中文档的精确归属。 */ () => {
+  assert.deepEqual(lint('/** 读取缓存，参见 <a href="https://example.invalid">Cache</a>。 */ function read() {}'), []);
+  assert.deepEqual(lint('/** <a href="https://example.invalid">Cache</a> 提供缓存读取。 */ function read() {}'), []);
+  for (const source of [
+    'const cache = { /** 读取缓存。 */ [() => "read"]: () => 1 };',
+    'class Cache { /** 读取缓存。 */ [() => "read"] = () => 1; }',
+  ]) assert.equal(lint(source).filter(/** 只计入未取得自身说明的计算属性名实现。
+   * @param item - 当前规则诊断。 */ item => item.messageId === 'missing').length, 1, source);
+  assert.deepEqual(lint('const cache = { /** 读取缓存。 */ [/** 确定缓存读取方法的名称。 */ () => "read"]: () => 1 };'), []);
 });
 
 test('suite、回调、嵌套实现和行内禁用不能借用外层说明', /** 验证文档归属精确绑定到当前实现。 */ () => {
@@ -96,29 +108,64 @@ test('注释跨行不改变历史源码指纹，真实代码与字符串变化�
 });
 
 test('Python 私有方法、lambda 注释与 Shell 入口接受正例并拒绝负例', /** 使用真实 Python 补充检查器核验边界行为。 */ () => {
-  const result = spawnSync('uv', ['run', '--no-project', '--python', '3.12.12', 'python', 'scripts/test_documentation.py'],
+  const result = spawnSync('uv', ['run', '--no-project', '--python', '3.12.12',
+    '--with-requirements', 'scripts/documentation-requirements.txt', 'python', 'scripts/test_documentation.py'],
     { cwd: repository, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
 
-test('统一文档入口拒绝空扫描与缺失工具', /** 在独立 Git 仓库中执行真实 CLI，防止工具异常被记为通过。 */ () => {
+/** 创建隔离 Git 仓库，共用当前固定的 JS 依赖，并在用例结束时清理。
+ * @param t - 当前 Node 测试上下文。
+ * @returns 用于执行真实文档入口的临时仓库路径。 */
+function documentationRepository(t) {
   const directory = mkdtempSync(join(tmpdir(), 'clrn-documentation-'));
-  try {
-    mkdirSync(join(directory, 'scripts'));
-    for (const file of ['documentation.mjs', 'documentation-rule.mjs', 'source-files.mjs', 'quality-lint.mjs', 'quality-rules.mjs', 'quality-baseline.mjs']) {
-      copyFileSync(join(repository, 'scripts', file), join(directory, 'scripts', file));
-    }
-    writeFileSync(join(directory, 'package.json'), '{"type":"module"}');
-    symlinkSync(join(repository, 'node_modules'), join(directory, 'node_modules'), 'dir');
-    const initialized = spawnSync('git', ['init', '--quiet'], { cwd: directory });
-    assert.equal(initialized.status, 0);
-    const empty = spawnSync(process.execPath, ['scripts/documentation.mjs'], { cwd: directory, encoding: 'utf8' });
-    assert.notEqual(empty.status, 0);
-    assert.match(empty.stderr, /扫描为空/);
-    writeFileSync(join(directory, 'probe.py'), '"""工具缺失探测模块。"""\n');
-    const missing = spawnSync(process.execPath, ['scripts/documentation.mjs'],
-      { cwd: directory, encoding: 'utf8', env: { ...process.env, PATH: '/usr/bin:/bin' } });
-    assert.notEqual(missing.status, 0);
-    assert.match(missing.stderr, /ENOENT/);
-  } finally { rmSync(directory, { recursive: true, force: true }); }
+  t.after(/** 删除隔离源码与依赖链接，保留真实仓库。 */ () => rmSync(directory, { recursive: true, force: true }));
+  mkdirSync(join(directory, 'scripts'));
+  for (const file of ['documentation.mjs', 'documentation-rule.mjs', 'source-files.mjs', 'quality-lint.mjs', 'quality-rules.mjs', 'quality-baseline.mjs']) {
+    copyFileSync(join(repository, 'scripts', file), join(directory, 'scripts', file));
+  }
+  writeFileSync(join(directory, 'package.json'), '{"type":"module"}');
+  symlinkSync(join(repository, 'node_modules'), join(directory, 'node_modules'), 'dir');
+  const initialized = spawnSync('git', ['init', '--quiet'], { cwd: directory });
+  assert.equal(initialized.status, 0);
+  return directory;
+}
+
+test('统一文档入口拒绝空扫描与缺失工具', /** 在隔离仓库中验证工具异常不会记为通过。
+ * @param t - 当前 Node 测试上下文。 */ t => {
+  const directory = documentationRepository(t);
+  const empty = spawnSync(process.execPath, ['scripts/documentation.mjs'], { cwd: directory, encoding: 'utf8' });
+  assert.notEqual(empty.status, 0);
+  assert.match(empty.stderr, /扫描为空/);
+  writeFileSync(join(directory, 'probe.py'), '"""工具缺失探测模块。"""\n');
+  const missing = spawnSync(process.execPath, ['scripts/documentation.mjs'],
+    { cwd: directory, encoding: 'utf8', env: { ...process.env, PATH: '/usr/bin:/bin' } });
+  assert.notEqual(missing.status, 0);
+  assert.match(missing.stderr, /ENOENT/);
+});
+
+test('真实文档入口接受各 JS/TS 扩展名并拒绝 Python 与 Shell 解析失败', /** 核对端到端扫描计数及解析异常的失败状态。
+ * @param t - 当前 Node 测试上下文。 */ t => {
+  const directory = documentationRepository(t);
+  for (const file of ['check-documentation.py', 'documentation-requirements.txt']) {
+    copyFileSync(join(repository, 'scripts', file), join(directory, 'scripts', file));
+  }
+  for (const extension of ['js', 'jsx', 'mjs', 'cjs', 'ts', 'tsx', 'mts', 'cts']) {
+    writeFileSync(join(directory, `probe.${extension}`), '/** Read the cached value. */ function read() { return 1; }\n');
+  }
+  writeFileSync(join(directory, 'probe.sh'), '#!/bin/bash\n# 读取缓存。\n# 返回缓存值。\nread() ( :; )\n');
+  const passed = spawnSync(process.execPath, ['scripts/documentation.mjs'], { cwd: directory, encoding: 'utf8' });
+  assert.equal(passed.status, 0, passed.stdout + passed.stderr);
+  assert.match(passed.stdout, /JS\/TS 14，Python 1，Shell 1 个文件；0 项诊断/);
+  for (const [file, source, error] of [
+    ['probe.sh', '#!/bin/bash\n# 读取缓存。\nread() {\n', /Shell 语法解析失败/],
+    ['probe.py', 'def broken(', /SyntaxError/],
+  ]) {
+    writeFileSync(join(directory, file), source);
+    const failed = spawnSync(process.execPath, ['scripts/documentation.mjs'], { cwd: directory, encoding: 'utf8' });
+    assert.notEqual(failed.status, 0);
+    assert.match(failed.stderr, error);
+    assert.doesNotMatch(failed.stdout, /0 项诊断/);
+    rmSync(join(directory, file));
+  }
 });

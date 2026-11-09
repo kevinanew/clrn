@@ -34,22 +34,22 @@ test('每次打开个人排行榜面板均等待两项新读取，任一响应�
     await page.goto(origin);
     await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
     await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
-    const before = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
+    const before = await page.evaluate(/** 记录排行榜就绪检查开始前的冻结时间。 */ () => Date.now());
     await page.evaluate(/** 发起旧的统计请求，验证它不会满足本次打开排行榜的等待。 */ () => {
       void fetch('/v10/texas_holdem/room/fixture-room/player_statistics', { method: 'PUT' }).then(/** 标记旧统计请求已结束，供本次请求归属断言使用。 */ () => {
         (window as typeof window & { staleReadFinished: boolean }).staleReadFinished = true;
       });
     });
-    await expect.poll(/** 重复读取`pending.has('PUT')`，直到满足外层等待断言。 */ () => pending.has('PUT')).toBe(true);
+    await expect.poll(/** 轮询旧排行榜请求是否挂起，确保迟到响应负例已准备好。 */ () => pending.has('PUT')).toBe(true);
     const stale = pending.get('PUT')!;
     for (const order of [['PUT', 'GET'], ['GET', 'PUT']]) {
       pending.clear();
       let ready = false;
       const opening = openPersonalLeaderboard(page, roomId, self).then(/** 标记排行榜本次打开操作已完成就绪等待。 */ () => { ready = true; });
-      await expect.poll(/** 重复读取`pending.size`，直到满足外层等待断言。 */ () => pending.size).toBe(2);
+      await expect.poll(/** 轮询本次打开产生的请求数，等待新的读取全部发出。 */ () => pending.size).toBe(2);
       if (order[0] === 'PUT') {
         await stale.fulfill({ json: { ok: true, result: {} } });
-        await expect.poll(/** 重复读取`page.evaluate(() => (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`(window as typeof window & { staleReadFinished?: boolean }).staleReadFinished`，供测试判断当前界面状态。 */ () =>
+        await expect.poll(/** 轮询旧请求的完成标记，等待迟到响应处理结束。 */ () => page.evaluate(/** 读取旧请求完成标记，区分旧响应与本次就绪请求。 */ () =>
           (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)).toBe(true);
         assert.equal(ready, false, '本次打开前发出的旧请求即使成功也不能作为就绪依据');
       }
@@ -60,7 +60,7 @@ test('每次打开个人排行榜面板均等待两项新读取，任一响应�
       await pending.get(order[1])!.fulfill({ json: { ok: true, result: {} } });
       await opening;
       await expect(page.locator('#completed')).toHaveText('2');
-      assert.equal(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()), before, '准备读取不得推进动画相位');
+      assert.equal(await page.evaluate(/** 读取排行榜等待结束后的时间，验证页面时钟未被推进。 */ () => Date.now()), before, '准备读取不得推进动画相位');
     }
   } finally { await browser.close(); }
 });
@@ -83,7 +83,7 @@ test('个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连�
       });
       await page.goto(origin);
       await page.clock.install();
-      await page.clock.pauseAt(await page.evaluate(/** 在页面中读取`Date.now() + 1000`，供测试判断当前界面状态。 */ () => Date.now() + 1000));
+      await page.clock.pauseAt(await page.evaluate(/** 取冻结时间之后一秒作为截止时刻，构造排行榜等待超时。 */ () => Date.now() + 1000));
       let sampled = false;
       await assert.rejects(openPersonalLeaderboard(page, roomId, self).then(/** 标记排行榜已采样，排除未就绪时提前返回。 */ () => { sampled = true; }), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ error => {

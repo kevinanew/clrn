@@ -118,13 +118,13 @@ test('深层 cause 上层包装后，终端、持久化 JSON/Markdown 和报告�
     await diagnostic.save(new Error(secret, { cause: new Error(secret, { cause: failure }) }));
     const json = await readFile(path.join(directory, 'connection-diagnostics.json'), 'utf8');
     const markdown = await readFile(path.join(directory, 'connection-summary.md'), 'utf8');
-    const failed = JSON.parse(json).events.filter(/** 仅保留满足以下条件的条目：`event.event === 'http.failed'`。
+    const failed = JSON.parse(json).events.filter(/** 提取 HTTP 失败事件，核对请求错误诊断的序列化内容。
  * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'http.failed');
     assert.equal(failed[0].status, 206, '收到响应后中断不能丢失原状态');
     assert.equal(failed[0].response, 'received');
     assert.equal(failed[1].status, 'unavailable');
     assert.equal(failed[1].response, 'not-received');
-    const proxy = JSON.parse(json).events.find(/** 查找满足以下条件的首个条目：`event.event === 'proxy.response'`。
+    const proxy = JSON.parse(json).events.find(/** 定位代理响应事件，核对请求错误报告保留的真实响应信息。
  * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'proxy.response');
     assert.equal(proxy.originMatch, 'matched');
     assert.equal(proxy.upstreamMatch, 'different');

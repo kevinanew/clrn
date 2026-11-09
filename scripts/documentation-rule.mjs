@@ -5,14 +5,19 @@ const parser = new TSDocParser();
 /**
  * 从摘要树提取自然语言与行内代码，链接、标签和示例不提供用途正文。
  * @param node - TSDoc 摘要节点。
+ * @param state - 跨摘要节点保存 HTML 链接的开闭状态。
  * @returns 可用于判断非空用途的文本。
  */
-function summaryText(node) {
-  if (node.kind === 'PlainText') return node.text;
-  if (node.kind === 'CodeSpan') return node.code;
-  if (['LinkTag', 'InlineTag', 'FencedCode', 'HtmlStartTag', 'HtmlEndTag'].includes(node.kind)) return '';
+function summaryText(node, state = { link: false }) {
+  if (node.kind.startsWith('Html')) {
+    if (node.name.toLowerCase() === 'a') state.link = node.kind === 'HtmlStartTag' && !node.selfClosingTag;
+    return '';
+  }
+  if (node.kind === 'PlainText') return state.link ? '' : node.text;
+  if (node.kind === 'CodeSpan') return state.link ? '' : node.code;
+  if (['LinkTag', 'InlineTag', 'FencedCode'].includes(node.kind)) return '';
   return node.getChildNodes().map(/** 收集子节点中的摘要正文。
- * @param child - 当前摘要子节点。 */ child => summaryText(child)).join(' ');
+ * @param child - 当前摘要子节点。 */ child => summaryText(child, state)).join(' ');
 }
 
 /** 去掉纯链接表示，防止 Markdown 链接和裸 URL 被当作用途正文。
@@ -45,7 +50,7 @@ export function implementationDoc(source, node) {
   if (direct) return direct;
   let owner = node;
   const parent = node.parent;
-  if (['MethodDefinition', 'PropertyDefinition', 'Property'].includes(parent?.type)) owner = parent;
+  if (parent?.value === node) owner = parent;
   if (parent?.type === 'VariableDeclarator' && parent.init === node) {
     owner = parent;
     if (parent.parent.declarations.length === 1) owner = parent.parent;

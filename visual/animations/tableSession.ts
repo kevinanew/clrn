@@ -161,7 +161,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     const overlays = await page.evaluate(/** 在页面中采集残留遮罩的位置与关联测试标记。 */ () => Array.from(document.querySelectorAll('[data-testid="screen-mask-touch-to-close"]')).map(/** 整理当前遮罩边界及其父容器中的可识别内容。
  * @param mask - 当前操作使用的 mask。 */ mask => ({
       rect: mask.getBoundingClientRect().toJSON(),
-      contents: Array.from(mask.parentElement?.querySelectorAll('[data-testid]') || []).map(/** 将当前条目映射为`node.getAttribute('data-testid')`。
+      contents: Array.from(mask.parentElement?.querySelectorAll('[data-testid]') || []).map(/** 读取遮罩父节点下的测试标识，定位残留遮罩所属界面。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.getAttribute('data-testid')),
     }))).catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []);
     writeFileSync(info.outputPath('overlays.json'), JSON.stringify(overlays, null, 2));
@@ -191,7 +191,7 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
  */
 async function sampleTable(page: Page, info: TestInfo, room: RoomSession,
   viewport: { width: number; height: number }, task: (session: TableSession) => Promise<void>) {
-  const self = await page.evaluate(/** 在页面中读取`JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
+  const self = await page.evaluate(/** 读取牌桌会话的登录用户标识，供测试房间与代理关联。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
   const width = info.project.name === 'mobile' ? 375 : 450;
   recordDiagnostic(page, '牌桌就绪，开始动画采样');
   await task({ page, roomId: room.roomId, self,

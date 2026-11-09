@@ -32,7 +32,7 @@ export function paceNetworkClock(page: Page): void {
    * 先暂停再等待，防止真实运行中的时钟越过暂停点；不增加额外虚拟时间。
    * @param time - 目标虚拟时刻。
    */ async time => {
-    const before = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
+    const before = await page.evaluate(/** 读取当前页面时间，记录网络等待开始时的冻结状态。 */ () => Date.now());
     const target = typeof time === 'number' ? time : new Date(time).getTime();
     await pauseAt(time);
     await delay(Math.max(0, target - before));

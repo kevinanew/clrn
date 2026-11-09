@@ -7,7 +7,7 @@ export default defineConfig({
   testMatch: 'cardSpriteControl.spec.ts',
   testIgnore: [],
   // 普通桌面项目也排除了对照文件；独立入口必须显式清除项目级排除。
-  projects: config.projects?.map(/** 将当前条目映射为`{ ...project, testIgnore: [] }`。
+  projects: config.projects?.map(/** 清空项目的测试忽略列表，使独立时钟控制用例可被发现。
  * @param project - 当前操作使用的 project。 */ project => ({ ...project, testIgnore: [] })),
   outputDir: '../test-results/card-sprite-control',
   reporter: [['../../e2e/helpers/diagnostic-reporter.ts'], ['list'], ['html', { open: 'never', outputFolder: '../playwright-report/card-sprite-control' }]],

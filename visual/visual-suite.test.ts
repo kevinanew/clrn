@@ -25,9 +25,9 @@ describe('visual suite selection and account isolation', /** 核对视觉套件�
       assert.ok(texas.every(/** 确认所有条目均满足：`scenario.group === 'texas-holdem'`。
  * @param scenario - 当前测试场景配置。 */ scenario => scenario.group === 'texas-holdem'));
       assert.deepEqual(
-        [...app, ...texas, ...zhajinhua].map(/** 将当前条目映射为`scenario.label`。
+        [...app, ...texas, ...zhajinhua].map(/** 收集独立视觉套件的场景标签，核对合并后的覆盖范围。
  * @param scenario - 当前测试场景配置。 */ scenario => scenario.label).sort(),
-        all.map(/** 将当前条目映射为`scenario.label`。
+        all.map(/** 收集完整视觉套件的场景标签，作为独立套件合并的比较基准。
  * @param scenario - 当前测试场景配置。 */ scenario => scenario.label).sort(),
       );
       /**
@@ -68,7 +68,7 @@ describe('visual suite selection and account isolation', /** 核对视觉套件�
         command: async (endpoint: string, payload: unknown) => { commands.push({ endpoint, payload }); },
       } as unknown as Mitmproxy);
       const scenario = buildScenarios({ VISUAL_SUITE: suite, VISUAL_LOCALES: 'zh-Hans' })
-        .find(/** 查找满足以下条件的首个条目：`item.signIn`。
+        .find(/** 选择需要登录的视觉场景，验证独立套件的认证需求。
  * @param item - 当前遍历的条目。 */ item => item.signIn)!;
       await setupContextForScenario(context, scenario, undefined);
       assert.deepEqual(routes, []);

@@ -56,9 +56,9 @@ export async function loadDeploymentRelease(options) {
     throw new Error(`读取 CLRN H5 Release 失败：HTTP ${response.status}`);
   }
   const release = await response.json();
-  const archive = release.assets?.find(/** 查找满足以下条件的首个条目：`candidate.name === artifact.name`。
+  const archive = release.assets?.find(/** 按附件名查找目标 Release 产物，核对部署来源。
  * @param candidate - 当前操作使用的 candidate。 */ candidate => candidate.name === artifact.name);
-  const information = release.assets?.find(/** 查找满足以下条件的首个条目：`candidate.name === 'build-info.json'`。
+  const information = release.assets?.find(/** 定位构建信息附件，校验部署对应的应用版本。
  * @param candidate - 当前操作使用的 candidate。 */ candidate => candidate.name === 'build-info.json');
   if (release.tag_name !== artifact.release_tag || release.draft || !release.prerelease ||
     !release.body?.includes('<!-- laiwan-web-staging-package -->') ||

@@ -31,7 +31,7 @@ export async function appearance(target: Locator): Promise<TimelineElement[]> {
       if (style.transform !== 'none') transforms.push(style.transform);
     }
     return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, opacity, transforms,
-      images: Array.from(node.querySelectorAll('img')).map(/** 将当前条目映射为`new URL(img.src).pathname`。
+      images: Array.from(node.querySelectorAll('img')).map(/** 只记录图片 URL 的路径，保留资源定位并去除域名及查询参数。
  * @param img - 当前操作使用的 img。 */ img => new URL(img.src).pathname) };
   }));
 }
@@ -151,15 +151,15 @@ type TimelineSample = { elements: Awaited<ReturnType<typeof appearance>> };
  */
 function assertTimelineSamples(samples: TimelineSample[], frames: Buffer[], name: string, options: TimelineOptions) {
   if (options.requireMotion) {
-    const states = samples.filter(/** 仅保留满足以下条件的条目：`sample.elements.length > 0`。
+    const states = samples.filter(/** 仅用含目标元素的采样核对轨迹，排除尚未挂载的阶段。
  * @param sample - 当前操作使用的 sample。 */ sample => sample.elements.length > 0).map(/** 序列化每个采样点的元素几何与呈现状态，检测动画是否实际变化。
- * @param sample - 当前操作使用的 sample。 */ sample => JSON.stringify(sample.elements.map(/** 将当前条目映射为`{ x, y, width, height, opacity, transforms }`。
+ * @param sample - 当前操作使用的 sample。 */ sample => JSON.stringify(sample.elements.map(/** 提取几何位置、透明度和变换，判断元素在采样间是否变化。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ x, y, width, height, opacity, transforms }) =>
       ({ x, y, width, height, opacity, transforms }))));
     expect(new Set(states).size, `${name} 主体本身必须移动、缩放或渐变，不能只靠背景变化`).toBeGreaterThan(1);
   }
   if (options.requireChange !== false) {
-    expect(frames.some(/** 判断是否存在满足以下条件的条目：`!frame.equals(frames[0])`。
+    expect(frames.some(/** 确认至少一帧与首帧不同，防止把静态画面判为动画。
  * @param frame - 当前操作使用的 frame。 */ frame => !frame.equals(frames[0])), `${name} 必须包含不同的动画帧`).toBe(true);
   }
 }

@@ -61,9 +61,9 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
     const scenarios = buildScenarios();
     assert.equal(scenarios.length, 74);
     assert.equal(expectedScenarioCount(), 74);
-    assert.equal(scenarios.filter(/** 仅保留满足以下条件的条目：`s.viewport.label === 'mobile'`。
+    assert.equal(scenarios.filter(/** 统计移动视口场景，核对移动端矩阵覆盖。
  * @param s - 当前操作使用的 s。 */ s => s.viewport.label === 'mobile').length, 40);
-    assert.equal(scenarios.filter(/** 仅保留满足以下条件的条目：`s.viewport.label === 'desktop'`。
+    assert.equal(scenarios.filter(/** 统计桌面视口场景，核对桌面端矩阵覆盖。
  * @param s - 当前操作使用的 s。 */ s => s.viewport.label === 'desktop').length, 34);
     scenarios.forEach(/** 确认收集的场景仅包含允许的核心页面。
  * @param scenario - 当前测试场景配置。 */ (scenario) => {
@@ -101,7 +101,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
         'signed_in_slot', 'signed_in_daily_bonus', 'signed_in_hall_search',
         'signed_in_create_room_advanced_texas', 'signed_in_create_room_advanced_zhajinhua',
         'signed_in_create_room_advanced_six_plus']) {
-        const scenario = scenarios.find(/** 查找满足以下条件的首个条目：`s.locale === locale.code && s.viewport.label === 'mobile' && s.pageLabel === label`。
+        const scenario = scenarios.find(/** 按语言、移动视口与页面名定位预期场景。
  * @param s - 当前操作使用的 s。 */ s => s.locale === locale.code && s.viewport.label === 'mobile'
           && s.pageLabel === label);
         assert.ok(scenario, `${locale.code}/${label} 应纳入截图清单`);
@@ -111,12 +111,12 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
         assert.ok(!scenario.navClickTestIds.includes('daily-bonus-check-in'), '截图不能领取奖励');
       }
     });
-    const bonus = SIGNED_IN_PAGES.find(/** 查找满足以下条件的首个条目：`page.label === 'signed_in_daily_bonus'`。
+    const bonus = SIGNED_IN_PAGES.find(/** 定位每日奖励页面定义，检查视口与入口配置。
  * @param page - 当前 Playwright 页面。 */ page => page.label === 'signed_in_daily_bonus');
     assert.deepEqual(bonus?.fixedTexts, [{
       selector: '[data-testid="CheckInDateListItem.checkInDetailDate"]', text: '01/01',
     }]);
-    assert.equal(new Set(scenarios.map(/** 将当前条目映射为`s.label.replace(/_/g, '-')`。
+    assert.equal(new Set(scenarios.map(/** 将场景标签转换为文件名形式，检查截图命名冲突。
  * @param s - 当前操作使用的 s。 */ s => s.label.replace(/_/g, '-'))).size, scenarios.length,
       'Playwright 清洗后的截图文件名也必须唯一');
   });
@@ -124,12 +124,12 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   test('静态子页仅覆盖 mobile 视口', /** 验证静态子页仅覆盖 mobile 视口。 */ () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     const scenarios = buildScenarios();
-    const mobileOnlyPages = SIGNED_IN_PAGES.filter(/** 仅保留满足以下条件的条目：`pageDef.viewports`。
+    const mobileOnlyPages = SIGNED_IN_PAGES.filter(/** 选取限制视口的页面，核对场景生成遵守视口约束。
  * @param pageDef - 当前操作使用的 pageDef。 */ (pageDef) => pageDef.viewports);
     assert.ok(mobileOnlyPages.length > 0);
     mobileOnlyPages.forEach(/** 核对仅支持移动端的页面按其声明生成场景。
  * @param pageDef - 当前操作使用的 pageDef。 */ (pageDef) => {
-      const matched = scenarios.filter(/** 仅保留满足以下条件的条目：`scenario.pageLabel === pageDef.label`。
+      const matched = scenarios.filter(/** 按页面标识收集场景，检查视口筛选结果。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.pageLabel === pageDef.label);
       assert.equal(matched.length, pageDef.viewports!.length, pageDef.label);
       matched.forEach(/** 确认当前场景视口属于页面声明的支持范围。
@@ -144,18 +144,18 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
     const scenarios = buildScenarios();
     const expectedOrder = LOCALES.flatMap(/** 展开当前条目对应的`VIEWPORTS.map((viewport) => ${locale.code}_${viewport.label})`。
  * @param locale - 当前测试使用的语言。 */ (locale) =>
-      VIEWPORTS.map(/** 将当前条目映射为`${locale.code}_${viewport.label}`。
+      VIEWPORTS.map(/** 生成预期的语言与视口组合标识。
  * @param viewport - 当前操作使用的 viewport。 */ (viewport) => `${locale.code}_${viewport.label}`),
     );
     const actualOrder = [
-      ...new Set(scenarios.map(/** 将当前条目映射为`${scenario.locale}_${scenario.viewport.label}`。
+      ...new Set(scenarios.map(/** 提取实际场景的语言与视口组合，核对覆盖矩阵。
  * @param scenario - 当前测试场景配置。 */ (scenario) => `${scenario.locale}_${scenario.viewport.label}`)),
     ];
     assert.deepEqual(actualOrder, expectedOrder);
 
     // 同一语言×视口内：大厅 → 游客牌局登录提示 → 游客私人房 → 登录首页 → 用户名登录页 → 游客俱乐部 → 登录后页面
     const zhDesktop = scenarios.filter(
-      /** 仅保留满足以下条件的条目：`scenario.locale === 'zh-Hans' && scenario.viewport.label === 'desktop'`。
+      /** 选取简体中文桌面场景，检查该组合下的页面集合。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.locale === 'zh-Hans' && scenario.viewport.label === 'desktop',
     );
     assert.ok(zhDesktop.length >= 9);
@@ -193,7 +193,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
       VIEWPORTS.forEach(/** 构造当前语言与视口的大厅标签并确认其存在。
  * @param viewport - 当前操作使用的 viewport。 */ (viewport) => {
         const label = scenarioLabel(locale, viewport, 'hall');
-        assert.ok(scenarios.some(/** 判断是否存在满足以下条件的条目：`scenario.label === label`。
+        assert.ok(scenarios.some(/** 按场景标签确认预期页面已进入生成结果。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.label === label));
       });
     });
@@ -202,7 +202,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   test('未登录俱乐部场景通过底部 tab 进入且不注入登录态', /** 验证未登录俱乐部场景通过底部 tab 进入且不注入登录态。 */ () => {
     process.env.VISUAL_LOCALES = 'all';
     const scenarios = buildScenarios().filter(
-      /** 仅保留满足以下条件的条目：`scenario.pageLabel === GUEST_CLUB_SCENARIO.pageLabel`。
+      /** 提取游客俱乐部场景，核对游客访问配置。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.pageLabel === GUEST_CLUB_SCENARIO.pageLabel,
     );
 
@@ -219,7 +219,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   test('搜索登录提示场景点击大厅搜索并等待自定义确认弹窗', /** 验证搜索登录提示场景点击大厅搜索并等待自定义确认弹窗。 */ () => {
     process.env.VISUAL_LOCALES = 'all';
     const scenarios = buildScenarios().filter(
-      /** 仅保留满足以下条件的条目：`scenario.pageLabel === SEARCH_SIGN_IN_PROMPT_SCENARIO.pageLabel`。
+      /** 提取搜索登录提示场景，核对受限入口的提示配置。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.pageLabel === SEARCH_SIGN_IN_PROMPT_SCENARIO.pageLabel,
     );
 
@@ -238,7 +238,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   test('游客点击大厅牌局后展示登录确认弹窗', /** 验证游客点击大厅牌局后展示登录确认弹窗。 */ () => {
     process.env.VISUAL_LOCALES = 'all';
     const scenarios = buildScenarios().filter(
-      /** 仅保留满足以下条件的条目：`scenario.pageLabel === GUEST_GAME_SIGN_IN_PROMPT_SCENARIO.pageLabel`。
+      /** 提取游客游戏登录提示场景，核对进入游戏前的登录要求。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.pageLabel === GUEST_GAME_SIGN_IN_PROMPT_SCENARIO.pageLabel,
     );
 
@@ -263,7 +263,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
 
   test('登录大厅不依赖可选的等级接口作为就绪条件', /** 验证登录大厅不依赖可选的等级接口作为就绪条件。 */ () => {
     const scenario = buildScenarios().find(
-      /** 查找满足以下条件的首个条目：`item.locale === 'zh-Hans' && item.viewport.label === 'desktop' && item.pageLabel === 'signed_in_hall'`。
+      /** 定位简体中文桌面登录态大厅，核对首页配置。
  * @param item - 当前遍历的条目。 */ (item) =>
         item.locale === 'zh-Hans' &&
         item.viewport.label === 'desktop' &&
@@ -275,7 +275,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   test('游客私人房场景等待空状态引导渲染完成', /** 验证游客私人房场景等待空状态引导渲染完成。 */ () => {
     process.env.VISUAL_LOCALES = 'all';
     const scenarios = buildScenarios().filter(
-      /** 仅保留满足以下条件的条目：`scenario.pageLabel === 'guest_private_room'`。
+      /** 提取游客私人房场景，核对游客入口配置。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.pageLabel === 'guest_private_room',
     );
     assert.equal(scenarios.length, LOCALES.length * VIEWPORTS.length);
@@ -290,7 +290,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   test('私人房 tab 场景等待详情页房屋数据渲染完成', /** 验证私人房 tab 场景等待详情页房屋数据渲染完成。 */ () => {
     process.env.VISUAL_LOCALES = 'all';
     const scenarios = buildScenarios().filter(
-      /** 仅保留满足以下条件的条目：`scenario.pageLabel === 'signed_in_private_room'`。
+      /** 提取已登录私人房场景，核对账号模式配置。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.pageLabel === 'signed_in_private_room',
     );
     assert.equal(scenarios.length, LOCALES.length * VIEWPORTS.length);
@@ -306,7 +306,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   test('登录页场景通过 navClickTestIds 打开登录首页', /** 验证登录页场景通过 navClickTestIds 打开登录首页。 */ () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     const scenarios = buildScenarios();
-    const loginScenarios = scenarios.filter(/** 仅保留满足以下条件的条目：`scenario.label.endsWith('_login')`。
+    const loginScenarios = scenarios.filter(/** 提取默认登录场景，核对登录入口矩阵。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.label.endsWith('_login'));
 
     assert.equal(loginScenarios.length, 2);
@@ -321,7 +321,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
   test('用户名登录页场景依次点击两级入口并等待表单', /** 验证用户名登录页场景依次点击两级入口并等待表单。 */ () => {
     process.env.VISUAL_LOCALES = 'zh-Hans';
     const scenarios = buildScenarios();
-    const usernameScenarios = scenarios.filter(/** 仅保留满足以下条件的条目：`scenario.label.endsWith('_login_username')`。
+    const usernameScenarios = scenarios.filter(/** 提取用户名登录场景，核对账号输入模式。
  * @param scenario - 当前测试场景配置。 */ (scenario) =>
       scenario.label.endsWith('_login_username'),
     );
@@ -339,7 +339,7 @@ describe('visual scenarios', /** 核对视觉场景的语言、视口与页面�
     process.env.VISUAL_LOCALES = 'zh-Hans';
     const scenarios = buildScenarios();
     const emailScenarios = scenarios.filter(
-      /** 仅保留满足以下条件的条目：`scenario.pageLabel === 'login_forgot_password_email'`。
+      /** 提取邮箱找回密码场景，核对密码恢复页面配置。
  * @param scenario - 当前测试场景配置。 */ (scenario) => scenario.pageLabel === 'login_forgot_password_email',
     );
 

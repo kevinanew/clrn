@@ -15,6 +15,6 @@ console.log('已核对本任务账号金币余额为 10000');
 const values = { E2E_TEST_USERNAME: username, E2E_TEST_PASSWORD: password,
   E2E_CREATION_USERNAME: username, E2E_CREATION_PASSWORD: password,
   VISUAL_USERNAME: username, VISUAL_PASSWORD: password };
-appendFileSync(process.env.GITHUB_ENV, Object.entries(values).map(/** 将当前条目映射为`${key}=${value}\n`。
+appendFileSync(process.env.GITHUB_ENV, Object.entries(values).map(/** 将校验后的账号字段编码为 GitHub 环境变量记录。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([key,value]) => `${key}=${value}\n`).join(''));
 console.log(`本任务独占 CI 账号：${username}`);

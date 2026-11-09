@@ -59,14 +59,14 @@ async function lint(source) {
 }
 
 test('复杂度 10 和嵌套 3 是实际失败阈值', /** 验证复杂度 10 和嵌套 3 是实际失败阈值。 */ async () => {
-  const branches = Array.from({ length: 10 }, /** 为当前索引构造`if (x === ${n}) return ${n};`。
+  const branches = Array.from({ length: 10 }, /** 生成十个独立条件分支，构造超出 JS 复杂度上限的负例。
  * @param _ - 当前操作使用的 _。
  * @param n - 当前生成项的索引。 */ (_, n) => `if (x === ${n}) return ${n};`).join('\n');
   assert.ok((await lint(`function probe(x: number) { ${branches} return -1; } probe(0);`))
-    .some(/** 判断是否存在满足以下条件的条目：`item.ruleId === 'complexity'`。
+    .some(/** 确认超限分支触发复杂度诊断。
  * @param item - 当前遍历的条目。 */ item => item.ruleId === 'complexity'));
   assert.ok((await lint('function deep(x: boolean) { if(x) { if(x) { if(x) { if(x) { return 1; } } } } } deep(true);'))
-    .some(/** 判断是否存在满足以下条件的条目：`item.ruleId === 'max-depth'`。
+    .some(/** 确认超限嵌套触发深度诊断。
  * @param item - 当前遍历的条目。 */ item => item.ruleId === 'max-depth'));
   const config = await eslint.calculateConfigForFile('e2e/helpers/scenario-proxy.ts');
   assert.deepEqual(config.rules.complexity, [2, { max: 10, variant: 'classic' }]);
@@ -83,7 +83,7 @@ test('网络响应语法覆盖直接、下标、可选链、别名、服务器�
     'globalThis.fetch = handler;', 'context.mock.method(globalThis, "fetch", handler);',
     'sinon.stub(page, "route");', 'import {http} from "msw"; http.get("/", handler);',
   ]) {
-    assert.ok((await lint(source)).some(/** 判断是否存在满足以下条件的条目：`item.ruleId === 'quality/no-network-response'`。
+    assert.ok((await lint(source)).some(/** 确认各类 TypeScript 响应伪造入口均被边界规则识别。
  * @param item - 当前遍历的条目。 */ item => item.ruleId === 'quality/no-network-response'), source);
   }
 });
@@ -96,7 +96,7 @@ test('注释、文本、普通网络读取、展示数据及代理场景控制�
     const presentation = { route: 'data-only', fulfill: 'data-only' };
     console.log(documentation, presentation);
   `);
-  assert.equal(messages.filter(/** 仅保留满足以下条件的条目：`item.ruleId === 'quality/no-network-response'`。
+  assert.equal(messages.filter(/** 仅统计网络边界诊断，验证字符串和普通数据不会误报。
  * @param item - 当前遍历的条目。 */ item => item.ruleId === 'quality/no-network-response').length, 0);
 });
 
@@ -139,10 +139,10 @@ test('真实 dependency-cruiser 阻止循环、直接/间接越层和无法解�
       ['--config', join(repository, '.dependency-cruiser.cjs'), '--output-type', 'json', '.'], directory);
     const { summary } = JSON.parse(result.stdout);
     assert.ok(summary.advisedExitCode > 0);
-    const names = new Set(summary.violations.map(/** 将当前条目映射为`item.rule.name`。
+    const names = new Set(summary.violations.map(/** 提取依赖违规的规则名，核对循环与越层规则均已生效。
  * @param item - 当前遍历的条目。 */ item => item.rule.name));
     for (const name of ['no-cycles', 'ui-no-response-implementation', 'no-unresolved-local-imports']) assert.ok(names.has(name), name);
-    assert.ok(summary.violations.some(/** 判断是否存在满足以下条件的条目：`item.type === 'reachability'`。
+    assert.ok(summary.violations.some(/** 确认间接越层被报告为可达性违规。
  * @param item - 当前遍历的条目。 */ item => item.type === 'reachability'));
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
@@ -150,7 +150,7 @@ test('真实 dependency-cruiser 阻止循环、直接/间接越层和无法解�
 test('真实 jscpd 的原生基线允许旧重复，阻止新内容及第三份历史副本', /** 验证真实 jscpd 的原生基线允许旧重复，阻止新内容及第三份历史副本。 */ () => {
   const directory = mkdtempSync(join(tmpdir(), 'clrn-duplication-'));
   try {
-    const source = Array.from({ length: 14 }, /** 为当前索引构造`console.log('unique-quality-${n}', ${n} + input);`。
+    const source = Array.from({ length: 14 }, /** 生成可识别的连续代码，验证 jscpd 新增重复检测。
  * @param _ - 当前操作使用的 _。
  * @param n - 当前生成项的索引。 */ (_, n) => `console.log('unique-quality-${n}', ${n} + input);`).join('\n');
     for (const file of ['a.ts', 'b.ts']) writeFileSync(join(directory, file), source);
@@ -210,7 +210,7 @@ test('Ruff C901 负例含 noqa 仍失败，实际复杂度为 12', /** 验证Ruf
   const directory = mkdtempSync(join(tmpdir(), 'clrn-python-quality-'));
   try {
     const file = join(directory, 'probe.py');
-    const branches = Array.from({ length: 11 }, /** 为当前索引构造`if value == ${n}:\n return ${n}`。
+    const branches = Array.from({ length: 11 }, /** 生成 Python 条件分支，验证新增复杂度违规不能沿用历史名额。
  * @param _ - 当前操作使用的 _。
  * @param n - 当前生成项的索引。 */ (_, n) => `    if value == ${n}:\n        return ${n}`).join('\n');
     writeFileSync(file, `def probe(value):  # noqa: C901\n${branches}\n    return -1\n`);
@@ -242,7 +242,7 @@ test('真实代理适配器单测只使用已逐位置审查的例外', /** 验�
   const { findings } = JSON.parse(readFileSync(join(repository, 'quality/baseline.json'), 'utf8'));
   const file = 'e2e/helpers/mitmproxy-sources.test.ts';
   const [result] = await eslint.lintFiles([file]);
-  const mock = result.messages.filter(/** 仅保留满足以下条件的条目：`item.ruleId === 'quality/no-network-response'`。
+  const mock = result.messages.filter(/** 提取网络边界诊断，核对同一入口的重复出现次数。
  * @param item - 当前遍历的条目。 */ item => item.ruleId === 'quality/no-network-response');
   assert.ok(mock.length > 0);
   for (const message of mock) {

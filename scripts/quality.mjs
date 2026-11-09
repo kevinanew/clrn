@@ -12,7 +12,7 @@ import { writeDuplicationSources } from './documentation-projection.mjs';
  * @returns 完整依赖图与违规报告。
  */
 export function architectureReport() {
-  const files = sourceFiles().filter(/** 仅保留满足以下条件的条目：`/\.[cm]?[jt]sx?$/.test(file)`。
+  const files = sourceFiles().filter(/** 选择 JS/TS 源码作为依赖图入口，覆盖所有手写模块。
  * @param file - 当前源码或资源路径。 */ file => /\.[cm]?[jt]sx?$/.test(file));
   const { report, status } = runJSON(process.execPath, ['node_modules/dependency-cruiser/bin/dependency-cruiser.mjs',
     '--config', '.dependency-cruiser.cjs', '--output-type', 'json', ...files]);
@@ -38,7 +38,7 @@ export function duplicationReport() {
     if (result.error) throw result.error;
     if (![0, 1].includes(result.status)) throw new Error(`jscpd 异常退出：${result.stderr}`);
     const report = JSON.parse(readFileSync(join(directory, 'jscpd-report.json'), 'utf8'));
-    if (result.status && !report.duplicates.some(/** 判断是否存在满足以下条件的条目：`item.isNew`。
+    if (result.status && !report.duplicates.some(/** 确认 jscpd 失败确实来自新增重复，而非工具异常。
  * @param item - 当前遍历的条目。 */ item => item.isNew)) throw new Error(`jscpd 检查失败：${result.stderr}`);
     const { fingerprints } = JSON.parse(readFileSync(baseline, 'utf8'));
     return { sourceCount, statistics: report.statistics, fingerprints, duplicates: report.duplicates.map(/** 移除重复报告中的源码片段，保留安全的位置与指纹信息。
@@ -59,7 +59,7 @@ export function duplicationReport() {
 function checkFindings(findings) {
   const { findings: baseline } = JSON.parse(readFileSync(join(repository, 'quality/baseline.json'), 'utf8'));
   const added = newFindings(findings, baseline);
-  const relevant = baseline.filter(/** 仅保留满足以下条件的条目：`mode === 'python' ? item.rule === 'C901' : item.rule !== 'C901'`。
+  const relevant = baseline.filter(/** 按当前扫描语言选择历史条目，检查是否存在已经消除的违规。
  * @param item - 当前遍历的条目。 */ item => mode === 'python' ? item.rule === 'C901' : item.rule !== 'C901');
   const stale = newFindings(relevant, findings);
   console.log(`静态诊断：${findings.length} 个历史/当前问题，${added.length} 个未登记问题。`);
@@ -85,10 +85,10 @@ if (mode === 'report') {
     if (report.summary.violations.length) process.exitCode = 1;
   } else if (mode === 'duplication') {
     const { duplicates, fingerprints } = duplicationReport();
-    const added = duplicates.filter(/** 仅保留满足以下条件的条目：`item.isNew`。
+    const added = duplicates.filter(/** 提取新增重复组，输出需要处理的源码位置。
  * @param item - 当前遍历的条目。 */ item => item.isNew);
     const baseline = JSON.parse(readFileSync(join(repository, 'quality/jscpd-baseline.json'), 'utf8'));
-    const stale = Object.keys(baseline.fingerprints).filter(/** 仅保留满足以下条件的条目：`(fingerprints[key] ?? 0) < baseline.fingerprints[key]`。
+    const stale = Object.keys(baseline.fingerprints).filter(/** 查找已消失或次数减少的重复指纹，要求同步缩减历史基线。
  * @param key - 当前操作使用的 key。 */ key => (fingerprints[key] ?? 0) < baseline.fingerprints[key]);
     console.log(`jscpd：${duplicates.length} 组重复，${added.length} 组新增。`);
     for (const item of added) console.error(`${item.firstFile.name}:${item.firstFile.start} ↔ ${item.secondFile.name}:${item.secondFile.start}`);

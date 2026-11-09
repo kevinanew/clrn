@@ -61,7 +61,7 @@ export async function closeMask(page: Page, marker: string, advanceClock = false
   await visible(page, marker)
     .locator('xpath=ancestor::*[*[@data-testid="screen-mask-touch-to-close"]][1]')
     .locator(':scope > [data-testid="screen-mask-touch-to-close"]')
-    .evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+    .evaluate(/** 触发炸金花目标控件，将界面推进到待截图状态。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   if (advanceClock) await advance(page);
   await expect(visible(page, marker)).toBeHidden();
@@ -80,7 +80,7 @@ export async function capture(page: Page, scenario: VisualScenario, state: strin
     for (let parent = node.parentElement; parent; parent = parent.parentElement) parent.scrollTop = 0;
     window.scrollTo(0, 0);
   });
-  const { top, translate } = await game.evaluate(/** 在页面中读取`{ top: node.getBoundingClientRect().top, translate: (node as HTMLElement).style.getPropertyValue('translate'), }`，供测试判断当前界面状态。
+  const { top, translate } = await game.evaluate(/** 读取炸金花目标的顶部位置与平移样式，核对布局对齐。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => ({
     top: node.getBoundingClientRect().top, translate: (node as HTMLElement).style.getPropertyValue('translate'),
   }));

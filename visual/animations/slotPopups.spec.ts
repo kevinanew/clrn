@@ -14,7 +14,7 @@ test('slot panel and no-energy dialog enter and exit', /** 验证老虎机面板
  * @param response - 当前收到的接口响应。 */ response => response.request().method() === 'PUT'
     && /\/v10\/wallet\/[^/?]+(?:\?|$)/.test(response.url()) && response.ok());
   await openApplication(context, page, info);
-  await selectScenario(context, 'slot', { userId: await page.evaluate(/** 在页面中读取`JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id`，供测试判断当前界面状态。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
+  await selectScenario(context, 'slot', { userId: await page.evaluate(/** 读取当前用户标识，绑定老虎机弹层场景的账号。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
   const panel = page.getByTestId('slot-machine-view');
   const wallet = panel.getByTestId('top-toolbar');
   const walletNumbers = wallet.getByText(/^\d[\d,]*$/);
@@ -22,7 +22,7 @@ test('slot panel and no-energy dialog enter and exit', /** 验证老虎机面板
   expect(walletBody.ok, '必须使用真实钱包成功响应').toBe(true);
   const expectedWalletBalances = ['coin', 'diamond'].map(/** 从真实钱包中提取金币和钻石余额，并验证值可安全转成数字。
  * @param code - 当前操作使用的 code。 */ code => {
-    const currency = walletBody.result.currencies.find(/** 查找满足以下条件的首个条目：`value.code === code`。
+    const currency = walletBody.result.currencies.find(/** 按币种代码查找钱包资产，核对弹层所展示的余额。
  * @param value - 当前待转换或校验的值。 */ (value: { code: string }) => value.code === code);
     expect(currency, `真实钱包必须包含 ${code}`).toBeTruthy();
     expect(Number.isFinite(Number(currency.balance))).toBe(true);

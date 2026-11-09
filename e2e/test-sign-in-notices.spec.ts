@@ -77,7 +77,7 @@ test.describe('登录提示延迟到原始手势之前出现', /** 覆盖登录�
       // 模拟首屏已可操作，但异步请求稍后才显示提示的实际失败场景。
       await page.evaluate(/** 重新显示提示，验证处理器可应对再次弹出的遮挡。 */ () => { document.getElementById('notice')!.style.display = 'block'; });
       await scroll(page, list, touch);
-      await expect.poll(/** 重复读取`list.evaluate((element) => element.scrollTop)`，直到满足外层等待断言。 */ () => list.evaluate(/** 在页面中读取`element.scrollTop`，供测试判断当前界面状态。
+      await expect.poll(/** 轮询提示列表的滚动位置，等待滚动操作生效。 */ () => list.evaluate(/** 读取提示列表偏移，核对长内容可以滚动。
  * @param element - 当前匹配的页面元素。 */ (element) => element.scrollTop)).toBeGreaterThan(0);
       await expect(page.getByRole('dialog')).toBeHidden();
       await expect(page.locator('#clicks')).toHaveText('0');

@@ -11,7 +11,7 @@ test('识别两种连接重试按钮，恢复后才就绪，持续失败最多�
     const page = await browser.newPage();
     const cases = ['common-alert-button-retry', 'alert-custom-button']
       .flatMap(/** 展开当前条目对应的`[false, true].map(persistent => ({ id, persistent }))`。
- * @param id - 当前操作使用的 id。 */ id => [false, true].map(/** 将当前条目映射为`{ id, persistent }`。
+ * @param id - 当前操作使用的 id。 */ id => [false, true].map(/** 组合连接标识与持久化策略，覆盖连接诊断的两种记录方式。
  * @param persistent - 当前操作使用的 persistent。 */ persistent => ({ id, persistent })));
     for (const { id, persistent } of cases) {
       await page.setContent(`<div data-testid="common-alert-container">

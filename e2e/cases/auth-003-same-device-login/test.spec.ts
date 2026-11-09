@@ -23,7 +23,7 @@ test('AUTH-003：相同设备标识再次登录的认证行为', /** 验证AUTH-
     expect(second.userId).toBe(first.userId);
     expect(await accountStatus(otherPage, second)).toBe(200);
     await test.step('相同 deviceId 也不能保留两份有效登录凭据', /** 执行相同 deviceId 也不能保留两份有效登录凭据。 */ async () => {
-      await expect.poll(/** 重复读取`accountStatus(page, first)`，直到满足外层等待断言。 */ () => accountStatus(page, first), { timeout: 10_000 }).toBe(401);
+      await expect.poll(/** 轮询首个会话状态，验证同设备重复登录的会话行为。 */ () => accountStatus(page, first), { timeout: 10_000 }).toBe(401);
       expect(await accountStatus(otherPage, second)).toBe(200);
     });
   } finally {

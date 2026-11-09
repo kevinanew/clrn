@@ -21,7 +21,7 @@ async function fixture(t, usernames = ['parallel01', 'parallel02']) {
   const directory = await mkdtemp(join(tmpdir(), 'clrn-account-lock-test-'));
   const pool = join(directory, 'accounts.json');
   await writeFile(pool, JSON.stringify({
-    accounts: usernames.map(/** 将当前条目映射为`{ username, password: 'mock-password', userId: '11111111-2222-4333-8444-555555555555', }`。
+    accounts: usernames.map(/** 为账号池单测准备隔离的虚拟凭据与用户标识。
  * @param username - 当前操作使用的 username。 */ username => ({
       username, password: 'mock-password', userId: '11111111-2222-4333-8444-555555555555',
     })),
@@ -152,12 +152,12 @@ test('超过 H5 输入长度的密码在启动测试前被拒绝且不泄露', /
 
 test('30 个并发任务使用 30 个不同账号，第 31 个任务不能复用', { timeout: 30000 }, /** 验证30 个并发任务使用 30 个不同账号，第 31 个任务不能复用。
  * @param t - 当前测试的生命周期与替换接口。 */ async t => {
-  const usernames = Array.from({ length: 30 }, /** 为当前索引构造`parallel${String(index + 1).padStart(2, '0')}`。
+  const usernames = Array.from({ length: 30 }, /** 生成三十个不同账号名，验证并发占用时的分配唯一性。
  * @param _ - 当前操作使用的 _。
  * @param index - 当前条目在集合中的位置。 */ (_, index) => `parallel${String(index + 1).padStart(2, '0')}`);
   const { directory, pool } = await fixture(t, usernames);
-  const runs = await Promise.all(usernames.map(/** 将当前条目映射为`hold(t, pool)`。 */ () => hold(t, pool)));
-  assert.equal(new Set(runs.map(/** 将当前条目映射为`run.identity.username`。
+  const runs = await Promise.all(usernames.map(/** 并发启动账号占用进程，验证文件锁协调行为。 */ () => hold(t, pool)));
+  assert.equal(new Set(runs.map(/** 收集各进程获得的账号名，检查是否重复分配。
  * @param run - 当前操作使用的 run。 */ run => run.identity.username)).size, 30);
   const extra = launch(t, pool, [process.execPath, '-e', 'process.exit(0)']);
   const unavailable = await extra.finished;
@@ -165,7 +165,7 @@ test('30 个并发任务使用 30 个不同账号，第 31 个任务不能复用
   assert.match(unavailable.stderr, /全部被占用/);
   runs.forEach(/** 向并行运行的测试进程发送终止信号，验证进程组清理。
  * @param run - 当前操作使用的 run。 */ run => run.child.kill('SIGTERM'));
-  await Promise.all(runs.map(/** 将当前条目映射为`run.finished`。
+  await Promise.all(runs.map(/** 等待所有账号占用子进程退出，避免遗留锁或进程。
  * @param run - 当前操作使用的 run。 */ run => run.finished));
   assert.deepEqual(await readdir(join(directory, 'locks')), []);
 });

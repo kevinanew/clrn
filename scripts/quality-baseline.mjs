@@ -138,7 +138,7 @@ export function checkBaseline() {
   }
   const { findings } = JSON.parse(readFileSync(`${repository}/quality/baseline.json`, 'utf8'));
   const allowed = new Set(['complexity', 'max-depth', 'quality/no-network-response', 'C901']);
-  if (findings.some(/** 判断是否存在满足以下条件的条目：`!item.reason?.trim() || !item.anchor || !item.file || !item.line || !allowed.has(item.rule)`。
+  if (findings.some(/** 识别缺少理由、源码锚点、位置或合法规则名的历史条目。
  * @param item - 当前遍历的条目。 */ item => !item.reason?.trim() || !item.anchor || !item.file || !item.line || !allowed.has(item.rule))) {
     throw new Error('历史清单必须包含精确位置、源码指纹和迁移/单测例外理由。');
   }

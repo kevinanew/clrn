@@ -129,10 +129,10 @@ export async function restoreCssAnimations(page: Page) {
  * @param page - 待冻结页面。
  */
 export async function freeze(page: Page): Promise<void> {
-  await page.evaluate(/** 在页面中读取`document.fonts.ready.then(() => undefined)`，供测试判断当前界面状态。 */ () => document.fonts.ready.then(/** 将异步结果转换为`undefined`，供后续步骤使用。 */ () => undefined));
+  await page.evaluate(/** 等待字体加载完成，再开始固定时间线采样。 */ () => document.fonts.ready.then(/** 将异步结果转换为`undefined`，供后续步骤使用。 */ () => undefined));
   await ensureLocalImagesLoaded(page);
   if (hasNormalCardSpriteClock(page)) return;
-  const now = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
+  const now = await page.evaluate(/** 读取页面时钟，记录时间线采样的起始时刻。 */ () => Date.now());
   // 首次暂停时浏览器还在走真实时间，为较慢 Linux 的协议往返留出余量。
   // 后续已暂停的页面保持原有预热间隔，避免每次打开面板都跳过大量业务定时器。
   await page.clock.pauseAt(Math.ceil((now + (pausedPages.has(page) ? 1000 : 5000)) / 16) * 16);

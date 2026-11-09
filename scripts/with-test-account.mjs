@@ -58,13 +58,13 @@ async function run() {
       // H5 密码框最多接收 20 个字符；更长的密码虽然可走 API 登录，界面会截断。
       || account.password.length > 20 || /[\r\n\0]/.test(account.password)
       || typeof account.userId !== 'string' || !account.userId)
-    || new Set(accounts.map(/** 将当前条目映射为`account.username.toLowerCase()`。
+    || new Set(accounts.map(/** 归一账号名大小写，检测账号池内的重复身份。
  * @param account - 当前操作使用的 account。 */ account => account.username.toLowerCase())).size !== accounts.length) {
     throw new Error('测试账号池为空、配置不完整、密码不兼容 H5 或包含重复用户名');
   }
 
   // 自定义账号池也使用旁边的 locks；共享账号时必须指定相同的账号池文件。
-  if (accounts.some(/** 判断是否存在满足以下条件的条目：`ciAccounts.includes(account.username.toLowerCase())`。
+  if (accounts.some(/** 识别 CI 专用账号，阻止普通测试账号池占用它们。
  * @param account - 当前操作使用的 account。 */ account => ciAccounts.includes(account.username.toLowerCase()))) {
     throw new Error('本机账号池禁止使用 CLRN 的 CI 专用账号，避免绕过 GitHub 账号锁');
   }

@@ -28,7 +28,8 @@ for (const file of javascript) {
   }], { filename: file, allowInlineConfig: false });
   for (const message of messages) findings.push({ file, line: message.line, rule: message.ruleId ?? 'parse-error', message: message.message });
 }
-const result = spawnSync('uv', ['run', '--no-project', '--python', '3.12.12', 'python', 'scripts/check-documentation.py'],
+const result = spawnSync('uv', ['run', '--no-project', '--python', '3.12.12',
+  '--with-requirements', 'scripts/documentation-requirements.txt', 'python', 'scripts/check-documentation.py'],
   { cwd: repository, input: JSON.stringify([...python, ...shell]), encoding: 'utf8' });
 if (result.error) throw result.error;
 if (result.status !== 0) throw new Error(`Python 文档检查异常：${result.stderr}`);

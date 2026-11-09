@@ -33,7 +33,7 @@ test('真实创建俱乐部德州牌局、验证归属并通过API清理退款',
     clubId = clubIdentifier(body);
     expect(clubId).toMatch(/^[0-9a-f-]{36}$/);
     await expect(await unique(page, 'club-info-name')).toHaveText(clubName);
-    await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
+    await expect.poll(/** 轮询创建俱乐部后的钻石余额，核对创建费用。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
   });
 
   await test.step('从俱乐部详情选择德州，确认默认10钻创建配置', /** 执行从俱乐部详情选择德州，确认默认10钻创建配置。 */ async () => {
@@ -68,7 +68,7 @@ test('真实创建俱乐部德州牌局、验证归属并通过API清理退款',
       await expect(await unique(page, 'texas-holdem-room-name-text')).toHaveText(roomName);
       await expect(await unique(page, 'texas-holdem-room-type-text')).toHaveText(clubName);
       await expect(await unique(page, 'countdown-text')).toHaveText('等待开始');
-      await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 60);
+      await expect.poll(/** 轮询创建牌局后的钻石余额，核对牌局费用。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 60);
     });
   } finally {
     if (createdRoomId && cleanupUrl) {
@@ -85,7 +85,7 @@ test('真实创建俱乐部德州牌局、验证归属并通过API清理退款',
         expect(response.ok(), '本次牌局清理HTTP应成功').toBeTruthy();
         expect((await response.json()).ok, '本次牌局清理业务应成功').toBe(true);
         await response.dispose();
-        await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
+        await expect.poll(/** 轮询解散牌局后的钻石余额，核对最终余额。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
       });
     }
   }

@@ -13,7 +13,7 @@ test('横向手势切换申请标签，触底按游标追加且末页停止请�
   isMobile,
 }, info) => {
   await openApp(page);
-  const userId = await page.evaluate(/** 在页面中读取`JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id as string);
+  const userId = await page.evaluate(/** 读取当前登录用户标识，限定分页测试的代理场景。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id as string);
   await selectScenario(context, 'pagination', { userId });
   await page.getByTestId('message-tab').click();
   const diagnostics = await observePaginationGesture(page);

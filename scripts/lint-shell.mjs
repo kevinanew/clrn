@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { repository, sourceFiles } from './source-files.mjs';
 
 // 使用固定版本的二进制包装包，macOS 和 CI 无需另行安装系统 ShellCheck。
-const files = sourceFiles().filter(/** 仅保留满足以下条件的条目：`file.endsWith('.sh')`。
+const files = sourceFiles().filter(/** 选取 Shell 入口脚本，交给固定版本 ShellCheck 检查。
  * @param file - 当前源码或资源路径。 */ file => file.endsWith('.sh'));
 if (files.length === 0) {
   console.log('ShellCheck：仓库没有 Shell 脚本。');

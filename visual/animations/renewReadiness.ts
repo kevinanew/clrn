@@ -51,10 +51,10 @@ async function readRenewPopup(page: Page): Promise<void> {
     });
     // 先安装响应等待，再点击入口；不得用上一次打开留下的控件数值判断本次请求成功。
     const results = await Promise.allSettled([...reads, press(page, 'drawer-menu-item-renew')]);
-    const failures = results.filter(/** 仅保留满足以下条件的条目：`result.status === 'rejected'`。
+    const failures = results.filter(/** 提取失败的牌面加载结果，供就绪失败诊断报告。
  * @param result - 当前操作使用的 result。 */ result => result.status === 'rejected');
     // 同时出现业务拒绝与网络中断时，不能用恢复逻辑掩盖业务拒绝。
-    const failure = failures.find(/** 查找满足以下条件的首个条目：`!(result.reason instanceof InterruptedRenewRead)`。
+    const failure = failures.find(/** 查找非预期中断错误，优先报告真正导致续时就绪失败的原因。
  * @param result - 当前操作使用的 result。 */ result => !(result.reason instanceof InterruptedRenewRead)) || failures[0];
     if (failure) throw failure.reason;
     await page.clock.runFor(0);

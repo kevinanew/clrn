@@ -25,7 +25,7 @@ type Capture = (page: Page, scenario: VisualScenario, state: string) => Promise<
  */
 export async function captureGameplay(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   roomId: string, capture: Capture): Promise<void> {
-  const self = await page.evaluate(/** 在页面中读取`JSON.parse( localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(
+  const self = await page.evaluate(/** 读取当前登录用户标识，关联德州游戏操作与代理场景。 */ () => JSON.parse(
     localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
   // 连接成功后控制页面时钟；每步只推进确定时长，固定倒计时和筹码动画。
   await freezeClock(page);
@@ -63,7 +63,7 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   await visible(page, 'texas-holdem-operation-accurate-bet-button').click();
   await expect(visible(page, 'accurate-bet-popup-container')).toBeVisible();
   await snapshot('accurate_raise');
-  await visible(page, 'screen-mask-touch-to-close').evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+  await visible(page, 'screen-mask-touch-to-close').evaluate(/** 触发目标德州操作按钮，推进牌局截图到指定状态。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
 
   await restore('river', true);

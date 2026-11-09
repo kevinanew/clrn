@@ -10,12 +10,12 @@ describe('visual run shard config', /** 核对视觉运行的场景筛选与分�
       { label: 'zh-Hans_mobile_guest_me' },
     ];
     const selected = selectScenariosByLabel(scenarios, 'account');
-    assert.deepEqual(selected.map(/** 将当前条目映射为`scenario.label`。
+    assert.deepEqual(selected.map(/** 提取筛选后的场景标签，核对标签匹配结果。
  * @param scenario - 当前测试场景配置。 */ scenario => scenario.label), [
       'zh-Hans_mobile_signed_in_account_security',
     ]);
 
-    const grep = new RegExp(exactScenarioGrep(selected.map(/** 将当前条目映射为`scenario.label`。
+    const grep = new RegExp(exactScenarioGrep(selected.map(/** 提取场景标签，验证精确筛选正则的匹配边界。
  * @param scenario - 当前测试场景配置。 */ scenario => scenario.label)));
     assert.ok(grep.test('cases/account/account.spec.ts zh-Hans_mobile_signed_in_account_security'));
     assert.ok(!grep.test('cases/account/account.spec.ts zh-Hans_mobile_guest_me'));
@@ -58,7 +58,7 @@ describe('visual run shard config', /** 核对视觉运行的场景筛选与分�
     ];
 
     assert.deepEqual(
-      publicRuns.map(/** 将当前条目映射为`count`。
+      publicRuns.map(/** 提取各批次用例数，核对公开场景的分批安排。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ count }) => count),
       [23, 8, 28],
     );

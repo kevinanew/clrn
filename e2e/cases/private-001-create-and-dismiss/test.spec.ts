@@ -42,7 +42,7 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
       await expect(await unique(page, 'texas-holdem-room-name-text')).toHaveText(name);
       await expect(await unique(page, 'texas-holdem-room-type-text')).toHaveText('私人房间');
       await expect(await unique(page, 'countdown-text')).toHaveText('等待开始');
-      await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 10);
+      await expect.poll(/** 轮询创建私人房后的钻石余额，核对实际扣费。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 10);
     });
     await test.step('退出桌面，验证刚创建牌局仍在私人房间', /** 执行退出桌面，验证刚创建牌局仍在私人房间。 */ async () => {
       await clickWithBackgroundClubNotice(page, 'menu-button', 3);
@@ -94,7 +94,7 @@ test('私人德州牌局真实创建、退出、解散并退回钻石', { tag: '
           removed = true;
           await expect(await unique(page, 'create-game-button')).toBeVisible();
           if (roomTestId) await expect(page.getByTestId(roomTestId)).toHaveCount(0);
-          await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before);
+          await expect.poll(/** 轮询解散私人房后的钻石余额，核对最终余额。 */ () => readDiamondBalance(page, newAccount)).toBe(before);
         });
       } finally {
         await fallbackCleanup();

@@ -19,7 +19,7 @@ async function summaries(directory) {
 
 if (process.env.GITHUB_STEP_SUMMARY) {
   const reports = await summaries('visual/test-results');
-  const failures = reports.filter(/** 仅保留满足以下条件的条目：`report.includes('test.failure')`。
+  const failures = reports.filter(/** 筛选含测试失败事件的连接报告，供汇总优先展示。
  * @param report - 当前操作使用的 report。 */ report => report.includes('test.failure'));
   const selected = failures.length ? failures : reports;
   let size = 0;

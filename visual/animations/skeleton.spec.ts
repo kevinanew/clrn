@@ -12,7 +12,7 @@ test('club list placeholders pulse while details are pending', /** 验证俱乐�
   await selectScenario(context, 'club-skeleton', { userId: userId as string });
   try {
     await openApplication(context, page, info);
-    await expect.poll(/** 重复读取`(await scenarioStatus(context)).requests`，直到满足外层等待断言。 */ async () => (await scenarioStatus(context)).requests, { timeout: 60_000, message: '等待大厅首次加载俱乐部详情，再暂缓下一次响应' }).toBeGreaterThan(0);
+    await expect.poll(/** 轮询代理请求计数，确认 skeleton 场景已经开始加载数据。 */ async () => (await scenarioStatus(context)).requests, { timeout: 60_000, message: '等待大厅首次加载俱乐部详情，再暂缓下一次响应' }).toBeGreaterThan(0);
     await selectScenario(context, 'club-skeleton', { phase: 'hold' });
     await freeze(page);
     await press(page, 'club-tab');

@@ -139,7 +139,7 @@ async function registerSavedAccount(page: Page, context: BrowserContext, directo
     origin, apiOrigin: new URL(account.accountUrl).origin, account,
     // 登录页可能加载第三方 iframe；只复用目标 H5 状态，不保存第三方状态。
     storageState: {
-      origins: browserState.origins.filter(/** 仅保留满足以下条件的条目：`entry.origin === origin`。
+      origins: browserState.origins.filter(/** 仅保留当前站点的登录存储，避免把其他来源写入认证缓存。
  * @param entry - 当前处理的记录条目。 */ entry => entry.origin === origin),
       cookies: browserState.cookies.filter(/** 选择适用于当前主机及其父域的账号 Cookie。
  * @param cookie - 当前操作使用的 cookie。 */ cookie => {

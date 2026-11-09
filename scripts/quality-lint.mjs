@@ -25,7 +25,7 @@ export function runJSON(command, args) {
  * @returns 所有未被 ESLint 抑制的诊断。
  */
 export async function javascriptFindings() {
-  const files = sourceFiles().filter(/** 仅保留满足以下条件的条目：`/\.[cm]?[jt]sx?$/.test(file)`。
+  const files = sourceFiles().filter(/** 选择全部 JS/TS 实现，保持静态扫描与源码清单一致。
  * @param file - 当前源码或资源路径。 */ file => /\.[cm]?[jt]sx?$/.test(file));
   if (!files.length) throw new Error('ESLint 没有扫描到源码。');
   const results = await new ESLint({ cwd: repository }).lintFiles(files);
@@ -37,9 +37,9 @@ export async function javascriptFindings() {
     const directives = directiveChecker.verify(source, [{
       languageOptions: { parser: tseslint.parser }, linterOptions: { noInlineConfig: true },
       plugins: { quality }, rules: { 'quality/no-quality-disable': 'error' },
-    }]).filter(/** 仅保留满足以下条件的条目：`item.ruleId === 'quality/no-quality-disable'`。
+    }]).filter(/** 仅保留禁止关闭质量规则的独立诊断。
  * @param item - 当前遍历的条目。 */ item => item.ruleId === 'quality/no-quality-disable');
-    const messages = new Map([...result.messages, ...directives].map(/** 将当前条目映射为`[JSON.stringify(item), item]`。
+    const messages = new Map([...result.messages, ...directives].map(/** 按完整消息内容建立去重键，合并 ESLint 与独立指令检查的诊断。
  * @param item - 当前遍历的条目。 */ item => [JSON.stringify(item), item]));
     return [...messages.values()].map(/** 将 ESLint 消息转换为仓库相对路径的统一诊断结构。
  * @param message - 当前操作使用的 message。 */ message => ({
@@ -56,7 +56,7 @@ export async function javascriptFindings() {
  * @returns 去重后的全部 Python 诊断。
  */
 export function pythonFindings() {
-  const files = sourceFiles().filter(/** 仅保留满足以下条件的条目：`file.endsWith('.py')`。
+  const files = sourceFiles().filter(/** 选择全部 Python 源码，执行 Ruff 与强制复杂度检查。
  * @param file - 当前源码或资源路径。 */ file => file.endsWith('.py'));
   if (!files.length) throw new Error('Ruff 没有扫描到源码。');
   const args = ['--from', 'ruff==0.15.12', 'ruff', 'check', '--no-cache', '--output-format', 'json'];

@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { isIP } from 'node:net';
 import diagnosticPaths from '../mitmproxy/data/diagnostic-paths.json';
 
-const pathTemplates = diagnosticPaths.map(/** 将当前条目映射为`{ path, segments: path.split('/') }`。
+const pathTemplates = diagnosticPaths.map(/** 预拆分允许记录的接口模板，供请求路径逐段匹配。
  * @param path - 当前操作使用的 path。 */ path => ({ path, segments: path.split('/') }));
 
 /**
@@ -95,7 +95,7 @@ export function diagnosticFields(value: unknown): Record<string, string | number
     const sanitize = nodeFields.has(key) ? diagnosticNode : diagnosticText;
     if (typeof item === 'number' && Number.isFinite(item) || typeof item === 'boolean') result[key] = item;
     else if (typeof item === 'string') result[key] = sanitize(item);
-    else if (Array.isArray(item)) result[key] = item.slice(0, 100).filter(/** 仅保留满足以下条件的条目：`typeof entry === 'string'`。
+    else if (Array.isArray(item)) result[key] = item.slice(0, 100).filter(/** 仅保留可逐项脱敏的字符串，拒绝数组中的嵌套对象。
  * @param entry - 当前处理的记录条目。 */ entry => typeof entry === 'string').map(sanitize);
   }
   return result;

@@ -58,17 +58,17 @@ test('真实浏览器保留失败前的操作、节点列表、未完成请求�
     }
     assert.ok(!saved.includes('secret'));
     const result = JSON.parse(saved);
-    assert.ok(result.events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'nodes.received'`。
+    assert.ok(result.events.some(/** 确认浏览器收到了节点候选列表事件。
  * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'nodes.received'));
-    assert.ok(result.events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'http.pending'`。
+    assert.ok(result.events.some(/** 确认未完成的 HTTP 请求已写入诊断事件。
  * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'http.pending'));
-    assert.ok(result.events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'probe.cache' && event.source === 'application'`。
+    assert.ok(result.events.some(/** 确认应用提供的节点探测缓存进入诊断结果。
  * @param event - 当前触发的事件。 */ (event: { event: string; source: string }) => event.event === 'probe.cache' && event.source === 'application'));
     const node = diagnosticNode('api.fixture.invalid');
-    assert.ok(result.events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'nodes.received' && event.candidates.includes(node)`。
+    assert.ok(result.events.some(/** 确认节点列表事件保留了脱敏后的候选节点标识。
  * @param event - 当前触发的事件。 */ (event: { event: string; candidates: string[] }) =>
       event.event === 'nodes.received' && event.candidates.includes(node)));
-    assert.ok(result.events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'probe.cache' && event.node === node`。
+    assert.ok(result.events.some(/** 确认探测缓存与节点列表使用同一脱敏节点标识。
  * @param event - 当前触发的事件。 */ (event: { event: string; node: string }) =>
       event.event === 'probe.cache' && event.node === node));
     const summary = await readFile(path.join(directory, 'connection-summary.md'), 'utf8');

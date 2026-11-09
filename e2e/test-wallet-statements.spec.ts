@@ -35,7 +35,7 @@ for (const currency of ['coin', 'diamond'] as const) {
         { ...valid, currency_name: currency === 'coin' ? '钻石' : '金币' }, { ...valid, amount: 'NaN' },
         { ...valid, balance: null }, { ...valid, event: 'unknown' },
         { ...valid, create_at: 'invalid' }, { ...valid, memo: 42 }, { ...valid, memo: undefined },
-        { ...valid, statement_id: '' }].map(/** 将当前条目映射为`{ ...body, result: { ...body.result, statements: [item] } }`。
+        { ...valid, statement_id: '' }].map(/** 逐项构造异常钱包流水响应，验证字段缺失时的解析行为。
  * @param item - 当前遍历的条目。 */ item => ({ ...body, result: { ...body.result, statements: [item] } })),
     ]) {
       await expect(readStatements(response(invalid), currency)).rejects.toThrow();

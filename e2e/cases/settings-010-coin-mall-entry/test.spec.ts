@@ -16,7 +16,7 @@ test('SETTINGS-010：金币余额入口保留真实余额并默认显示金币',
     expect(response.ok(), '钱包 HTTP 响应应成功').toBe(true);
     const assets: { ok: boolean; result: { currencies: { code: string; balance: string }[] } } = await response.json();
     expect(assets.ok, '钱包业务响应应成功').toBe(true);
-    const coin = assets.result.currencies.find(/** 查找满足以下条件的首个条目：`asset.code === 'coin'`。
+    const coin = assets.result.currencies.find(/** 定位金币资产，核对商城入口显示的金币余额。
  * @param asset - 当前操作使用的 asset。 */ asset => asset.code === 'coin');
     if (!coin) throw new Error('钱包响应缺少金币余额');
     balance = coin.balance;

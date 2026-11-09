@@ -37,14 +37,14 @@ test('连接事件模拟与请求使用同一编号，关闭原因未知不猜�
   socket.emit('close', true);
   const output = await readFile(path.join(directory, 'release-server-events.jsonl'), 'utf8');
   verifyPrivacy(output);
-  const events = output.trim().split('\n').map(/** 将当前条目映射为`JSON.parse(line)`。
+  const events = output.trim().split('\n').map(/** 解析逐行 JSON 日志，核对静态服务的事件序列。
  * @param line - 当前操作使用的 line。 */ line => JSON.parse(line));
-  assert.deepEqual(events.map(/** 将当前条目映射为`event.event`。
+  assert.deepEqual(events.map(/** 提取事件名称，核对请求生命周期的发生顺序。
  * @param event - 当前触发的事件。 */ event => event.event), ['release.tcp-open', 'release.request', 'release.request',
     'release.tcp-timeout', 'release.tcp-error', 'release.tcp-end', 'release.tcp-close']);
   assert.ok(events.every(/** 确认所有条目均满足：`event.connectionId === 'connection-1'`。
  * @param event - 当前触发的事件。 */ event => event.connectionId === 'connection-1'));
-  assert.ok(events.filter(/** 仅保留满足以下条件的条目：`event.event.startsWith('release.tcp')`。
+  assert.ok(events.filter(/** 提取 TCP 生命周期事件，单独核对连接诊断。
  * @param event - 当前触发的事件。 */ event => event.event.startsWith('release.tcp')).every(/** 确认所有条目均满足：`!('status' in event) && !('method' in event)`。
  * @param event - 当前触发的事件。 */ event => !('status' in event) && !('method' in event)));
   assert.equal(events.at(-1).outcome, 'error');
@@ -67,7 +67,7 @@ test('无响应头的读取失败不能记为默认200，已发200后的中断�
   }
   const output = await readFile(path.join(directory, 'release-server-events.jsonl'), 'utf8');
   verifyPrivacy(output);
-  const events = output.trim().split('\n').map(/** 将当前条目映射为`JSON.parse(line)`。
+  const events = output.trim().split('\n').map(/** 解析流传输诊断日志，检查中断与错误记录。
  * @param line - 当前操作使用的 line。 */ line => JSON.parse(line));
   assert.equal(events.length, 10);
   for (const event of events) {
@@ -76,11 +76,11 @@ test('无响应头的读取失败不能记为默认200，已发200后的中断�
     assert.equal(event.method, 'GET');
     assert.equal(event.status, event.requestId === 'request-true' ? 200 : 'unavailable');
   }
-  assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.interrupted'`。
+  assert.equal(events.filter(/** 统计响应中断事件，验证同一中断只记录一次。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.interrupted').length, 2);
-  assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.stream-error'`。
+  assert.equal(events.filter(/** 统计流错误事件，核对故障被服务端观测到的次数。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.stream-error').length, 2);
-  assert.equal(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'release.finish'`。
+  assert.equal(events.some(/** 查找正常完成事件，供中断请求未误报完成的断言判断。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.finish'), false);
 });
 
@@ -107,16 +107,16 @@ test('实际静态服务成功、404和文件流失败仍保持原传输结果�
   assert.equal((await fetch(new URL('missing.js', baseUrl))).status, 404);
   fail = true;
   await assert.rejects(/** 读取传输中断的发布资源正文，验证客户端仍收到失败。 */ async () => { const broken = await fetch(baseUrl); await broken.text(); });
-  assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'release.finish' && event.status === 200`。
+  assert.ok(events.some(/** 确认成功静态资源请求记录了实际的 200 状态。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.finish' && event.status === 200));
-  assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'release.finish' && event.status === 404`。
+  assert.ok(events.some(/** 确认缺失静态资源请求记录了实际的 404 状态。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.finish' && event.status === 404));
-  assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'release.stream-error'`。
+  assert.ok(events.some(/** 确认读取流异常进入诊断日志。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.stream-error'));
-  assert.ok(events.filter(/** 仅保留满足以下条件的条目：`event.operation === 'release-static-read'`。
+  assert.ok(events.filter(/** 提取静态文件读取诊断，核对操作标签与请求关联。
  * @param event - 当前触发的事件。 */ event => event.operation === 'release-static-read').every(/** 确认所有条目均满足：`event.connectionId && event.requestId`。
  * @param event - 当前触发的事件。 */ event => event.connectionId && event.requestId));
-  const configuration = events.find(/** 查找满足以下条件的首个条目：`event.event === 'release.listen'`。
+  const configuration = events.find(/** 定位服务监听事件，核对启动时的端口诊断。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.listen');
   assert.equal(configuration.keepAliveTimeoutMs, server.keepAliveTimeout);
   assert.equal(configuration.keepAliveTimeoutBufferMs, server.keepAliveTimeoutBuffer);

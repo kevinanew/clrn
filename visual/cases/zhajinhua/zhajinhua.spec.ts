@@ -13,7 +13,7 @@ import { visible } from './capture';
 import { capturePreGame } from './preGame';
 import { captureGameplay } from './gameplay';
 
-for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'zhajinhua'`。
+for (const scenario of buildScenarios().filter(/** 选取炸金花场景，注册牌桌与面板截图用例。
  * @param item - 当前遍历的条目。 */ item => item.group === 'zhajinhua')) {
   test(scenario.label, /** 创建隔离的炸金花场景上下文，准备房间并执行截图验证。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ browser, mitmproxy }) => {
@@ -59,7 +59,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       await expect(visible(page, 'menu-button')).toBeVisible();
       console.log('ZHAJINHUA > 等待牌桌已就绪');
       if (gameplay) {
-        await page.clock.pauseAt(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()) + 1000);
+        await page.clock.pauseAt(await page.evaluate(/** 记录炸金花截图前的页面时刻，固定动画采样位置。 */ () => Date.now()) + 1000);
         await captureGameplay(page, scenario, mitmproxy, room.roomId);
       } else await capturePreGame(page, scenario);
       await diagnostics.save();

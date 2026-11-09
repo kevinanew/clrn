@@ -1,5 +1,5 @@
 /** 拼三张场景选择器与断言使用的虚拟玩家标识。 */
-export const PLAYER_IDS = [1, 2, 3, 4].map(/** 将当前条目映射为`00000000-0000-4000-8000-${String(index).padStart(12, '0')}`。
+export const PLAYER_IDS = [1, 2, 3, 4].map(/** 为炸金花重放生成稳定的虚拟玩家标识。
  * @param index - 当前条目在集合中的位置。 */ index =>
   `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`);
 /**

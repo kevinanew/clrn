@@ -44,7 +44,7 @@ test('真实网络心跳不会被虚拟动画快进提前判为超时', /** 验�
     await page.clock.pauseAt(new Date(now + 40));
     await page.clock.runFor(0);
     assert.equal(disconnected, false);
-    assert.equal(advances.filter(/** 仅保留满足以下条件的条目：`ticks === 40`。
+    assert.equal(advances.filter(/** 统计推进四十毫秒的调用，检查网络时钟的分步推进。
  * @param ticks - 当前操作使用的 ticks。 */ ticks => ticks === 40).length, 12, "每次 fastForward 原样执行一次，不拆分定时回调");
   } finally { clearInterval(heartbeat); }
   await page.clock.runFor(120);

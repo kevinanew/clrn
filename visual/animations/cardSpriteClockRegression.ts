@@ -26,14 +26,14 @@ for (const clock of ['normal', 'frozen'] as const) {
     await captureTimeline(page, information, 'moving', page.locator('#target'), {
       observeFrames: true, times: [0, 160, 320], requireMotion: true,
     });
-    expect(information.attachments.filter(/** 仅保留满足以下条件的条目：`item.name.endsWith('.png')`。
+    expect(information.attachments.filter(/** 只统计 PNG 截图附件，核对时钟回归的截图数量。
  * @param item - 当前遍历的条目。 */ item => item.name.endsWith('.png'))).toHaveLength(3);
-    const timeline = JSON.parse(String(information.attachments.find(/** 查找满足以下条件的首个条目：`item.name === 'moving-timeline'`。
+    const timeline = JSON.parse(String(information.attachments.find(/** 定位移动元素的时间线附件，核对独立时钟采样结果。
  * @param item - 当前遍历的条目。 */ item => item.name === 'moving-timeline')!.body));
-    expect(timeline.samples.map(/** 将当前条目映射为`sample.milliseconds`。
+    expect(timeline.samples.map(/** 提取时间线采样时刻，核对冻结后的推进间隔。
  * @param sample - 当前操作使用的 sample。 */ (sample: { milliseconds: number }) => sample.milliseconds)).toEqual([0, 160, 320]);
     if (clock === 'normal') {
-      expect(await page.evaluate(/** 在页面中读取`document.getAnimations().map(animation => animation.playState)`，供测试判断当前界面状态。 */ () => document.getAnimations().map(/** 将当前条目映射为`animation.playState`。
+      expect(await page.evaluate(/** 读取页面动画播放状态，核对时钟回归后的冻结状态。 */ () => document.getAnimations().map(/** 读取动画播放状态，验证时钟测试结束后的页面状态。
  * @param animation - 当前操作使用的 animation。 */ animation => animation.playState))).toEqual(['running']);
     }
     await page.locator('#target').evaluate(/** 取消目标元素动画，构造静态画面以核验时钟回归检测。

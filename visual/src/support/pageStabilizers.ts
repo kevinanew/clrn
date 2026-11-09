@@ -75,7 +75,7 @@ export async function stabilizeBackdropFilter(page: Page): Promise<void> {
   });
 
   await page.evaluate(
-    /** 在页面中读取`new Promise<void>((resolve) => { requestAnimationFrame(() => requestAnimationFrame(() => resolve())); })`，供测试判断当前界面状态。 */ () =>
+    /** 等待两个动画帧，让页面样式与布局提交后再继续稳定性检查。 */ () =>
       new Promise<void>(/** 等待两个浏览器动画帧，使样式修改完成布局提交。
  * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
         requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => resolve()));
@@ -225,10 +225,10 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
       timeout = window.setTimeout(finish, 10000);
     });
     const initialImages = currentImages();
-    await Promise.all(initialImages.filter(/** 仅保留满足以下条件的条目：`!img.complete`。
+    await Promise.all(initialImages.filter(/** 选取尚未加载完成的初始图片，等待页面首批资源就绪。
  * @param img - 当前操作使用的 img。 */ (img) => !img.complete).map(waitForImage));
     await Promise.all(currentImages()
-      .filter(/** 仅保留满足以下条件的条目：`!initialImages.includes(img) && !img.complete`。
+      .filter(/** 选取后续新增且未完成的图片，补充等待动态资源。
  * @param img - 当前操作使用的 img。 */ (img) => !initialImages.includes(img) && !img.complete)
       .map(waitForImage));
 
@@ -267,7 +267,7 @@ export async function ensureLocalImagesLoaded(page: Page): Promise<void> {
     if (failedLocalImages.length > 0) {
       const failedSources = failedLocalImages
         .slice(0, 5)
-        .map(/** 将当前条目映射为`new URL(img.src, window.location.href).pathname`。
+        .map(/** 提取图片资源路径，定位页面稳定性等待失败的资源。
  * @param img - 当前操作使用的 img。 */ (img) => new URL(img.src, window.location.href).pathname);
       throw new Error(`本地图片加载失败: ${failedSources.join(', ')}`);
     }

@@ -23,15 +23,15 @@ test('staging 公开产物不暴露源码映射或原始源码', /** 验证stagi
   const origin = new URL(environment.stagingUrl).origin;
   const scriptAddresses = await page.locator('script[src]').evaluateAll(/** 读取页面加载的所有外部脚本地址，检查公开构建产物。
  * @param elements - 当前匹配的页面元素集合。 */ (elements) =>
-    elements.map(/** 将当前条目映射为`(element as HTMLScriptElement).src`。
+    elements.map(/** 读取页面脚本地址，检查公开构建资源。
  * @param element - 当前匹配的页面元素。 */ (element) => (element as HTMLScriptElement).src),
   );
   const styleAddresses = await page.locator('link[rel="stylesheet"][href]').evaluateAll(/** 读取页面加载的样式表地址，检查公开样式产物。
  * @param elements - 当前匹配的页面元素集合。 */ (elements) =>
-    elements.map(/** 将当前条目映射为`(element as HTMLLinkElement).href`。
+    elements.map(/** 读取页面链接资源地址，检查公开构建引用。
  * @param element - 当前匹配的页面元素。 */ (element) => (element as HTMLLinkElement).href),
   );
-  const bundleAddresses = scriptAddresses.filter(/** 仅保留满足以下条件的条目：`new URL(address).origin === origin && new URL(address).pathname.endsWith('.js')`。
+  const bundleAddresses = scriptAddresses.filter(/** 只检查同源 JavaScript 包，避免抓取第三方脚本。
  * @param address - 当前操作使用的 address。 */ (address) =>
     new URL(address).origin === origin && new URL(address).pathname.endsWith('.js'),
   );

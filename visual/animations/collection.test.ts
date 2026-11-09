@@ -18,7 +18,7 @@ function collectedTests(suites: JSONReportSuite[]): Collected[] {
   return suites.flatMap(/** 递归展开 Playwright 报告套件，整理每个项目下的测试文件与标题。
  * @param suite - 当前操作使用的 suite。 */ suite => [
     ...suite.specs.flatMap(/** 展开当前条目对应的`spec.tests.map(item => ({ file: path.basename(spec.file), title: spec.title, project: item.projectName, }))`。
- * @param spec - 当前操作使用的 spec。 */ spec => spec.tests.map(/** 将当前条目映射为`{ file: path.basename(spec.file), title: spec.title, project: item.projectName, }`。
+ * @param spec - 当前操作使用的 spec。 */ spec => spec.tests.map(/** 将 Playwright 发现的用例归一为文件、标题与项目记录。
  * @param item - 当前遍历的条目。 */ item => ({
       file: path.basename(spec.file), title: spec.title, project: item.projectName,
     }))),
@@ -65,13 +65,13 @@ test('普通动画实际收集保留全部原用例及桌面搜索排除，双�
   const actual = collect('playwright.config.ts');
   const expected = ['mobile', 'desktop'].flatMap(/** 为移动端和桌面端构造普通动画案例的预期收集清单。
  * @param project - 当前操作使用的 project。 */ project => Object.entries(ordinary)
-    .filter(/** 仅保留满足以下条件的条目：`project !== 'desktop' || file !== 'search-prompt.spec.ts'`。
+    .filter(/** 排除仅适用于移动端的搜索提示用例，构造预期项目矩阵。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([file]) => project !== 'desktop' || file !== 'search-prompt.spec.ts')
     .flatMap(/** 展开当前条目对应的`titles.map(title => ({ file, title, project }))`。
- * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([file, titles]) => titles.map(/** 将当前条目映射为`{ file, title, project }`。
+ * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([file, titles]) => titles.map(/** 组合文件、用例标题与项目，构造预期发现结果。
  * @param title - 当前操作使用的 title。 */ title => ({ file, title, project }))));
-  assert.deepEqual(actual.map(/** 将当前条目映射为`JSON.stringify(item)`。
- * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort(), expected.map(/** 将当前条目映射为`JSON.stringify(item)`。
+  assert.deepEqual(actual.map(/** 序列化实际发现结果，便于忽略顺序进行完整比较。
+ * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort(), expected.map(/** 序列化预期发现结果，核对用例没有遗漏或重复。
  * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort());
 });
 
@@ -81,11 +81,11 @@ test('独立配置实际收集双视口的时钟及观察器开关对照及三�
     const expected = ['mobile', 'desktop'].flatMap(/** 按项目及重复次数展开独立牌面时钟测试矩阵。
  * @param project - 当前操作使用的 project。 */ project => Array.from({ length: repeats }, /** 展开有无生命周期回调和两种位置的时钟测试组合。 */ () =>
       [false, true].flatMap(/** 为当前回调模式生成两种牌面位置的预期测试条目。
- * @param callbacks - 当前操作使用的 callbacks。 */ callbacks => [0, 1].map(/** 将当前条目映射为`{ file: 'cardSpriteControl.spec.ts', title: independent card sprite clock ${position} callbacks ${callbacks}, project }`。
+ * @param callbacks - 当前操作使用的 callbacks。 */ callbacks => [0, 1].map(/** 生成独立牌面时钟的预期控制用例，覆盖各回调组合。
  * @param position - 当前操作使用的 position。 */ position => ({ file: 'cardSpriteControl.spec.ts',
         title: `independent card sprite clock ${position} callbacks ${callbacks}`, project }))))).flat();
-    assert.deepEqual(actual.map(/** 将当前条目映射为`JSON.stringify(item)`。
- * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort(), expected.map(/** 将当前条目映射为`JSON.stringify(item)`。
+    assert.deepEqual(actual.map(/** 序列化实际时钟用例，便于按内容排序比较。
+ * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort(), expected.map(/** 序列化预期时钟用例，核对组合发现范围。
  * @param item - 当前遍历的条目。 */ item => JSON.stringify(item)).sort());
   }
 });

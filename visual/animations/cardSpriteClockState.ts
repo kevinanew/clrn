@@ -37,7 +37,7 @@ export async function cardSpriteClockState(page: Page): Promise<Snapshot> {
   }).catch(/** 时钟读取异常时返回不可用状态，保留原测试结果。 */ () => ({ status: 'unavailable' as const }));
   if (snapshot.status !== 'observed') return snapshot;
   // 回调代码仅在内存中求摘要，不保存源码、闭包、堆栈、参数或连接信息。
-  return { ...snapshot, timers: snapshot.timers.map(/** 将当前条目映射为`{ ...timer, callback: 'callback-' + createHash('sha256').update(timer.callback).digest('hex').slice(0, 16), }`。
+  return { ...snapshot, timers: snapshot.timers.map(/** 将定时器回调源码替换为稳定散列，避免在时钟诊断中泄露代码。
  * @param timer - 当前操作使用的 timer。 */ timer => ({ ...timer,
     callback: 'callback-' + createHash('sha256').update(timer.callback).digest('hex').slice(0, 16),
   })) };

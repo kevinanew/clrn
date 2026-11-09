@@ -91,7 +91,7 @@ export async function prepareTestAccountCoins(account, token) {
     Authorization: `${session.api_token.token_type} ${session.api_token.access_token}`,
   }, 'prepare-account-verify-coins');
   const wallet = reading.result;
-  const coins = Array.isArray(wallet.currencies) ? wallet.currencies.filter(/** 仅保留满足以下条件的条目：`currency?.code === 'coin'`。
+  const coins = Array.isArray(wallet.currencies) ? wallet.currencies.filter(/** 仅统计金币钱包，避免把其他币种余额用于准备测试账号。
  * @param currency - 当前操作使用的 currency。 */ currency => currency?.code === 'coin') : [];
   if (coins.length !== 1 || Number(coins[0].balance) !== Number(initialCoinBalance)) {
     throw requestFailure('prepare-account-verify-coins', 'invalid-response', reading.status);

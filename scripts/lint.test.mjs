@@ -39,14 +39,14 @@ test('缺少 TSDoc 的函数、命名箭头函数和类方法会被拒绝', /** 
     'class Undocumented { method() {} } new Undocumented().method();',
   ]) {
     const messages = await lintSource(source);
-    assert.ok(messages.some(/** 判断是否存在满足以下条件的条目：`message.ruleId === 'jsdoc/require-jsdoc'`。
+    assert.ok(messages.some(/** 确认缺少函数文档时触发 JSDoc 存在性规则。
  * @param message - 当前操作使用的 message。 */ message => message.ruleId === 'jsdoc/require-jsdoc'));
   }
 });
 
 test('空注释不能冒充文档', /** 验证空注释不能冒充文档。 */ async () => {
   const messages = await lintSource('/** */ function empty() {} empty();');
-  assert.ok(messages.some(/** 判断是否存在满足以下条件的条目：`message.ruleId === 'jsdoc/require-description'`。
+  assert.ok(messages.some(/** 确认空文档块触发摘要存在性规则。
  * @param message - 当前操作使用的 message。 */ message => message.ruleId === 'jsdoc/require-description'));
 });
 
@@ -60,7 +60,7 @@ test('JSDoc 类型写法及未知标签不符合 TSDoc，会被拒绝', /** 验�
     function malformed(value) { return value; }
     malformed('value');
   `);
-  assert.ok(messages.some(/** 判断是否存在满足以下条件的条目：`message.ruleId === 'tsdoc/syntax'`。
+  assert.ok(messages.some(/** 确认不合法的文档标签触发 TSDoc 语法规则。
  * @param message - 当前操作使用的 message。 */ message => message.ruleId === 'tsdoc/syntax'));
 });
 
@@ -70,17 +70,17 @@ test('参数缺少说明时 lint 失败', /** 验证参数缺少说明时 lint �
     function missingParameter(value) { return value; }
     missingParameter(1);
   `);
-  assert.ok(messages.some(/** 判断是否存在满足以下条件的条目：`message.ruleId === 'jsdoc/require-param'`。
+  assert.ok(messages.some(/** 确认缺少形参说明时触发参数文档规则。
  * @param message - 当前操作使用的 message。 */ message => message.ruleId === 'jsdoc/require-param'));
 });
 
 test('E2E 和视觉 TypeScript 同样强制函数与形参的 TSDoc', /** 验证E2E 和视觉 TypeScript 同样强制函数与形参的 TSDoc。 */ async () => {
   for (const filePath of ['e2e/lint-probe.ts', 'visual/src/lint-probe.ts']) {
     const [missingDoc] = await eslint.lintText('function probe(value: string) { return value; } probe("test");', { filePath });
-    assert.ok(missingDoc.messages.some(/** 判断是否存在满足以下条件的条目：`message.ruleId === 'jsdoc/require-jsdoc'`。
+    assert.ok(missingDoc.messages.some(/** 确认 E2E 与视觉源码也执行函数文档存在性检查。
  * @param message - 当前操作使用的 message。 */ message => message.ruleId === 'jsdoc/require-jsdoc'), filePath);
     const [missingParam] = await eslint.lintText('/** 返回参数。 */ function probe(value: string) { return value; } probe("test");', { filePath });
-    assert.ok(missingParam.messages.some(/** 判断是否存在满足以下条件的条目：`message.ruleId === 'jsdoc/require-param'`。
+    assert.ok(missingParam.messages.some(/** 确认 E2E 与视觉源码也执行形参说明检查。
  * @param message - 当前操作使用的 message。 */ message => message.ruleId === 'jsdoc/require-param'), filePath);
     const [valid] = await eslint.lintText('/** 返回凭据。\n * @param credentials - 包含 username 和 password 的登录凭据。\n */ function probe(credentials: { username: string; password: string }) { return credentials; } probe({username:"u",password:"p"});', { filePath });
     assert.deepEqual(valid.messages, []);
@@ -88,11 +88,11 @@ test('E2E 和视觉 TypeScript 同样强制函数与形参的 TSDoc', /** 验证
 });
 
 test('全部 JavaScript 和 TypeScript 源文件均在 ESLint 覆盖范围内', /** 验证全部 JavaScript 和 TypeScript 源文件均在 ESLint 覆盖范围内。 */ async () => {
-  const files = sourceFiles().filter(/** 仅保留满足以下条件的条目：`/\.(?:[cm]?[jt]sx?)$/.test(file)`。
+  const files = sourceFiles().filter(/** 收集所有 JS/TS 扩展名的源码，核对 ESLint 覆盖范围。
  * @param file - 当前源码或资源路径。 */ file => /\.(?:[cm]?[jt]sx?)$/.test(file));
-  assert.ok(files.some(/** 判断是否存在满足以下条件的条目：`file.startsWith('e2e/')`。
+  assert.ok(files.some(/** 确认覆盖清单包含 E2E 源码。
  * @param file - 当前源码或资源路径。 */ file => file.startsWith('e2e/')));
-  assert.ok(files.some(/** 判断是否存在满足以下条件的条目：`file.startsWith('visual/')`。
+  assert.ok(files.some(/** 确认覆盖清单包含视觉测试源码。
  * @param file - 当前源码或资源路径。 */ file => file.startsWith('visual/')));
   for (const file of files) assert.equal(await eslint.isPathIgnored(file), false, file);
 });

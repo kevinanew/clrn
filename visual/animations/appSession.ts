@@ -95,7 +95,7 @@ export async function recordApplicationBuild(page: Page, info: TestInfo): Promis
 export async function openApplication(context: BrowserContext, page: Page, info: TestInfo,
   pageLabel = 'signed_in_hall') {
   const scenario = buildScenarios({ VISUAL_LOCALES: 'en', VISUAL_SUITE: 'all' })
-    .find(/** 查找满足以下条件的首个条目：`item.pageLabel === pageLabel && item.viewport.label === info.project.name`。
+    .find(/** 按页面标识与当前视口选择动画会话场景。
  * @param item - 当前遍历的条目。 */ item => item.pageLabel === pageLabel && item.viewport.label === info.project.name);
   if (!scenario) throw new Error(`缺少动画基础场景 ${pageLabel}/${info.project.name}`);
   await setupContextForScenario(context, scenario, page, { animations: 'allow' });

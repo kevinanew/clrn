@@ -84,7 +84,7 @@ test.describe('H5 弱网行为', /** 覆盖H5 弱网行为。 */ () => {
 
     await page.locator('[data-testid="club-list-retry-button"]').click();
     await expect(page.locator('[data-testid="club-list-load-error"]')).not.toBeVisible();
-    await expect.poll(/** 重复读取`(await mitmproxy.status()).interceptedRequests`，直到满足外层等待断言。 */ async () => (await mitmproxy.status()).interceptedRequests)
+    await expect.poll(/** 轮询代理命中数量，等待网络故障场景实际触发。 */ async () => (await mitmproxy.status()).interceptedRequests)
       .toBeGreaterThan(requestsBeforeRetry);
     // 代理命中只说明重试已开始，客户端的回退请求可能仍在进行。
     // 保持故障，直到界面重新进入可重试的错误状态。

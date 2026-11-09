@@ -134,7 +134,7 @@ export async function resetScrollToStart(page: Page, selector: string): Promise<
     el.dispatchEvent(new Event('scroll', { bubbles: true }));
   });
   await page.evaluate(
-    /** 在页面中读取`new Promise<void>((resolve) => { requestAnimationFrame(() => requestAnimationFrame(() => resolve())); })`，供测试判断当前界面状态。 */ () =>
+    /** 等待两个动画帧，确保页面准备引起的布局变化已提交。 */ () =>
       new Promise<void>(/** 等待两个渲染帧，让滚动复位后的布局稳定。
  * @param resolve - 完成当前异步等待的通知。 */ (resolve) => {
         requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => requestAnimationFrame(/** 推进渲染帧等待，在浏览器完成本帧布局后继续。 */ () => resolve()));
@@ -213,7 +213,7 @@ async function retryCreateRoomNavigation(page: Page, scenario: VisualScenario): 
     return false;
   }
 
-  const gameTypeTestId = scenario.navClickTestIds.find(/** 查找满足以下条件的首个条目：`testId.startsWith('game-type-button-')`。
+  const gameTypeTestId = scenario.navClickTestIds.find(/** 定位游戏类型按钮，选择页面准备时需要打开的游戏入口。
  * @param testId - 当前操作使用的 testId。 */ (testId) =>
     testId.startsWith('game-type-button-'),
   );

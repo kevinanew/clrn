@@ -20,7 +20,7 @@ export async function waitForTexasCardSprites(page: Page, scope: string): Promis
         const state = window as typeof window & {
           __clrnCardSpriteDecoded?: (image: HTMLImageElement, outcome: string, source: string) => Promise<void>;
         };
-        await Promise.all(Array.from(images).filter(/** 仅保留满足以下条件的条目：`image.complete && image.naturalWidth > 0`。
+        await Promise.all(Array.from(images).filter(/** 只解码已成功加载的图像，避免损坏资源阻断牌面就绪检查。
  * @param image - 当前操作使用的 image。 */ image => image.complete && image.naturalWidth > 0)
           .map(/** 解码当前图片并记录其来源及解码结果，传播解码失败。
  * @param image - 当前操作使用的 image。 */ async image => {

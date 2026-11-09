@@ -63,21 +63,21 @@ test('加载器取证记录实际成功回调并保留同步返回值、接收�
     }), true);
     await finish();
     const contents = await readFile(path.join(directory, 'card-sprite-loader.jsonl'), 'utf8');
-    const events = contents.trim().split('\n').map(/** 将当前条目映射为`JSON.parse(line)`。
+    const events = contents.trim().split('\n').map(/** 解析图集加载器事件日志，核对各请求的处理阶段。
  * @param line - 当前操作使用的 line。 */ line => JSON.parse(line));
-    assert.deepEqual(events.filter(/** 仅保留满足以下条件的条目：`event.request === 1`。
- * @param event - 当前触发的事件。 */ event => event.request === 1).map(/** 将当前条目映射为`event.phase`。
+    assert.deepEqual(events.filter(/** 提取首个图集请求的事件，验证初次加载流程。
+ * @param event - 当前触发的事件。 */ event => event.request === 1).map(/** 提取首个请求的阶段名，核对加载器生命周期。
  * @param event - 当前触发的事件。 */ event => event.phase), ['registered', 'native-load', 'enter', 'return']);
-    assert.deepEqual(events.filter(/** 仅保留满足以下条件的条目：`event.request === 2`。
- * @param event - 当前触发的事件。 */ event => event.request === 2).map(/** 将当前条目映射为`event.phase`。
+    assert.deepEqual(events.filter(/** 提取第二个图集请求的事件，核对请求替换行为。
+ * @param event - 当前触发的事件。 */ event => event.request === 2).map(/** 提取第二个请求的阶段名，核对加载器重试顺序。
  * @param event - 当前触发的事件。 */ event => event.phase), ['registered', 'abort']);
-    assert.deepEqual(events.filter(/** 仅保留满足以下条件的条目：`event.request === 101`。
- * @param event - 当前触发的事件。 */ event => event.request === 101).map(/** 将当前条目映射为`event.phase`。
+    assert.deepEqual(events.filter(/** 提取编号 101 的图集请求，核对并发请求的独立状态。
+ * @param event - 当前触发的事件。 */ event => event.request === 101).map(/** 提取并发请求的阶段名，检查事件未被其他请求覆盖。
  * @param event - 当前触发的事件。 */ event => event.phase), ['registered', 'enter', 'throw']);
     assert.doesNotMatch(contents, /fixture-private-secret|example\.invalid|192\.0\.2\.7|data:image|base64/);
     assert.match(contents, /asset-[a-f0-9]{16}/);
-    assert.deepEqual(events.slice(1).map(/** 将当前条目映射为`event.sequence`。
- * @param event - 当前触发的事件。 */ event => event.sequence), events.slice(1).map(/** 将当前条目映射为`index + 1`。
+    assert.deepEqual(events.slice(1).map(/** 提取加载事件序号，核对日志写入顺序。
+ * @param event - 当前触发的事件。 */ event => event.sequence), events.slice(1).map(/** 生成连续的预期序号，检查加载器日志是否完整。
  * @param _event - 当前操作使用的 _event。
  * @param index - 当前条目在集合中的位置。 */ (_event, index) => index + 1));
     await writeFile(path.join(directory, 'fixture.js'), 'window.loader={};');

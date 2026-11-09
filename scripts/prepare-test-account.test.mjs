@@ -38,7 +38,7 @@ test('设置固定金币后读取钱包核对，不设置钻石、不向其他�
   const calls = network(context);
   await prepareTestAccountCoins(account, token);
   assert.equal(calls.length, 3);
-  assert.deepEqual(calls.map(/** 将当前条目映射为`[new URL(call.url).pathname, call.method]`。
+  assert.deepEqual(calls.map(/** 提取账号准备请求的路径与方法，核对接口调用顺序。
  * @param call - 当前操作使用的 call。 */ call => [new URL(call.url).pathname, call.method]), [
     ['/public/v10/user/login/username/password', 'POST'],
     [`/public/v1/wallet/${userId}/set_balance/testing`, 'POST'],

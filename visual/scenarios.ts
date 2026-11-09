@@ -45,7 +45,7 @@ export { CORE_PAGE_LABELS } from './scenarioScope';
  * @param group - 该组页面所属的场景分类。
  * @param pages - 待处理的页面定义或截图元数据清单。 */
 function withGroup(group: ScenarioGroup, pages: SignedInPageDef[]): GroupedPageDef[] {
-  return pages.map(/** 将当前条目映射为`{ ...page, group }`。
+  return pages.map(/** 给页面定义补上所属分组，供场景生成与套件筛选。
  * @param page - 当前 Playwright 页面。 */ page => ({ ...page, group }));
 }
 
@@ -73,18 +73,18 @@ function parseLocaleFilter(raw: string | undefined): LocaleCode[] | 'all' {
     return 'all';
   }
 
-  const allowed = new Set(LOCALES.map(/** 将当前条目映射为`locale.code`。
+  const allowed = new Set(LOCALES.map(/** 收集允许的语言代码，校验视觉运行的语言选择。
  * @param locale - 当前测试使用的语言。 */ (locale) => locale.code));
   const selected = value
     .split(',')
-    .map(/** 将当前条目映射为`item.trim()`。
+    .map(/** 移除语言选项两侧空白，允许逗号分隔配置带空格。
  * @param item - 当前遍历的条目。 */ (item) => item.trim())
-    .filter(/** 仅保留满足以下条件的条目：`allowed.has(item as LocaleCode)`。
+    .filter(/** 只保留已支持的语言代码，供后续无效配置检测。
  * @param item - 当前遍历的条目。 */ (item): item is LocaleCode => allowed.has(item as LocaleCode));
 
   if (selected.length === 0) {
     throw new Error(
-      `VISUAL_LOCALES 无效: "${raw}"。可用值: ${LOCALES.map(/** 将当前条目映射为`l.code`。
+      `VISUAL_LOCALES 无效: "${raw}"。可用值: ${LOCALES.map(/** 列出允许的语言代码，形成无效语言配置的错误提示。
  * @param l - 当前操作使用的 l。 */ (l) => l.code).join(', ')}, all`,
     );
   }
@@ -109,7 +109,7 @@ export function getActiveLocales(env: NodeJS.ProcessEnv = process.env): LocaleDe
   if (filter === 'all') {
     return LOCALES;
   }
-  return LOCALES.filter(/** 仅保留满足以下条件的条目：`filter.includes(locale.code)`。
+  return LOCALES.filter(/** 按语言筛选配置保留本轮应执行的语言。
  * @param locale - 当前测试使用的语言。 */ (locale) => filter.includes(locale.code));
 }
 
@@ -163,7 +163,7 @@ function buildScenario(
  * @param locale - 本场景的语言配置。
  * @param viewport - 本场景的浏览器视口配置。 */
 function buildLocaleViewportScenarios(locale: LocaleDef, viewport: ViewportDef): VisualScenario[] {
-  const hallPage = PAGES.find(/** 查找满足以下条件的首个条目：`item.label === 'hall'`。
+  const hallPage = PAGES.find(/** 定位大厅页面定义，生成依赖大厅入口的派生场景。
  * @param item - 当前遍历的条目。 */ (item) => item.label === 'hall');
   if (!hallPage) {
     throw new Error('缺少 hall 页面配置');
@@ -354,7 +354,7 @@ export function buildScenarios(env: NodeJS.ProcessEnv = process.env): VisualScen
   );
 
   const scopedScenarios = env.VISUAL_SCOPE === 'core'
-    ? scenarios.filter(/** 仅保留满足以下条件的条目：`CORE_PAGE_LABELS.has(scenario.pageLabel)`。
+    ? scenarios.filter(/** 只保留核心页面场景，构造核心视觉回归集合。
  * @param scenario - 当前测试场景配置。 */ scenario => CORE_PAGE_LABELS.has(scenario.pageLabel))
     : scenarios;
   return selectVisualSuite(scopedScenarios, suite);

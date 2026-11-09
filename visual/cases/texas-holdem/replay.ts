@@ -21,7 +21,7 @@ export const advance = (page: Page) => advanceCardSpriteClock(page, 1200);
  * @param page - 执行操作的 Playwright 页面。
  */
 export async function freezeClock(page: Page): Promise<void> {
-  const now = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
+  const now = await page.evaluate(/** 记录德州重放截图的当前页面时刻。 */ () => Date.now());
   // CDP 在繁忙的 Linux runner 上可能排队数秒，给暂停命令保留足够提前量。
   // pauseAt 跳过期间仅触发一次到期计时器；随后恢复消息重设牌局倒计时。
   await page.clock.pauseAt(now + 60_000);
@@ -47,7 +47,7 @@ export async function closeMask(page: Page, marker?: string): Promise<void> {
     .locator('xpath=ancestor::*[*[@data-testid="screen-mask-touch-to-close"]][1]')
     .locator(':scope > [data-testid="screen-mask-touch-to-close"]')
     : visible(page, 'screen-mask-touch-to-close');
-  await mask.evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+  await mask.evaluate(/** 触发重放控制按钮，推进到指定回放阶段。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   await advance(page);
 }
@@ -70,7 +70,7 @@ export async function restore(page: Page, proxy: TexasProxy, roomId: string, sel
   }, { timeout: 30_000, message: '德州房间应完成 WebSocket 订阅并接受回放' }).toBe(true);
   // 恢复消息经过队列、翻牌与数字动效；先推进固定时间再断言完成状态。
   await advanceCardSpriteClock(page, 3000);
-  const expectedCards = ['ah', 'kd', '7c', '2s', 'qs'].map(/** 将当前条目映射为`position < { preflop: 0, flop: 3, turn: 4, river: 5 }[street] ? card : 'back'`。
+  const expectedCards = ['ah', 'kd', '7c', '2s', 'qs'].map(/** 按下注轮次决定公共牌正面或牌背，核对重放的亮牌进度。
  * @param card - 当前操作使用的 card。
  * @param position - 当前操作使用的 position。 */ (card, position) =>
     position < { preflop: 0, flop: 3, turn: 4, river: 5 }[street] ? card : 'back');
@@ -93,6 +93,6 @@ export async function restore(page: Page, proxy: TexasProxy, roomId: string, sel
  * @param page - 执行操作的 Playwright 页面。
  */
 export function selfId(page: Page): Promise<string> {
-  return page.evaluate(/** 在页面中读取`JSON.parse( localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(
+  return page.evaluate(/** 读取当前用户标识，关联德州回放的代理场景。 */ () => JSON.parse(
     localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
 }

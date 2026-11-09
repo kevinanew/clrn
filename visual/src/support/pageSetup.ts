@@ -144,7 +144,7 @@ export function buildStorageStateForScenario(
     origins: [
       {
         origin: new URL(baseUrl).origin,
-        localStorage: Object.entries(entries).map(/** 将当前条目映射为`{ name, value }`。
+        localStorage: Object.entries(entries).map(/** 将页面初始化存储转换为 Playwright 所需的键值条目。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([name, value]) => ({ name, value })),
       },
     ],
@@ -207,8 +207,8 @@ export async function setupContextForScenario(
   } else if (authEntries) {
     // 未登录场景也复用与登录无关的安全缓存键（主题等）
     const safeEntries = Object.fromEntries(
-      SAFE_CACHE_KEYS.filter(/** 仅保留满足以下条件的条目：`authEntries[key] !== undefined`。
- * @param key - 当前操作使用的 key。 */ (key) => authEntries[key] !== undefined).map(/** 将当前条目映射为`[ key, authEntries[key], ]`。
+      SAFE_CACHE_KEYS.filter(/** 仅恢复实际存在的安全缓存键，避免写入未定义值。
+ * @param key - 当前操作使用的 key。 */ (key) => authEntries[key] !== undefined).map(/** 组合缓存键及其认证值，构造受限的存储恢复字典。
  * @param key - 当前操作使用的 key。 */ (key) => [
         key,
         authEntries[key],

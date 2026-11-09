@@ -80,7 +80,7 @@ test('tsx auth collector animation script installs one stylesheet before and aft
      * 在测试 DOM 中按 ID 查找已插入的样式节点。
      * @param id - 目标控件的测试标记。
      */
-    getElementById: (id: string) => styles.find(/** 查找满足以下条件的首个条目：`style.id === id`。
+    getElementById: (id: string) => styles.find(/** 按样式标识定位注入记录，核对页面准备的样式安装行为。
  * @param style - 当前操作使用的 style。 */ style => style.id === id),
     /** 创建用于动画禁用测试的空样式节点。 */
     createElement: () => ({ id: '', textContent: '' }),

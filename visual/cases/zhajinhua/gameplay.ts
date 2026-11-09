@@ -24,7 +24,7 @@ async function click(page: Page, id: string): Promise<void> {
  */
 export async function captureGameplay(page: Page, scenario: VisualScenario,
   proxy: ZhajinhuaProxy, roomId: string): Promise<void> {
-  const self = await page.evaluate(/** 在页面中读取`JSON.parse( localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string`，供测试判断当前界面状态。 */ () => JSON.parse(
+  const self = await page.evaluate(/** 读取当前用户标识，绑定炸金花游戏代理场景。 */ () => JSON.parse(
     localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
   let index = 0;
   /**

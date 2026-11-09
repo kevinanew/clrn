@@ -26,7 +26,7 @@ test('AUTH-002：不同设备再次登录后旧会话失效', /** 验证AUTH-002
       // 代理节点由每个浏览器独立选址，使用用户 ID 验证同一账号。
       expect(second.userId).toBe(first.userId);
       expect(await accountStatus(secondPage, second), 'B 应有效').toBe(200);
-      await expect.poll(/** 重复读取`accountStatus(page, first)`，直到满足外层等待断言。 */ () => accountStatus(page, first), { timeout: 10_000 }).toBe(401);
+      await expect.poll(/** 轮询首个会话状态，验证其他设备登录后的会话替换行为。 */ () => accountStatus(page, first), { timeout: 10_000 }).toBe(401);
       expect(await accountStatus(secondPage, second), '拒绝旧会话后 B 仍有效').toBe(200);
       await testInfo.attach('会话检查结果', {
         body: JSON.stringify({ beforeSecondLogin: 200, oldSession: 401, newSession: 200 }),

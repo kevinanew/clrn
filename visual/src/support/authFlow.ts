@@ -49,7 +49,7 @@ export async function ensureAppReadyPastStaging(page: any): Promise<void> {
   // 超时后输出现场，方便定位是白屏、报错页还是弹窗卡住
   const currentUrl = page.url();
   const bodyText = await page
-    .evaluate(/** 在页面中读取`document.body?.innerText?.slice(0, 500) || '(empty body)'`，供测试判断当前界面状态。 */ () => document.body?.innerText?.slice(0, 500) || '(empty body)')
+    .evaluate(/** 截取页面可见文本，定位登录流程卡住时的界面状态。 */ () => document.body?.innerText?.slice(0, 500) || '(empty body)')
     .catch(/** 页面状态读取失败时返回明确的诊断占位文本。 */ () => '(evaluate failed)');
   console.log(`DEBUG URL > ${currentUrl}`);
   console.log(`DEBUG BODY > ${bodyText}`);
@@ -66,14 +66,14 @@ export async function dumpPageState(page: any, where: string): Promise<void> {
   const state = await page
     .evaluate(/** 收集可读叶节点、测试标记与根容器信息，定位页面就绪失败。 */ () => {
       const texts = Array.from(document.querySelectorAll('div,span,p,button'))
-        .filter(/** 仅保留满足以下条件的条目：`el.children.length === 0 && el.textContent?.trim()`。
+        .filter(/** 只读取有文本的叶子元素，避免诊断重复收集父级文案。
  * @param el - 当前匹配的页面元素。 */ (el) => el.children.length === 0 && el.textContent?.trim())
         .slice(0, 30)
-        .map(/** 将当前条目映射为`el.textContent?.trim().slice(0, 40)`。
+        .map(/** 截取叶子元素的短文案，用于登录流程超时诊断。
  * @param el - 当前匹配的页面元素。 */ (el) => el.textContent?.trim().slice(0, 40));
       const testIds = Array.from(document.querySelectorAll('[data-testid]'))
         .slice(0, 40)
-        .map(/** 将当前条目映射为`el.getAttribute('data-testid')`。
+        .map(/** 读取页面测试标识，定位阻碍登录流程的可见元素。
  * @param el - 当前匹配的页面元素。 */ (el) => el.getAttribute('data-testid'));
       // modal/弹窗一般挂在 #root 末尾，取根节点最后几个子树的摘要
       const root = document.getElementById('root');
@@ -83,7 +83,7 @@ export async function dumpPageState(page: any, where: string): Promise<void> {
  * @param el - 当前匹配的页面元素。 */ (el) => {
           const ids = Array.from(el.querySelectorAll('[data-testid]'))
             .slice(0, 10)
-            .map(/** 将当前条目映射为`n.getAttribute('data-testid')`。
+            .map(/** 读取遮罩区域内的测试标识，定位登录阻塞来源。
  * @param n - 当前生成项的索引。 */ (n) => n.getAttribute('data-testid'));
           const text = (el as HTMLElement).innerText?.trim().slice(0, 120) || '';
           return { ids, text };
@@ -119,7 +119,7 @@ export async function fillByTestId(page: any, testId: string, value: string): Pr
 async function inputByTestId(page: any, testId: string) {
   const target = page.locator(`[data-testid="${testId}"]`).first();
   await target.waitFor({ state: 'visible', timeout: 60000 });
-  const tagName = await target.evaluate(/** 在页面中读取`el.tagName`，供测试判断当前界面状态。
+  const tagName = await target.evaluate(/** 读取表单控件标签名，选择原生输入或自定义控件的操作方式。
  * @param el - 当前匹配的页面元素。 */ (el: Element) => el.tagName);
   return tagName === 'INPUT' || tagName === 'TEXTAREA'
     ? target

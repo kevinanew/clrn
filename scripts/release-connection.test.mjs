@@ -61,20 +61,20 @@ test('逐响应关闭静态上游，完整读取和原HTTP状态保留，不等�
     assert.deepEqual(response.body, expected);
   }
   const deadline = Date.now() + 2000;
-  while (events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.tcp-close'`。
+  while (events.filter(/** 统计 TCP 关闭事件，等待本地连接完整收尾。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.tcp-close').length < requests.length) {
     assert.ok(Date.now() < deadline, '响应完成后连接必须关闭');
     await setTimeout(10);
   }
-  const received = events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.request'`。
+  const received = events.filter(/** 提取静态服务请求，核对服务端观察到的请求数量。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.request');
   assert.equal(received.length, requests.length);
-  assert.equal(new Set(received.map(/** 将当前条目映射为`event.connectionId`。
+  assert.equal(new Set(received.map(/** 提取请求关联的连接标识，核对连接复用行为。
  * @param event - 当前触发的事件。 */ event => event.connectionId)).size, requests.length);
-  assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.finish'`。
+  assert.equal(events.filter(/** 统计正常完成的响应，核对服务端请求生命周期。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.finish').length, requests.length);
-  assert.equal(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'release.tcp-timeout'`。
+  assert.equal(events.some(/** 查找 TCP 超时事件，供无超时断言判断。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.tcp-timeout'), false);
-  assert.equal(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'release.interrupted'`。
+  assert.equal(events.some(/** 查找请求中断事件，供完整传输断言判断。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.interrupted'), false);
 });

@@ -263,11 +263,11 @@ test('revealVirtualizedSettingsItem scrolls the settings list until its cell is 
 
   await expect(mall).toBeAttached();
   await expect
-    .poll(/** 重复读取`page.locator('#hidden-settings-list').evaluate((el) => el.scrollTop)`，直到满足外层等待断言。 */ () => page.locator('#hidden-settings-list').evaluate(/** 在页面中读取`el.scrollTop`，供测试判断当前界面状态。
+    .poll(/** 轮询隐藏设置列表的滚动量，检查页面准备没有滚动隐藏界面。 */ () => page.locator('#hidden-settings-list').evaluate(/** 读取隐藏设置列表的实际偏移，供滚动隔离断言使用。
  * @param el - 当前匹配的页面元素。 */ (el) => el.scrollTop))
     .toBe(0);
   await expect
-    .poll(/** 重复读取`page.locator('#visible-settings-list').evaluate((el) => el.scrollTop)`，直到满足外层等待断言。 */ () => page.locator('#visible-settings-list').evaluate(/** 在页面中读取`el.scrollTop`，供测试判断当前界面状态。
+    .poll(/** 轮询可见设置列表滚动量，等待页面准备的目标滚动生效。 */ () => page.locator('#visible-settings-list').evaluate(/** 读取可见设置列表偏移，核对滚动作用于当前界面。
  * @param el - 当前匹配的页面元素。 */ (el) => el.scrollTop))
     .toBeGreaterThan(0);
 });
@@ -294,11 +294,11 @@ test('resetScrollToStart clears only the current visible list scroll offset', /*
   await resetScrollToStart(page, '[data-testid="hall-content-list"]');
 
   await expect
-    .poll(/** 重复读取`page.locator('#visible-hall-list').evaluate((el) => el.scrollTop)`，直到满足外层等待断言。 */ () => page.locator('#visible-hall-list').evaluate(/** 在页面中读取`el.scrollTop`，供测试判断当前界面状态。
+    .poll(/** 轮询可见大厅列表的滚动量，等待目标列表滚动完成。 */ () => page.locator('#visible-hall-list').evaluate(/** 读取可见大厅列表偏移，核对大厅滚动目标。
  * @param el - 当前匹配的页面元素。 */ (el) => el.scrollTop))
     .toBe(0);
   await expect
-    .poll(/** 重复读取`page.locator('#hidden-hall-list').evaluate((el) => el.scrollTop)`，直到满足外层等待断言。 */ () => page.locator('#hidden-hall-list').evaluate(/** 在页面中读取`el.scrollTop`，供测试判断当前界面状态。
+    .poll(/** 轮询隐藏大厅列表的滚动量，检查隐藏界面未被误滚动。 */ () => page.locator('#hidden-hall-list').evaluate(/** 读取隐藏大厅列表偏移，核对滚动隔离。
  * @param el - 当前匹配的页面元素。 */ (el) => el.scrollTop))
     .toBe(80);
 });
@@ -348,7 +348,7 @@ test('ensureLocalImagesLoaded accepts a decoded same-origin WebP asset', /** 验
   await page.goto('http://visual.test/');
   await ensureLocalImagesLoaded(page);
   await expect(page.getByAltText('WebP')).toBeVisible();
-  expect(await page.getByAltText('WebP').evaluate(/** 在页面中读取`{ width: image.naturalWidth, height: image.naturalHeight, }`，供测试判断当前界面状态。
+  expect(await page.getByAltText('WebP').evaluate(/** 读取图片解码后的自然尺寸，验证资源可用于截图。
  * @param image - 当前操作使用的 image。 */ (image: HTMLImageElement) => ({
     width: image.naturalWidth, height: image.naturalHeight,
   }))).toEqual({ width: 2, height: 1 });
@@ -370,7 +370,7 @@ test('ensureLocalImagesLoaded retries a dropped same-origin image once', /** 验
   await page.goto('http://visual.test/');
   await ensureLocalImagesLoaded(page);
   expect(imageRequests).toBe(2);
-  expect(await page.getByAltText('WebP').evaluate(/** 在页面中读取`image.naturalWidth`，供测试判断当前界面状态。
+  expect(await page.getByAltText('WebP').evaluate(/** 读取图片自然宽度，核对损坏资源的识别结果。
  * @param image - 当前操作使用的 image。 */ (image: HTMLImageElement) => image.naturalWidth)).toBe(2);
 });
 for (const asset of [

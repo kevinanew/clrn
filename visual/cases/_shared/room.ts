@@ -16,7 +16,7 @@ const ROOM_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
  * @param page - 执行操作的 Playwright 页面。
  */
 async function visualAccount(page: Page) {
-  const raw = await page.evaluate(/** 在页面中读取`localStorage.getItem('save.user.origin.data.from.server.key')`，供测试判断当前界面状态。 */ () => localStorage.getItem('save.user.origin.data.from.server.key'))
+  const raw = await page.evaluate(/** 读取应用保存的用户数据，恢复创建测试房间所需的会话。 */ () => localStorage.getItem('save.user.origin.data.from.server.key'))
     .catch(/** 将会话缓存读取失败转换为安全的房间准备诊断。
  * @param error - 当前操作抛出的错误。 */ error => { throw new Error(requestErrorSummary(error, 'room-read-session')); });
   let auth;
@@ -48,7 +48,7 @@ async function readDiamondBalance(request: APIRequestContext, account: Account):
   try {
     const body = await readRequestJson(response, 'room-read-diamonds');
     const currencies = body.result?.currencies;
-    const diamond = Array.isArray(currencies) ? currencies.find(/** 查找满足以下条件的首个条目：`item?.code === 'diamond'`。
+    const diamond = Array.isArray(currencies) ? currencies.find(/** 定位钻石资产，读取建房与清理时核对的余额。
  * @param item - 当前遍历的条目。 */ (item: { code: string }) => item?.code === 'diamond') : undefined;
     const balance = Number(diamond?.balance);
     if (!Number.isFinite(balance)) throw requestFailure('room-read-diamonds', 'invalid-response', response.status());
@@ -81,7 +81,7 @@ export async function ensureRoomBalance(request: APIRequestContext, account: Acc
     || body.result?.currency_name !== 'diamond' || Number(body.result?.balance) !== 60) {
     throw requestFailure('room-top-up-diamonds', 'invalid-response', status);
   }
-  await expect.poll(/** 重复读取`readDiamondBalance(request, account)`，直到满足外层等待断言。 */ () => readDiamondBalance(request, account)).toBe(60);
+  await expect.poll(/** 轮询钻石余额，等待房间费用变化同步到服务端。 */ () => readDiamondBalance(request, account)).toBe(60);
 }
 
 /**

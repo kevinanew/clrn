@@ -66,13 +66,13 @@ test('请求、应用和代理的路径经过附件与失败终端输出仍保�
         ':8443', ':9443', 'synthetic-secret', '%2561pi']) assert.ok(!output.includes(forbidden), forbidden);
     }
     const events = JSON.parse(saved).events;
-    assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.status === 503 && event.source === 'upstream'`。
+    assert.ok(events.some(/** 确认落盘诊断保留了上游实际返回的 503 状态。
  * @param event - 当前触发的事件。 */ (event: { status: number; source: string }) => event.status === 503 && event.source === 'upstream'));
-    assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'http.pending'`。
+    assert.ok(events.some(/** 确认落盘诊断包含未完成的 HTTP 请求。
  * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'http.pending'));
-    assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.path === '/v10/wallet/{user}'`。
+    assert.ok(events.some(/** 确认钱包请求按脱敏路径模板写入诊断。
  * @param event - 当前触发的事件。 */ (event: { path: string }) => event.path === '/v10/wallet/{user}'));
-    assert.ok(events.some(/** 判断是否存在满足以下条件的条目：`event.event === 'test.failure'`。
+    assert.ok(events.some(/** 确认测试失败事件随连接诊断一起落盘。
  * @param event - 当前触发的事件。 */ (event: { event: string }) => event.event === 'test.failure'));
     assert.deepEqual(attachments, ['connection-diagnostics', 'connection-summary']);
     assert.equal(terminal.length, 1, '失败仍输出诊断摘要');

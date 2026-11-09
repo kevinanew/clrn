@@ -40,7 +40,7 @@ export async function captureHall(page: Page, scenario: VisualScenario, proxy: T
   const menuMask = visible(page, 'drawer-menu-item-exit')
     .locator('xpath=ancestor::*[*[@data-testid="screen-mask-touch-to-close"]][1]')
     .locator(':scope > [data-testid="screen-mask-touch-to-close"]');
-  await menuMask.evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+  await menuMask.evaluate(/** 触发目标大厅入口，打开指定德州界面。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   await advance(page);
   await click(page, 'auto-rebuy-button');

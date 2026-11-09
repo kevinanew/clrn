@@ -11,7 +11,7 @@ test('老虎机滚轮和三种奖励动画', /** 验证老虎机滚轮和三种�
   await selectScenario(context, 'slot');
   try {
     await openApplication(context, page, info);
-    await selectScenario(context, 'slot', { userId: await page.evaluate(/** 在页面中读取`JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id`，供测试判断当前界面状态。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
+    await selectScenario(context, 'slot', { userId: await page.evaluate(/** 读取当前用户标识，绑定老虎机动画场景的账号。 */ () => JSON.parse(localStorage.getItem('save.user.origin.data.from.server.key')!).user_id) });
     const previousEnergyReads = (await scenarioStatus(context)).energyReads;
     await navigate(page, 'slot-banner');
     const panel = page.getByTestId('slot-machine-view');

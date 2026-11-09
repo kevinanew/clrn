@@ -40,7 +40,7 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
     const body = await response.json();
     await response.dispose();
     expect(body.ok).toBe(true);
-    return body.result?.clubs?.some(/** 判断是否存在满足以下条件的条目：`club.id === clubId`。
+    return body.result?.clubs?.some(/** 确认查询结果包含本次创建的俱乐部。
  * @param club - 当前操作使用的 club。 */ (club: { id: string }) => club.id === clubId) === true;
   };
 
@@ -73,7 +73,7 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
     expect((await response.json()).ok).toBe(true);
     await expect(application.getByTestId('approved-text')).toBeVisible();
     joined.push(guest);
-    await expect.poll(/** 重复读取`(await members()).some(member => member.id === guest.userId)`，直到满足外层等待断言。 */ async () => (await members()).some(/** 判断是否存在满足以下条件的条目：`member.id === guest.userId`。
+    await expect.poll(/** 轮询无需审批加入的访客，等待其进入成员列表。 */ async () => (await members()).some(/** 确认无需审批加入的访客已进入成员列表。
  * @param member - 当前操作使用的 member。 */ member => member.id === guest.userId)).toBe(true);
     await (await unique(page, 'navigation-bar-back-image')).click();
     await expect(await unique(page, 'club-home-page-screen')).toBeVisible();
@@ -89,7 +89,7 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
       expect((await response.json()).ok).toBe(true);
       await response.dispose();
     }
-    if (joined.length) await expect.poll(/** 重复读取`(await members()).length`，直到满足外层等待断言。 */ async () => (await members()).length).toBe(1);
+    if (joined.length) await expect.poll(/** 轮询成员数，等待入会或退出操作同步到服务端。 */ async () => (await members()).length).toBe(1);
   };
 
   try {
@@ -112,7 +112,7 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
       expect(clubId, '创建响应应包含本次俱乐部 UUID').toBeTruthy();
       await expect(await unique(page, 'club-info-name')).toHaveText(name);
       await expect(await unique(page, 'club-info-member-count')).toHaveText('1');
-      await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
+      await expect.poll(/** 轮询建俱乐部后的余额，核对审批邀请场景的创建费用。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
     });
 
     const applicant = await createSecondAccount(browser, page.viewportSize(), test.info().project.name === 'mobile');
@@ -142,12 +142,12 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
       expect(response.ok()).toBeTruthy();
       expect((await response.json()).ok).toBe(true);
       await expect(await unique(applicant.page, 'club-application-join-button-text')).toHaveText('已申请');
-      expect((await members()).some(/** 判断是否存在满足以下条件的条目：`member.id === applicant.userId`。
+      expect((await members()).some(/** 定位申请人，核对审批后的成员状态。
  * @param member - 当前操作使用的 member。 */ member => member.id === applicant.userId), '审批前不得成为成员').toBe(false);
     });
     await test.step('房主在申请列表审批，申请人成为真实成员', /** 执行房主在申请列表审批，申请人成为真实成员。 */ async () => {
       await approve(applicant);
-      await expect.poll(/** 重复读取`hasJoined(applicant)`，直到满足外层等待断言。 */ () => hasJoined(applicant)).toBe(true);
+      await expect.poll(/** 轮询申请人的俱乐部列表，等待批准结果可查询。 */ () => hasJoined(applicant)).toBe(true);
     });
 
     const invitee = await createSecondAccount(browser, page.viewportSize(), test.info().project.name === 'mobile');
@@ -178,13 +178,13 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
       expect(applied.ok()).toBeTruthy();
       expect((await applied.json()).ok).toBe(true);
       await applied.dispose();
-      expect((await members()).some(/** 判断是否存在满足以下条件的条目：`member.id === invitee.userId`。
+      expect((await members()).some(/** 定位受邀账号，核对邀请后的成员状态。
  * @param member - 当前操作使用的 member。 */ member => member.id === invitee.userId), '邀请申请仍须审批').toBe(false);
     });
     await test.step('房主审批受邀者，成员列表和人数体现实际加入', /** 执行房主审批受邀者，成员列表和人数体现实际加入。 */ async () => {
       await approve(invitee);
-      await expect.poll(/** 重复读取`(await members()).length`，直到满足外层等待断言。 */ async () => (await members()).length).toBe(3);
-      await expect.poll(/** 重复读取`hasJoined(invitee)`，直到满足外层等待断言。 */ () => hasJoined(invitee)).toBe(true);
+      await expect.poll(/** 轮询接受邀请后的成员数，等待受邀账号加入。 */ async () => (await members()).length).toBe(3);
+      await expect.poll(/** 轮询受邀账号的俱乐部列表，等待接受邀请结果同步。 */ () => hasJoined(invitee)).toBe(true);
     });
 
     const rejected = await createSecondAccount(browser, page.viewportSize(), test.info().project.name === 'mobile');
@@ -207,7 +207,7 @@ test('普通申请、邀请申请经房主审批后才成为俱乐部成员', { 
       expect(response.request().postDataJSON()).toEqual({ action: 'reject' });
       expect((await response.json()).ok).toBe(true);
       await expect(application.getByTestId('rejected-text')).toBeVisible();
-      expect((await members()).some(/** 判断是否存在满足以下条件的条目：`member.id === rejected.userId`。
+      expect((await members()).some(/** 定位被拒绝的账号，供未加入俱乐部的断言判断。
  * @param member - 当前操作使用的 member。 */ member => member.id === rejected.userId)).toBe(false);
       expect(await hasJoined(rejected)).toBe(false);
     });

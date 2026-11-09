@@ -88,7 +88,7 @@ async function createAuthContext(
           origins: [
             {
               origin: new URL(baseUrl).origin,
-              localStorage: Object.entries(storageEntries).map(/** 将当前条目映射为`{ name, value, }`。
+              localStorage: Object.entries(storageEntries).map(/** 将认证存储键值转换为 Playwright 的 localStorage 条目。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ([name, value]) => ({
                 name,
                 value,

@@ -22,7 +22,7 @@ test('AUTH-009：登录语言选择确认后保存，刷新仍显示对应语言
       await option.click();
       await expect(option.getByTestId('checkmark-icon')).toHaveCount(1);
       await (await unique(page, 'confirm-button')).click();
-      await expect.poll(/** 重复读取`page.evaluate(() => localStorage.getItem('app.language.code.key'))`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`localStorage.getItem('app.language.code.key')`，供测试判断当前界面状态。 */ () => localStorage.getItem('app.language.code.key'))).toBe(locale.code);
+      await expect.poll(/** 轮询本地语言配置，等待语言切换完成持久化。 */ () => page.evaluate(/** 读取应用保存的语言代码，核对重启后可恢复的设置。 */ () => localStorage.getItem('app.language.code.key'))).toBe(locale.code);
       await openHall(page);
       await (await unique(page, 'hall-sign-in-button')).click();
       await expect(await unique(page, 'switch-language-label')).toHaveText(locale.label);

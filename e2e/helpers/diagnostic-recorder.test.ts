@@ -64,7 +64,7 @@ test('容量有限并显示截断，时间线按采集时间排序', /** 验证�
 test('合并旧代理历史不会挤掉最新的浏览器失败现场', /** 验证合并旧代理历史不会挤掉最新的浏览器失败现场。 */ () => {
   const recorder = new DiagnosticRecorder();
   recorder.record('test.failure', { observedAt: 10000, reason: '连接失败' });
-  recorder.merge(Array.from({ length: 5000 }, /** 为当前索引构造`{ event: 'proxy.request', observedAt: index }`。
+  recorder.merge(Array.from({ length: 5000 }, /** 生成带递增时间的代理请求事件，验证诊断容量上限。
  * @param _ - 当前操作使用的 _。
  * @param index - 当前条目在集合中的位置。 */ (_, index) => ({ event: 'proxy.request', observedAt: index })));
   assert.equal(recorder.snapshot().events.at(-1)?.event, 'test.failure');
@@ -95,7 +95,7 @@ test('相对路径仅输出已知操作模板，记录和代理合并均不保�
   assert.equal(diagnosticFields({ path: ['secret'] }).path, '[未知接口]');
   const output = JSON.stringify(recorder.snapshot()) + recorder.markdown('case');
   for (const input of inputs) assert.ok(!output.includes(input), '任意路径段不能进入附件或终端摘要');
-  assert.ok(recorder.snapshot().events.some(/** 判断是否存在满足以下条件的条目：`event.status === 503`。
+  assert.ok(recorder.snapshot().events.some(/** 确认失败诊断保留实际的 503 响应状态。
  * @param event - 当前触发的事件。 */ event => event.status === 503), '真实失败状态仍保留');
 });
 

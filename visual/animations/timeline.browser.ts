@@ -29,7 +29,7 @@ function collectResults(suites: ReportSuite[]): { title: string; result: ReportR
     ...(suite.specs || []).flatMap(/** 展开当前条目对应的`specification.tests.flatMap(entry => entry.results.map(result => ({ title: specification.title, result })))`。
  * @param specification - 当前操作使用的 specification。 */ specification => specification.tests.flatMap(/** 展开当前条目对应的`entry.results.map(result => ({ title: specification.title, result }))`。
  * @param entry - 当前处理的记录条目。 */ entry =>
-      entry.results.map(/** 将当前条目映射为`{ title: specification.title, result }`。
+      entry.results.map(/** 把执行结果与用例标题关联，定位时间线回归失败。
  * @param result - 当前操作使用的 result。 */ result => ({ title: specification.title, result })))),
     ...collectResults(suite.suites || []),
   ]);
@@ -44,7 +44,7 @@ async function assertCaptureResult(title: string, result: ReportResult) {
   if (title.startsWith('局部稳定性有效面积：')) return assertPartialStability(title, result);
   if (title.startsWith('相邻截图稳定性：tolerated/')) {
     assert.equal(result.status, 'passed', '阈值内的相邻截图微差不得阻止后续采样');
-    assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`attachment.name === '稳定性检查之后'`。
+    assert.ok(result.attachments.some(/** 确认稳定性检查完成后才添加后续阶段附件。
  * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name === '稳定性检查之后'));
     return;
   }
@@ -59,9 +59,9 @@ async function assertCaptureResult(title: string, result: ReportResult) {
 function assertPartialStability(title: string, result: ReportResult) {
   const unstable = title.includes('over-boundary/');
   assert.equal(result.status, unstable ? 'failed' : 'passed', title);
-  assert.equal(result.attachments.some(/** 判断是否存在满足以下条件的条目：`attachment.name === '局部稳定性检查之后'`。
+  assert.equal(result.attachments.some(/** 确认局部稳定性检查完成后才添加后续阶段附件。
  * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name === '局部稳定性检查之后'), !unstable, title);
-  if (unstable) assert.ok(result.errors.some(/** 判断是否存在满足以下条件的条目：`error.message?.includes('首帧画面应稳定')`。
+  if (unstable) assert.ok(result.errors.some(/** 识别首帧稳定性失败，核对时间线断言的失败原因。
  * @param error - 当前操作抛出的错误。 */ error => error.message?.includes('首帧画面应稳定')),
     '五十一个有效差异像素必须在稳定性检查时失败，不能依赖后续基准比较');
 }
@@ -74,24 +74,24 @@ function assertPartialStability(title: string, result: ReportResult) {
 async function assertFailedCapture(title: string, result: ReportResult) {
   assert.equal(result.status, 'failed', title);
   if (!title.startsWith('截图差异')) {
-    assert.ok(!result.attachments.some(/** 判断是否存在满足以下条件的条目：`attachment.name.endsWith('之后')`。
+    assert.ok(!result.attachments.some(/** 查找后续阶段附件，验证提前失败时没有继续执行。
  * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name.endsWith('之后')),
       `${title}不得执行错误后的步骤`);
     return;
   }
   assert.equal(result.errors.length, 4, `${title}必须报告两个阶段各两帧的全部差异`);
-  assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`attachment.name === '全部阶段已完成'`。
+  assert.ok(result.attachments.some(/** 确认成功流程执行到了全部阶段完成标记。
  * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name === '全部阶段已完成'), title);
-  const timelines = result.attachments.filter(/** 仅保留满足以下条件的条目：`attachment.name.endsWith('-timeline')`。
+  const timelines = result.attachments.filter(/** 提取时间线附件，核对各阶段的采样信息。
  * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name.endsWith('-timeline'));
   assert.equal(timelines.length, 2, title);
   for (const attachment of timelines) {
     const contents = await attachmentContents(attachment);
     const timeline: { samples: { milliseconds: number }[] } = JSON.parse(contents);
-    assert.deepEqual(timeline.samples.map(/** 将当前条目映射为`sample.milliseconds`。
+    assert.deepEqual(timeline.samples.map(/** 提取采样时刻，验证时间线的固定采样间隔。
  * @param sample - 当前操作使用的 sample。 */ sample => sample.milliseconds), [0, 80]);
   }
-  assert.ok(result.attachments.some(/** 判断是否存在满足以下条件的条目：`attachment.name.includes('-diff')`。
+  assert.ok(result.attachments.some(/** 确认帧间差异附件已生成，便于定位动画变化。
  * @param attachment - 当前操作使用的 attachment。 */ attachment => attachment.name.includes('-diff')), `${title}应保留差异图`);
 }
 

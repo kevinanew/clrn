@@ -26,7 +26,7 @@ export function selectScenariosByLabel<T extends { label: string }>(
   } catch {
     throw new Error(`VISUAL_FILTER 不是有效正则表达式: ${filter}`);
   }
-  return scenarios.filter(/** 仅保留满足以下条件的条目：`matcher.test(scenario.label)`。
+  return scenarios.filter(/** 按配置的正则匹配场景标签，保留本轮需要执行的场景。
  * @param scenario - 当前测试场景配置。 */ scenario => matcher.test(scenario.label));
 }
 
@@ -36,7 +36,7 @@ export function selectScenariosByLabel<T extends { label: string }>(
  */
 export function exactScenarioGrep(labels: string[]): string {
   if (labels.length === 0) return '(?!)';
-  const escaped = labels.map(/** 将当前条目映射为`label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')`。
+  const escaped = labels.map(/** 转义标签中的正则元字符，保证场景名称按字面量匹配。
  * @param label - 当前操作使用的 label。 */ label => label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   return `(?:^|\\s)(?:${escaped.join('|')})$`;
 }

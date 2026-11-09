@@ -43,7 +43,7 @@ async function prepareRenewPage(page: Page): Promise<number> {
   await expect(page.getByTestId('drawer-menu-item-renew')).toBeVisible();
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
-  return page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
+  return page.evaluate(/** 记录续时面板就绪检查开始前的冻结时间。 */ () => Date.now());
 }
 
 test('续时等待两项新读取，隔离旧响应，连接中断仅恢复一次', /** 验证续时等待两项新读取，隔离旧响应，连接中断仅恢复一次。
@@ -63,23 +63,23 @@ test('续时等待两项新读取，隔离旧响应，连接中断仅恢复一�
       (window as typeof window & { staleReadFinished: boolean }).staleReadFinished = true;
     });
   });
-  await expect.poll(/** 重复读取`pending.has('POST')`，直到满足外层等待断言。 */ () => pending.has('POST')).toBe(true);
+  await expect.poll(/** 轮询旧价格请求是否挂起，准备迟到响应场景。 */ () => pending.has('POST')).toBe(true);
   const stale = pending.get('POST')!;
   for (const mode of ['post-first', 'put-first', 'failover', 'recover', 'persistent']) {
     const order = mode === 'put-first' ? ['PUT', 'POST'] : ['POST', 'PUT'];
     pending.clear();
     let ready = false;
     const opening = openRenewPopup(page).then(/** 标记续时弹层已等待本次价格与钱包读取完成。 */ () => { ready = true; });
-    await expect.poll(/** 重复读取`pending.size`，直到满足外层等待断言。 */ () => pending.size).toBe(2);
+    await expect.poll(/** 轮询本次打开的读取数量，等待价格与钱包请求都发出。 */ () => pending.size).toBe(2);
     if (mode === 'post-first') {
       await stale.fulfill({ json: { ok: true, result: {} } });
-      await expect.poll(/** 重复读取`page.evaluate(() => (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`(window as typeof window & { staleReadFinished?: boolean }).staleReadFinished`，供测试判断当前界面状态。 */ () =>
+      await expect.poll(/** 轮询旧价格请求完成标记，等待迟到响应处理结束。 */ () => page.evaluate(/** 读取旧价格请求完成标记，验证就绪检查未借用旧响应。 */ () =>
         (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)).toBe(true);
       await expect(page.locator('#completed')).toHaveText('0');
       assert.equal(ready, false, '本次打开前发出的旧请求即使成功也不能作为就绪依据');
     }
     if (mode === 'failover') {
-      await Promise.all([...pending.values()].map(/** 将当前条目映射为`route.abort('connectionreset')`。
+      await Promise.all([...pending.values()].map(/** 中断价格与钱包读取，验证应用重新选线后的自动重发。
  * @param route - 当前拦截的网络请求。 */ route => route.abort('connectionreset')));
       pending.clear();
       // 模拟应用选线后的自动重发，仍须等待两项真实读取，不能重开面板。
@@ -91,18 +91,18 @@ test('续时等待两项新读取，隔离旧响应，连接中断仅恢复一�
           });
         }
       });
-      await expect.poll(/** 重复读取`pending.size`，直到满足外层等待断言。 */ () => pending.size).toBe(2);
+      await expect.poll(/** 轮询选线后的请求数量，等待价格与钱包读取重新发出。 */ () => pending.size).toBe(2);
     }
     if (mode === 'recover' || mode === 'persistent') {
-      await Promise.all([...pending.values()].map(/** 将当前条目映射为`route.abort('connectionreset')`。
+      await Promise.all([...pending.values()].map(/** 中断本轮读取，验证面板等待恢复后的新请求。
  * @param route - 当前拦截的网络请求。 */ route => route.abort('connectionreset')));
       pending.clear();
-      await expect.poll(/** 重复读取`pending.size`，直到满足外层等待断言。 */ () => pending.size, { timeout: 20_000 }).toBe(2);
+      await expect.poll(/** 轮询恢复后的请求数量，确保继续等待本轮的新响应。 */ () => pending.size, { timeout: 20_000 }).toBe(2);
       assert.equal(ready, false, '恢复后的新请求完成前不能采样');
     }
     if (mode === 'persistent') {
       const rejected = assert.rejects(opening, /response=not-received reason=connection-failed/);
-      await Promise.all([...pending.values()].map(/** 将当前条目映射为`route.abort('connectionreset')`。
+      await Promise.all([...pending.values()].map(/** 再次中断恢复后的读取，验证持续断连使就绪等待失败。
  * @param route - 当前拦截的网络请求。 */ route => route.abort('connectionreset')));
       await rejected;
       assert.equal(ready, false, '持续中断不能继续采样');
@@ -118,7 +118,7 @@ test('续时等待两项新读取，隔离旧响应，连接中断仅恢复一�
     await opening;
     if (mode === 'failover') assert.equal(await page.locator('body').getAttribute('data-opens'), '3');
     assert.equal(ready, true, '两项本次读取均成功后才允许采样');
-    if (mode !== 'recover') assert.equal(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()), before, '准备读取不得推进动画相位');
+    if (mode !== 'recover') assert.equal(await page.evaluate(/** 读取续时面板等待结束后的时间，核对页面时钟保持冻结。 */ () => Date.now()), before, '准备读取不得推进动画相位');
     await press(page, 'renew-popup-close-button');
     await press(page, 'menu-button');
   }

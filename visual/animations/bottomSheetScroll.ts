@@ -36,6 +36,6 @@ export async function lockBottomSheetDocumentScroll(page: Page, entrance?: Locat
       parent.style.overflow = 'clip';
     }
   });
-  await expect.poll(/** 重复读取`page.evaluate(() => window.scrollY)`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`window.scrollY`，供测试判断当前界面状态。 */ () => window.scrollY)).toBe(0);
-  await expect.poll(/** 重复读取`page.evaluate(() => document.body.scrollTop)`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`document.body.scrollTop`，供测试判断当前界面状态。 */ () => document.body.scrollTop)).toBe(0);
+  await expect.poll(/** 轮询窗口偏移，等待文档锁定恢复视口原点。 */ () => page.evaluate(/** 读取窗口的实际滚动偏移，供原点断言使用。 */ () => window.scrollY)).toBe(0);
+  await expect.poll(/** 轮询 body 偏移，等待独立滚动层恢复原点。 */ () => page.evaluate(/** 读取 body 的实际滚动偏移，供锁定完成断言使用。 */ () => document.body.scrollTop)).toBe(0);
 }

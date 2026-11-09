@@ -119,7 +119,7 @@ async function capture(page: Page, scenario: VisualScenario, state: string): Pro
     await page.clock.runFor(16);
     await ensureLocalImagesLoaded(page);
   }
-  const nickname = scenario.fixedTexts.find(/** 查找满足以下条件的首个条目：`rule.selector === '[data-testid="texas-holdem-nickname-text"]'`。
+  const nickname = scenario.fixedTexts.find(/** 定位德州昵称遮罩规则，核对截图脱敏配置。
  * @param rule - 当前操作使用的 rule。 */ rule => rule.selector === '[data-testid="texas-holdem-nickname-text"]')?.text;
   const self = nickname ? await selfId(page) : undefined;
   const visibleNickname = self && nickname
@@ -175,13 +175,13 @@ async function capturePreGame(page: Page, scenario: VisualScenario): Promise<voi
   await visible(page, 'texas-holdem-leaderboard-button').click();
   await expect(visible(page, 'public-leader-board-container')).toBeVisible({ timeout: 30_000 });
   await snapshot('leaderboard');
-  await visible(page, 'screen-mask-touch-to-close').evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+  await visible(page, 'screen-mask-touch-to-close').evaluate(/** 触发德州面板中的目标控件，准备对应截图状态。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   await expect(visible(page, 'public-leader-board-container')).toBeHidden({ timeout: 15_000 });
   await visible(page, 'game-record-button').click();
   await expect(visible(page, 'review-board-description-text')).toBeVisible({ timeout: 30_000 });
   await snapshot('game_record');
-  await visible(page, 'screen-mask-touch-to-close').evaluate(/** 在页面中读取`(node as HTMLElement).click()`，供测试判断当前界面状态。
+  await visible(page, 'screen-mask-touch-to-close').evaluate(/** 触发德州面板的后续控件，完成截图前的界面切换。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => (node as HTMLElement).click());
   await expect(visible(page, 'review-board-description-text')).toBeHidden({ timeout: 15_000 });
 
@@ -214,7 +214,7 @@ async function captureOptionalPreGame(page: Page, scenario: VisualScenario): Pro
   await capture(page, scenario, OPTIONAL_PRE_GAME_STATES[1]);
 }
 
-for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'texas-holdem'`。
+for (const scenario of buildScenarios().filter(/** 选取德州场景，注册大厅、牌桌与面板截图用例。
  * @param item - 当前遍历的条目。 */ item => item.group === 'texas-holdem')) {
   test(scenario.label, /** 为当前德州场景创建隔离上下文，准备真实牌桌并采集截图。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ browser, mitmproxy }) => {
@@ -256,7 +256,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       await page.goto(scenario.path);
       await preparePage(page, scenario);
       if (scenario.pageLabel === 'signed_in_texas_records_v2') {
-        await expect.poll(/** 重复读取`page.evaluate(() => localStorage.getItem('use.new.game.record.key'))`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`localStorage.getItem('use.new.game.record.key')`，供测试判断当前界面状态。 */ () => localStorage.getItem('use.new.game.record.key'))).toBe('true');
+        await expect.poll(/** 轮询战绩版本偏好，等待德州战绩切换到指定版本。 */ () => page.evaluate(/** 读取持久化的战绩版本，核对德州战绩入口状态。 */ () => localStorage.getItem('use.new.game.record.key'))).toBe('true');
       }
       const proxyStatus = await mitmproxy.status();
       expect(proxyStatus.proxiedRequests, '德州浏览器流量应经过 mitmproxy').toBeGreaterThan(requestsBeforeNavigation);

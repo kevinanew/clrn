@@ -53,7 +53,7 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
     const body = await listed.json();
     await listed.dispose();
     expect(body.ok).toBe(true);
-    const pending = (body.result?.applications as Application[]).find(/** 查找满足以下条件的首个条目：`item.club_id === clubId && item.user_id === guest.userId && item.permitted === null`。
+    const pending = (body.result?.applications as Application[]).find(/** 定位本俱乐部中该访客尚未审批的入会申请。
  * @param item - 当前遍历的条目。 */ item =>
       item.club_id === clubId && item.user_id === guest.userId && item.permitted === null);
     expect(pending?.application_id, '本例申请应处于待审批状态').toBeTruthy();
@@ -64,7 +64,7 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
     expect(approved.ok(), '房主审批应成功').toBe(true);
     expect((await approved.json()).ok).toBe(true);
     await approved.dispose();
-    await expect.poll(/** 重复读取`(await members()).some(member => member.id === guest.userId)`，直到满足外层等待断言。 */ async () => (await members()).some(/** 判断是否存在满足以下条件的条目：`member.id === guest.userId`。
+    await expect.poll(/** 轮询成员列表，等待访客审批通过后进入俱乐部。 */ async () => (await members()).some(/** 在成员列表中定位本次加入的访客账号。
  * @param member - 当前操作使用的 member。 */ member => member.id === guest.userId)).toBe(true);
   };
 
@@ -94,7 +94,7 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
     const normalMode = await unique(page, 'club-member-normal-mode');
     await expect(normalMode).toHaveAttribute('data-member-count', String(expectedCount));
     await expect(normalMode.getByTestId(`club-member-item-${guest.userId}`)).toHaveCount(0);
-    await expect.poll(/** 重复读取`(await members()).some(member => member.id === guest.userId)`，直到满足外层等待断言。 */ async () => (await members()).some(/** 判断是否存在满足以下条件的条目：`member.id === guest.userId`。
+    await expect.poll(/** 轮询成员列表，等待被移除的访客消失。 */ async () => (await members()).some(/** 在成员列表中定位待移除的访客账号。
  * @param member - 当前操作使用的 member。 */ member => member.id === guest.userId)).toBe(false);
   };
 
@@ -117,8 +117,8 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
       expect(clubId, '创建响应应包含本例俱乐部 UUID').toMatch(/^[0-9a-f-]{36}$/);
       apiOrigin = new URL(response.url()).origin;
       await expect(await unique(page, 'club-info-name')).toHaveText(name);
-      await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
-      await expect.poll(/** 重复读取`(await members()).length`，直到满足外层等待断言。 */ async () => (await members()).length).toBe(1);
+      await expect.poll(/** 轮询创建俱乐部后的钻石余额，核对成员管理场景的建会费用。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
+      await expect.poll(/** 轮询初始成员数，确认新俱乐部仅有房主。 */ async () => (await members()).length).toBe(1);
     });
 
     await test.step('两个独立账号经真实申请和审批成为成员', /** 执行两个独立账号经真实申请和审批成为成员。 */ async () => {
@@ -127,7 +127,7 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
         guests.push(guest);
         await addMember(guest);
       }
-      await expect.poll(/** 重复读取`(await members()).length`，直到满足外层等待断言。 */ async () => (await members()).length).toBe(3);
+      await expect.poll(/** 轮询加入后的成员数，等待访客入会同步。 */ async () => (await members()).length).toBe(3);
     });
 
     await test.step('连续删除与中途取消编辑后，页面和服务端人数一致', /** 执行连续删除与中途取消编辑后，页面和服务端人数一致。 */ async () => {
@@ -147,17 +147,17 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
       await (await unique(page, 'club-member-cancel-button')).click();
       await expect(normalMode).toHaveAttribute('data-member-count', '2');
       await expect(normalMode.getByTestId(`club-member-item-${guests[1].userId}`)).toBeVisible();
-      await expect.poll(/** 重复读取`(await members()).some(member => member.id === guests[1].userId)`，直到满足外层等待断言。 */ async () => (await members()).some(/** 判断是否存在满足以下条件的条目：`member.id === guests[1].userId`。
+      await expect.poll(/** 轮询第二个访客的成员状态，等待移除结果同步。 */ async () => (await members()).some(/** 在刷新后的成员列表中定位第二个访客，供移除断言判断。
  * @param member - 当前操作使用的 member。 */ member => member.id === guests[1].userId)).toBe(true);
 
       await removeMember(guests[1], 1);
-      expect((await members()).map(/** 将当前条目映射为`member.id`。
+      expect((await members()).map(/** 提取剩余成员标识，核对移除操作未影响其他成员。
  * @param member - 当前操作使用的 member。 */ member => member.id)).toEqual([newAccount.userId]);
     });
   } finally {
     try {
       if (clubId && apiOrigin) {
-        await Promise.allSettled(guests.filter(/** 仅保留满足以下条件的条目：`memberIdsToClean.has(guest.userId)`。
+        await Promise.allSettled(guests.filter(/** 仅清理仍登记在俱乐部中的测试访客。
  * @param guest - 当前操作使用的 guest。 */ guest => memberIdsToClean.has(guest.userId)).map(/** 删除本轮创建的俱乐部成员并释放响应，恢复测试前状态。
  * @param guest - 当前操作使用的 guest。 */ async guest => {
           const response = await guest.page.request.delete(`${apiOrigin}/v10/club/${clubId}/member/${guest.userId}`, {
@@ -165,7 +165,7 @@ test('CLUB-004：房主连续移除成员后人数与列表一致', { tag: '@cre
           });
           await response.dispose();
         }));
-        await expect.poll(/** 重复读取`(await members()).length`，直到满足外层等待断言。 */ async () => (await members()).length, { timeout: 20_000 }).toBe(1);
+        await expect.poll(/** 轮询清理后的成员数，确认测试访客已全部移除。 */ async () => (await members()).length, { timeout: 20_000 }).toBe(1);
       }
     } finally {
       await closeGuestContexts(guests);

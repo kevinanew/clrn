@@ -180,12 +180,12 @@ test('生产 HTTP 服务的完整读取与首块取消均释放源，取消保�
   assert.equal(sources.length, 21);
   assert.ok(sources.every(/** 确认所有条目均满足：`source.closed && source.fd === null`。
  * @param source - 当前操作使用的 source。 */ source => source.closed && source.fd === null));
-  assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.finish'`。
+  assert.equal(events.filter(/** 统计响应完成事件，验证传输收尾没有重复通知。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.finish').length, 1);
-  assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.interrupted'`。
+  assert.equal(events.filter(/** 统计响应中断事件，验证取消传输被正确归类。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.interrupted').length, 20);
-  assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.stream-close'`。
+  assert.equal(events.filter(/** 统计流关闭事件，验证底层流已释放。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.stream-close').length, 21);
-  assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.stream-error'`。
+  assert.equal(events.filter(/** 统计流错误事件，验证异常回调没有重复上报。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.stream-error').length, 0);
 });

@@ -44,7 +44,7 @@ test('真实创建俱乐部并核实详情、归属和服务端持久化', { tag
     await expect(await unique(page, 'club-info-member-count')).toHaveText('1');
     await expect(await unique(page, 'club-profile-item-content-club_id')).toHaveText(/^\d{9}$/);
     await expect(await unique(page, 'club-rooms-empty-card')).toBeVisible();
-    await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
+    await expect.poll(/** 轮询建俱乐部后的钻石余额，核对实际扣费。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 50);
   });
 
   await test.step('独立读取刚创建的俱乐部，验证服务端持久化与创建人归属', /** 执行独立读取刚创建的俱乐部，验证服务端持久化与创建人归属。 */ async () => {

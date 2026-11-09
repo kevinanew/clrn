@@ -37,7 +37,7 @@ test('第二账号通过真实房号加入新建私人牌局', { tag: '@creates-
       await clickWithBackgroundClubNotice(page, 'menu-button', 3);
       await clickWithBackgroundClubNotice(page, 'drawer-menu-item-exit', 3);
       await expect(page.getByTestId(`private-room-${roomId}`).filter({ visible: true })).toHaveCount(1);
-      await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 10);
+      await expect.poll(/** 轮询创建私人房后的余额，核对加入房间场景的建房费用。 */ () => readDiamondBalance(page, newAccount)).toBe(before - 10);
     });
 
     guest = await createSecondAccount(browser, page.viewportSize(), test.info().project.name === 'mobile');
@@ -48,7 +48,7 @@ test('第二账号通过真实房号加入新建私人牌局', { tag: '@creates-
       await (await unique(guest!.page, 'private-room-tab')).click();
       await (await unique(guest!.page, 'personal-house-join')).click();
       const pin = await unique(guest!.page, 'personal-room-smooth-pin-code-input');
-      const input = (await pin.evaluate(/** 在页面中读取`node.tagName === 'INPUT'`，供测试判断当前界面状态。
+      const input = (await pin.evaluate(/** 区分原生房号输入框与自定义输入控件。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.tagName === 'INPUT')) ? pin : pin.locator('input').filter({ visible: true });
       await expect(input, '房号组件应有唯一可输入元素').toHaveCount(1);
       await input.fill(houseNumber!);
@@ -71,7 +71,7 @@ test('第二账号通过真实房号加入新建私人牌局', { tag: '@creates-
       expect(response.ok(), '只删除本次创建的牌局').toBeTruthy();
       expect((await response.json()).ok).toBe(true);
       await response.dispose();
-      await expect.poll(/** 重复读取`readDiamondBalance(page, newAccount)`，直到满足外层等待断言。 */ () => readDiamondBalance(page, newAccount)).toBe(before);
+      await expect.poll(/** 轮询房间清理后的余额，核对测试结束时的账户状态。 */ () => readDiamondBalance(page, newAccount)).toBe(before);
     }
   }
 });

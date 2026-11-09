@@ -53,7 +53,7 @@ export default {
           ImportDeclaration(node) {
             const name = node.source.value;
             const server = /^(?:node:)?https?2?$/.test(name)
-              && node.specifiers.some(/** 判断是否存在满足以下条件的条目：`specifier.imported?.name === 'createServer'`。
+              && node.specifiers.some(/** 识别 HTTP 服务工厂的具名导入，追踪后续响应入口调用。
  * @param specifier - 当前操作使用的 specifier。 */ specifier => specifier.imported?.name === 'createServer');
             if (server) {
               for (const specifier of node.specifiers) {

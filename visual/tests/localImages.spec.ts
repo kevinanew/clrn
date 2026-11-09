@@ -19,7 +19,7 @@ test('页面切换后不把已移除图片误判为当前画面的缺图', /** �
   await page.goto('http://visual.test/', { waitUntil: 'domcontentloaded' });
 
   const checking = ensureLocalImagesLoaded(page);
-  await page.evaluate(/** 在页面中读取`undefined`，供测试判断当前界面状态。 */ () => undefined);
+  await page.evaluate(/** 等待一次浏览器执行往返，让图片等待器有机会安装监听。 */ () => undefined);
   await page.evaluate(/** 移除旧画面的图片并派发失败事件，验证等待不会卡在卸载节点。 */ () => {
     const image = document.querySelector('img')!;
     image.remove();
@@ -55,10 +55,10 @@ test('等待图片时保留页面原有的加载回调', /** 验证等待图片�
   });
 
   const checking = ensureLocalImagesLoaded(page);
-  await page.evaluate(/** 在页面中读取`undefined`，供测试判断当前界面状态。 */ () => undefined);
+  await page.evaluate(/** 等待一次浏览器执行往返，确保监听已安装后再释放图片响应。 */ () => undefined);
   releaseImage();
   await checking;
-  expect(await page.evaluate(/** 在页面中读取`(window as typeof window & { imageLoaded?: boolean }).imageLoaded`，供测试判断当前界面状态。 */ () => (window as typeof window & { imageLoaded?: boolean }).imageLoaded)).toBe(true);
+  expect(await page.evaluate(/** 读取原图片加载处理器的执行标记，核对等待器没有覆盖业务回调。 */ () => (window as typeof window & { imageLoaded?: boolean }).imageLoaded)).toBe(true);
 });
 
 test('隐藏界面的缺图不会阻断当前画面，显示后仍会报错', /** 验证隐藏界面的缺图不会阻断当前画面，显示后仍会报错。

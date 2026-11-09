@@ -35,7 +35,7 @@ function renderHandCard(name: string, content: string, side: number): string {
 test('翻牌圈等待五张精灵牌面完成加载', /** 验证翻牌圈等待五张精灵牌面完成加载。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   await page.setContent(`
-    ${Array.from({ length: 3 }, /** 为当前索引构造`<div data-testid="community_card">${face}</div>`。 */ () => `<div data-testid="community_card">${face}</div>`).join('')}
+    ${Array.from({ length: 3 }, /** 生成三张已就绪的公共牌，单独验证手牌异步加载。 */ () => `<div data-testid="community_card">${face}</div>`).join('')}
     ${handCard('as')}${handCard('ad', face, 1)}${handCard('')}
   `);
   await page.getByTestId('player_card').nth(1).getByTestId('sprite-image-content').evaluate(/** 暂时隐藏第二张牌的精灵内容，构造牌面异步提交。
@@ -49,7 +49,7 @@ test('翻牌圈等待五张精灵牌面完成加载', /** 验证翻牌圈等待�
 test('翻牌圈不能用文本回退代替缺失的精灵牌面', /** 验证翻牌圈不能用文本回退代替缺失的精灵牌面。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   await page.setContent(`
-    ${Array.from({ length: 3 }, /** 为当前索引构造`<div data-testid="community_card">${face}</div>`。 */ () => `<div data-testid="community_card">${face}</div>`).join('')}
+    ${Array.from({ length: 3 }, /** 准备已就绪的公共牌，使负例仅由手牌缺失精灵触发。 */ () => `<div data-testid="community_card">${face}</div>`).join('')}
     ${handCard('as')}${handCard('ad', '<span>Ad</span>')}
   `);
   await expect(checkFlopCardFaces(page)).rejects.toThrow();
@@ -58,7 +58,7 @@ test('翻牌圈不能用文本回退代替缺失的精灵牌面', /** 验证翻�
 test('手牌正面未翻开时不能通过牌面检查', /** 验证手牌正面未翻开时不能通过牌面检查。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page }) => {
   await page.setContent(`
-    ${Array.from({ length: 3 }, /** 为当前索引构造`<div data-testid="community_card">${face}</div>`。 */ () => `<div data-testid="community_card">${face}</div>`).join('')}
+    ${Array.from({ length: 3 }, /** 准备已就绪的公共牌，使负例仅由手牌尚未翻开触发。 */ () => `<div data-testid="community_card">${face}</div>`).join('')}
     ${handCard('as')}
     <div data-testid="player_card">
       <div data-testid="card-flip" data-side="0">

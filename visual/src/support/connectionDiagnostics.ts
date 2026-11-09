@@ -102,7 +102,7 @@ export async function installConnectionDiagnostics(context: DiagnosticContext, p
         const servers = body?.result?.servers;
         if (!servers || typeof servers !== 'object') return;
         const names = Array.isArray(servers) ? servers : Object.keys(servers);
-        recorder.record('nodes.received', { ...entry, candidates: names.filter(/** 仅保留满足以下条件的条目：`typeof name === 'string'`。
+        recorder.record('nodes.received', { ...entry, candidates: names.filter(/** 只接收字符串形式的事件名称，拒绝不可信的属性值。
  * @param name - 当前操作使用的 name。 */ name => typeof name === 'string').map(diagnosticNode) });
       }).catch(/** 元数据正文不可读时记录明确事件，保留请求定位信息。 */ () => recorder.record('nodes.unreadable', entry));
       pendingMetadata.add(reading);

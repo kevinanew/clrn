@@ -36,21 +36,21 @@ test('每次打开玩家资料都等待本次三项成功读取，旧响应和�
     await page.goto(origin);
     await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
     await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
-    const before = await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now());
+    const before = await page.evaluate(/** 记录玩家资料面板就绪检查开始前的冻结时间。 */ () => Date.now());
     await page.evaluate(/** 发起本次操作之前的资料请求，验证请求归属判断。
  * @param path - 当前操作使用的 path。 */ path => { void fetch(path).then(/** 标记旧资料请求已结束，供后续就绪断言使用。 */ () => {
       (window as typeof window & { staleReadFinished: boolean }).staleReadFinished = true;
     }); }, paths[0]);
-    await expect.poll(/** 重复读取`pending.has(paths[0])`，直到满足外层等待断言。 */ () => pending.has(paths[0])).toBe(true);
+    await expect.poll(/** 轮询旧资料请求是否挂起，准备迟到响应场景。 */ () => pending.has(paths[0])).toBe(true);
     const stale = pending.get(paths[0])!;
     for (const order of [[0, 1, 2], [2, 1, 0], [1, 0, 2]]) {
       pending.clear();
       let ready = false;
       const opening = openPlayerProfile(page, player).then(/** 标记本次玩家资料打开操作已通过就绪检查。 */ () => { ready = true; });
-      await expect.poll(/** 重复读取`pending.size`，直到满足外层等待断言。 */ () => pending.size).toBe(3);
+      await expect.poll(/** 轮询本次面板读取数量，等待新的资料请求全部发出。 */ () => pending.size).toBe(3);
       if (order[0] === 0) {
         await stale.fulfill({ json: { ok: true, result: {} } });
-        await expect.poll(/** 重复读取`page.evaluate(() => (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)`，直到满足外层等待断言。 */ () => page.evaluate(/** 在页面中读取`(window as typeof window & { staleReadFinished?: boolean }).staleReadFinished`，供测试判断当前界面状态。 */ () =>
+        await expect.poll(/** 轮询旧资料请求的完成标记，验证旧响应不能替代本次读取。 */ () => page.evaluate(/** 读取旧资料请求的完成标记，区分请求归属。 */ () =>
           (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)).toBe(true);
         assert.equal(ready, false, '打开前发出的旧请求不能作为本次就绪依据');
       }
@@ -60,7 +60,7 @@ test('每次打开玩家资料都等待本次三项成功读取，旧响应和�
         await expect(page.locator('output')).toHaveText(String(index + 1));
       }
       await opening;
-      assert.equal(await page.evaluate(/** 在页面中读取`Date.now()`，供测试判断当前界面状态。 */ () => Date.now()), before, '准备读取不得推进动画相位');
+      assert.equal(await page.evaluate(/** 读取资料面板就绪后的时间，确认等待不推进动画时钟。 */ () => Date.now()), before, '准备读取不得推进动画相位');
     }
   } finally { await browser.close(); }
 });
@@ -83,7 +83,7 @@ test('玩家资料任一读取失败都阻止采样并保留真实状态，错�
         });
         await page.goto(origin);
         await page.clock.install();
-        await page.clock.pauseAt(await page.evaluate(/** 在页面中读取`Date.now() + 1000`，供测试判断当前界面状态。 */ () => Date.now() + 1000));
+        await page.clock.pauseAt(await page.evaluate(/** 以冻结时间后一秒构造玩家资料就绪等待的截止时刻。 */ () => Date.now() + 1000));
         await assert.rejects(openPlayerProfile(page, player), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ error => {
           assert.match(String(error), new RegExp(`玩家资料准备失败：method=GET operation=${operation}`));

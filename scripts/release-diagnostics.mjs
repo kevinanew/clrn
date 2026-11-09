@@ -7,9 +7,9 @@ import path from 'node:path';
  * @param command - 原测试命令及参数。
  */
 export function releaseDiagnosticDirectory(command) {
-  if (command.some(/** 判断是否存在满足以下条件的条目：`part.startsWith('test:animations')`。
+  if (command.some(/** 识别动画测试命令，选择对应的诊断任务标签。
  * @param part - 当前操作使用的 part。 */ part => part.startsWith('test:animations'))) return 'test-results/animations/release-server';
-  if (command.some(/** 判断是否存在满足以下条件的条目：`part.startsWith('test:functional')`。
+  if (command.some(/** 识别功能测试命令，选择对应的诊断任务标签。
  * @param part - 当前操作使用的 part。 */ part => part.startsWith('test:functional'))) return 'test-results/cases/release-server';
   if (command.includes('test:interactions')) return 'test-results/interactions/release-server';
   if (command.includes('test:freshchat')) return 'test-results/freshchat/release-server';

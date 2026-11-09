@@ -47,11 +47,11 @@ test('图片解码与布局提交后才开始采样，持续回退仍须失败',
       state.animationTicks = 0;
       setInterval(/** 累计动画周期次数，验证等待图片不会停止独立动画。 */ () => { state.animationTicks += 1; }, 16);
     });
-    const before = await page.evaluate(/** 在页面中读取`{ time: Date.now(), ticks: performance.now() }`，供测试判断当前界面状态。 */ () => ({ time: Date.now(), ticks: performance.now() }));
+    const before = await page.evaluate(/** 记录就绪检查前的墙钟与单调时钟值。 */ () => ({ time: Date.now(), ticks: performance.now() }));
     await waitForTexasCardSprites(page, '[data-testid="community_card"]');
-    assert.deepEqual(await page.evaluate(/** 在页面中读取`{ time: Date.now(), ticks: performance.now() }`，供测试判断当前界面状态。 */ () => ({ time: Date.now(), ticks: performance.now() })), before,
+    assert.deepEqual(await page.evaluate(/** 读取就绪检查后的两个时钟，验证等待没有推进动画时间。 */ () => ({ time: Date.now(), ticks: performance.now() })), before,
       '图片准备期间必须保持同一动画时刻');
-    assert.equal(await page.evaluate(/** 在页面中读取`(window as typeof window & { animationTicks: number }).animationTicks`，供测试判断当前界面状态。 */ () => (window as typeof window & { animationTicks: number }).animationTicks), 0,
+    assert.equal(await page.evaluate(/** 读取动画回调计数，核对就绪等待没有触发额外动画帧。 */ () => (window as typeof window & { animationTicks: number }).animationTicks), 0,
       '图片准备不得执行下一动画帧');
     await page.evaluate(/** 隐藏精灵内容并恢复后备图，构造未就绪牌面。 */ () => {
       document.querySelector<HTMLElement>('[data-testid="sprite-image-fallback"]')!.style.display = 'flex';
@@ -59,7 +59,7 @@ test('图片解码与布局提交后才开始采样，持续回退仍须失败',
     });
     await assert.rejects(waitForTexasCardSprites(page, '[data-testid="community_card"]'),
       /德州可见牌面应显示完整图集/, '已下载的图片仍在回退时，不能伪造就绪');
-    assert.equal(await page.locator('[data-testid="sprite-image-fallback"]').evaluate(/** 在页面中读取`getComputedStyle(node).display`，供测试判断当前界面状态。
+    assert.equal(await page.locator('[data-testid="sprite-image-fallback"]').evaluate(/** 读取目标样式，核对牌面就绪检查没有改变显示状态。
  * @param node - 当前遍历的 DOM 或语法节点。 */ node => getComputedStyle(node).display),
       'flex', '就绪检查不得改写应用回退层');
   } finally { await browser.close(); }
