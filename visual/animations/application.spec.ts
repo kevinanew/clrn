@@ -4,6 +4,7 @@ import { exercisePopup } from './popups';
 import { captureTimeline, freeze } from './timeline';
 import { resetViewportScroll } from './renderReadiness';
 import { selectScenario } from '../../e2e/helpers/scenario-proxy';
+import { installConnectionDiagnostics } from '../src/support/connectionDiagnostics';
 import { lockBottomSheetDocumentScroll } from './bottomSheetScroll';
 
 test('guest search confirmation enter and exit', /** 验证游客搜索确认弹窗的进入与退出动画。
@@ -22,13 +23,21 @@ test('guest search confirmation enter and exit', /** 验证游客搜索确认弹
 
 test('club more menu enter and exit', /** 验证俱乐部更多菜单的进入与退出动画。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。
- * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
-  await openApplication(context, page, info);
-  await navigate(page, 'club-tab');
-  await exercisePopup(page, info, { name: 'club-more', target: page.getByTestId('club-more-popup'),
-    open: /** 点击真实入口。 */ () => press(page, 'show-more-button'),
-    close: /** 点击实际遮罩关闭，不依赖 Modal 重开后的键盘焦点。 */ () => pressTarget(visible(page, 'popup-backdrop')),
-  });
+ * @param info - 当前测试的运行与附件信息。 */ async ({ context, page, network }, info) => {
+  const diagnostics = await installConnectionDiagnostics(context, page, info, {
+    /** 只读获取代理快照。 */ diagnostics: () => network.command('diagnostics', undefined, 2000),
+  }).catch(/** 诊断安装失败不影响场景。 */ () => undefined);
+  try {
+    await openApplication(context, page, info);
+    await navigate(page, 'club-tab');
+    await exercisePopup(page, info, { name: 'club-more', target: page.getByTestId('club-more-popup'),
+      open: /** 点击真实入口。 */ () => press(page, 'show-more-button'),
+      close: /** 点击实际遮罩关闭，不依赖 Modal 重开后的键盘焦点。 */ () => pressTarget(visible(page, 'popup-backdrop')),
+    });
+  } catch (error) {
+    try { await diagnostics?.save(error); } catch { /* 诊断不得覆盖原始异常。 */ }
+    throw error;
+  }
 });
 
 test('private room invitation bottom sheet enter and exit', /** 验证私人房邀请底部面板的进入与退出动画。
