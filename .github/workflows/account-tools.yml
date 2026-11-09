@@ -36,4 +36,8 @@ jobs:
       - name: 验证实际提交拦截与部分暂存
         run: .venv/bin/python scripts/verify-pre-commit.py
       - name: 运行本机单元测试
-        run: npm test
+        # gameSettings 单元测试使用真实 Chromium，npm ci 不会安装浏览器。
+        # 使用仓库锁定的 Playwright 安装对应浏览器及 Linux 运行依赖。
+        run: |
+          npx --no-install playwright install --with-deps chromium
+          npm test
