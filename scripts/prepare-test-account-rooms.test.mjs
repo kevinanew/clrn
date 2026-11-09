@@ -113,7 +113,7 @@ test('任一网络或业务失败都会停止且错误中不泄露会话', /** �
       const requests = network(context, [...replies.slice(0, stage), failure]);
       await assert.rejects(prepareTestAccountRooms(session), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ error => {
-        assert.match(error.message, /失败：method=(PUT|GET|DELETE) operation=prepare-room-[a-z]+ source=laiwan_prd status=/);
+        assert.match(error.message, /失败：method=(PUT|GET|DELETE) operation=prepare-room-[a-z]+ source=laiwan_proxy status=/);
         assert.match(error.message, failure instanceof Error ? /status=unavailable response=not-received/
           : new RegExp(`status=${failure.status} response=received`));
         assert.ok(!error.message.includes(session.authorization));

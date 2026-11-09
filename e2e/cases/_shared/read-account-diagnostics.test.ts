@@ -26,7 +26,7 @@ const session = { userId: 'synthetic-user', accountUrl: 'https://account.invalid
  * @param source - 固定表内的逻辑来源。
  */
 function checkFailure(error: unknown, stage: string, method: string, operation: string,
-  status: number | 'unavailable', reason: string, source = 'laiwan_prd'): boolean {
+  status: number | 'unavailable', reason: string, source = 'laiwan_proxy'): boolean {
   assert.ok(error instanceof Error);
   const upper = readAccountPreparationError(new Error(secret, { cause: error }));
   assert.equal(upper.message, `${stage}失败：method=${method} operation=${operation} source=${source} status=${status} response=${responseState(status)} reason=${reason}`);
@@ -124,7 +124,7 @@ test('表单准备失败或未观察到登录请求不能虚构POST；观察到�
   for (const { phase, operation, stage, method, source } of [
     { phase: 'form', operation: 'existing-account-login-ui', stage: '准备已有只读账号登录表单', method: 'LOCAL', source: 'browser-ui' },
     { phase: 'waiting', operation: 'existing-account-login-await', stage: '等待已有只读账号登录响应（请求未观察到）', method: 'UNKNOWN', source: 'browser-ui' },
-    { phase: 'request', operation: 'existing-account-login', stage: '已有只读账号登录', method: 'POST', source: 'laiwan_prd' },
+    { phase: 'request', operation: 'existing-account-login', stage: '已有只读账号登录', method: 'POST', source: 'laiwan_proxy' },
   ]) {
     let closed = false;
     let detached = false;
@@ -157,9 +157,9 @@ test('实际只读fixture准备链保留本地阶段与真实会话状态，仍�
   const scenarios: { phase: string; status: number; failure: ExpectedFailure | null }[] = [
     { phase: 'context', status: 200, failure: ['准备已有只读账号页面', 'LOCAL', 'existing-account-setup', 'unavailable', 'request-failed', 'browser-ui'] },
     { phase: 'origin', status: 200, failure: ['核对只读账号页面来源', 'LOCAL', 'existing-account-origin', 'unavailable', 'request-failed', 'browser-ui'] },
-    { phase: 'session-401', status: 401, failure: ['核对已有只读账号会话', 'GET', 'existing-account-session', 401, 'http-error', 'laiwan_prd'] },
-    { phase: 'session-503', status: 503, failure: ['核对已有只读账号会话', 'GET', 'existing-account-session', 503, 'http-error', 'laiwan_prd'] },
-    { phase: 'session-201', status: 201, failure: ['核对已有只读账号会话', 'GET', 'existing-account-session', 201, 'invalid-response', 'laiwan_prd'] },
+    { phase: 'session-401', status: 401, failure: ['核对已有只读账号会话', 'GET', 'existing-account-session', 401, 'http-error', 'laiwan_proxy'] },
+    { phase: 'session-503', status: 503, failure: ['核对已有只读账号会话', 'GET', 'existing-account-session', 503, 'http-error', 'laiwan_proxy'] },
+    { phase: 'session-201', status: 201, failure: ['核对已有只读账号会话', 'GET', 'existing-account-session', 201, 'invalid-response', 'laiwan_proxy'] },
     { phase: 'success', status: 200, failure: null },
   ];
   for (const { phase, status, failure } of scenarios) {
@@ -280,7 +280,7 @@ test('只读账号上层持久化不保存包装文本，未知页面错误仍�
   await writeFile(report, JSON.stringify({ error: failure.message, detail: inspect(failure) }));
   console.error(failure.message);
   for (const output of [outputs.at(-1)!, await readFile(report, 'utf8')]) {
-    assert.ok(output.includes('method=GET operation=existing-account-session source=laiwan_prd status=unavailable response=not-received reason=connection-failed'));
+    assert.ok(output.includes('method=GET operation=existing-account-session source=laiwan_proxy status=unavailable response=not-received reason=connection-failed'));
     assert.doesNotMatch(output, /account\.invalid|synthetic-|192\.0\.2\.60|2001:db8::60|Call log/);
   }
 });

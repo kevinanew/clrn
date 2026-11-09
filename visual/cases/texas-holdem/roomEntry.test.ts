@@ -62,7 +62,7 @@ test('观察者连接错误页保留实际状态与操作，任意响应头和�
     const { page, verify } = fixture(new Response('<html>private-response-body</html>',
       { status, headers: { 'content-type': contentType, 'x-private-header': 'private-header-value' } }));
     await assert.rejects(enterTexasRoom(page, room), {
-      message: `德州观察者连接失败：method=PUT operation=texas-enter source=laiwan_prd status=${status} response=received reason=${status === 200 ? 'invalid-json' : 'http-error'}`,
+      message: `德州观察者连接失败：method=PUT operation=texas-enter source=laiwan_proxy status=${status} response=received reason=${status === 200 ? 'invalid-json' : 'http-error'}`,
     });
     verify();
   }
@@ -72,7 +72,7 @@ test('观察者连接继续要求 HTTP 和业务结果同时成功，并释放�
   for (const [status, ok] of [[200, true], [200, false], [503, true]] as const) {
     const { page, verify } = fixture(Response.json({ ok }, { status }));
     if (status === 200 && ok) await enterTexasRoom(page, room);
-    else await assert.rejects(enterTexasRoom(page, room), new RegExp(`method=PUT operation=texas-enter source=laiwan_prd status=${status} response=received reason=${status === 200 ? 'business-rejected' : 'http-error'}`));
+    else await assert.rejects(enterTexasRoom(page, room), new RegExp(`method=PUT operation=texas-enter source=laiwan_proxy status=${status} response=received reason=${status === 200 ? 'business-rejected' : 'http-error'}`));
     verify();
   }
 });

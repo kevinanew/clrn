@@ -44,7 +44,7 @@ for (const boundary of boundaries) {
       await assert.rejects(boundary.run(), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param asyncError - 当前操作使用的 asyncError。 */ asyncError => {
         failure = asyncError;
-        const message = `${boundary.stage}失败：method=POST operation=${boundary.operation} source=laiwan_prd status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}`;
+        const message = `${boundary.stage}失败：method=POST operation=${boundary.operation} source=laiwan_proxy status=${status} response=${status === 'unavailable' ? 'not-received' : 'received'} reason=${reason}`;
         assert.equal(asyncError.message, message);
         assert.equal(asyncError.cause, undefined);
         const output = inspect(asyncError, { depth: 20 });
@@ -118,7 +118,7 @@ test('会话必须为200，其他实际状态和网络失败经过fixture传播�
  * @param error - 当前操作抛出的错误。 */ error => {
       const upper = diagnostics.accountPreparationError(error, 'creation-account-session-check');
       assert.equal(upper.message, error.message);
-      assert.match(upper.message, new RegExp(`method=GET operation=existing-account-session source=laiwan_prd status=${status ?? 'unavailable'} response=${status === undefined ? 'not-received' : 'received'} reason=${status === undefined ? 'connection-failed' : status === 201 ? 'invalid-response' : 'http-error'}$`));
+      assert.match(upper.message, new RegExp(`method=GET operation=existing-account-session source=laiwan_proxy status=${status ?? 'unavailable'} response=${status === undefined ? 'not-received' : 'received'} reason=${status === undefined ? 'connection-failed' : status === 201 ? 'invalid-response' : 'http-error'}$`));
       assert.doesNotMatch(inspect(upper), /synthetic-|fixture\.invalid/);
       return true;
     });
@@ -170,7 +170,7 @@ test('多用户准备保留注册500及本地失败定位，清理失败也不�
  * @param error - 当前操作抛出的错误。 */ error => {
       assert.match(error.message, localFailure
         ? /method=LOCAL operation=second-account-setup .*status=unavailable response=not-received/
-        : /method=POST operation=create-test-account source=laiwan_prd status=500 response=received reason=http-error/);
+        : /method=POST operation=create-test-account source=laiwan_proxy status=500 response=received reason=http-error/);
       assert.equal(error.cause, undefined);
       assert.doesNotMatch(inspect(error), /synthetic-|fixture\.invalid/);
       return true;

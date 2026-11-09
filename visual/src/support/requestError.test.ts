@@ -38,7 +38,7 @@ test('余额和观察者上层不传播地址、任意响应头、业务文本�
       await assert.rejects(operation === 'texas-enter' ? enterTexasRoom({ request }, room) : ensureRoomBalance(request, account), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ error => {
         assert.ok(error instanceof Error);
-        assert.match(error.message, new RegExp(`operation=${operation} source=laiwan_prd status=${status} .*reason=${reason}`));
+        assert.match(error.message, new RegExp(`operation=${operation} source=laiwan_proxy status=${status} .*reason=${reason}`));
         privateOutput(error.stack || '');
         return true;
       });
@@ -63,7 +63,7 @@ test('清理仍拒绝 HTTP500、业务失败、非 JSON 和无响应，不能误
     await assert.rejects(deletePrivateGameRoom(room), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ error => {
       assert.ok(error instanceof Error);
-      assert.match(error.message, /method=DELETE operation=room-delete source=laiwan_prd status=/);
+      assert.match(error.message, /method=DELETE operation=room-delete source=laiwan_proxy status=/);
       privateOutput(error.stack || '');
       return true;
     });

@@ -28,8 +28,8 @@
 示例：
 
 ```text
-准备账号登录失败：method=POST operation=prepare-account-login source=laiwan_prd status=500 response=received reason=http-error
-准备账号登录失败：method=POST operation=prepare-account-login source=laiwan_prd status=unavailable response=not-received reason=timeout
+准备账号登录失败：method=POST operation=prepare-account-login source=laiwan_proxy status=500 response=received reason=http-error
+准备账号登录失败：method=POST operation=prepare-account-login source=laiwan_proxy status=unavailable response=not-received reason=timeout
 ```
 
 HTTP 非成功响应优先报告实际状态，不再读取或拼接错误页。
@@ -195,9 +195,9 @@ Release 标签 `web-staging-200001201-9df567fda8d7`；与当前发布记录一�
 
 只读运行 HEAD 与已有暂存版本的分类器确认：HEAD 的精确 `socket hang up` 首行仍返回
 `request-failed`；已有暂存修复已返回 `connection-failed`，但两者均把本地 Release
-请求和本地 UI 准备标为 `laiwan_prd`。本次继续保留断连修复并更正来源：
+请求和本地 UI 准备标为 `laiwan_proxy`。本次继续保留断连修复并更正来源：
 
-- 私有业务接口仍为 `source=laiwan_prd`；已知本地 Release 为 `release-static`，
+- 私有业务接口仍为 `source=laiwan_proxy`；已知本地 Release 为 `release-static`，
   包括代理严格匹配本轮来源后的错误。前端导航为 `web-entry`，UI 和缓存操作分别为
   `browser-ui`、`browser-state`；这些标签只来自固定表，不接受任意 source 或 method。
 - 登录表单准备失败用 LOCAL；等待响应却没有观察到匹配登录请求时使用 UNKNOWN。
@@ -348,7 +348,7 @@ Python `error_reason` 仍按任意文本中的 timeout/connection/disconnect 子
 现在只接纳固定错误文本及有限 OS 错误码与固定消息的组合，
 保留锁定 mitmproxy 12.2.3 的 `server closed connection`，不扫描地址、凭据或后续行。
 未知输入继续为 detail-withheld；输出仍只含固定原因，不保留匹配到的原消息。
-回归同时核对 operation、GET、laiwan_prd、unavailable/not-received 和合成凭据负例。
+回归同时核对 operation、GET、laiwan_proxy、unavailable/not-received 和合成凭据负例。
 这修正分类准确性，不证明历史 CI 曾泄露信息，也不证明静态断连根因。
 
 ### 当前提交 CI 与附件边界
