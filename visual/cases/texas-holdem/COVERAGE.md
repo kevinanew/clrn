@@ -21,7 +21,31 @@
 随后 `http-233` POST 未收到响应，失败现场同时显示 `Network Error`、`等待開始`、`0s` 和“重試”，
 没有重试点击记录。接口及底层原因仍被脱敏，不能由此认定具体接口、故障归属或与应用 #7078 同因。
 本次修复覆盖等待逻辑的恢复缺口；固定 Release `web-staging-200001602-b20853dbe65c` 的真实
-手机／桌面画面对比及后续 workflow 交接仍需在 Linux/Docker 环境验收，本机 Docker 服务不可连接。
+手机／桌面画面对比及后续 workflow 交接尚未验收，Issue #115 仍有 P2 交付阻断，不能据此关闭。
+
+2026-11-09 独立复核了以下证据：
+
+- [原失败 job](https://github.com/kevinanew/clrn/actions/runs/41888325142/job/126778891214)
+  检出 `fc92a509ed11b9c93c1b9925b071aa6a979bb0cc`，使用上述原 Release；繁体桌面
+  `optional_pre_game` 通过，繁体手机等待开始按钮 30 秒失败，尚未进入截图比较。
+- [当前 PR 的繁体 CI](https://github.com/kevinanew/clrn/actions/runs/42534141343/job/128895723867)
+  使用 `web-staging-200001901-5d11c3e118f4`，手机和桌面 `optional_pre_game` 通过；
+  应用构建不同，不能证明原故障由等待逻辑修复，也不能认定应用或环境已修复。
+- [原 Release 元数据](https://github.com/kevinanew/clrn/releases/tag/web-staging-200001602-b20853dbe65c)
+  仍可读取；归档大小为 `24932312` 字节，SHA-256 为
+  `ca1f1b81e9a750e5a517287a6c1209be866d9d36cd408391f10f6eb7b40fbe87`，与原测试提交的
+  `deployments/staging.json` 一致；这仅核对了元数据，没有下载并校验构建字节。
+- 本轮 macOS 沙箱中，`docker info --format '{{.ServerVersion}}'` 退出 1，Docker socket 不存在；
+  固定原发布记录调用 `prepareReleaseWeb` 退出 1，准备请求报 `ENOTFOUND`。
+  下述 14 项浏览器定向测试全部在 Chromium 启动时因 MachPort `Permission denied (1100)` 中止，
+  未执行到业务断言；房间清理定向测试也因 `listen EPERM` 未能运行，均不作为业务回归或通过证据。
+  视觉 TypeScript 检查、两项视口校正测试及 26 项场景矩阵／诊断测试通过，不能替代真实应用验收。
+
+剩余验收必须在可用的 Linux/Docker 环境固定原测试提交、原 Release 和繁体手机／桌面场景，
+仅对照替换等待逻辑，保留修复前后的脱敏请求、错误弹窗、倒计时、创建者状态和开始按钮时序，
+以及既有基准的截图比较和本轮房间清理结果；原故障未复现也不能记作归属已确认。
+如确认依赖应用或环境修复，需补齐实际修复关联和相应新构建证据；满足验收后再验证
+`workflow master-ci squash` 交接。本轮未执行该 workflow，也未执行本地完整测试，完整门禁仍由远端 CI 验收。
 
 离线定向回归使用真实 Chromium，覆盖手机／桌面、晚到错误、控件缺失、加载遮罩、不可重试错误、
 持续失败的三次上限、诊断附件及被遮挡按钮的时间预算；这些 DOM 场景不替代应用截图基准。
