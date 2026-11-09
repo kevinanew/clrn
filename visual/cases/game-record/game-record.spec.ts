@@ -1,3 +1,4 @@
+import { installConnectionDiagnostics } from '../../src/support/connectionDiagnostics';
 import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
 import fs from 'node:fs';
 import { test, expect, type RecordProxy } from './proxy';
@@ -177,6 +178,10 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
     });
     bindScenarioProxy(context, recordProxy.network);
     const page = await context.newPage();
+    const diagnostics = await installConnectionDiagnostics(context, page, test.info(), {
+      diagnostics: /** 读取战绩代理的脱敏网络历史。 */ () => recordProxy.network.command('diagnostics', undefined, 2000),
+    })
+      .catch(/** 采集安装失败不改变战绩测试结果。 */ () => undefined);
     page.setDefaultTimeout(60_000);
     const errors: string[] = [];
     page.on('pageerror', /** 收集页面运行错误，供战绩场景结束时核验。
@@ -245,6 +250,9 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       complete();
       expect(errors, '战绩流程不能出现未捕获的页面异常').toEqual([]);
       await assertRecordRequests(version, recordProxy, userId);
+    } catch (error) {
+      await saveDiagnostics(diagnostics, error);
+      throw error;
     } finally {
       const alerts = await visible(page, 'alert-message-text').allTextContents().catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []);
       logAlerts(alerts);
@@ -253,6 +261,16 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       await context.close();
     }
   });
+}
+
+/**
+ * 保存可用的诊断，同时保留原始测试异常。
+ * @param diagnostics - 已安装的诊断收集器，安装失败时为空。
+ * @param error - 原始测试异常。
+ */
+async function saveDiagnostics(diagnostics: Awaited<ReturnType<typeof installConnectionDiagnostics>> | undefined,
+  error: unknown): Promise<void> {
+  await diagnostics?.save(error).catch(/** 诊断失败不能覆盖原始战绩异常。 */ () => {});
 }
 
 /**
