@@ -3,7 +3,7 @@ import type { Mitmproxy } from '../../e2e/helpers/mitmproxy-client';
 import type { VisualScenario } from '../scenarioTypes';
 import { installConnectionDiagnostics } from '../src/support/connectionDiagnostics';
 
-/** 为分享页账户超时保存代理快照；采集和保存失败均不改变原测试结果。
+/** 为登录场景账户超时保存代理快照；采集和保存失败均不改变原测试结果。
  * @param scenario - 当前视觉场景。
  * @param context - 场景独占上下文。
  * @param page - 导航前页面。
@@ -24,7 +24,7 @@ async function sharePageDiagnostics(scenario: VisualScenario, context: BrowserCo
   page: Page, network: Mitmproxy): Promise<(error: unknown) => Promise<void>> {
   let diagnostics: Awaited<ReturnType<typeof installConnectionDiagnostics>> | undefined;
   try {
-    if (scenario.pageLabel === 'signed_in_share_app') {
+    if (scenario.pageLabel.startsWith('signed_in_')) {
       diagnostics = await installConnectionDiagnostics(context, page, test.info(), {
         /** 只读查询现有代理快照，不发起额外账户请求。 */
         diagnostics: () => network.command('diagnostics', undefined, 2000),

@@ -1,3 +1,4 @@
+import { saveImageFailureDiagnostics } from './imageFailureDiagnostics';
 import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
 /** 真实牌桌视觉回归，失败前保存节点探测和连接诊断。 */
 import { installConnectionDiagnostics, recordDiagnostic } from '../../src/support/connectionDiagnostics';
@@ -277,6 +278,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       await captureScenario(page, scenario, mitmproxy, room, optional, /** 读取最新入场响应。 */ () => recordEntry);
       await diagnostics.save();
     } catch (error) {
+      await saveImageFailureDiagnostics(page, test.info(), scenario.pageLabel);
       await diagnostics.save(error).catch(/** 记录德州诊断附件保存失败，保留原始案例错误。
  * @param failure - 当前操作使用的 failure。 */ failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
       await page.screenshot({ path: test.info().outputPath('failure.png') }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);

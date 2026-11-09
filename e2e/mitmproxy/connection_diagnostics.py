@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from urllib.parse import urlsplit
 from mitmproxy import http
-from account_connection_diagnostics import account_connection_fields
+from account_connection_diagnostics import AccountConnections, account_connection_fields
 
 CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 PATH_TEMPLATES = [(path, path.split('/')) for path in json.loads(
@@ -144,9 +144,15 @@ class ConnectionDiagnostics:
         self.events = deque(maxlen=5000)
         self.dropped = 0
         self.pending_commands = {}
+        self.account_connections = AccountConnections()
 
     def server_event(self, event, data):
-        """仅收集本任务 Release 目标的真实连接钩子，不记录其他目标或异常正文。"""
+        """收集 Release 和已登记账户请求的真实连接钩子，不记录地址或异常正文。"""
+        account = self.account_connections.fields(data, node_name)
+        if account is not None:
+            if len(self.events) == self.events.maxlen:
+                self.dropped += 1
+            self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **account})
         try:
             expected = urlsplit(os.environ.get('CLRN_RELEASE_WEB_URL', ''))
             if (expected.scheme != 'http' or expected.hostname != '127.0.0.1'
@@ -210,6 +216,7 @@ class ConnectionDiagnostics:
         """记录业务请求的来源与关联信息，排除代理控制流量。"""
         if flow.request.host in CONTROL_HOSTS:
             return
+        self.account_connections.observe(flow)
         source = 'fixture' if flow.response is not None else 'upstream'
         flow.metadata['diagnostic_source'] = source
         self.record('proxy.request', flow, source=source, fixtureHit=source == 'fixture',
