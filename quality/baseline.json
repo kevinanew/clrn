@@ -53,26 +53,6 @@
       "reason": "现有浏览器诊断适配器单测：本机服务器制造连接中断，验证诊断和脱敏。"
     },
     {
-      "file": "e2e/helpers/diagnostic-privacy.ts",
-      "rule": "complexity",
-      "line": 65,
-      "column": 8,
-      "message": "Function 'diagnosticFields' has a complexity of 22. Maximum allowed is 10.",
-      "anchor": "201ec5b8b22955a56334f436541bd167e2c33a800f8f754edb7808aae96e8544",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/helpers/diagnostic-recorder.ts",
-      "rule": "complexity",
-      "line": 57,
-      "column": 3,
-      "message": "Method 'markdown' has a complexity of 20. Maximum allowed is 10.",
-      "anchor": "578d6324de4d9a2ce0e54d1e8c481427fcbee174d63142a2696cd662bb27fce0",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "e2e/helpers/mitmproxy-sources.test.ts",
       "rule": "quality/no-network-response",
       "line": 22,
@@ -143,26 +123,6 @@
       "reason": "代理源发现适配器单测：替换和恢复 fetch，覆盖元数据解析、验证及失败；不得发送真实业务请求。"
     },
     {
-      "file": "e2e/helpers/mitmproxy-sources.ts",
-      "rule": "complexity",
-      "line": 44,
-      "column": 1,
-      "message": "Async function 'metadataHosts' has a complexity of 14. Maximum allowed is 10.",
-      "anchor": "ec6be07f760edeeb8f9572450f68687a9cb16caf4a1e19e9fee02b417eb2189d",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "e2e/helpers/web-target.ts",
-      "rule": "complexity",
-      "line": 8,
-      "column": 8,
-      "message": "Function 'readTestWebUrl' has a complexity of 19. Maximum allowed is 10.",
-      "anchor": "75ea8c11fd4ad995171fb0b881ff363f5b277a67cfb6362fa1e80c8042f18045",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "e2e/mitmproxy.spec.ts",
       "rule": "quality/no-network-response",
       "line": 1,
@@ -181,16 +141,6 @@
       "anchor": "1099f57475793911c7f63891d2476726ad097af408bc3ca440ba8e9e47f3f1e1",
       "kind": "adapter-unit",
       "reason": "代理适配器集成单测：本机回源服务器验证转发与故障注入，不提供应用业务夹具。"
-    },
-    {
-      "file": "e2e/public-artifacts.spec.ts",
-      "rule": "complexity",
-      "line": 19,
-      "column": 67,
-      "message": "Async arrow function has a complexity of 12. Maximum allowed is 10.",
-      "anchor": "4d868a4c81c005ec8b9cb336bc4a40ab66cbb7bf6a3f6f2f711d9dcf1ad9d835",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
     },
     {
       "file": "e2e/sites-availability.spec.ts",

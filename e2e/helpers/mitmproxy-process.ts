@@ -1,6 +1,7 @@
 import { safeDiagnosticReason } from '../../scripts/request-failure.cjs';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
+import type { Readable } from 'node:stream';
 import { randomUUID } from 'node:crypto';
 import { DiagnosticLog, DiagnosticOutput, diagnosticDirectory } from './diagnostic-log';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -31,14 +32,8 @@ export class MitmdumpProcess {
     const captureOutput = (data: Buffer) => {
       this.diagnostics = (this.diagnostics + safeDiagnosticReason(data.toString())).slice(-MAX_DIAGNOSTIC_LENGTH);
     };
-    child.stdout?.on('data', captureOutput);
-    child.stderr?.on('data', captureOutput);
-    child.stdout?.on('data', /** 保存完整代理标准输出行。
-     * @param data - 代理输出块。
-     */ data => stdout.write(data));
-    child.stderr?.on('data', /** 保存完整代理标准错误行。
-     * @param data - 代理输出块。
-     */ data => stderr.write(data));
+    captureStream(child.stdout, captureOutput, stdout);
+    captureStream(child.stderr, captureOutput, stderr);
     child.on('error', /** 保存代理子进程启动错误，供就绪检查报告。
  * @param error - 当前操作抛出的错误。 */ error => { this.startupError = error; });
     child.once('close', /** 退出和清理也记录到同一来源。
@@ -64,19 +59,32 @@ export class MitmdumpProcess {
   async waitUntilReady(checkStatus: () => Promise<unknown>): Promise<void> {
     const deadline = Date.now() + STARTUP_TIMEOUT_MS;
     while (true) {
-      if (this.startupError || !this.isRunning) {
-        const reason = this.startupError ? safeDiagnosticReason(this.startupError) : this.diagnostics;
-        throw new Error(`mitmproxy 启动失败；请安装 e2e/mitmproxy/requirements.txt。\n${reason}`);
-      }
-      try {
-        await checkStatus();
-        return;
-      } catch {
-        if (Date.now() >= deadline) {
-          throw new Error(`mitmproxy 启动超时。\n${this.diagnostics}`);
-        }
-        await delay(STARTUP_POLL_MS);
-      }
+      this.checkRunning();
+      if (await this.pollReady(checkStatus, deadline)) return;
+    }
+  }
+
+  /** 检查启动错误及进程提前退出，保留脱敏诊断。 */
+  private checkRunning(): void {
+    if (this.startupError || !this.isRunning) throw new Error(`mitmproxy 启动失败；请安装 e2e/mitmproxy/requirements.txt。\n${this.failureReason()}`);
+  }
+
+  /** 优先报告启动错误，否则报告最近代理输出。 */
+  private failureReason(): string {
+    return this.startupError ? safeDiagnosticReason(this.startupError) : this.diagnostics;
+  }
+
+  /**
+   * 单次检查状态，失败时按既有轮询节奏等待，超时仍失败。
+   * @param checkStatus - 实际控制接口探测。
+   * @param deadline - 原有启动期限。
+   */
+  private async pollReady(checkStatus: () => Promise<unknown>, deadline: number): Promise<boolean> {
+    try { await checkStatus(); return true; }
+    catch {
+      if (Date.now() >= deadline) throw new Error(`mitmproxy 启动超时。\n${this.diagnostics}`);
+      await delay(STARTUP_POLL_MS);
+      return false;
     }
   }
 
@@ -109,8 +117,7 @@ export class MitmdumpProcess {
 export function startMitmdump(port: number, directory: string, token: string,
   addonPath = path.resolve(__dirname, '../mitmproxy/network_faults.py'),
   environment: NodeJS.ProcessEnv = process.env): MitmdumpProcess {
-  const executable = process.env.MITMDUMP_PATH || process.env.E2E_MITMDUMP_PATH
-    || path.resolve(__dirname, '../.venv/bin/mitmdump');
+  const executable = mitmdumpExecutable();
   const child = spawn(executable, [
     '--listen-host', '127.0.0.1',
     '--listen-port', String(port),
@@ -125,4 +132,21 @@ export function startMitmdump(port: number, directory: string, token: string,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   return new MitmdumpProcess(child);
+}
+
+/**
+ * 同时接入有界启动摘要和完整持续输出，兼容缺失的输出管道。
+ * @param stream - 子进程的输出流。
+ * @param capture - 启动摘要收集函数。
+ * @param output - 持续诊断出口。
+ */
+function captureStream(stream: Readable | null, capture: (data: Buffer) => void, output: DiagnosticOutput): void {
+  stream?.on('data', capture);
+  stream?.on('data', /** 记录每个输出块。
+   * @param data - 输出数据块。 */ data => output.write(data));
+}
+
+/** 解析既有可执行文件配置优先级。 */
+function mitmdumpExecutable(): string {
+  return process.env.MITMDUMP_PATH || process.env.E2E_MITMDUMP_PATH || path.resolve(__dirname, '../.venv/bin/mitmdump');
 }

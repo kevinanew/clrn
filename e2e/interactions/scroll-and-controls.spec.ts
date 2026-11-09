@@ -1,3 +1,4 @@
+import type { Locator, Page } from '@playwright/test';
 import { selectScenario, scenarioStatus } from '../helpers/scenario-proxy';
 import { expect, openApp, test } from './fixtures';
 import { drag, scroll } from './gestures';
@@ -63,30 +64,7 @@ test('选择玩法弹层关闭后仍能打开建房表单并拖动滑块', /**
   await expect(sheet).toBeHidden();
   await expect(backdrop).toBeHidden();
   await expect(page.getByTestId('base-create-room-screen')).toBeVisible();
-  const slider = page.getByRole('slider').first();
-  const track = slider.locator('xpath=ancestor::span[contains(@class,"MuiSlider-root")]');
-  await expect(track).toBeInViewport();
-  const box = await track.boundingBox();
-  if (!box) {
-    throw new Error('滑块轨道没有布局区域');
-  }
-  const value = page.getByTestId('small-big-blind-value-text');
-  const original = await value.innerText();
-  const y = box.y + box.height / 2;
-  await drag(page, { x: box.x + 2, y }, { x: box.x + box.width - 2, y }, isMobile);
-  await expect(value).not.toHaveText(original);
-  const max = await slider.getAttribute('aria-valuemax');
-  if (max === null) {
-    throw new Error('滑块缺少上限');
-  }
-  await expect(slider).toHaveAttribute('aria-valuenow', max);
-  await drag(page, { x: box.x + box.width - 2, y }, { x: box.x + 2, y }, isMobile);
-  const min = await slider.getAttribute('aria-valuemin');
-  if (min === null) {
-    throw new Error('滑块缺少下限');
-  }
-  await expect(slider).toHaveAttribute('aria-valuenow', min);
-  await expect(value).toHaveText(`${min} / ${Number(min) * 2}`);
+  await assertSliderDrag(page, isMobile);
 });
 
 test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /**
@@ -155,3 +133,41 @@ test('大厅接口失败后点击重试恢复页面操作', /**
   await page.getByTestId('settings-tab').click();
   await expect(page.getByTestId('settings-screen')).toBeVisible();
 });
+
+/**
+ * 验证滑块真实往返拖动、上下限及显示数值。
+ * @param page - 当前页面。
+ * @param isMobile - 是否使用触屏输入。
+ */
+async function assertSliderDrag(page: Page, isMobile: boolean): Promise<void> {
+  const slider = page.getByRole('slider').first();
+  const track = slider.locator('xpath=ancestor::span[contains(@class,"MuiSlider-root")]');
+  await expect(track).toBeInViewport();
+  const box = await track.boundingBox();
+  if (!box) {
+    throw new Error('滑块轨道没有布局区域');
+  }
+  const value = page.getByTestId('small-big-blind-value-text');
+  const original = await value.innerText();
+  const y = box.y + box.height / 2;
+  await drag(page, { x: box.x + 2, y }, { x: box.x + box.width - 2, y }, isMobile);
+  await expect(value).not.toHaveText(original);
+  const max = await sliderLimit(slider, 'aria-valuemax', '滑块缺少上限');
+  await expect(slider).toHaveAttribute('aria-valuenow', max);
+  await drag(page, { x: box.x + box.width - 2, y }, { x: box.x + 2, y }, isMobile);
+  const min = await sliderLimit(slider, 'aria-valuemin', '滑块缺少下限');
+  await expect(slider).toHaveAttribute('aria-valuenow', min);
+  await expect(value).toHaveText(`${min} / ${Number(min) * 2}`);
+}
+
+/**
+ * 读取滑块必须存在的边界值。
+ * @param slider - 滑块元素。
+ * @param attribute - 边界属性。
+ * @param message - 缺失时的原有错误。
+ */
+async function sliderLimit(slider: Locator, attribute: string, message: string): Promise<string> {
+  const value = await slider.getAttribute(attribute);
+  if (value === null) throw new Error(message);
+  return value;
+}

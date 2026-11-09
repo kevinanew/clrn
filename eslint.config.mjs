@@ -6,6 +6,7 @@ import globals from 'globals';
 import quality from './scripts/quality-rules.mjs';
 import { visualSupportPatterns, visualToolFiles, visualCheckFiles, visualCheckSupportFiles, animationSupportPatterns } from './scripts/visual-complexity-scope.mjs';
 import { e2eSupportPatterns, e2eCheckPatterns } from './scripts/e2e-complexity-scope.mjs';
+import { protocolSupportPatterns, existingOtherDiagnosticFiles } from './scripts/e2e-complexity-protocol-scope.mjs';
 import documentation from './scripts/documentation-rule.mjs';
 
 export default [
@@ -67,6 +68,11 @@ export default [
   },
   {
     files: e2eSupportPatterns,
+    rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
+  },
+  {
+    files: protocolSupportPatterns,
+    ignores: existingOtherDiagnosticFiles,
     rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
   },
   {
