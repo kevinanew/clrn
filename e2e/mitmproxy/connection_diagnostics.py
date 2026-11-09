@@ -250,7 +250,9 @@ class ConnectionDiagnostics:
     def websocket_end(self, flow):
         """记录 WebSocket 关闭信息并清除该连接的待确认命令。"""
         self.record('proxy.websocket-close', flow, connectionId=flow.id,
-                    code=flow.websocket.close_code, reason=flow.websocket.close_reason)
+                    code=flow.websocket.close_code, reason=flow.websocket.close_reason,
+                    source={True: 'client', False: 'upstream'}.get(
+                        getattr(flow.websocket, 'closed_by_client', None), 'unknown'))
         self.pending_commands.pop(flow.id, None)
 
     def websocket_message(self, flow):

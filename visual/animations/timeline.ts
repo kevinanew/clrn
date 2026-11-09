@@ -7,6 +7,7 @@ import type { CaptureArea } from './captureTypes';
 import type { TimelineElement, TimelineOptions } from './timelineTypes';
 import { captureFrame } from './timelineCapture';
 import { seekCssAnimations, restoreCssAnimations } from './timelineClock';
+import { challengeDiagnostics } from './challengeDiagnostics';
 export { freeze, settleAnimations } from './timelineClock';
 export type { CaptureArea } from './captureTypes';
 export type { NumericTextMask } from './numericMask';
@@ -71,7 +72,7 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
   options: TimelineOptions = {}): Promise<void> {
   assertClockMode(page, options);
   const times = timelineTimes(options);
-  const samples = [];
+  const samples: (TimelineSample & { milliseconds: number; realElapsed: number; diagnostics?: unknown })[] = [];
   const frames: Buffer[] = [];
   let previous = 0;
   const started = Date.now();
@@ -88,9 +89,11 @@ export async function captureTimeline(page: Page, info: TestInfo, name: string, 
       await waitForTimelineSprites(page, options.waitForCardSprites);
       const sampledTime = milliseconds + timelineOffset(options);
       const elements = await appearance(target);
-      samples.push({ milliseconds: sampledTime, realElapsed: Date.now() - started, elements });
+      const sample = { milliseconds: sampledTime, realElapsed: Date.now() - started, elements };
+      samples.push(sample);
       const snapshot = `en-${info.project.name}-${name}-${sampledTime}ms.png`;
       const frame = await captureFrame(page, info, name, options, snapshot, elements);
+      await addChallengeDiagnostics(sample, name, target);
       frames.push(frame);
       previous = milliseconds;
     }
@@ -140,7 +143,19 @@ async function waitForTimelineSprites(page: Page, description: string | undefine
   if (description) await waitForTexasCardSprites(page, description);
 }
 
-type TimelineSample = { elements: Awaited<ReturnType<typeof appearance>> };
+type TimelineSample = { elements: Awaited<ReturnType<typeof appearance>>; diagnostics?: unknown };
+
+/**
+ * 为挑战选择动画附加诊断信息。
+ * @param sample - 当前时间线采样。
+ * @param name - 动画名称。
+ * @param target - 动画主体。
+ */
+async function addChallengeDiagnostics(sample: TimelineSample, name: string, target: Locator) {
+  if (name === 'zhajinhua-challenge-selection') {
+    sample.diagnostics = await challengeDiagnostics(target);
+  }
+}
 
 /**
  * 检查主体运动和不同帧，两项断言仍可独立配置。

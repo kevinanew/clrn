@@ -177,6 +177,18 @@ class DiagnosticTests(unittest.TestCase):
             self.assertNotIn(value, output)
         self.assertEqual(diagnostics.events[0]['reason'], 'detail-withheld')
 
+    def test_websocket关闭方向保留未知状态且不暴露正文(self):
+        """区分客户端与上游发起的关闭，未提供方向时不猜测。"""
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://error.invalid/v2/centrifugo/connection/websocket')
+        request.websocket = WebSocketData()
+        for direction, expected in [(True, 'client'), (False, 'upstream'), (None, 'unknown')]:
+            request.websocket.closed_by_client = direction
+            request.websocket.close_reason = 'synthetic-secret'
+            diagnostics.websocket_end(request)
+            self.assertEqual(diagnostics.events[-1]['source'], expected)
+            self.assertEqual(diagnostics.events[-1]['reason'], 'detail-withheld')
+
     def test_请求地址实际连接及模拟响应分别核验且不猜测无响应状态(self):
         """验证请求地址实际连接及模拟响应分别核验且不猜测无响应状态。"""
         server_id = '12345678-1234-4234-8234-123456789012'
