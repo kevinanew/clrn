@@ -19,8 +19,8 @@ test('every active scenario has one baseline beside its feature spec', /** 验�
   }
 
   const actual = readdirSync(path.join(__dirname, 'cases'), { withFileTypes: true })
-    .filter(/** 仅保留满足以下条件的条目：`entry.isDirectory() && entry.name !== '_shared'`。
- * @param entry - 当前处理的记录条目。 */ entry => entry.isDirectory() && entry.name !== '_shared')
+    .filter(/** 排除共享代码与 Python 字节码缓存，仅检查视觉套件目录。
+ * @param entry - 当前处理的记录条目。 */ entry => entry.isDirectory() && entry.name !== '_shared' && entry.name !== '__pycache__')
     .flatMap(/** 收集每个视觉套件快照目录中的 PNG 路径。
  * @param entry - 当前处理的记录条目。 */ entry => readdirSync(path.join(__dirname, 'cases', entry.name, 'snapshots'))
       .filter(/** 仅保留满足以下条件的条目：`file.endsWith('.png')`。
