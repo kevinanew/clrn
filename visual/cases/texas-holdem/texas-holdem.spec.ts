@@ -2,14 +2,15 @@ import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
 /** 真实牌桌视觉回归，失败前保存节点探测和连接诊断。 */
 import { installConnectionDiagnostics, recordDiagnostic } from '../../src/support/connectionDiagnostics';
 import { diagnosticNode, diagnosticText } from '../../../e2e/helpers/diagnostic-privacy';
-import { type Page } from '@playwright/test';
+import { type Page, type Response } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
-import { expect, test, texasProxyOptions } from './proxy';
+import { expect, test, texasProxyOptions, type TexasProxy } from './proxy';
 import { buildScenarios, type VisualScenario } from '../../scenarios';
 import { visualBaseUrl } from '../../target';
 import { buildStorageStateForScenario, setupContextForScenario } from '../../src/support/pageSetup';
 import { applyContentStabilizers, ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
 import { preparePage } from '../../src/support/preparePage';
+import { readRequestJson } from '../../src/support/requestJson';
 import { createTexasRoom, deleteTexasRoom, enterTexasRoom } from './room';
 import { OPTIONAL_PRE_GAME_STATES, PRE_GAME_STATES } from './scenarios';
 import { appliedGameTranslation, gameViewportCorrection } from './viewportAlignment';
@@ -227,15 +228,21 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
     bindScenarioProxy(context, mitmproxy.network);
     const page = await context.newPage();
     const diagnostics = await installConnectionDiagnostics(context, page, test.info(), mitmproxy);
+    let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
+    let recordEntry: Response | undefined;
     page.on('pageerror', /** 输出脱敏的德州页面运行错误。
  * @param error - 当前操作抛出的错误。 */ error => console.error(`TEXAS PAGE ERROR > ${diagnosticText(error.message)}`));
     page.on('response', /** 记录失败 HTTP 响应的状态、脱敏节点与请求路径。
  * @param response - 当前收到的接口响应。 */ response => {
+      if (scenario.pageLabel === 'signed_in_texas_records_v2' && room
+        && response.request().method() === 'PUT'
+        && new URL(response.url()).pathname === `/v10/texas_holdem/room/${room.roomId}/enter`) {
+        recordEntry = response;
+      }
       if (response.status() < 400) return;
       const url = new URL(response.url());
       console.error(`TEXAS HTTP ERROR > ${response.status()} ${diagnosticNode(url.origin)}${url.pathname}`);
     });
-    let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     try {
       await setupContextForScenario(context, scenario, page);
       if (!['signed_in_texas_pre_game', 'signed_in_texas_optional_pre_game'].includes(scenario.pageLabel)) {
@@ -267,39 +274,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
           roomId: created.roomId, apiNode: diagnosticNode(created.apiOrigin),
         }));
       }, optional);
-      if (['signed_in_texas_controls', 'signed_in_texas_table_states', 'signed_in_texas_panel_variants', 'signed_in_texas_hall_variants'].includes(scenario.pageLabel)) {
-        if (['signed_in_texas_hall_variants', 'signed_in_texas_table_states'].includes(scenario.pageLabel)) {
-          await enterTexasRoom(page, room);
-        }
-        await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
-        await expect.poll(/** 等待游戏启动遮罩消失，出现重试提示时触发应用重试。 */ async () => {
-          const retry = visible(page, 'common-alert-button-retry');
-          if (await retry.isVisible()) { recordDiagnostic(page, '点击应用重试按钮'); await retry.click(); }
-          return !(await visible(page, 'game-splash-screen-bg').isVisible());
-        }, { timeout: 90_000, message: '等待德州加载完成，重试 staging 瞬时连接失败' }).toBe(true);
-        if (['signed_in_texas_controls', 'signed_in_texas_panel_variants'].includes(scenario.pageLabel)) {
-          await waitForGameConnection(page);
-        }
-        const handler = { signed_in_texas_controls: captureControls, signed_in_texas_table_states: captureTableStates,
-          signed_in_texas_panel_variants: capturePanelVariants, signed_in_texas_hall_variants: captureHallVariants }[scenario.pageLabel]!;
-        await handler(page, scenario, mitmproxy, room.roomId, capture);
-      } else if (scenario.pageLabel === 'signed_in_texas_game') {
-        await waitForGameConnection(page);
-        await captureGameplay(page, scenario, mitmproxy, room.roomId, capture);
-      } else if (scenario.pageLabel === 'signed_in_texas_panels') {
-        await waitForGameConnection(page);
-        await capturePanels(page, scenario, mitmproxy, room.roomId, capture);
-      } else if (scenario.pageLabel === 'signed_in_texas_hall') {
-        await enterTexasRoom(page, room);
-        await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
-        await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
-        await captureHall(page, scenario, mitmproxy, room.roomId, capture);
-      } else if (scenario.pageLabel === 'signed_in_texas_records_v2') {
-        await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
-        await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
-        await captureNewRecords(page, scenario, mitmproxy, room.roomId, capture);
-      } else if (optional) await captureOptionalPreGame(page, scenario);
-      else await capturePreGame(page, scenario);
+      await captureScenario(page, scenario, mitmproxy, room, optional, /** 读取最新入场响应。 */ () => recordEntry);
       await diagnostics.save();
     } catch (error) {
       await diagnostics.save(error).catch(/** 记录德州诊断附件保存失败，保留原始案例错误。
@@ -319,4 +294,56 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       }
     }
   });
+}
+
+/**
+ * 根据场景准备牌桌并采集对应截图。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param scenario - 本次执行的视觉场景。
+ * @param mitmproxy - 本轮独占的代理控制对象。
+ * @param room - 本轮创建的房间。
+ * @param optional - 是否启用可选建房功能。
+ * @param getRecordEntry - 读取当前房间最新的入场响应。
+ */
+async function captureScenario(page: Page, scenario: VisualScenario, mitmproxy: TexasProxy,
+  room: Awaited<ReturnType<typeof createTexasRoom>>, optional: boolean,
+  getRecordEntry: () => Response | undefined): Promise<void> {
+  if (['signed_in_texas_controls', 'signed_in_texas_table_states', 'signed_in_texas_panel_variants', 'signed_in_texas_hall_variants'].includes(scenario.pageLabel)) {
+    if (['signed_in_texas_hall_variants', 'signed_in_texas_table_states'].includes(scenario.pageLabel)) {
+      await enterTexasRoom(page, room);
+    }
+    await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+    await expect.poll(/** 等待游戏启动遮罩消失，出现重试提示时触发应用重试。 */ async () => {
+      const retry = visible(page, 'common-alert-button-retry');
+      if (await retry.isVisible()) { recordDiagnostic(page, '点击应用重试按钮'); await retry.click(); }
+      return !(await visible(page, 'game-splash-screen-bg').isVisible());
+    }, { timeout: 90_000, message: '等待德州加载完成，重试 staging 瞬时连接失败' }).toBe(true);
+    if (['signed_in_texas_controls', 'signed_in_texas_panel_variants'].includes(scenario.pageLabel)) {
+      await waitForGameConnection(page);
+    }
+    const handler = { signed_in_texas_controls: captureControls, signed_in_texas_table_states: captureTableStates,
+      signed_in_texas_panel_variants: capturePanelVariants, signed_in_texas_hall_variants: captureHallVariants }[scenario.pageLabel]!;
+    await handler(page, scenario, mitmproxy, room.roomId, capture);
+  } else if (scenario.pageLabel === 'signed_in_texas_game') {
+    await waitForGameConnection(page);
+    await captureGameplay(page, scenario, mitmproxy, room.roomId, capture);
+  } else if (scenario.pageLabel === 'signed_in_texas_panels') {
+    await waitForGameConnection(page);
+    await capturePanels(page, scenario, mitmproxy, room.roomId, capture);
+  } else if (scenario.pageLabel === 'signed_in_texas_hall') {
+    await enterTexasRoom(page, room);
+    await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+    await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
+    await captureHall(page, scenario, mitmproxy, room.roomId, capture);
+  } else if (scenario.pageLabel === 'signed_in_texas_records_v2') {
+    await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+    await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
+    // 页面挂载和回放订阅不代表真实入房已结束；没有会话时牌谱不会发出读取请求。
+    await expect.poll(/** 等待当前房间的浏览器入场响应。 */ getRecordEntry,
+      { timeout: 30_000, message: '新版牌谱需要本轮真实入房会话' }).toBeDefined();
+    const entry = await readRequestJson(getRecordEntry()!, 'texas-enter');
+    expect(entry.result?.play_session_id).toMatch(/^[A-Za-z0-9_-]{1,128}$/);
+    await captureNewRecords(page, scenario, mitmproxy, room.roomId, capture);
+  } else if (optional) await captureOptionalPreGame(page, scenario);
+  else await capturePreGame(page, scenario);
 }

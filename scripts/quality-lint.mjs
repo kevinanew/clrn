@@ -42,10 +42,11 @@ export async function javascriptFindings() {
     const messages = new Map([...result.messages, ...directives].map(/** 将当前条目映射为`[JSON.stringify(item), item]`。
  * @param item - 当前遍历的条目。 */ item => [JSON.stringify(item), item]));
     return [...messages.values()].map(/** 将 ESLint 消息转换为仓库相对路径的统一诊断结构。
- * @param message - 当前操作使用的 message。 */ message => fingerprint({
+ * @param message - 当前操作使用的 message。 */ message => ({
       file: relative(repository, result.filePath), rule: message.ruleId ?? 'parse-error',
       line: message.line ?? 1, column: message.column ?? 1, message: message.message,
-    }, source));
+    })).map(/** 使用 ESLint 检查的源码计算指纹，避免异步扫描后重新读取已删除的临时文件。
+     * @param finding - 当前文件的诊断。 */ finding => fingerprint(finding, source));
   });
   return findings;
 }
@@ -70,6 +71,5 @@ export function pythonFindings() {
     };
     unique.set(JSON.stringify(finding), finding);
   }
-  return [...unique.values()].map(/** 为 Python 诊断读取对应源码并计算指纹。
-   * @param finding - 单位置诊断。 */ finding => fingerprint(finding));
+  return [...unique.values()].map(fingerprint);
 }

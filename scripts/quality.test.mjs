@@ -11,6 +11,20 @@ import { duplicationReference, projectJavascript } from './documentation-project
 
 const eslint = new ESLint({ cwd: repository });
 
+test('违规指纹按文件扩展名解析 TypeScript 泛型和 TSX', /** 验证泛型不会被误读为 JSX，且 TSX 仍可生成指纹。 */ () => {
+  for (const [file, source] of [
+    ['probe.ts', 'const probe = <T>(value: T) => value;'],
+    ['probe.tsx', 'const probe = <span />;'],
+  ]) {
+    const finding = { file, rule: 'complexity', line: 1, column: 1, message: 'probe' };
+    const documented = source.replace('= ', '= /** 说明。\n */ ');
+    assert.equal(fingerprint(finding, source).anchor,
+      fingerprint({ ...finding, line: 2 }, documented).anchor);
+    assert.notEqual(fingerprint(finding, source).anchor,
+      fingerprint(finding, source.replace('probe', 'changed')).anchor);
+  }
+});
+
 test('解析错误保留原始行指纹并作为新增违规阻断门禁', /** 验证无效源码不会在指纹计算时再次解析并丢失诊断。 */ () => {
   const source = 'export function (';
   const finding = { file: 'e2e/cases/_shared/complexity-probe-regression/probe.ts', rule: 'parse-error',
@@ -212,11 +226,13 @@ test('统一入口拒绝新增 mock，整体禁用指令也不能绕过门禁', 
   const directory = mkdtempSync(join(repository, '.quality-probe-'));
   try {
     const file = join(directory, 'probe.ts');
+    writeFileSync(join(directory, 'invalid.ts'), 'export function (');
     for (const directive of ['', '/* eslint-disable */\n', '/* eslint complexity: off, "quality/no-quality-disable": off */\n']) {
       writeFileSync(file, `${directive}await page.route('**', handler);\n`);
       const result = invoke('scripts/quality.mjs', ['javascript'], repository);
       assert.equal(result.status, 1, result.stderr);
       assert.match(result.stderr, /probe\.ts/);
+      assert.match(result.stderr, /invalid\.ts:1:\d+ parse-error/);
       if (directive) assert.match(result.stderr, /quality\/no-quality-disable/);
     }
   } finally { rmSync(directory, { recursive: true, force: true }); }

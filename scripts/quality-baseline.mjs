@@ -7,12 +7,12 @@ import tseslint from 'typescript-eslint';
 /**
  * 用规则、文件、诊断及源码行指纹定位历史违规，行号仅用于审阅。
  * @param finding - 工具的单位置诊断。
- * @param source - 产生诊断时的源码；默认读取当前文件。
+ * @param source - 工具实际检查的源码，未提供时从文件读取。
  * @returns 不含源码正文的历史清单条目。
  */
 export function fingerprint(finding, source) {
   if (finding.file.startsWith('/') || finding.file.split('/').includes('..')) throw new Error('诊断路径必须位于仓库内。');
-  source ??= readFileSync(`${repository}/${finding.file}`, 'utf8');
+  source = typeof source === 'string' ? source : readFileSync(`${repository}/${finding.file}`, 'utf8');
   const lines = source.split('\n');
   const raw = createHash('sha256').update(lines[finding.line - 1].trim()).digest('hex');
   const baseline = JSON.parse(readFileSync(`${repository}/quality/baseline.json`, 'utf8'));
@@ -20,8 +20,9 @@ export function fingerprint(finding, source) {
  * @param item - 历史诊断。 */ item => item.file === finding.file && item.rule === finding.rule && item.anchor === raw)) {
     return { ...finding, anchor: raw };
   }
+  // 解析失败的源码无法归一化文档，保留原始行指纹以继续报告全部诊断。
   if (finding.rule === 'parse-error' || !/\.[cm]?[jt]sx?$/.test(finding.file)) return { ...finding, anchor: raw };
-  return { ...finding, anchor: documentedLineAnchor(source, lines, finding.line) };
+  return { ...finding, anchor: documentedLineAnchor(source, lines, finding.line, finding.file) };
 }
 
 /**
@@ -29,14 +30,15 @@ export function fingerprint(finding, source) {
  * @param source - 完整源码。
  * @param lines - 原始源码行。
  * @param lineNumber - 诊断行号。
+ * @param filePath - 源码路径，用扩展名区分 TypeScript 与 JSX。
  * @returns 源码行哈希。
  */
-export function documentedLineAnchor(source, lines, lineNumber) {
+export function documentedLineAnchor(source, lines, lineNumber, filePath = 'estree.tsx') {
   const offset = lines.slice(0, lineNumber - 1).reduce(/** 计算诊断行在源码中的偏移。
  * @param sum - 累计字符数。
  * @param line - 当前源码行。 */ (sum, line) => sum + line.length + 1, 0);
   // 只合并解析器识别出的行内 TSDoc，避免误读字符串中的注释标记。
-  const { ast } = tseslint.parser.parseForESLint(source, { comment: true, range: true, loc: true, ecmaFeatures: { jsx: true } });
+  const { ast } = tseslint.parser.parseForESLint(source, { filePath, comment: true, range: true, loc: true, ecmaFeatures: { jsx: true } });
   let normalized = '', cursor = 0, mapped = offset;
   for (const comment of ast.comments) {
     if (comment.type !== 'Block' || !comment.value.startsWith('*')) continue;
