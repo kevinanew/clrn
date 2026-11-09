@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { repository } from './source-files.mjs';
+import { repository, sourceFiles } from './source-files.mjs';
 import { checkE2eComplexity, checkE2eComplexityText } from './e2e-complexity.mjs';
 import { e2eSupportFiles } from './e2e-complexity-scope.mjs';
 
@@ -51,14 +51,31 @@ for (const directive of ['/* eslint-disable */', '/* eslint-disable complexity, 
 }
 
 /**
- * 在范围内创建真实临时文件并执行正式命令入口，结束后清理。
+ * 复制正式门禁源码，隔离负例与并发的全仓扫描；只读链接依赖和 Git 元数据。
+ * @returns 由调用方清理的临时仓库。
+ */
+function isolatedRepository() {
+  const directory = mkdtempSync(join(tmpdir(), 'clrn-e2e-quality-'));
+  const files = sourceFiles().filter(/** 复制真实入口、规则和被检查的源码。
+   * @param file - 仓库相对路径。 */ file => /^(?:scripts\/|e2e\/cases\/.*\.[cm]?[jt]sx?$|eslint\.config\.mjs$|package\.json$)/.test(file));
+  for (const file of files) {
+    const target = join(directory, file);
+    mkdirSync(dirname(target), { recursive: true });
+    cpSync(join(repository, file), target);
+  }
+  for (const entry of ['.git', 'node_modules']) symlinkSync(join(repository, entry), join(directory, entry));
+  return directory;
+}
+
+/**
+ * 在隔离仓库的真实范围内创建临时文件并执行正式命令入口，结束后清理。
  * @param source - 临时正例或负例。
  */
 function runProbe(source) {
-  const directory = mkdtempSync(join(repository, 'e2e/cases/_shared/complexity-probe-'));
+  const directory = isolatedRepository();
   try {
-    writeFileSync(join(directory, 'probe.ts'), source);
-    return spawnSync(process.execPath, ['scripts/e2e-complexity.mjs'], { cwd: repository, encoding: 'utf8' });
+    writeFileSync(join(directory, 'e2e/cases/_shared/complexity-probe.ts'), source);
+    return spawnSync(process.execPath, ['scripts/e2e-complexity.mjs'], { cwd: directory, encoding: 'utf8' });
   } finally {
     rmSync(directory, { force: true, recursive: true });
   }
