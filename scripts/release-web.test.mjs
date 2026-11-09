@@ -57,7 +57,11 @@ function digest(contents) { return createHash('sha256').update(contents).digest(
  * 构造一致的发布记录和远端附件，网络响应仍经过真实 HTTP。
  * @param options - 可选构建提交、错误页面版本或危险归档成员。
  */
-function releaseFixture({ commit = expectedCommit, pageCommit = commit, extra } = {}) {
+function releaseFixture(options = {}) { return createReleaseFixture(options); }
+
+/** 构造固定发布包和版本元数据。
+ * @param options - 构建提交、页面版本及危险成员。 */
+function createReleaseFixture({ commit = expectedCommit, pageCommit = commit, extra }) {
   const archive = buildArchive(pageCommit, extra);
   const tag = `web-staging-42-${commit.slice(0, 12)}`;
   const artifact = { release_tag: tag, release_url: `https://github.com/kevinanew/clrn/releases/tag/${tag}`,
@@ -220,12 +224,7 @@ test('完整测试命令继承同一入口，失败退出码和取消均会关�
  * @param resolve - 完成当前异步等待的通知。 */ resolve => child.once('exit', resolve));
     let cancelledAddress;
     try {
-      for (let attempt = 0; attempt < 100; attempt += 1) {
-        cancelledAddress = await readFile(outputFile, 'utf8').catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-        if (cancelledAddress) break;
-        await new Promise(/** 短暂等待子进程启动，随后检查服务的就绪状态。
- * @param resolve - 完成当前异步等待的通知。 */ resolve => setTimeout(resolve, 50));
-      }
+      cancelledAddress = await waitForChildAddress(outputFile);
       assert.ok(cancelledAddress, '测试子进程必须在取消前完成启动');
       child.kill('SIGTERM');
       assert.notEqual(await completion, 0);
@@ -266,3 +265,16 @@ test('所有发布调用固定记录和检出提交，各套件执行前准备 R
       < workflow.indexOf('node ../scripts/with-release-web-server.mjs'));
   }
 });
+
+/** 在原有 100 次短等待内读取子进程就绪地址。
+ * @param outputFile - 子进程写入的地址文件。 */
+async function waitForChildAddress(outputFile) {
+  let cancelledAddress;
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        cancelledAddress = await readFile(outputFile, 'utf8').catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
+        if (cancelledAddress) break;
+        await new Promise(/** 短暂等待子进程启动，随后检查服务的就绪状态。
+ * @param resolve - 完成当前异步等待的通知。 */ resolve => setTimeout(resolve, 50));
+      }
+  return cancelledAddress;
+}

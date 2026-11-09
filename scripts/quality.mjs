@@ -16,7 +16,7 @@ export function architectureReport() {
  * @param file - 当前源码或资源路径。 */ file => /\.[cm]?[jt]sx?$/.test(file));
   const { report, status } = runJSON(process.execPath, ['node_modules/dependency-cruiser/bin/dependency-cruiser.mjs',
     '--config', '.dependency-cruiser.cjs', '--output-type', 'json', ...files]);
-  if (!report.modules?.length || (status && !report.summary?.violations?.length)) throw new Error('依赖图检查未正常完成。');
+  if (!validArchitectureReport(report, status)) throw new Error('依赖图检查未正常完成。');
   return report;
 }
 
@@ -95,4 +95,12 @@ if (mode === 'report') {
     if (stale.length) console.error('请缩减已消除的 jscpd 指纹/次数：', stale.join(', '));
     if (added.length || stale.length) process.exitCode = 1;
   } else throw new Error(`未知静态检查模式：${mode}`);
+}
+
+/** 必须实际扫描模块；异常退出只能由原生违规解释。
+ * @param report - 原生依赖图报告。
+ * @param status - 工具退出码。 */
+function validArchitectureReport(report, status) {
+  if (!report.modules?.length) return false;
+  return !status || Boolean(report.summary?.violations?.length);
 }

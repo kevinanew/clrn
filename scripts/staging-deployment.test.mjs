@@ -111,9 +111,8 @@ test('站点成功返回目标版本前，错误状态、无效 HTML 和网络�
     fetcher: /** 返回当前网络边界响应。 */ async () => {
       attempts += 1;
       if (attempts === 1) throw new Error('连接失败');
-      if (attempts === 2) return new Response('', { status: 503 });
-      if (attempts === 3) return new Response('<html>旧入口</html>');
-      return pageResponse(expectedCommit);
+      const responses = { 2: new Response('', { status: 503 }), 3: new Response('<html>旧入口</html>') };
+      return responses[attempts] || pageResponse(expectedCommit);
     } });
   assert.equal(result, expectedCommit);
   assert.equal(attempts, 4);

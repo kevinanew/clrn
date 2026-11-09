@@ -118,7 +118,7 @@ test('会话必须为200，其他实际状态和网络失败经过fixture传播�
  * @param error - 当前操作抛出的错误。 */ error => {
       const upper = diagnostics.accountPreparationError(error, 'creation-account-session-check');
       assert.equal(upper.message, error.message);
-      assert.match(upper.message, new RegExp(`method=GET operation=existing-account-session source=laiwan_proxy status=${status ?? 'unavailable'} response=${status === undefined ? 'not-received' : 'received'} reason=${status === undefined ? 'connection-failed' : status === 201 ? 'invalid-response' : 'http-error'}$`));
+      assert.match(upper.message, new RegExp(`method=GET operation=existing-account-session source=laiwan_proxy status=${status ?? 'unavailable'} response=${status === undefined ? 'not-received' : 'received'} reason=${sessionFailureReason(status)}$`));
       assert.doesNotMatch(inspect(upper), /synthetic-|fixture\.invalid/);
       return true;
     });
@@ -179,3 +179,10 @@ test('多用户准备保留注册500及本地失败定位，清理失败也不�
     context.mock.restoreAll();
   }
 });
+
+/** 根据原有状态矩阵给出预期原因。
+ * @param status - 合成响应状态。 */
+function sessionFailureReason(status) {
+  if (status === undefined) return 'connection-failed';
+  return status === 201 ? 'invalid-response' : 'http-error';
+}

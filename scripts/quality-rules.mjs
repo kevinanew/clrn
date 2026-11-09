@@ -52,15 +52,13 @@ export default {
            */
           ImportDeclaration(node) {
             const name = node.source.value;
-            const server = /^(?:node:)?https?2?$/.test(name)
-              && node.specifiers.some(/** 判断是否存在满足以下条件的条目：`specifier.imported?.name === 'createServer'`。
- * @param specifier - 当前操作使用的 specifier。 */ specifier => specifier.imported?.name === 'createServer');
+            const server = importsServer(node);
             if (server) {
               for (const specifier of node.specifiers) {
-                if (specifier.imported?.name === 'createServer') serverFactories.add(specifier.local.name);
+                if (serverSpecifier(specifier)) serverFactories.add(specifier.local.name);
               }
             }
-            if (server || /^(?:msw|nock|fetch-mock)(?:\/|$)/.test(name)) {
+            if (blockedResponseImport(server, name)) {
               context.report({ node, messageId: 'response', data: { name: server ? 'createServer' : name } });
             }
           },
@@ -81,13 +79,13 @@ export default {
            * @param node - 当前方法替换调用。
            */
           CallExpression(node) {
-            if (node.callee.type === 'Identifier' && serverFactories.has(node.callee.name)) {
+            if (callsServerFactory(node, serverFactories)) {
               context.report({ node, messageId: 'response', data: { name: 'createServer' } });
               return;
             }
             if (node.callee.type !== 'MemberExpression') return;
             if (!['method', 'replace', 'stub', 'spyOn'].includes(propertyName(node.callee))) return;
-            const name = node.arguments[1]?.value;
+            const name = replacementName(node);
             if (responseMethods.has(name) || ['fetch', 'XMLHttpRequest', 'WebSocket'].includes(name)) {
               context.report({ node, messageId: 'response', data: { name } });
             }
@@ -120,3 +118,27 @@ export default {
     },
   },
 };
+
+/** 识别 HTTP 模块的服务器导入。
+ * @param node - 导入声明。 */
+function importsServer(node) {
+  return /^(?:node:)?https?2?$/.test(node.source.value) && node.specifiers.some(serverSpecifier);
+}
+
+/** 识别服务器工厂的导入项。
+ * @param specifier - 单个导入项。 */
+function serverSpecifier(specifier) { return specifier.imported?.name === 'createServer'; }
+
+/** 识别通过已登记别名调用的服务器工厂。
+ * @param node - 调用表达式。
+ * @param factories - 已登记工厂名称。 */
+function callsServerFactory(node, factories) { return node.callee.type === 'Identifier' && factories.has(node.callee.name); }
+
+/** 识别服务器导入与响应伪造包。
+ * @param server - 是否导入服务器工厂。
+ * @param name - 导入包名。 */
+function blockedResponseImport(server, name) { return server || /^(?:msw|nock|fetch-mock)(?:\/|$)/.test(name); }
+
+/** 读取 mock 替换调用的目标属性名。
+ * @param node - 调用表达式。 */
+function replacementName(node) { return node.arguments[1]?.value; }

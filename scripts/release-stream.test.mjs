@@ -97,7 +97,7 @@ test('源尚未打开时取消，以及绑定前响应已经关闭，源均最�
     }
     const released = closed(source);
     pipeReleaseFile(source, response);
-    if (!alreadyClosed) response.destroy();
+    cancelActiveResponse(response, alreadyClosed);
     await released;
     assert.equal(source.closed, true);
     assert.equal(source.fd, null);
@@ -176,7 +176,8 @@ test('生产 HTTP 服务的完整读取与首块取消均释放源，取消保�
     assert.equal((await reader.read()).done, false);
     await reader.cancel();
   }
-  for (const source of sources) if (!source.closed) await closed(source);
+  await Promise.all(sources.map(/** 等待所有尚未关闭的真实文件源。
+   * @param source - 当前文件源。 */ source => source.closed ? undefined : closed(source)));
   assert.equal(sources.length, 21);
   assert.ok(sources.every(/** 确认所有条目均满足：`source.closed && source.fd === null`。
  * @param source - 当前操作使用的 source。 */ source => source.closed && source.fd === null));
@@ -189,3 +190,8 @@ test('生产 HTTP 服务的完整读取与首块取消均释放源，取消保�
   assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.stream-error'`。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.stream-error').length, 0);
 });
+
+/** 保持绑定后的客户端取消时序。
+ * @param response - 响应流。
+ * @param alreadyClosed - 绑定前是否已关闭。 */
+function cancelActiveResponse(response, alreadyClosed) { if (!alreadyClosed) response.destroy(); }

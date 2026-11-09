@@ -21,7 +21,7 @@ export function fingerprint(finding, source) {
     return { ...finding, anchor: raw };
   }
   // 解析失败的源码无法归一化文档，保留原始行指纹以继续报告全部诊断。
-  if (finding.rule === 'parse-error' || !/\.[cm]?[jt]sx?$/.test(finding.file)) return { ...finding, anchor: raw };
+  if (!canNormalizeFinding(finding)) return { ...finding, anchor: raw };
   return { ...finding, anchor: documentedLineAnchor(source, lines, finding.line, finding.file) };
 }
 
@@ -41,7 +41,7 @@ export function documentedLineAnchor(source, lines, lineNumber, filePath = 'estr
   const { ast } = tseslint.parser.parseForESLint(source, { filePath, comment: true, range: true, loc: true, ecmaFeatures: { jsx: true } });
   let normalized = '', cursor = 0, mapped = offset;
   for (const comment of ast.comments) {
-    if (comment.type !== 'Block' || !comment.value.startsWith('*')) continue;
+    if (!inlineDocumentationComment(comment)) continue;
     const [start, end] = comment.range;
     const prefix = source.slice(source.lastIndexOf('\n', start - 1) + 1, start);
     if (!prefix.trim()) continue;
@@ -54,7 +54,7 @@ export function documentedLineAnchor(source, lines, lineNumber, filePath = 'estr
   normalized += source.slice(cursor);
   const lineStart = normalized.lastIndexOf('\n', mapped - 1) + 1;
   const lineEnd = normalized.indexOf('\n', mapped);
-  const line = normalized.slice(lineStart, lineEnd < 0 ? undefined : lineEnd);
+  const line = normalized.slice(lineStart, availableLineEnd(lineEnd));
   return createHash('sha256').update(line.trim()).digest('hex');
 }
 
@@ -106,7 +106,7 @@ export function newFindings(findings, baseline) {
 export function assertShrinking(current, previous) {
   if (newFindings(current.findings, previous.findings).length) throw new Error('历史违规清单只能缩减，不能新增或替换。');
   for (const [key, count] of Object.entries(current.fingerprints ?? {})) {
-    if (!Number.isInteger(count) || count < 1 || count > (previous.fingerprints?.[key] ?? 0)) {
+    if (!shrinkingCount(count, previousFingerprintCount(previous, key))) {
       throw new Error(`重复代码基线只能缩减：${key}`);
     }
   }
@@ -143,3 +143,25 @@ export function checkBaseline() {
     throw new Error('历史清单必须包含精确位置、源码指纹和迁移/单测例外理由。');
   }
 }
+
+/** 仅可解析的 JS/TS 诊断适用文档投影。
+ * @param finding - 单位置诊断。 */
+function canNormalizeFinding(finding) { return finding.rule !== 'parse-error' && /\.[cm]?[jt]sx?$/.test(finding.file); }
+
+/** 只投影解析器确认的文档块。
+ * @param comment - 解析器识别的注释。 */
+function inlineDocumentationComment(comment) { return comment.type === 'Block' && comment.value.startsWith('*'); }
+
+/** 重复指纹次数必须是未扩大的正整数。
+ * @param count - 当前次数。
+ * @param previous - 原有次数。 */
+function shrinkingCount(count, previous) { return Number.isInteger(count) && count >= 1 && count <= previous; }
+
+/** 最后一行无换行时读取到文件末尾。
+ * @param lineEnd - 换行偏移。 */
+function availableLineEnd(lineEnd) { return lineEnd < 0 ? undefined : lineEnd; }
+
+/** 读取既有指纹次数，未登记时预算为零。
+ * @param previous - 旧清单。
+ * @param key - 指纹。 */
+function previousFingerprintCount(previous, key) { return previous.fingerprints?.[key] ?? 0; }

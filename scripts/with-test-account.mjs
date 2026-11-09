@@ -51,49 +51,11 @@ async function run() {
   } catch {
     throw new Error('测试账号池不可读取，请先准备本机 staging 测试账号');
   }
-  if (!Array.isArray(accounts) || !accounts.length
-    || accounts.some(/** 检查账号池凭据是否缺失、超长或包含不支持的控制字符。
- * @param account - 当前操作使用的 account。 */ account => typeof account.username !== 'string' || !account.username
-      || typeof account.password !== 'string' || !account.password
-      // H5 密码框最多接收 20 个字符；更长的密码虽然可走 API 登录，界面会截断。
-      || account.password.length > 20 || /[\r\n\0]/.test(account.password)
-      || typeof account.userId !== 'string' || !account.userId)
-    || new Set(accounts.map(/** 将当前条目映射为`account.username.toLowerCase()`。
- * @param account - 当前操作使用的 account。 */ account => account.username.toLowerCase())).size !== accounts.length) {
-    throw new Error('测试账号池为空、配置不完整、密码不兼容 H5 或包含重复用户名');
-  }
+  validateAccounts(accounts);
 
-  // 自定义账号池也使用旁边的 locks；共享账号时必须指定相同的账号池文件。
-  if (accounts.some(/** 判断是否存在满足以下条件的条目：`ciAccounts.includes(account.username.toLowerCase())`。
- * @param account - 当前操作使用的 account。 */ account => ciAccounts.includes(account.username.toLowerCase()))) {
-    throw new Error('本机账号池禁止使用 CLRN 的 CI 专用账号，避免绕过 GitHub 账号锁');
-  }
-  const locks = join(dirname(poolFile), 'locks');
-  await mkdir(locks, { recursive: true, mode: 0o700 });
-  for (const account of accounts) {
-    if (!/^[a-zA-Z0-9.]{6,30}$/.test(account.username)) {
-      throw new Error('测试账号池包含非法用户名');
-    }
-  }
+  const locks = await prepareAccountLocks(accounts, poolFile);
 
-  // 3. 不能先判断目录不存在再创建，否则两个进程会同时选中同一个账号。
-  let selected;
-  let lock;
-  for (const account of accounts) {
-    const candidate = join(locks, account.username.toLowerCase());
-    try {
-      await mkdir(candidate, { mode: 0o700 });
-      selected = account;
-      lock = candidate;
-      break;
-    } catch (error) {
-      // EEXIST 表示此账号正在被占用；权限或磁盘错误则应立即报错。
-      if (error.code !== 'EEXIST') throw new Error('测试账号占用锁创建失败', { cause: error });
-    }
-  }
-  if (!selected) {
-    throw new Error('测试账号全部被占用；若上轮进程被强制终止，请确认它已结束后清理账号池 locks 中对应的目录');
-  }
+  const { selected, lock } = await selectAccount(accounts, locks);
 
   try {
     // owner.json 只记录进程号和工作目录，方便排查残留锁，不保存密码。
@@ -101,50 +63,7 @@ async function run() {
     const session = await prepareTestAccountCoins(selected, await readTestingApiToken());
     await prepareTestAccountRooms(session);
     console.error('已核对本轮账号金币余额为 10000');
-    // 4. 三种测试都通过环境变量读取账号；只修改子进程的配置。
-    const env = {
-      ...process.env,
-      E2E_TEST_USERNAME: selected.username, E2E_TEST_PASSWORD: selected.password,
-      E2E_CREATION_USERNAME: selected.username, E2E_CREATION_PASSWORD: selected.password,
-      VISUAL_USERNAME: selected.username, VISUAL_PASSWORD: selected.password,
-    };
-    // 显式创建账号状态会覆盖用户名；使用池账号时走真实登录流程。
-    delete env.E2E_CREATION_STORAGE_STATE_FILE;
-    console.error(`本轮使用独立 staging 测试账号：${selected.username}`);
-    // 5. 直接执行参数而非拼接 shell 字符串，保留参数边界和调用者的工作目录。
-    const grouped = process.platform !== 'win32';
-    const child = spawn(args[0], args.slice(1), { env, stdio: 'inherit', detached: grouped });
-    const signals = ['SIGINT', 'SIGTERM', 'SIGHUP'];
-    const handlers = signals.map(/** 为各退出信号安装转发处理器，并返回处理器供结束时移除。
- * @param signal - 当前转发的进程终止信号。 */ signal => {
-      /** 将退出信号转发给测试命令及其后代进程，避免任务结束后仍使用账号。 */
-      const handler = () => {
-        try {
-          // npm/pnpm 会再启动测试进程，转发到进程组，避免退出后仍继续使用账号。
-          if (grouped && child.pid) process.kill(-child.pid, signal);
-          else child.kill(signal);
-        } catch (error) {
-          if (error.code !== 'ESRCH') throw error;
-        }
-      };
-      process.on(signal, handler);
-      return handler;
-    });
-    try {
-      // 使用测试命令的退出码，让调用者和 CI 能识别真正的测试失败。
-      process.exitCode = await new Promise(/** 等待测试命令退出，将启动失败与信号终止转换为明确结果。
- * @param resolve - 完成当前异步等待的通知。
- * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
-        child.once('error', /** 子进程无法启动时拒绝运行等待并提供安全错误。 */ () => reject(new Error('测试命令启动失败')));
-        child.once('exit', /** 将子进程退出状态或终止信号转换为调用方退出码。
- * @param code - 当前操作使用的 code。
- * @param signal - 当前转发的进程终止信号。 */ (code, signal) => resolve(code ?? (signal === 'SIGINT' ? 130 : 143)));
-      });
-    } finally {
-      signals.forEach(/** 移除本轮安装的信号转发监听器。
- * @param signal - 当前转发的进程终止信号。
- * @param index - 当前条目在集合中的位置。 */ (signal, index) => process.removeListener(signal, handlers[index]));
-    }
+    await runAccountCommand(selected);
   } finally {
     // 6. 只有我们取得的锁会被删除，不会清理其他任务的占用记录。
     await rm(lock, { recursive: true, force: true });
@@ -156,3 +75,147 @@ run().catch(/** 输出账号运行器的安全失败信息并设置失败退出�
   console.error(error.message);
   process.exitCode = 1;
 });
+
+/** 验证本机池结构、凭据与大小写归一后的账号唯一性。
+ * @param accounts - 解析后的本机池。 */
+function validateAccounts(accounts) {
+  if (!nonemptyAccounts(accounts)) throw invalidAccounts();
+  if (accounts.some(invalidAccount)) throw invalidAccounts();
+  validateUniqueAccounts(accounts);
+}
+
+/** 账号池必须为非空数组。
+ * @param accounts - 解析后的池内容。 */
+function nonemptyAccounts(accounts) { return Array.isArray(accounts) && accounts.length > 0; }
+
+/** 检查账号必需字段及密码兼容性。
+ * @param account - 当前账号。 */
+function invalidAccount(account) {
+  return ![nonemptyString(account.username), validLocalPassword(account.password), nonemptyString(account.userId)].every(Boolean);
+}
+
+/** 保持非空字符串字段约束。
+ * @param value - 候选字段。 */
+function nonemptyString(value) { return typeof value === 'string' && Boolean(value); }
+
+/** H5 密码不超过 20 字符且不能含控制字符。
+ * @param password - 候选密码。 */
+function validLocalPassword(password) {
+  if (!nonemptyString(password)) return false;
+  return password.length <= 20 && !/[\r\n\0]/.test(password);
+}
+
+/** 账号池校验错误不得包含凭据。 */
+function invalidAccounts() { return new Error('测试账号池为空、配置不完整、密码不兼容 H5 或包含重复用户名'); }
+
+/** 大小写不同的用户名不能占用不同锁。
+ * @param accounts - 已核对凭据的账号池。 */
+function validateUniqueAccounts(accounts) {
+  const names = accounts.map(/** 归一用户名。
+   * @param account - 当前账号。 */ account => account.username.toLowerCase());
+  if (new Set(names).size !== accounts.length) throw invalidAccounts();
+}
+
+/** 创建原子锁的父目录并拒绝 CI 专用账号。
+ * @param accounts - 已验证的账号池。
+ * @param poolFile - 本机池文件。 */
+async function prepareAccountLocks(accounts, poolFile) {
+  // 自定义账号池也使用旁边的 locks；共享账号时必须指定相同的账号池文件。
+  if (accounts.some(/** 判断是否存在满足以下条件的条目：`ciAccounts.includes(account.username.toLowerCase())`。
+ * @param account - 当前操作使用的 account。 */ account => ciAccounts.includes(account.username.toLowerCase()))) {
+    throw new Error('本机账号池禁止使用 CLRN 的 CI 专用账号，避免绕过 GitHub 账号锁');
+  }
+  const locks = join(dirname(poolFile), 'locks');
+  await mkdir(locks, { recursive: true, mode: 0o700 });
+  accounts.forEach(validateLocalUsername);
+
+  return locks;
+}
+
+/** 按原顺序尝试原子 mkdir，只有 EEXIST 允许尝试下一账号。
+ * @param accounts - 已验证账号池。
+ * @param locks - 共享锁目录。 */
+async function selectAccount(accounts, locks) {
+  for (const account of accounts) {
+    const lock = join(locks, account.username.toLowerCase());
+    if (await acquireAccountLock(lock)) return { selected: account, lock };
+  }
+  throw new Error('测试账号全部被占用；若上轮进程被强制终止，请确认它已结束后清理账号池 locks 中对应的目录');
+}
+
+/** 原子取得独占锁，磁盘与权限错误不能被当作账号占用。
+ * @param candidate - 单账号锁目录。 */
+async function acquireAccountLock(candidate) {
+  try { await mkdir(candidate, { mode: 0o700 }); return true; }
+  catch (error) {
+    if (error.code !== 'EEXIST') throw new Error('测试账号占用锁创建失败', { cause: error });
+    return false;
+  }
+}
+
+/** 保持命令参数、工作目录和账号环境，结束时移除信号监听。
+ * @param selected - 本轮取得的账号。 */
+async function runAccountCommand(selected) {
+  // 4. 三种测试都通过环境变量读取账号；只修改子进程的配置。
+  const env = {
+    ...process.env,
+    E2E_TEST_USERNAME: selected.username, E2E_TEST_PASSWORD: selected.password,
+    E2E_CREATION_USERNAME: selected.username, E2E_CREATION_PASSWORD: selected.password,
+    VISUAL_USERNAME: selected.username, VISUAL_PASSWORD: selected.password,
+  };
+  // 显式创建账号状态会覆盖用户名；使用池账号时走真实登录流程。
+  delete env.E2E_CREATION_STORAGE_STATE_FILE;
+  console.error(`本轮使用独立 staging 测试账号：${selected.username}`);
+  // 5. 直接执行参数而非拼接 shell 字符串，保留参数边界和调用者的工作目录。
+  const grouped = process.platform !== 'win32';
+  const child = spawn(args[0], args.slice(1), { env, stdio: 'inherit', detached: grouped });
+  const signals = ['SIGINT', 'SIGTERM', 'SIGHUP'];
+  const handlers = signals.map(/** 为各退出信号安装转发处理器，并返回处理器供结束时移除。
+ * @param signal - 当前转发的进程终止信号。 */ signal => {
+    /** 将退出信号转发给测试命令及其后代进程，避免任务结束后仍使用账号。 */
+    const handler = () => {
+      forwardAccountSignal(child, grouped, signal);
+    };
+    process.on(signal, handler);
+    return handler;
+  });
+  try {
+    // 使用测试命令的退出码，让调用者和 CI 能识别真正的测试失败。
+    process.exitCode = await new Promise(/** 等待测试命令退出，将启动失败与信号终止转换为明确结果。
+ * @param resolve - 完成当前异步等待的通知。
+ * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
+      child.once('error', /** 子进程无法启动时拒绝运行等待并提供安全错误。 */ () => reject(new Error('测试命令启动失败')));
+      child.once('exit', /** 将子进程退出状态或终止信号转换为调用方退出码。
+ * @param code - 当前操作使用的 code。
+ * @param signal - 当前转发的进程终止信号。 */ (code, signal) => resolve(code ?? (signal === 'SIGINT' ? 130 : 143)));
+    });
+  } finally {
+    signals.forEach(/** 移除本轮安装的信号转发监听器。
+ * @param signal - 当前转发的进程终止信号。
+ * @param index - 当前条目在集合中的位置。 */ (signal, index) => process.removeListener(signal, handlers[index]));
+  }
+}
+
+/** 结束整个测试进程组，忽略已经退出的进程。
+ * @param child - 本轮测试命令。
+ * @param grouped - 是否使用进程组。
+ * @param signal - 收到的原始信号。 */
+function forwardAccountSignal(child, grouped, signal) {
+  try { sendAccountSignal(child, grouped, signal); }
+  catch (error) { if (error.code !== 'ESRCH') throw error; }
+}
+
+/** 保持 Windows 单进程与其他平台进程组的转发方式。
+ * @param child - 本轮测试命令。
+ * @param grouped - 是否使用进程组。
+ * @param signal - 收到的原始信号。 */
+function sendAccountSignal(child, grouped, signal) {
+  if (grouped && child.pid) process.kill(-child.pid, signal);
+  else child.kill(signal);
+}
+
+/** 用户名必须可安全用于账号锁路径。
+ * @param account - 已核对凭据的账号。 */
+function validateLocalUsername(account) {
+  if (!/^[a-zA-Z0-9.]{6,30}$/.test(account.username)) throw new Error('测试账号池包含非法用户名');
+}

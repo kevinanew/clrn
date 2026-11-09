@@ -41,7 +41,7 @@ test('真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接�
     seen.add(route);
     if (route === '/timeout') return;
     if (route === '/disconnect') { incoming.socket.destroy(); return; }
-    outgoing.writeHead(route === '/http-error' ? 500 : 201, { 'Content-Type': 'application/json' });
+    outgoing.writeHead(fixtureStatus(route), { 'Content-Type': 'application/json' });
     outgoing.end(secret);
   });
   context.after(/** 关闭请求失败测试服务及所有遗留连接。 */ async () => {
@@ -70,13 +70,7 @@ test('真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接�
       timeout: 1000, maxRetries: 0, maxRedirects: 0,
     }).catch(/** 检查真实 Playwright 异常形态，并将其交给安全诊断分类。
  * @param error - 当前操作抛出的错误。 */ error => {
-      if (route === '/timeout' || route === '/refused' || route === '/disconnect') {
-        assert.equal(error.code, undefined, '覆盖 Playwright 丢弃顶层 code 的真实形态');
-        assert.equal(error.name, route === '/timeout' ? 'TimeoutError' : 'Error');
-        if (route === '/refused') assert.ok(error.message.includes('ECONNREFUSED'));
-        if (route === '/disconnect') assert.equal(error.message.split(/\r?\n/)[0], 'apiRequestContext.get: socket hang up');
-        assert.equal(requestFailureReason(error), route === '/timeout' ? 'timeout' : 'connection-failed');
-      }
+      checkRawFailure(route, error);
       throw new Error(requestErrorSummary(error, 'release-readiness'));
     });
     try { return await readRequestJson(response, 'release-readiness'); }
@@ -101,3 +95,28 @@ test('真实 Playwright HTTP500、无效 JSON、超时、断连和拒绝连接�
     assert.equal(seen.has('/refused'), false);
   });
 });
+
+/** 为本机 HTTP 负例选择原有响应状态。
+ * @param route - 测试请求路径。 */
+function fixtureStatus(route) { return route === '/http-error' ? 500 : 201; }
+
+/** 验证 Playwright 丢弃 code 后的真实异常形态。
+ * @param route - 本机请求路径。
+ * @param error - 真实 Playwright 异常。 */
+function checkRawFailure(route, error) {
+  const expected = { '/timeout': ['TimeoutError', 'timeout'], '/refused': ['Error', 'connection-failed'],
+    '/disconnect': ['Error', 'connection-failed'] }[route];
+  if (!expected) return;
+  assert.equal(error.code, undefined, '覆盖 Playwright 丢弃顶层 code 的真实形态');
+  assert.equal(error.name, expected[0]);
+  checkConnectionMessage(route, error);
+  assert.equal(requestFailureReason(error), expected[1]);
+}
+
+/** 真实拒绝连接和断连首行仍须符合锁定版本的异常契约。
+ * @param route - 本机请求路径。
+ * @param error - 真实 Playwright 异常。 */
+function checkConnectionMessage(route, error) {
+  if (route === '/refused') assert.ok(error.message.includes('ECONNREFUSED'));
+  if (route === '/disconnect') assert.equal(error.message.split(/\r?\n/)[0], 'apiRequestContext.get: socket hang up');
+}

@@ -37,19 +37,36 @@ export function pipeReleaseFile(stream, response) {
  * @param expectedCommit - 预期的完整应用提交编号。
  */
 export async function verifyBuildVersion(directory, expectedCommit) {
-  if (!/^[a-f0-9]{40}$/.test(expectedCommit || '')) throw new Error('缺少完整应用提交编号');
+  if (!validBuildCommit(expectedCommit)) throw new Error('缺少完整应用提交编号');
   const html = await readFile(path.join(directory, 'index.html'), 'utf8');
-  const tag = html.match(/<meta\b[^>]*\bname=["']build-version["'][^>]*>/i)?.[0];
-  const actual = tag?.match(/\bcontent=["']([a-f0-9]{40})\s+-\s+[^"']+["']/i)?.[1];
-  if (actual?.toLowerCase() !== expectedCommit) throw new Error('Release 入口应用版本不匹配');
+  if (releaseBuildCommit(html) !== expectedCommit) throw new Error('Release 入口应用版本不匹配');
 }
+
+/** 读取入口中固定格式的 build-version 标签。
+ * @param html - 实际入口正文。 */
+export function releaseBuildCommit(html) {
+  const tag = html.match(/<meta\b[^>]*\bname=["']build-version["'][^>]*>/i)?.[0];
+  return commitFromTag(tag);
+}
+
+/** 解析标签中的完整提交，保持缺失标签的结果。
+ * @param tag - build-version 标签。 */
+function commitFromTag(tag) {
+  const commit = tag?.match(/\bcontent=["']([a-f0-9]{40})\s+-\s+[^"']+["']/i)?.[1];
+  return normalizeBuildCommit(commit);
+}
+
+/** 将实际提交归一为小写。
+ * @param commit - 标签中的提交。 */
+function normalizeBuildCommit(commit) { return commit?.toLowerCase(); }
 
 /**
  * 在回环地址和随机端口启动服务；返回服务句柄供调用方在测试结束后关闭。
  * @param directory - 本任务独占的静态根目录。
  * @param options - 本轮日志出口与隔离自测的文件流边界。
  */
-export async function startReleaseWebServer(directory, { record = /** 未配置诊断记录器时保持请求流程可直接运行。 */ () => {}, openStream = createReadStream } = {}) {
+export async function startReleaseWebServer(directory, options = {}) {
+  const { record, openStream } = serverOptions(options);
   const root = await realpath(directory);
   const serverId = randomUUID();
   const connections = new WeakMap();
@@ -68,44 +85,7 @@ export async function startReleaseWebServer(directory, { record = /** 未配置�
     const diagnostic = observeReleaseResponse(request, response,
       { requestId, connectionId: connections.get(request.socket), serverId }, record);
     try {
-      if (!['GET', 'HEAD'].includes(request.method)) {
-        response.writeHead(405, { Allow: 'GET, HEAD' }).end();
-        return;
-      }
-      const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
-      if (pathname.includes('\0') || pathname.includes('\\') || /\.map(?:\.(?:gz|br))?$/i.test(pathname)) {
-        response.writeHead(404).end();
-        return;
-      }
-      let filename = await realpath(path.resolve(root, `.${pathname}`));
-      if (!filename.startsWith(`${root}${path.sep}`) && filename !== root) {
-        response.writeHead(404).end();
-        return;
-      }
-      let information = await stat(filename);
-      if (information.isDirectory()) {
-        filename = await realpath(path.join(filename, 'index.html'));
-        information = await stat(filename);
-      }
-      if (!information.isFile() || !filename.startsWith(`${root}${path.sep}`)) {
-        response.writeHead(404).end();
-        return;
-      }
-      // 文件系统核验期间客户端可能已经退出；不再为已关闭的响应打开文件。
-      if (response.destroyed) return;
-      const extension = path.extname(filename).toLowerCase();
-      response.writeHead(200, {
-        'Content-Type': contentTypes[extension] || 'application/octet-stream',
-        'Content-Length': information.size,
-        'Cache-Control': /\.(gif|jpg|jpeg|png|webp|mp3|ttf|css|js)$/.test(filename)
-          ? 'max-age=31536000' : 'no-store, max-age=0',
-      });
-      if (request.method === 'HEAD') response.end();
-      else {
-        const stream = openStream(filename);
-        diagnostic.stream(stream);
-        pipeReleaseFile(stream, response);
-      }
+      await serveReleaseRequest(request, response, { root, openStream, diagnostic });
     } catch {
       diagnostic.emit('release.file-unavailable');
       response.writeHead(404).end();
@@ -130,3 +110,99 @@ export async function startReleaseWebServer(directory, { record = /** 未配置�
     keepAliveTimeoutBufferMs: Number.isInteger(server.keepAliveTimeoutBuffer) ? server.keepAliveTimeoutBuffer : 'unavailable' });
   return { server, serverId, baseUrl: `http://127.0.0.1:${server.address().port}/` };
 }
+
+/** 设置可替换边界的原始默认值。
+ * @param options - 调用方配置。 */
+function serverOptions({ record = /** 未配置诊断时保持服务流程。 */ () => {}, openStream = createReadStream }) {
+  return { record, openStream };
+}
+
+/** 将固定响应状态结束在一个出口。
+ * @param response - 实际响应。
+ * @param status - HTTP 状态。 */
+function endStatus(response, status) { response.writeHead(status).end(); }
+
+/** 按原有规则拒绝空字节、反斜杠及源码映射。
+ * @param pathname - 解码后的 URL 路径。 */
+function blockedPath(pathname) {
+  return [pathname.includes('\0'), pathname.includes('\\'), /\.map(?:\.(?:gz|br))?$/i.test(pathname)].some(Boolean);
+}
+
+/** 核对真实文件系统路径位于根目录内，根本身可用于目录索引。
+ * @param filename - realpath 后的目标。
+ * @param root - realpath 后的根目录。 */
+function withinRoot(filename, root) { return filename.startsWith(`${root}${path.sep}`) || filename === root; }
+
+/** 解析真实文件或目录索引，保持符号链接边界检查。
+ * @param pathname - 解码后的请求路径。
+ * @param root - 静态根目录。 */
+async function releaseFile(pathname, root) {
+  let filename = await realpath(path.resolve(root, `.${pathname}`));
+  if (!withinRoot(filename, root)) return undefined;
+  let information = await stat(filename);
+  if (information.isDirectory()) {
+    filename = await realpath(path.join(filename, 'index.html'));
+    information = await stat(filename);
+  }
+  return verifiedFile(filename, information, root);
+}
+
+/** 文件必须是根目录下的普通文件。
+ * @param filename - 真实目标。
+ * @param information - 实际 stat。
+ * @param root - 静态根目录。 */
+function verifiedFile(filename, information, root) {
+  if (!information.isFile() || !filename.startsWith(`${root}${path.sep}`)) return undefined;
+  return { filename, information };
+}
+
+/** 分发方法和路径校验，文件不存在时保持 404。
+ * @param request - 浏览器请求。
+ * @param response - 实际响应。
+ * @param context - 根目录、文件流和诊断出口。 */
+async function serveReleaseRequest(request, response, context) {
+  if (!['GET', 'HEAD'].includes(request.method)) {
+    response.writeHead(405, { Allow: 'GET, HEAD' }).end();
+    return;
+  }
+  const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
+  if (blockedPath(pathname)) return endStatus(response, 404);
+  return serveReleasePath(pathname, request, response, context);
+}
+
+/** 文件核验期间退出的客户端不再打开文件源。
+ * @param pathname - 已核验的 URL 路径。
+ * @param request - 浏览器请求。
+ * @param response - 实际响应。
+ * @param context - 根目录、文件流和诊断出口。 */
+async function serveReleasePath(pathname, request, response, context) {
+  const file = await releaseFile(pathname, context.root);
+  if (!file) return endStatus(response, 404);
+  if (response.destroyed) return;
+  response.writeHead(200, releaseHeaders(file));
+  sendReleaseFile(file.filename, request, response, context);
+}
+
+/** 保持缓存策略、类型与实际内容长度。
+ * @param file - 已核验的文件信息。 */
+function releaseHeaders({ filename, information }) {
+  return { 'Content-Type': contentTypes[path.extname(filename).toLowerCase()] || 'application/octet-stream',
+    'Content-Length': information.size,
+    'Cache-Control': /\.(gif|jpg|jpeg|png|webp|mp3|ttf|css|js)$/.test(filename) ? 'max-age=31536000' : 'no-store, max-age=0' };
+}
+
+/** HEAD 不打开文件流，GET 保持诊断与响应生命周期联动。
+ * @param filename - 已核验的真实路径。
+ * @param request - 浏览器请求。
+ * @param response - 实际响应。
+ * @param context - 文件流边界和诊断出口。 */
+function sendReleaseFile(filename, request, response, context) {
+  if (request.method === 'HEAD') return response.end();
+  const stream = context.openStream(filename);
+  context.diagnostic.stream(stream);
+  pipeReleaseFile(stream, response);
+}
+
+/** 校验预期的完整应用提交格式。
+ * @param commit - 调用方固定提交。 */
+function validBuildCommit(commit) { return /^[a-f0-9]{40}$/.test(commit || ''); }

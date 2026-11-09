@@ -39,7 +39,7 @@ test('三阶段 HTTP500、超时、连接失败、解析失败及业务拒绝保
     for (const [reply, status, reason] of cases) {
       let calls = 0;
       context.mock.method(globalThis, 'fetch', /** 在指定准备阶段注入错误，之前的账号步骤返回有效响应。 */ async () => {
-        if (calls++ < stage) return Response.json({ ok: true, result: calls === 1 ? session : prepared });
+        if (calls++ < stage) return Response.json({ ok: true, result: [session, prepared][calls - 1] });
         const response = reply();
         if (response instanceof Error) throw response;
         return response;
@@ -99,7 +99,8 @@ test('私有接口、本地Release及UI状态使用固定逻辑来源，未知�
 });
 
 test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不回显消息或调用日志', /** 验证Playwright 无顶层 code 的已知连接错误只映射有限枚举，不回显消息或调用日志。 */ () => {
-  for (const method of ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch']) {
+  ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch'].forEach(/** 核对每个 Playwright HTTP 方法。
+   * @param method - 当前请求方法。 */ method => {
     for (const ending of ['', `\nCall log:\n - ${sensitive}`, `\r\nCall log:\r\n - ${sensitive}`]) {
       const error = new Error(`apiRequestContext.${method}: socket hang up${ending}`);
       assert.equal(error.code, undefined);
@@ -110,7 +111,7 @@ test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不
     }
     for (const [prefix, code] of [['connect', 'ECONNREFUSED'], ['read', 'ECONNRESET'],
       ['getaddrinfo', 'ENOTFOUND'], ['getaddrinfo', 'EAI_AGAIN'], ['', 'UND_ERR_SOCKET']]) {
-      const error = new Error(`apiRequestContext.${method}: ${prefix ? `${prefix} ` : ''}${code} ${sensitive}\nCall log:\n - ${sensitive}`);
+      const error = new Error(`apiRequestContext.${method}: ${connectionPrefix(prefix)}${code} ${sensitive}\nCall log:\n - ${sensitive}`);
       assert.equal(error.name, 'Error');
       assert.equal(error.code, undefined);
       assert.equal(requestFailureReason(error), 'connection-failed');
@@ -120,7 +121,7 @@ test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不
       assert.equal(safeDiagnosticReason(new Error(sensitive, { cause: failure })), failure.message);
       assert.equal(requestFailureReason(new Error(sensitive, { cause: error })), 'connection-failed');
     }
-  }
+  });
   for (const message of [sensitive, `ECONNREFUSED ${sensitive}`, `apiRequestContext.put: UnknownError ${sensitive}`,
     `apiRequestContext.put: ${sensitive}\nCall log:\n - ECONNREFUSED`,
     `apiRequestContext.put: connect ECONNREFUSED_UNKNOWN ${sensitive}`,
@@ -136,7 +137,8 @@ test('Playwright 无顶层 code 的已知连接错误只映射有限枚举，不
 });
 
 test('Playwright 重试耗尽的固定断连包装仍保留连接失败，不能从任意内部文本推断', /** 验证Playwright 重试耗尽的固定断连包装仍保留连接失败，不能从任意内部文本推断。 */ () => {
-  for (const method of ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch']) {
+  ['get', 'head', 'post', 'put', 'patch', 'delete', 'fetch'].forEach(/** 核对每个 Playwright HTTP 方法。
+   * @param method - 当前请求方法。 */ method => {
     for (const ending of ['', `\nCall log:\n - ${sensitive}`, `\r\nCall log:\r\n - ${sensitive}`]) {
       const raw = new Error(`apiRequestContext.${method}: Failed after 3 attempt(s): Error: socket hang up${ending}`);
       assert.equal(requestFailureReason(raw), 'connection-failed');
@@ -145,7 +147,7 @@ test('Playwright 重试耗尽的固定断连包装仍保留连接失败，不能
       assert.equal(safeDiagnosticReason(new Error(sensitive, { cause: failure })), failure.message);
       checkPrivate(failure);
     }
-  }
+  });
   for (const detail of ['Failed after 0 attempt(s): Error: socket hang up',
     'Failed after 3 attempts: Error: socket hang up',
     `Failed after 3 attempt(s): Error: socket hang up ${sensitive}`,
@@ -155,3 +157,7 @@ test('Playwright 重试耗尽的固定断连包装仍保留连接失败，不能
     assert.equal(requestFailureReason(new Error(`apiRequestContext.get: ${detail}`)), 'request-failed');
   }
 });
+
+/** 保留有无连接操作前缀的两种真实异常形态。
+ * @param prefix - 连接操作。 */
+function connectionPrefix(prefix) { return prefix ? `${prefix} ` : ''; }

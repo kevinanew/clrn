@@ -11,8 +11,7 @@ async function summaries(directory) {
   const entries = await readdir(directory, { withFileTypes: true }).catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []);
   for (const entry of entries) {
     const location = path.join(directory, entry.name);
-    if (entry.isDirectory()) result.push(...await summaries(location));
-    else if (entry.name === 'connection-summary.md') result.push(await readFile(location, 'utf8'));
+    result.push(...await entrySummaries(entry, location));
   }
   return result;
 }
@@ -33,4 +32,13 @@ if (process.env.GITHUB_STEP_SUMMARY) {
     await appendFile(process.env.GITHUB_STEP_SUMMARY, report + '\n');
     size += bytes;
   }
+}
+
+/** 根据条目类型递归或读取单份摘要。
+ * @param entry - 实际目录项。
+ * @param location - 该项的完整路径。 */
+async function entrySummaries(entry, location) {
+  if (entry.isDirectory()) return summaries(location);
+  if (entry.name === 'connection-summary.md') return [await readFile(location, 'utf8')];
+  return [];
 }

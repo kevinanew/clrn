@@ -181,9 +181,8 @@ test('缩减重复基线后文档投影仍保持旧指纹并拦截新增重复',
     const removed = makeSource('removed');
     const projected = /** 模拟补充文档后的源码投影。
      * @param source - 原始源码。 */ source => projectJavascript(`/** 执行重复代码。 */\n${source}`, source, 'probe.ts');
-    for (const [file, source] of [['a.ts', old], ['b.ts', old], ['d.ts', removed], ['e.ts', removed]]) {
-      writeFileSync(join(directory, file), projected(source));
-    }
+    [['a.ts', old], ['b.ts', old], ['d.ts', removed], ['e.ts', removed]].forEach(/** 写入两组历史重复。
+     * @param entry - 路径与源码。 */ ([file, source]) => writeFileSync(join(directory, file), projected(source)));
     const baseline = join(directory, 'baseline.json');
     const args = ['.', '--config', join(repository, '.jscpd.json'), '--baseline', baseline,
       '--output', join(directory, 'reports'), '--silent', '--fail-on-empty'];
@@ -195,8 +194,10 @@ test('缩减重复基线后文档投影仍保持旧指纹并拦截新增重复',
     assert.equal(invoke('node_modules/jscpd/run-jscpd.js', [...args, '--update-baseline'], directory).status, 0);
     const after = JSON.parse(readFileSync(baseline, 'utf8')).fingerprints;
     assert.ok(Object.keys(after).length > 0 && Object.keys(after).length < Object.keys(before).length);
-    for (const [key, count] of Object.entries(after)) assert.equal(before[key], count);
-    for (const file of ['a.ts', 'b.ts']) writeFileSync(join(directory, file), projected(old));
+    Object.entries(after).forEach(/** 每个保留指纹次数不变。
+     * @param entry - 指纹和次数。 */ ([key, count]) => assert.equal(before[key], count));
+    ['a.ts', 'b.ts'].forEach(/** 重新写入文档投影后的历史副本。
+     * @param file - 历史副本路径。 */ file => writeFileSync(join(directory, file), projected(old)));
     assert.equal(invoke('node_modules/jscpd/run-jscpd.js', args, directory).status, 0);
     writeFileSync(join(directory, 'c.ts'), projected(old));
     assert.equal(invoke('node_modules/jscpd/run-jscpd.js', args, directory).status, 1);
@@ -247,7 +248,15 @@ test('真实代理适配器单测只使用已逐位置审查的例外', /** 验�
   assert.ok(mock.length > 0);
   for (const message of mock) {
     assert.ok(findings.some(/** 查找与代理源单测诊断对应的逐位置历史例外及其审查理由。
- * @param item - 当前遍历的条目。 */ item => item.file === file && item.line === message.line
-      && item.rule === message.ruleId && item.kind === 'adapter-unit' && item.reason.includes('代理源')));
+ * @param item - 当前遍历的条目。 */ item => reviewedAdapterFinding(item, file, message)));
   }
 });
+
+/** 核对既有代理适配器例外的精确位置、规则与审查理由。
+ * @param item - 历史条目。
+ * @param file - 当前源码路径。
+ * @param message - 原生规则诊断。 */
+function reviewedAdapterFinding(item, file, message) {
+  return [item.file === file, item.line === message.line, item.rule === message.ruleId,
+    item.kind === 'adapter-unit', item.reason.includes('代理源')].every(Boolean);
+}

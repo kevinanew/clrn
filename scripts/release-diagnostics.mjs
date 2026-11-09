@@ -7,13 +7,19 @@ import path from 'node:path';
  * @param command - 原测试命令及参数。
  */
 export function releaseDiagnosticDirectory(command) {
-  if (command.some(/** 判断是否存在满足以下条件的条目：`part.startsWith('test:animations')`。
- * @param part - 当前操作使用的 part。 */ part => part.startsWith('test:animations'))) return 'test-results/animations/release-server';
-  if (command.some(/** 判断是否存在满足以下条件的条目：`part.startsWith('test:functional')`。
- * @param part - 当前操作使用的 part。 */ part => part.startsWith('test:functional'))) return 'test-results/cases/release-server';
-  if (command.includes('test:interactions')) return 'test-results/interactions/release-server';
-  if (command.includes('test:freshchat')) return 'test-results/freshchat/release-server';
-  return 'test-results/release-server';
+  const routes = [
+    [/** 识别动画任务。
+     * @param part - 命令参数。 */ part => part.startsWith('test:animations'), 'animations/release-server'],
+    [/** 识别功能任务。
+     * @param part - 命令参数。 */ part => part.startsWith('test:functional'), 'cases/release-server'],
+    [/** 识别交互任务。
+     * @param part - 命令参数。 */ part => part === 'test:interactions', 'interactions/release-server'],
+    [/** 识别客服任务。
+     * @param part - 命令参数。 */ part => part === 'test:freshchat', 'freshchat/release-server'],
+  ];
+  const route = routes.find(/** 保持原有命令匹配顺序。
+   * @param entry - 匹配器及目录。 */ entry => command.some(entry[0]));
+  return route ? `test-results/${route[1]}` : 'test-results/release-server';
 }
 
 /**
@@ -38,7 +44,7 @@ export function releaseDiagnosticWriter(directory, persistentDirectory) {
     if (!persistentDirectory) return;
     try {
       mkdirSync(persistentDirectory, { recursive: true });
-      if (retained) appendFileSync(path.join(persistentDirectory, 'release-server-events.jsonl'), line);
+      persistRetainedLine(line, retained);
       writeFileSync(path.join(persistentDirectory, 'release-server-manifest.json'),
         JSON.stringify({ retention: 'first-events', limit: 10000, events: Math.min(count, 10000),
           startedAt, lastRetainedAt, lastObservedAt: Date.now(), bytes, dropped, droppedBytes,
@@ -48,25 +54,36 @@ export function releaseDiagnosticWriter(directory, persistentDirectory) {
       console.error('Release diagnostics: collection.unavailable (storage-write-failed)');
     }
   };
-  /**
-   * 只接收服务端构造的固定字段，不接收任意网络数据。
-   * @param event - 内部生命周期事件。
-   */
-  const recordEvent = event => {
-    count++;
+  /** 仅保留容量以内的事件副本。
+   * @param line - 已审阅事件行。
+   * @param retained - 是否在容量以内。 */
+  function persistRetainedLine(line, retained) {
+    if (retained) appendFileSync(path.join(persistentDirectory, 'release-server-events.jsonl'), line);
+  }
+  /** 统计丢弃事件，首次超限时输出唯一截断标志。
+   * @param event - 内部生命周期事件。 */
+  function eventLine(event) {
     if (count > 10000) {
       dropped++;
       droppedBytes += Buffer.byteLength(JSON.stringify(event) + '\n');
     }
     if (count === 10001) event = { event: 'release.truncated', droppedAtLeast: 1, source: 'release-static' };
-    // Playwright 启动时会清理 outputDir；每次写入都恢复既有附件子目录。
-    const line = `${JSON.stringify(event)}\n`;
-    if (count <= 10001) {
-      mkdirSync(directory, { recursive: true });
-      appendFileSync(path.join(directory, 'release-server-events.jsonl'), line);
-      bytes += Buffer.byteLength(line);
-      if (count <= 10000) lastRetainedAt = Date.now();
-    }
+    return `${JSON.stringify(event)}\n`;
+  }
+  /** 恢复可能被测试清理的目录，并累计实际保留的字节。
+   * @param line - 已审阅的事件行。 */
+  function retainLine(line) {
+    mkdirSync(directory, { recursive: true });
+    appendFileSync(path.join(directory, 'release-server-events.jsonl'), line);
+    bytes += Buffer.byteLength(line);
+    if (count <= 10000) lastRetainedAt = Date.now();
+  }
+  /** 只接收固定字段，容量与持久化语义保持原样。
+   * @param event - 内部生命周期事件。 */
+  const recordEvent = event => {
+    count++;
+    const line = eventLine(event);
+    if (count <= 10001) retainLine(line);
     persist(line, count <= 10001);
   };
   return recordEvent;
@@ -112,8 +129,7 @@ export function observeReleaseResponse(request, response, identifiers, record) {
   const emit = event => record({ event, observedAt: Date.now(), source: 'release-static',
     operation: 'release-static-read', method: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS'].includes(request.method)
       ? request.method : 'OTHER', ...identifiers, elapsedMs: Date.now() - start,
-    status: response.headersSent ? response.statusCode : 'unavailable',
-    response: response.headersSent ? 'sent' : 'not-sent' });
+    ...responseState(response) });
   emit('release.request');
   response.on('finish', /** 记录响应写入完成事件。 */ () => emit('release.finish'));
   response.on('close', /** 区分完整响应关闭与传输中断，记录对应诊断事件。 */ () => emit(response.writableFinished ? 'release.close' : 'release.interrupted'));
@@ -131,4 +147,10 @@ export function observeReleaseResponse(request, response, identifiers, record) {
       stream.on('close', /** 记录发布资源文件源关闭事件。 */ () => emit('release.stream-close'));
     },
   };
+}
+
+/** 仅响应头已发送时记录真实 HTTP 状态。
+ * @param response - 实际响应。 */
+function responseState(response) {
+  return response.headersSent ? { status: response.statusCode, response: 'sent' } : { status: 'unavailable', response: 'not-sent' };
 }

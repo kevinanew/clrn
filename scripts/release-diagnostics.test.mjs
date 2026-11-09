@@ -70,12 +70,13 @@ test('无响应头的读取失败不能记为默认200，已发200后的中断�
   const events = output.trim().split('\n').map(/** 将当前条目映射为`JSON.parse(line)`。
  * @param line - 当前操作使用的 line。 */ line => JSON.parse(line));
   assert.equal(events.length, 10);
-  for (const event of events) {
+  events.forEach(/** 核对每条真实生命周期事件的状态。
+   * @param event - 已记录事件。 */ event => {
     assert.equal(event.source, 'release-static');
     assert.equal(event.operation, 'release-static-read');
     assert.equal(event.method, 'GET');
     assert.equal(event.status, event.requestId === 'request-true' ? 200 : 'unavailable');
-  }
+  });
   assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.interrupted'`。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.interrupted').length, 2);
   assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.stream-error'`。

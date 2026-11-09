@@ -152,10 +152,11 @@ test('Actions 调度输出与注入凭据一致，只导出一个账号，配置
     }));
     const password=accounts.find(/** 查找满足以下条件的首个条目：`account.username===selected`。
  * @param account - 当前操作使用的 account。 */ account=>account.username===selected).password;
-    for(const prefix of ['E2E_TEST','E2E_CREATION','VISUAL']) {
+    ['E2E_TEST','E2E_CREATION','VISUAL'].forEach(/** 核对每类测试收到同一账号凭据。
+     * @param prefix - 凭据变量前缀。 */ prefix => {
       assert.equal(values[`${prefix}_USERNAME`],selected);
       assert.equal(values[`${prefix}_PASSWORD`],password);
-    }
+    });
     assert.equal(Object.keys(values).length,6);
     assert.ok(configured.stdout.includes(`::add-mask::${password}`));
     assert.ok(!configured.stdout.includes(accounts.find(/** 查找满足以下条件的首个条目：`account.username!==selected`。

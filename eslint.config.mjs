@@ -6,6 +6,7 @@ import globals from 'globals';
 import quality from './scripts/quality-rules.mjs';
 import { visualSupportPatterns, visualToolFiles, visualCheckFiles, visualCheckSupportFiles, animationSupportPatterns } from './scripts/visual-complexity-scope.mjs';
 import { e2eSupportPatterns, e2eCheckPatterns } from './scripts/e2e-complexity-scope.mjs';
+import { toolSupportPatterns, generalToolFiles } from './scripts/tool-complexity-scope.mjs';
 import documentation from './scripts/documentation-rule.mjs';
 
 export default [
@@ -73,5 +74,13 @@ export default [
     files: [...visualSupportPatterns, ...animationSupportPatterns, ...visualCheckSupportFiles],
     ignores: visualToolFiles,
     rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
+  },
+  {
+    files: toolSupportPatterns,
+    rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
+  },
+  {
+    files: generalToolFiles,
+    rules: { complexity: ['error', { max: 6, variant: 'classic' }] },
   },
 ];
