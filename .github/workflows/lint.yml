@@ -37,4 +37,8 @@ jobs:
       - name: 执行与本机相同的 pre-commit 检查
         run: uvx --from pre-commit==4.6.0 pre-commit run --all-files
       - name: 保留全部本机单元测试
-        run: npm test
+        # gameSettings 单元测试使用真实 Chromium，npm ci 不会安装浏览器。
+        # 使用仓库锁定的 Playwright 安装对应浏览器及 Linux 运行依赖。
+        run: |
+          npx --no-install playwright install --with-deps chromium
+          npm test
