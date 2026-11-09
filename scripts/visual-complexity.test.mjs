@@ -89,7 +89,7 @@ test('检查入口缺失依赖时非零退出，lint、pre-commit 和 CI 保留�
     const result = spawnSync(process.execPath, [entry], { encoding: 'utf8', cwd: directory });
     assert.equal(result.status, 1);
     assert.match(result.stderr, /ERR_MODULE_NOT_FOUND/);
-    assert.match(readFileSync(path.join(repository, 'package.json'), 'utf8'), /lint:visual-complexity && node scripts\/quality.mjs javascript/);
+    assert.match(readFileSync(path.join(repository, 'package.json'), 'utf8'), /lint:visual-complexity && npm run lint:tool-complexity && node scripts\/quality.mjs javascript/);
     assert.match(readFileSync(path.join(repository, '.pre-commit-config.yaml'), 'utf8'), /entry: npm run lint/);
     assert.match(readFileSync(path.join(repository, '.github/workflows/lint.yml'), 'utf8'), /pre-commit run --all-files/);
   } finally {
