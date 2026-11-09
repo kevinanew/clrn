@@ -2,7 +2,7 @@
 import { test as base, expect } from './diagnosticTest';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
 import type { Mitmproxy } from '../../../e2e/helpers/mitmproxy-client';
-import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
+import { scenarioBinding } from '../../../e2e/helpers/scenario-proxy';
 
 export const test = base.extend<{ network: Mitmproxy; scenarioBinding: void }>({
   /**
@@ -18,14 +18,6 @@ export const test = base.extend<{ network: Mitmproxy; scenarioBinding: void }>({
    */
   proxy: async ({ network }, use) => { await use({ server: network.server, bypass: '<-loopback>' }); },
   ignoreHTTPSErrors: true,
-  scenarioBinding: [
-    /**
-     * 将控制客户端关联到已连接代理的上下文。
-     * @param fixtures - 本轮上下文与代理。
-     * @param use - 执行场景。
-     */
-    async ({ context, network }, use) => { bindScenarioProxy(context, network); await use(); },
-    { auto: true },
-  ],
+  scenarioBinding: [scenarioBinding, { auto: true }],
 });
 export { expect };

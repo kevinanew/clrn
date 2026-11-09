@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import type { TexasProxy } from './proxy';
 import { restoreTable, type Street } from './replayData';
+import { recordDiagnostic } from '../../src/support/connectionDiagnostics';
 
 /**
  * 定位当前页面可见的测试元素，排除导航历史中的隐藏副本。
@@ -25,6 +26,19 @@ export async function freezeClock(page: Page): Promise<void> {
   // CDP 在繁忙的 Linux runner 上可能排队数秒，给暂停命令保留足够提前量。
   // pauseAt 跳过期间仅触发一次到期计时器；随后恢复消息重设牌局倒计时。
   await page.clock.pauseAt(now + 60_000);
+  await recordClock(page, 'clock-frozen');
+}
+
+/**
+ * 只读记录浏览器虚拟时间与宿主观测时间，关联断线和时钟推进；采集失败不影响测试。
+ * @param page - 当前页面。
+ * @param phase - 固定的取证阶段。
+ */
+async function recordClock(page: Page, phase: string): Promise<void> {
+  try {
+    const timestamp = await page.evaluate(/** 只读取当前虚拟时间，不推进时钟。 */ () => Date.now());
+    recordDiagnostic(page, phase, { elapsedMs: timestamp });
+  } catch { /* 可选诊断不得覆盖原始异常。 */ }
 }
 
 /**
@@ -33,8 +47,13 @@ export async function freezeClock(page: Page): Promise<void> {
  * @param id - 目标控件的测试标记。
  */
 export async function click(page: Page, id: string): Promise<void> {
-  await visible(page, id).click();
-  await advance(page);
+  try {
+    await visible(page, id).click();
+    await advance(page);
+  } catch (error) {
+    await recordClock(page, 'click-failed-clock');
+    throw error;
+  }
 }
 
 /**

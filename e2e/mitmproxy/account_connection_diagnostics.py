@@ -25,11 +25,18 @@ def tls_phase(connection):
     return 'account-transport-ready'
 
 
+def connection_fields(flow):
+    """只为账户和健康探测接口生成固定阶段分类。"""
+    if is_account_path(flow.request.path):
+        return {'phase': transport_phase(flow.server_conn)}
+    if urlsplit(flow.request.path).path == '/node/v1/status':
+        return {'phase': transport_phase(flow.server_conn).replace('account-', 'probe-', 1)}
+    return {}
+
+
 def account_connection_fields(flow):
     """采集异常只产生固定标记，不影响原请求或泄露异常正文。"""
     try:
-        if not is_account_path(flow.request.path):
-            return {}
-        return {'phase': transport_phase(flow.server_conn)}
+        return connection_fields(flow)
     except Exception:
         return {'phase': 'account-connection-unavailable'}

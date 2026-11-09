@@ -26,6 +26,22 @@ class AccountConnectionTests(unittest.TestCase):
         flow.request.path = '/v10/profile/private-user'
         self.assertEqual(account_connection_fields(flow), {})
 
+    def test_probe_transport_stages(self):
+        """健康探测复用只读连接阶段，不记录 URL 参数或凭据。"""
+        connection = SimpleNamespace(timestamp_start=None, timestamp_tcp_setup=None,
+                                     timestamp_tls_setup=None, tls=True)
+        flow = SimpleNamespace(request=SimpleNamespace(path='/node/v1/status?token=secret'),
+                               server_conn=connection)
+        for field, value, expected in (
+                ('timestamp_start', None, 'probe-connect-not-started'),
+                ('timestamp_start', 1, 'probe-tcp-pending'),
+                ('timestamp_tcp_setup', 2, 'probe-tls-pending'),
+                ('timestamp_tls_setup', 3, 'probe-transport-ready')):
+            setattr(connection, field, value)
+            before = vars(connection).copy()
+            self.assertEqual(account_connection_fields(flow), {'phase': expected})
+            self.assertEqual(vars(connection), before)
+
     def test_diagnostic_failure_is_contained(self):
         """异常正文不进入诊断，也不传播到请求处理。"""
         class BrokenFlow:

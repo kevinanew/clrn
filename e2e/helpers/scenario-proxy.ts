@@ -14,6 +14,18 @@ export function bindScenarioProxy(context: object, proxy: Mitmproxy): void {
 }
 
 /**
+ * 在场景执行期间关联浏览器上下文与代理。
+ * @param fixtures - 本轮上下文与代理。
+ * @param use - 执行场景。
+ */
+export async function scenarioBinding(
+  { context, network }: { context: object; network: Mitmproxy }, use: () => Promise<void>,
+): Promise<void> {
+  bindScenarioProxy(context, network);
+  await use();
+}
+
+/**
  * 获取当前上下文的认证场景控制客户端；缺失时明确失败。
  * @param context - 使用代理的上下文。
  */

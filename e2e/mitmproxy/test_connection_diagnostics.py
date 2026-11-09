@@ -231,6 +231,18 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(diagnostics.events[-1]['code'], 1001)
         self.assertNotIn(request.id, diagnostics.pending_commands)
 
+    def test_websocket_close_source(self):
+        """关闭发起方仅输出固定分类，不能将关闭原因中的凭据带入日志。"""
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://private.invalid/socket?token=secret')
+        request.websocket = WebSocketData()
+        request.websocket.close_reason = 'https://private.invalid/?token=secret'
+        for source, expected in ((True, 'client'), (False, 'upstream'), (None, 'unknown')):
+            request.websocket.closed_by_client = source
+            diagnostics.websocket_end(request)
+            self.assertEqual(diagnostics.events[-1]['source'], expected)
+        self.assertNotIn('secret', json.dumps(diagnostics.snapshot()))
+
     def test_容量边界与错误脱敏(self):
         """验证容量边界与错误脱敏。"""
         diagnostics = ConnectionDiagnostics()
