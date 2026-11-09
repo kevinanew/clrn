@@ -873,16 +873,6 @@
       "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
     },
     {
-      "file": "visual/cases/game-record/game-record.spec.ts",
-      "rule": "complexity",
-      "line": 168,
-      "column": 74,
-      "message": "Async arrow function has a complexity of 13. Maximum allowed is 10.",
-      "anchor": "26458cdb283a643f3324ecc23af0775d7ecb59c30942d07dc9fc423f51e1f312",
-      "kind": "migration",
-      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
       "file": "visual/cases/texas-holdem/roomCleanup.test.ts",
       "rule": "quality/no-network-response",
       "line": 2,
