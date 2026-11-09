@@ -13,7 +13,7 @@ function origin(value: string): string {
     if (url.protocol === 'https:' && !url.username && !url.password
       && url.pathname === '/' && !url.search && !url.hash) return url.origin;
   } catch { /* 统一报告，不附带原始输入。 */ }
-  throw new Error('laiwan_prd 来源配置无效');
+  throw new Error('laiwan_proxy 来源配置无效');
 }
 
 /**
@@ -32,7 +32,7 @@ async function feedbackOrigin(environment: NodeJS.ProcessEnv): Promise<string | 
     const address = component?.match(/isStagingEnvironment\(\)\?'(https:\/\/[^']+)'/)?.[1];
     if (address) return origin(new URL(address).origin);
   }
-  throw new Error('本轮发布包未提供可识别的 laiwan_prd 反馈来源，请明确提供运行输入');
+  throw new Error('本轮发布包未提供可识别的 laiwan_proxy 反馈来源，请明确提供运行输入');
 }
 
 const sources = new Map<string, Promise<NodeJS.ProcessEnv>>();
@@ -45,7 +45,7 @@ async function metadataHosts(base: string): Promise<string[]> {
   const failure = /**
    * 只包含预先定义的失败类别。
    * @param reason - 固定阶段或响应状态码。
-   */ (reason: string) => new Error(`读取 laiwan_prd 真实节点资料失败（${reason}），未启动响应夹具`);
+   */ (reason: string) => new Error(`读取 laiwan_proxy 真实节点资料失败（${reason}），未启动响应夹具`);
   let response: Response;
   try {
     response = await fetch(`${base}/public/v13/metadata/servers`, {

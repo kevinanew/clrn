@@ -29,7 +29,7 @@ test('清理失败不会被当作测试成功', /** 验证清理失败不会被�
  * @param context - 当前浏览器或测试上下文。 */ async context => {
   for (const response of [Response.json({ ok: false }), new Response('failed', { status: 503 })]) {
     context.mock.method(globalThis, 'fetch', /** 提供当前预设的房间接口响应。 */ async () => response);
-    await assert.rejects(deletePrivateGameRoom(room), new RegExp(`method=DELETE operation=room-delete source=laiwan_prd status=${response.status} response=received reason=${response.ok ? 'business-rejected' : 'http-error'}`));
+    await assert.rejects(deletePrivateGameRoom(room), new RegExp(`method=DELETE operation=room-delete source=laiwan_proxy status=${response.status} response=received reason=${response.ok ? 'business-rejected' : 'http-error'}`));
     context.mock.restoreAll();
   }
 });

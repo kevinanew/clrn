@@ -47,7 +47,7 @@ for (const scenario of [
     if (scenario.resets === 3) {
       await assert.rejects(accountStatus(page, session), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ (error: Error) => {
-        assert.equal(error.message, '核对已有只读账号会话失败：method=GET operation=existing-account-session source=laiwan_prd status=unavailable response=not-received reason=connection-failed');
+        assert.equal(error.message, '核对已有只读账号会话失败：method=GET operation=existing-account-session source=laiwan_proxy status=unavailable response=not-received reason=connection-failed');
         assert.equal(error.stack?.includes(authorization), false);
         return true;
       });

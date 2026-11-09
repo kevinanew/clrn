@@ -1,4 +1,4 @@
-/** 只修改日志副本；连接资料使用 laiwan_prd 逻辑标签，不影响真实请求。 */
+/** 只修改日志副本；连接资料使用 laiwan_proxy 逻辑标签，不影响真实请求。 */
 import { safeDiagnosticReason } from '../../scripts/request-failure.cjs';
 import { createHash } from 'node:crypto';
 import { isIP } from 'node:net';
@@ -29,10 +29,10 @@ export function diagnosticPath(value: unknown): string {
  * @param address - 域名、完整地址或已脱敏的节点标签。
  */
 export function diagnosticNode(address: string): string {
-  if (/^laiwan_prd-[a-f0-9]{12}$/.test(address)) return address;
+  if (/^laiwan_proxy-[a-f0-9]{12}$/.test(address)) return address;
   try {
     const host = new URL(address.includes('://') ? address : `https://${address}`).hostname.replace(/^\[|\]$/g, '');
-    return `laiwan_prd-${createHash('sha256').update(host).digest('hex').slice(0, 12)}`;
+    return `laiwan_proxy-${createHash('sha256').update(host).digest('hex').slice(0, 12)}`;
   } catch { return '[未知节点]'; }
 }
 

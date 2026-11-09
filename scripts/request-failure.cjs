@@ -83,7 +83,7 @@ function requestFailureReason(error) {
 function requestFailure(operation, reason = 'request-failed', status) {
   if (!Object.hasOwn(operations, operation)) operation = 'unknown-request';
   if (!reasons.has(reason)) reason = 'request-failed';
-  const [stage, method, source = 'laiwan_prd'] = operations[operation];
+  const [stage, method, source = 'laiwan_proxy'] = operations[operation];
   const received = method !== 'LOCAL' && method !== 'UNKNOWN'
     && Number.isInteger(status) && status >= 100 && status <= 599;
   const error = new Error(`${stage}失败：method=${method} operation=${operation} source=${source} status=${received ? status : 'unavailable'} response=${received ? 'received' : 'not-received'} reason=${reason}`);

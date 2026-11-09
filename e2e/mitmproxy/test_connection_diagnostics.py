@@ -11,6 +11,29 @@ from test_network_faults import flow
 
 class DiagnosticTests(unittest.TestCase):
     """验证连接诊断的路径语义、来源关联、容量与脱敏边界。"""
+    def test_新节点标签与浏览器一致且重复脱敏保持稳定(self):
+        """验证主机和含凭据地址使用同一指纹，重复处理不改变节点及请求关联。"""
+        node = 'laiwan_proxy-d5e6a40756c6'
+        address = 'wss://user:password@api.fixture.invalid:9443/private-entry?access_token=secret#credential'
+        for value in ('api.fixture.invalid', address, node):
+            self.assertEqual(node_name(value), node)
+            self.assertEqual(safe_text(safe_text(value)), node)
+        self.assertEqual(safe_text(f'failed {node}'), f'failed {node}')
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://api.fixture.invalid/node/v1/status')
+        diagnostics.record('proxy.response', request, candidates=[node], before=[node], after=[node],
+                           source='laiwan_proxy', status=503, response='received')
+        event = diagnostics.events[-1]
+        for key in ('candidates', 'before', 'after'):
+            self.assertEqual(event[key], [node])
+        self.assertEqual(event['node'], node)
+        self.assertEqual(event['source'], 'laiwan_proxy')
+        self.assertEqual(event['requestId'], request.id)
+        self.assertEqual(event['connectionId'], str(request.client_conn.id))
+        self.assertEqual(event['operation'], 'proxied-request')
+        self.assertEqual(event['status'], 503)
+        self.assertEqual(event['response'], 'received')
+
     def test_共用路径登记保留操作语义且重复清理不改变实体模板(self):
         """验证共用路径登记保留操作语义且重复清理不改变实体模板。"""
         for path, segments in PATH_TEMPLATES:
@@ -81,7 +104,7 @@ class DiagnosticTests(unittest.TestCase):
                 self.assertEqual(event['reason'], reason)
                 self.assertEqual(event['operation'], 'proxied-request')
                 self.assertEqual(event['method'], 'GET')
-                self.assertEqual(event['source'], 'laiwan_prd')
+                self.assertEqual(event['source'], 'laiwan_proxy')
                 self.assertEqual(event['status'], 'unavailable')
                 self.assertEqual(event['response'], 'not-received')
                 for value in ('fixture.invalid', '192.0.2.40', 'synthetic-secret', '/private'):
@@ -98,7 +121,7 @@ class DiagnosticTests(unittest.TestCase):
                       '2001:db8::20', '9443', '8443', '/private-entry'):
             self.assertNotIn(value, serialized, '错误文本也不能复述真实连接资料')
         self.assertIn(node_name('api.invalid'), serialized, '同一节点仍须能够关联')
-        self.assertEqual(node_name('api.fixture.invalid'), 'laiwan_prd-d5e6a40756c6',
+        self.assertEqual(node_name('api.fixture.invalid'), 'laiwan_proxy-d5e6a40756c6',
                          '与 TypeScript 共用此保留地址的节点标签')
         request = flow('https://api.invalid/public/v1/hall_matching/available.json?token=secret')
         diagnostics.request(request)
@@ -135,7 +158,7 @@ class DiagnosticTests(unittest.TestCase):
                 self.assertEqual(diagnostics.events[-1]['status'], 'unavailable')
                 self.assertEqual(diagnostics.events[-1]['response'], 'not-received')
                 self.assertEqual(diagnostics.events[-1]['source'],
-                                 'release-static' if match == 'matched' else 'laiwan_prd')
+                                 'release-static' if match == 'matched' else 'laiwan_proxy')
             output = json.dumps(diagnostics.snapshot())
             for value in ('127.0.0.1', '18080', '18081', 'other.invalid', 'synthetic-password'):
                 self.assertNotIn(value, output)

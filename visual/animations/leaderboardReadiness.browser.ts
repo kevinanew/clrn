@@ -89,7 +89,7 @@ test('个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连�
  * @param error - 当前操作抛出的错误。 */ error => {
         assert.match(String(error), /个人排行榜数据准备失败：method=PUT operation=leaderboard-statistics/);
         assert.match(String(error), mode === 'http' ? /status=503/ : mode === 'abort'
-          ? /source=laiwan_prd status=unavailable response=not-received/ : /status=200/);
+          ? /source=laiwan_proxy status=unavailable response=not-received/ : /status=200/);
         assert.doesNotMatch(String(error), /不得传播的响应正文|leaderboard\.invalid/);
         return true;
       });

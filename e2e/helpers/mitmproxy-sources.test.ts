@@ -56,12 +56,12 @@ test('节点失败或契约损坏时拒绝启动夹具且错误不包含来源',
       /** 返回当前损坏响应，不发起网络请求。 */
       globalThis.fetch = /** 向节点发现测试返回当前预设的响应。 */ async () => response;
       await assert.rejects(mitmproxySources({ VISUAL_API_BASE_URL: `https://failed-${index}.invalid` }),
-        { message: `读取 laiwan_prd 真实节点资料失败（${reason}），未启动响应夹具` });
+        { message: `读取 laiwan_proxy 真实节点资料失败（${reason}），未启动响应夹具` });
     }
     /** 模拟断连，底层错误不得进入公开报告。 */
     globalThis.fetch = /** 注入含连接资料的底层错误，验证对外诊断不会泄露原文。 */ async () => { throw new Error('包含连接资料的底层错误'); };
     await assert.rejects(mitmproxySources({ VISUAL_API_BASE_URL: 'https://disconnected.invalid' }),
-      { message: '读取 laiwan_prd 真实节点资料失败（传输失败），未启动响应夹具' });
+      { message: '读取 laiwan_proxy 真实节点资料失败（传输失败），未启动响应夹具' });
   } finally { globalThis.fetch = fetch; }
 });
 
