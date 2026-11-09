@@ -21,13 +21,35 @@ import { openPlayerProfile } from './playerProfileReadiness';
  */
 export async function texasGameplay(session: TableSession, proxy: TexasProxy, info: TestInfo,
   control?: { capture: typeof compareTimeline }): Promise<void> {
-  const captureTimeline = control?.capture ?? compareTimeline;
-  const { page, roomId, self, clip } = session;
-  const opponent = REPLAY_PLAYER_IDS[0];
-  const opponentPlayer = page.locator(`[data-testid^="texas-holdem-player-container-${opponent}"]:visible`).last();
+  const captureTimeline = selectedCapture(control);
+  const { page, roomId, self } = session;
   await freeze(page);
   await restore(page, proxy, roomId, self, 'preflop');
-  const table = page.getByTestId('run-game-view');
+  await captureStreets(session, proxy, info, captureTimeline);
+  await captureOperations(session, proxy, info, captureTimeline);
+  await captureShowdown(session, proxy, info, captureTimeline);
+  if (control) return;
+  await captureAfterShowdown(session, proxy, info, captureTimeline);
+}
+
+/**
+ * 独立对照只替换采样函数，缺省仍使用原截图时间线。
+ * @param control - 独立对照选项。
+ * @returns 当前采样器。
+ */
+function selectedCapture(control?: { capture: typeof compareTimeline }): typeof compareTimeline {
+  return control?.capture ?? compareTimeline;
+}
+
+/**
+ * 逐街确认真实牌面再采样翻转，不改变公共牌的等待相位。
+ * @param session - 本轮真实房间及页面。
+ * @param proxy - 隔离代理。
+ * @param info - 测试报告。
+ * @param captureTimeline - 本轮采样器。
+ */
+async function captureStreets(session: TableSession, proxy: TexasProxy, info: TestInfo, captureTimeline: typeof compareTimeline): Promise<void> {
+  const { page, roomId, clip } = session;
   for (const [street, cards] of [
     ['flop', ['ah', 'kd', '7c']], ['turn', ['ah', 'kd', '7c', '2s']],
     ['river', ['ah', 'kd', '7c', '2s', 'qs']],
@@ -48,6 +70,19 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     await captureTimeline(page, info, `texas-${street}`, page.getByTestId('community_card_name_text'),
       { clip, waitForCardSprites: '[data-testid="community_card"]' });
   }
+}
+
+/**
+ * 保留操作倒计时切换及每个独立玩家动作的完整历史。
+ * @param session - 本轮真实房间及页面。
+ * @param proxy - 隔离代理。
+ * @param info - 测试报告。
+ * @param captureTimeline - 本轮采样器。
+ */
+async function captureOperations(session: TableSession, proxy: TexasProxy, info: TestInfo, captureTimeline: typeof compareTimeline): Promise<void> {
+  const { page, roomId, self, clip } = session;
+  const opponent = REPLAY_PLAYER_IDS[0];
+  const opponentPlayer = page.locator(`[data-testid^="texas-holdem-player-container-${opponent}"]:visible`).last();
   // 实时 switch_player 使用牌局 operating_seconds，而不是消息中的 remain_operating_seconds。
   await proxy.replayTexas(roomId, { scene: 'countdown' });
   await expect.poll(/** 小步推进牌面时钟并读取当前玩家操作倒计时。 */ async () => {
@@ -76,11 +111,25 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
     await expect(actionLabel).toBeAttached();
     await captureTimeline(page, info, `texas-${action}`, actionLabel, { clip, requireMotion: true });
   }
+}
+
+/**
+ * 按原顺序采样加注、全压与摊牌，独立对照也走相同历史。
+ * @param session - 本轮真实房间及页面。
+ * @param proxy - 隔离代理。
+ * @param info - 测试报告。
+ * @param captureTimeline - 本轮采样器。
+ */
+async function captureShowdown(session: TableSession, proxy: TexasProxy, info: TestInfo, captureTimeline: typeof compareTimeline): Promise<void> {
+  const { page, roomId, self, clip } = session;
+  const opponent = REPLAY_PLAYER_IDS[0];
+  const opponentPlayer = page.locator(`[data-testid^="texas-holdem-player-container-${opponent}"]:visible`).last();
+  const table = page.getByTestId('run-game-view');
   await restore(page, proxy, roomId, self, 'river');
   await exercisePopup(page, info, { name: 'texas-raise', target: page.getByTestId('raise-bet-popup'), clip,
     open: /** 点击真实入口。 */ () => press(page, 'texas-holdem-operation-button-raise'),
     close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, 'raise-bet-cancel-button'), exitAnimated: false,
-    capture: control?.capture });
+    capture: captureTimeline });
   // 偶发牌桌重连会遮住真实入口；等待连接恢复后再采样下一段动画。
   /** 等待牌桌连接恢复，再点击真实的精确加注入口。 */
   const openAccurateRaise = async () => {
@@ -94,7 +143,7 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   };
   await exercisePopup(page, info, { name: 'texas-accurate-raise', target: page.getByTestId('accurate-bet-popup-container'), clip,
     open: openAccurateRaise,
-    close: /** 通过实际按钮或遮罩关闭。 */ () => closeTableMask(page, 'accurate-bet-popup-container'), capture: control?.capture });
+    close: /** 通过实际按钮或遮罩关闭。 */ () => closeTableMask(page, 'accurate-bet-popup-container'), capture: captureTimeline });
   await freeze(page);
   await sampleCardSprites(page, 'before-all-in-replay');
   await proxy.replayTexas(roomId, { scene: 'texas-gameplay-all_in-all_in_show_hole_card' });
@@ -116,7 +165,19 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   await waitForTexasCardSprites(page, '[data-testid="texas-holdem-player-hole-cards"]');
   await sampleCardSprites(page, 'full-history-showdown-ready');
   await captureTimeline(page, info, 'texas-showdown', table, { clip });
-  if (control) return;
+}
+
+/**
+ * 摊牌后继续保留结算、资料弹层与经验升级断言。
+ * @param session - 本轮真实房间及页面。
+ * @param proxy - 隔离代理。
+ * @param info - 测试报告。
+ * @param captureTimeline - 本轮采样器。
+ */
+async function captureAfterShowdown(session: TableSession, proxy: TexasProxy, info: TestInfo, captureTimeline: typeof compareTimeline): Promise<void> {
+  const { page, roomId, self, clip } = session;
+  const opponent = REPLAY_PLAYER_IDS[0];
+  const table = page.getByTestId('run-game-view');
   await proxy.replayTexas(roomId, { scene: 'texas-gameplay-settlement' });
   await captureTimeline(page, info, 'texas-settlement', table, { clip, times: [0, 160, 320, 800, 1600, 2800] });
   await expect(page.locator(`[data-testid^="texas-holdem-player-container-${self}"]:visible`)).toContainText('1180');
@@ -138,5 +199,4 @@ export async function texasGameplay(session: TableSession, proxy: TexasProxy, in
   }).toContain('6');
   await captureTimeline(page, info, 'texas-experience-level-up', page.getByTestId('level-up-title'),
     { clip, times: [0, 80, 160, 320, 1000, 4800, 5200, 5600] });
-  await expect(page.getByTestId('level-up-title')).not.toBeInViewport();
-}
+  await expect(page.getByTestId('level-up-title')).not.toBeInViewport();}
