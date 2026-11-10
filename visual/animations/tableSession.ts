@@ -67,9 +67,8 @@ async function recoverRoomForm(page: Page, error: unknown, attempt: number, room
  * @param page - 牌桌页面。
  * @param game - 游戏类型。
  * @param prefix - 牌桌控件前缀。
- * @param observer - 大厅观察者以加载遮罩消失为就绪条件。
  */
-export async function waitForTableConnection(page: Page, game: string, prefix: string, observer = false) {
+export async function waitForTableConnection(page: Page, game: string, prefix: string) {
   const connection = { state: 'loading' };
   let retries = 0;
   // 连接超时也会使用自定义 Alert，其按钮没有 common-alert 的业务 ID。
@@ -86,9 +85,7 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
         recordDiagnostic(page, '重试牌桌连接', { attempt: retries });
         await retry.click();
       }
-    } else if (observer
-      ? await visible(page, 'run-game-view').isVisible() && !await visible(page, 'game-splash-screen-bg').isVisible()
-      : await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
+    } else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
     return connection.state;
   }, { timeout, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
   if (connection.state === 'alert') {
@@ -97,6 +94,18 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
       .allTextContents()).join('；') || '应用显示重试弹窗';
     throw new Error(`${game} 牌桌未就绪，应用提示：${diagnosticText(message)}；详见 connection-summary`);
   }
+}
+
+/**
+ * 保留大厅入场后的单次遮罩等待，只有房主路径执行原有连接重试。
+ * @param page - 已完成入场请求的牌桌页面。
+ * @param game - 游戏类型。
+ * @param prefix - 牌桌控件前缀。
+ * @param hall - 是否为大厅观察者。
+ */
+export async function waitForTableReadiness(page: Page, game: string, prefix: string, hall: boolean) {
+  if (!hall) await waitForTableConnection(page, game, prefix);
+  await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
 }
 
 /**
@@ -145,13 +154,8 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
       /** 提供代理诊断快照，缺失时标记取证不完整。 */ async () => await proxy.diagnostics?.() ?? { events: [], dropped: 1 });
     recordDiagnostic(page, '等待牌桌连接及订阅就绪');
     const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
-    if (hall) {
-      await enterTexasRoom(page, room);
-      await waitForTableConnection(page, game, prefix, true);
-    } else {
-      await waitForTableConnection(page, game, prefix);
-    }
-    await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
+    if (hall) await enterTexasRoom(page, room);
+    await waitForTableReadiness(page, game, prefix, hall);
     if (clock === 'frozen') {
       paceNetworkClock(page);
       await freeze(page);
