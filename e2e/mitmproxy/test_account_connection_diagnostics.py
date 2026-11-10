@@ -2,7 +2,7 @@
 
 import unittest
 from types import SimpleNamespace
-from account_connection_diagnostics import account_connection_fields
+from account_connection_diagnostics import RoomConnections, account_connection_fields
 
 
 class AccountConnectionTests(unittest.TestCase):
@@ -23,6 +23,12 @@ class AccountConnectionTests(unittest.TestCase):
             before = vars(connection).copy()
             self.assertEqual(account_connection_fields(flow), {'phase': expected})
             self.assertEqual(vars(connection), before)
+        flow.request.path = '/v3/pay_action/batch/price?token=secret'
+        self.assertEqual(account_connection_fields(flow), {'phase': 'room-transport-ready'})
+        self.assertEqual(vars(connection), before)
+        flow.request.path = '/v10/texas_holdem/room/00000000-0000-4000-8000-000000000001/user_settings?token=secret'
+        self.assertEqual(account_connection_fields(flow), {'phase': 'room-transport-ready'})
+        self.assertEqual(vars(connection), before)
         flow.request.path = '/v10/profile/private-user'
         self.assertEqual(account_connection_fields(flow), {})
 
@@ -37,6 +43,52 @@ class AccountConnectionTests(unittest.TestCase):
 
         self.assertEqual(account_connection_fields(BrokenFlow()),
                          {'phase': 'account-connection-unavailable'})
+
+
+class RoomConnectionTests(unittest.TestCase):
+    """验证建房连接诊断保留真实关联、只读状态和隐私边界。"""
+
+    def test_real_connection_stages(self):
+        """flow 占位连接不参与判断，真实钩子按客户端和目标关联。"""
+        recorder = RoomConnections()
+        client = SimpleNamespace(id='client')
+        for path in ('/v1/game_log/room/game_amount?token=secret',
+                     '/v3/pay_action/batch/price?token=secret',
+                     '/v10/texas_holdem/room/00000000-0000-4000-8000-000000000001/user_settings?token=secret'):
+            flow = SimpleNamespace(client_conn=client, request=SimpleNamespace(
+                path=path, host='private.invalid', port=443))
+            recorder.observe(flow)
+            server = SimpleNamespace(id='real-server', address=('private.invalid', 443),
+                                     timestamp_start=None, timestamp_tcp_setup=None,
+                                     timestamp_tls_setup=None, tls=True, error=None)
+            data = SimpleNamespace(client=client, server=server)
+            for field, value, phase in (
+                    ('timestamp_start', None, 'connect-not-started'),
+                    ('timestamp_start', 1, 'tcp-pending'),
+                    ('timestamp_tcp_setup', 2, 'tls-pending'),
+                    ('timestamp_tls_setup', 3, 'transport-ready')):
+                setattr(server, field, value)
+                before = vars(server).copy()
+                # 用固定匿名标识验证连接阶段字段，不暴露真实节点信息。
+                result = recorder.fields(data, lambda _: 'anonymous-node')
+                self.assertEqual(result['phase'], 'room-hook-' + phase)
+                self.assertEqual(result['upstreamConnectionId'], 'real-server')
+                self.assertNotIn('private', str(result))
+                self.assertEqual(vars(server), before)
+            server.address = ('other.invalid', 443)
+            # 用固定匿名标识验证非目标地址不会产生诊断字段。
+            self.assertIsNone(recorder.fields(data, lambda _: 'anonymous-node'))
+
+    def test_unrelated_and_broken_connections_are_ignored(self):
+        """白名单之外无采集，诊断失败不传播或泄露错误正文。"""
+        recorder = RoomConnections()
+        flow = SimpleNamespace(client_conn=SimpleNamespace(id='client'), request=SimpleNamespace(
+            path='/v10/profile/private-user', host='private.invalid', port=443))
+        recorder.observe(flow)
+        recorder.observe(None)
+        self.assertEqual(recorder.targets, {})
+        # 用固定匿名标识验证空连接不会产生诊断字段。
+        self.assertIsNone(recorder.fields(None, lambda _: 'anonymous-node'))
 
 
 class AccountLifecycleTests(unittest.TestCase):
@@ -78,8 +130,6 @@ class AccountLifecycleTests(unittest.TestCase):
                                    client_conn=SimpleNamespace(id=str(index)))
             diagnostics.observe(flow)
         self.assertEqual(len(diagnostics.targets), 1000)
-
-
 class TableLifecycleTests(unittest.TestCase):
     """选线成功与独立连接失败可同时发生，必须观察实际连接而非推断全网故障。"""
     def test_table_paths_and_real_connection_stages(self):

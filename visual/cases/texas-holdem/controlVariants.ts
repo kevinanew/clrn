@@ -1,3 +1,4 @@
+import { paceNetworkClock } from '../../animations/networkClock';
 import type { Page } from '@playwright/test';
 import { expect, type TexasProxy } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
@@ -16,6 +17,8 @@ import { autoButtons, sequence, table, type Capture } from './variantSupport';
 export async function captureControls(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   room: string, capture: Capture) {
   const self = await selfId(page);
+  // 沿用面板流程的网络节奏，避免连续快进触发真实牌桌心跳超时。
+  paceNetworkClock(page);
   await freezeClock(page);
   const { snapshot, done } = sequence(page, scenario, CONTROL_STATES, capture);
   await table(page, proxy, room, self, 'check');

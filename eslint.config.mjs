@@ -7,6 +7,7 @@ import quality from './scripts/quality-rules.mjs';
 import { visualSupportPatterns, visualToolFiles, visualCheckFiles, visualCheckSupportFiles, animationSupportPatterns } from './scripts/visual-complexity-scope.mjs';
 import { e2eSupportPatterns, e2eCheckPatterns } from './scripts/e2e-complexity-scope.mjs';
 import { protocolSupportPatterns, existingOtherDiagnosticFiles } from './scripts/e2e-complexity-protocol-scope.mjs';
+import { captureSupportPatterns } from './scripts/visual-complexity-capture-scope.mjs';
 import documentation from './scripts/documentation-rule.mjs';
 
 export default [
@@ -76,7 +77,7 @@ export default [
     rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
   },
   {
-    files: [...visualSupportPatterns, ...animationSupportPatterns, ...visualCheckSupportFiles],
+    files: [...visualSupportPatterns, ...animationSupportPatterns, ...captureSupportPatterns, ...visualCheckSupportFiles],
     ignores: visualToolFiles,
     rules: { complexity: ['error', { max: 3, variant: 'classic' }] },
   },
