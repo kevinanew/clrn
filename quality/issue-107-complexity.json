@@ -24,7 +24,7 @@
       "maximum": 76
     },
     "after": {
-      "functions": 507,
+      "functions": 535,
       "violations": 0,
       "maximum": 6
     }
@@ -1762,7 +1762,7 @@
   "after": [
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 25,
+      "line": 26,
       "column": 1,
       "name": "safe_path",
       "complexity": 2,
@@ -1771,7 +1771,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 33,
+      "line": 34,
       "column": 1,
       "name": "safe_address",
       "complexity": 3,
@@ -1780,7 +1780,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 42,
+      "line": 43,
       "column": 1,
       "name": "safe_text",
       "complexity": 2,
@@ -1789,7 +1789,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 58,
+      "line": 59,
       "column": 1,
       "name": "safe_ipv6",
       "complexity": 2,
@@ -1798,7 +1798,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 67,
+      "line": 68,
       "column": 1,
       "name": "node_name",
       "complexity": 2,
@@ -1807,7 +1807,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 74,
+      "line": 75,
       "column": 1,
       "name": "candidates",
       "complexity": 3,
@@ -1816,7 +1816,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 194,
+      "line": 203,
       "column": 1,
       "name": "valid_path",
       "complexity": 3,
@@ -1825,7 +1825,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 201,
+      "line": 210,
       "column": 1,
       "name": "matching_path",
       "complexity": 3,
@@ -1834,7 +1834,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 209,
+      "line": 218,
       "column": 1,
       "name": "template_matches",
       "complexity": 3,
@@ -1843,7 +1843,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 216,
+      "line": 225,
       "column": 1,
       "name": "segment_matches",
       "complexity": 2,
@@ -1852,7 +1852,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 221,
+      "line": 230,
       "column": 1,
       "name": "hashed_host",
       "complexity": 3,
@@ -1861,7 +1861,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 227,
+      "line": 236,
       "column": 1,
       "name": "candidate_names",
       "complexity": 3,
@@ -1870,7 +1870,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 232,
+      "line": 241,
       "column": 1,
       "name": "sanitized_text",
       "complexity": 1,
@@ -1879,7 +1879,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 237,
+      "line": 246,
       "column": 1,
       "name": "sanitized_value",
       "complexity": 3,
@@ -1888,7 +1888,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 246,
+      "line": 255,
       "column": 1,
       "name": "sanitized_list",
       "complexity": 2,
@@ -1897,7 +1897,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 251,
+      "line": 260,
       "column": 1,
       "name": "sanitized_scalar",
       "complexity": 2,
@@ -1906,7 +1906,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 256,
+      "line": 265,
       "column": 1,
       "name": "sanitized_entry",
       "complexity": 2,
@@ -1915,7 +1915,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 261,
+      "line": 270,
       "column": 1,
       "name": "node_names",
       "complexity": 2,
@@ -1924,7 +1924,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 266,
+      "line": 275,
       "column": 1,
       "name": "empty_nodes",
       "complexity": 2,
@@ -1933,7 +1933,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 86,
+      "line": 87,
       "column": 5,
       "name": "__init__",
       "complexity": 1,
@@ -1942,16 +1942,16 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 92,
+      "line": 94,
       "column": 5,
       "name": "server_event",
-      "complexity": 2,
+      "complexity": 3,
       "limit": 3,
       "qualifiedName": "ConnectionDiagnostics.server_event"
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 101,
+      "line": 106,
       "column": 5,
       "name": "server_connect",
       "complexity": 1,
@@ -1960,7 +1960,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 105,
+      "line": 110,
       "column": 5,
       "name": "server_connected",
       "complexity": 1,
@@ -1969,7 +1969,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 109,
+      "line": 114,
       "column": 5,
       "name": "server_connect_error",
       "complexity": 1,
@@ -1978,7 +1978,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 113,
+      "line": 118,
       "column": 5,
       "name": "server_disconnected",
       "complexity": 1,
@@ -1987,7 +1987,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 117,
+      "line": 122,
       "column": 5,
       "name": "record",
       "complexity": 3,
@@ -1996,7 +1996,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 130,
+      "line": 136,
       "column": 5,
       "name": "append_event",
       "complexity": 2,
@@ -2005,7 +2005,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 136,
+      "line": 142,
       "column": 5,
       "name": "record_candidates",
       "complexity": 3,
@@ -2014,7 +2014,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 146,
+      "line": 152,
       "column": 5,
       "name": "snapshot",
       "complexity": 1,
@@ -2023,7 +2023,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 150,
+      "line": 156,
       "column": 5,
       "name": "request",
       "complexity": 3,
@@ -2032,7 +2032,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 159,
+      "line": 166,
       "column": 5,
       "name": "response",
       "complexity": 2,
@@ -2041,7 +2041,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 168,
+      "line": 175,
       "column": 5,
       "name": "error",
       "complexity": 3,
@@ -2050,7 +2050,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 174,
+      "line": 181,
       "column": 5,
       "name": "websocket_start",
       "complexity": 1,
@@ -2059,7 +2059,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 178,
+      "line": 185,
       "column": 5,
       "name": "websocket_end",
       "complexity": 1,
@@ -2068,7 +2068,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 185,
+      "line": 194,
       "column": 5,
       "name": "control",
       "complexity": 2,
@@ -2077,7 +2077,7 @@
     },
     {
       "file": "e2e/mitmproxy/connection_diagnostics.py",
-      "line": 52,
+      "line": 53,
       "column": 19,
       "name": "<lambda>",
       "complexity": 1,
@@ -4048,7 +4048,16 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 14,
+      "line": 15,
+      "column": 5,
+      "name": "test_room_request_correlates_real_connection_without_changing_result",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_room_request_correlates_real_connection_without_changing_result"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 34,
       "column": 5,
       "name": "test_新节点标签与浏览器一致且重复脱敏保持稳定",
       "complexity": 3,
@@ -4057,7 +4066,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 37,
+      "line": 57,
       "column": 5,
       "name": "test_共用路径登记保留操作语义且重复清理不改变实体模板",
       "complexity": 3,
@@ -4066,7 +4075,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 45,
+      "line": 65,
       "column": 5,
       "name": "test_相对路径与事件名不保留任意连接资料或凭据",
       "complexity": 3,
@@ -4075,7 +4084,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 70,
+      "line": 90,
       "column": 5,
       "name": "test_原因只识别已知错误首部而不扫描地址凭据或后续诊断",
       "complexity": 3,
@@ -4084,7 +4093,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 107,
+      "line": 127,
       "column": 5,
       "name": "test_错误中的连接地址与主机不进入公开诊断",
       "complexity": 2,
@@ -4093,7 +4102,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 125,
+      "line": 145,
       "column": 5,
       "name": "test_严格来源匹配包含协议和端口且响应编号只能来自本轮服务",
       "complexity": 3,
@@ -4102,7 +4111,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 140,
+      "line": 160,
       "column": 5,
       "name": "test_错误与服务端关闭文本不记录未知凭据或任意业务正文",
       "complexity": 2,
@@ -4111,7 +4120,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 154,
+      "line": 174,
       "column": 5,
       "name": "test_请求地址实际连接及模拟响应分别核验且不猜测无响应状态",
       "complexity": 3,
@@ -4120,7 +4129,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 173,
+      "line": 193,
       "column": 5,
       "name": "test_两个认证控制入口不进入业务请求响应或错误诊断",
       "complexity": 2,
@@ -4129,7 +4138,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 185,
+      "line": 205,
       "column": 5,
       "name": "test_来源分类与主机脱敏",
       "complexity": 3,
@@ -4138,7 +4147,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 197,
+      "line": 217,
       "column": 5,
       "name": "test_节点资料不保存地址或其他响应字段",
       "complexity": 2,
@@ -4147,7 +4156,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 212,
+      "line": 232,
       "column": 5,
       "name": "test_订阅确认与关闭仍可关联",
       "complexity": 2,
@@ -4156,7 +4165,16 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 234,
+      "line": 254,
+      "column": 5,
+      "name": "test_websocket_close_source",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "DiagnosticTests.test_websocket_close_source"
+    },
+    {
+      "file": "e2e/mitmproxy/test_connection_diagnostics.py",
+      "line": 266,
       "column": 5,
       "name": "test_容量边界与错误脱敏",
       "complexity": 2,
@@ -4165,7 +4183,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 245,
+      "line": 277,
       "column": 5,
       "name": "check_path_template",
       "complexity": 3,
@@ -4174,7 +4192,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 252,
+      "line": 284,
       "column": 5,
       "name": "check_known_path",
       "complexity": 1,
@@ -4183,7 +4201,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 258,
+      "line": 290,
       "column": 5,
       "name": "check_release_origin",
       "complexity": 3,
@@ -4192,7 +4210,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 282,
+      "line": 314,
       "column": 5,
       "name": "check_actual_connection",
       "complexity": 3,
@@ -4201,7 +4219,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 313,
+      "line": 345,
       "column": 5,
       "name": "record_source",
       "complexity": 3,
@@ -4210,7 +4228,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 322,
+      "line": 354,
       "column": 5,
       "name": "assert_hidden",
       "complexity": 2,
@@ -4219,7 +4237,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 327,
+      "line": 359,
       "column": 5,
       "name": "expected_identifier",
       "complexity": 2,
@@ -4228,7 +4246,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_connection_diagnostics.py",
-      "line": 331,
+      "line": 363,
       "column": 5,
       "name": "assert_observed_status",
       "complexity": 2,
@@ -4642,7 +4660,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 138,
+      "line": 139,
       "column": 5,
       "name": "check_read_failure",
       "complexity": 3,
@@ -4651,7 +4669,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 150,
+      "line": 151,
       "column": 5,
       "name": "check_release_connections",
       "complexity": 3,
@@ -4660,7 +4678,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 166,
+      "line": 168,
       "column": 5,
       "name": "check_proxy_connections",
       "complexity": 2,
@@ -4669,7 +4687,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 179,
+      "line": 181,
       "column": 5,
       "name": "read_twice",
       "complexity": 2,
@@ -4678,7 +4696,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 191,
+      "line": 193,
       "column": 5,
       "name": "check_processes",
       "complexity": 3,
@@ -4687,7 +4705,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 196,
+      "line": 198,
       "column": 5,
       "name": "process_failure_reason",
       "complexity": 2,
@@ -4696,7 +4714,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 200,
+      "line": 202,
       "column": 5,
       "name": "attempt",
       "complexity": 2,
@@ -4705,7 +4723,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 208,
+      "line": 210,
       "column": 5,
       "name": "streams_closed",
       "complexity": 2,
@@ -4714,7 +4732,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 214,
+      "line": 216,
       "column": 5,
       "name": "request_events",
       "complexity": 3,
@@ -4741,7 +4759,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 129,
+      "line": 130,
       "column": 23,
       "name": "<lambda>",
       "complexity": 1,
@@ -4750,7 +4768,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 152,
+      "line": 154,
       "column": 23,
       "name": "<lambda>",
       "complexity": 2,
@@ -4759,7 +4777,7 @@
     },
     {
       "file": "e2e/mitmproxy/test_release_lifecycle_integration.py",
-      "line": 175,
+      "line": 177,
       "column": 23,
       "name": "<lambda>",
       "complexity": 1,
@@ -6022,13 +6040,13 @@
       "line": 65,
       "column": 1,
       "name": "extend_scope",
-      "complexity": 2,
+      "complexity": 3,
       "limit": 6,
       "qualifiedName": "extend_scope"
     },
     {
       "file": "scripts/e2e-proxy-complexity.py",
-      "line": 71,
+      "line": 74,
       "column": 1,
       "name": "main",
       "complexity": 3,
@@ -6208,7 +6226,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 64,
+      "line": 67,
       "column": 5,
       "name": "test_checker_tool_six_pass_seven_fail",
       "complexity": 1,
@@ -6217,7 +6235,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 68,
+      "line": 71,
       "column": 5,
       "name": "test_nested_async_class_lambda_and_defaults_are_independent",
       "complexity": 2,
@@ -6226,7 +6244,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 87,
+      "line": 90,
       "column": 5,
       "name": "test_no_assert_uses_radon_decisions",
       "complexity": 1,
@@ -6235,7 +6253,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 95,
+      "line": 98,
       "column": 5,
       "name": "test_adjacent_test_and_transitive_extraction_inherit_three",
       "complexity": 2,
@@ -6244,7 +6262,43 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 104,
+      "line": 107,
+      "column": 5,
+      "name": "prepare_extraction",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.prepare_extraction"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 122,
+      "column": 5,
+      "name": "test_extracted_modules_and_adjacent_tests_three_pass_four_fail",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_extracted_modules_and_adjacent_tests_three_pass_four_fail"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 128,
+      "column": 5,
+      "name": "test_extracted_modules_and_adjacent_tests_parse_failure_is_nonzero",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_extracted_modules_and_adjacent_tests_parse_failure_is_nonzero"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 134,
+      "column": 5,
+      "name": "check_parse_failure",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.check_parse_failure"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 146,
       "column": 5,
       "name": "test_noqa_and_configuration_cannot_disable_cli",
       "complexity": 1,
@@ -6253,7 +6307,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 112,
+      "line": 154,
       "column": 5,
       "name": "test_cli_success_is_a_nonempty_function_report",
       "complexity": 1,
@@ -6262,7 +6316,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 118,
+      "line": 160,
       "column": 5,
       "name": "test_missing_dependency_is_nonzero",
       "complexity": 1,
@@ -6271,7 +6325,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 124,
+      "line": 166,
       "column": 5,
       "name": "test_parse_failure_is_nonzero",
       "complexity": 1,
@@ -6280,7 +6334,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 131,
+      "line": 173,
       "column": 5,
       "name": "test_missing_required_file_is_nonzero",
       "complexity": 1,
@@ -6289,7 +6343,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 136,
+      "line": 178,
       "column": 5,
       "name": "test_empty_scan_is_rejected",
       "complexity": 2,
@@ -6298,7 +6352,7 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 143,
+      "line": 185,
       "column": 5,
       "name": "test_empty_task_with_nonempty_checker_is_nonzero",
       "complexity": 2,
@@ -6307,21 +6361,219 @@
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 151,
+      "line": 193,
       "column": 5,
       "name": "test_actual_scope_is_enforced_without_mutation",
-      "complexity": 2,
+      "complexity": 3,
       "limit": 3,
       "qualifiedName": "ProxyComplexityTests.test_actual_scope_is_enforced_without_mutation"
     },
     {
       "file": "scripts/test_e2e_proxy_complexity.py",
-      "line": 159,
+      "line": 202,
       "column": 5,
-      "name": "test_existing_lint_python_entry_blocks_over_limit_support",
+      "name": "prepare_lint_repository",
       "complexity": 2,
       "limit": 3,
-      "qualifiedName": "ProxyComplexityTests.test_existing_lint_python_entry_blocks_over_limit_support"
+      "qualifiedName": "ProxyComplexityTests.prepare_lint_repository"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 212,
+      "column": 5,
+      "name": "test_existing_lint_python_entry_blocks_over_limit_support_and_adjacent_tests",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.test_existing_lint_python_entry_blocks_over_limit_support_and_adjacent_tests"
+    },
+    {
+      "file": "scripts/test_e2e_proxy_complexity.py",
+      "line": 219,
+      "column": 5,
+      "name": "check_lint_rejection",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "ProxyComplexityTests.check_lint_rejection"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 6,
+      "column": 1,
+      "name": "is_account_path",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "is_account_path"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 12,
+      "column": 1,
+      "name": "transport_phase",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "transport_phase"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 21,
+      "column": 1,
+      "name": "tls_phase",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "tls_phase"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 28,
+      "column": 1,
+      "name": "connection_fields",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "connection_fields"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 37,
+      "column": 1,
+      "name": "account_connection_fields",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "account_connection_fields"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 80,
+      "column": 1,
+      "name": "is_room_path",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "is_room_path"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 88,
+      "column": 1,
+      "name": "connection_reason",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "connection_reason"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 47,
+      "column": 5,
+      "name": "__init__",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "RoomConnections.__init__"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 51,
+      "column": 5,
+      "name": "observe",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "RoomConnections.observe"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 59,
+      "column": 5,
+      "name": "remember",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "RoomConnections.remember"
+    },
+    {
+      "file": "e2e/mitmproxy/account_connection_diagnostics.py",
+      "line": 65,
+      "column": 5,
+      "name": "fields",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "RoomConnections.fields"
+    },
+    {
+      "file": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+      "line": 11,
+      "column": 5,
+      "name": "test_transport_stages_and_unrelated_paths",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "AccountConnectionTests.test_transport_stages_and_unrelated_paths"
+    },
+    {
+      "file": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+      "line": 29,
+      "column": 5,
+      "name": "test_probe_transport_stages",
+      "complexity": 2,
+      "limit": 3,
+      "qualifiedName": "AccountConnectionTests.test_probe_transport_stages"
+    },
+    {
+      "file": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+      "line": 45,
+      "column": 5,
+      "name": "test_diagnostic_failure_is_contained",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "AccountConnectionTests.test_diagnostic_failure_is_contained"
+    },
+    {
+      "file": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+      "line": 61,
+      "column": 5,
+      "name": "test_real_connection_stages",
+      "complexity": 3,
+      "limit": 3,
+      "qualifiedName": "RoomConnectionTests.test_real_connection_stages"
+    },
+    {
+      "file": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+      "line": 90,
+      "column": 5,
+      "name": "test_unrelated_and_broken_connections_are_ignored",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "RoomConnectionTests.test_unrelated_and_broken_connections_are_ignored"
+    },
+    {
+      "file": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+      "line": 50,
+      "column": 13,
+      "name": "request",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "AccountConnectionTests.test_diagnostic_failure_is_contained.BrokenFlow.request"
+    },
+    {
+      "file": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+      "line": 99,
+      "column": 49,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "RoomConnectionTests.test_unrelated_and_broken_connections_are_ignored.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+      "line": 81,
+      "column": 48,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "RoomConnectionTests.test_real_connection_stages.<lambda>"
+    },
+    {
+      "file": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+      "line": 88,
+      "column": 53,
+      "name": "<lambda>",
+      "complexity": 1,
+      "limit": 3,
+      "qualifiedName": "RoomConnectionTests.test_real_connection_stages.<lambda>"
     }
   ],
   "validation": {
@@ -6364,6 +6616,268 @@
     ],
     "environmentSetup": "uv venv --python 3.12.12 /tmp/clrn-issue107-venv; uv pip install --python /tmp/clrn-issue107-venv/bin/python radon==6.0.1 mitmproxy==12.2.3 ruff==0.15.12; npm ci --ignore-scripts; npx playwright install chromium",
     "runtimeScope": "已验证本机真实 mitmdump、生产 Node 发布服务和 Chromium 浏览器；未执行线上账号、固定游戏构建或真实设备 E2E。",
-    "fullTestSuiteRun": false
+    "fullTestSuiteRun": false,
+    "recordScope": "prFix 之外是本次修复前保存的历史验收记录；本轮结果、失败尝试及后续动作以 prFix 为准。",
+    "prFix": {
+      "date": "2026-11-10",
+      "cwd": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6",
+      "environment": {
+        "UV_CACHE_DIR": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6/.ttyctl/uv-cache",
+        "UV_TOOL_DIR": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6/.ttyctl/uv-cache/tools",
+        "UV_OFFLINE": "true"
+      },
+      "changes": [
+        "scripts/e2e-proxy-complexity.py",
+        "scripts/test_e2e_proxy_complexity.py",
+        "quality/issue-107-complexity.json"
+      ],
+      "finding": "F1/F2 是同一项 P2 本PR负责缺陷：递归依赖未同步加入相邻测试；已修复，未处理范围外 P3。",
+      "beforeFixReproduction": {
+        "headFunctions": 520,
+        "missingTest": "e2e/mitmproxy/test_account_connection_diagnostics.py",
+        "directRadonComplexity": 4,
+        "reportedViolations": 0,
+        "temporaryRegressionCommand": "uv run --no-project --python 3.12.12 --with radon==6.0.1 python -m unittest discover -s scripts -p 'test_e2e_proxy_complexity.py' -k extracted -v",
+        "exitCode": 1,
+        "expectedFailures": 8
+      },
+      "gateCoverage": {
+        "testBudget": "3 pass / 4 fail",
+        "toolBudget": "6 pass / 7 fail",
+        "arbitraryExtractionPaths": 6,
+        "parseErrorPaths": 6,
+        "actualLintRejections": 7,
+        "includes": [
+          "任意名称模块及其相邻测试",
+          "多层目录和相对导入",
+          "相邻测试导入的辅助实现及其测试",
+          "嵌套/异步/类/lambda/default",
+          "noqa",
+          "缺失依赖",
+          "缺失必需文件",
+          "空扫描"
+        ],
+        "supportMaximum": 3,
+        "toolMaximum": 6
+      },
+      "checks": [
+        {
+          "command": "uv run --no-project --python 3.12.12 --with radon==6.0.1 python -m unittest discover -s scripts -p 'test_e2e_proxy_complexity.py' -v",
+          "exitCode": 0,
+          "passed": 16,
+          "skipped": 0
+        },
+        {
+          "command": "npm run lint:python",
+          "exitCode": 0,
+          "proxyFunctions": 535,
+          "proxyViolations": 0
+        },
+        {
+          "command": "node --test scripts/e2e-proxy-complexity.test.mjs scripts/python-tool-complexity.test.mjs",
+          "exitCode": 0,
+          "passed": 3,
+          "skipped": 0
+        },
+        {
+          "command": "uv run --no-project --python 3.12.12 --with mitmproxy==12.2.3 python -m unittest discover -s visual/cases/texas-holdem/mitmproxy -p 'test_*.py'",
+          "exitCode": 0,
+          "passed": 43,
+          "skipped": 0
+        },
+        {
+          "command": "uv run --no-project --python 3.12.12 --with mitmproxy==12.2.3 python -m unittest discover -s visual/cases/zhajinhua/mitmproxy -p 'test_*.py'",
+          "exitCode": 0,
+          "passed": 22,
+          "skipped": 0
+        },
+        {
+          "command": "node --import tsx --test e2e/cases/settings-006-game-record/diagnostics.test.ts",
+          "exitCode": 0,
+          "passed": 1,
+          "skipped": 0
+        },
+        {
+          "command": "npm run typecheck",
+          "exitCode": 0
+        },
+        {
+          "command": "node node_modules/@playwright/test/cli.js test --config e2e/cases/playwright.config.ts settings-006-game-record --list --reporter=list",
+          "exitCode": 0,
+          "collected": 2,
+          "scope": "桌面与手机，仅收集，没有运行浏览器或真实初始化。"
+        },
+        {
+          "command": "VISUAL_LOCALES=all node node_modules/@playwright/test/cli.js test --config visual/playwright.config.ts cases/texas-holdem cases/zhajinhua --list --reporter=list",
+          "exitCode": 0,
+          "collected": 72,
+          "scope": "zh-Hans、zh-Hant、en 各桌面/手机 12 项，仅收集，不代表画面验收。"
+        },
+        {
+          "command": "git diff --check",
+          "exitCode": 0
+        }
+      ],
+      "independentReportVerification": {
+        "beforeFunctions": 192,
+        "beforeViolations": 75,
+        "result": "全部旧逐函数条目与 beforeRevision 原始源码重新测量一致；after 由最终工作树重新生成。"
+      },
+      "replayEquivalence": {
+        "cases": 134,
+        "result": "passed",
+        "comparison": "f5edd3b3962ecd4006d4f90e3e8ab82a463f5682",
+        "ignoredFields": [
+          "sent_at"
+        ],
+        "scope": "完整返回对象，全部街道/操作人/布局和目录参数组合；不是运行设备或弱网性能验收。"
+      },
+      "environmentAttempts": [
+        {
+          "command": "uv run --no-project --python 3.12.12 --with radon==6.0.1 python -m unittest discover -s scripts -p 'test_e2e_proxy_complexity.py' -v",
+          "cwd": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6",
+          "UV_CACHE_DIR": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6/.ttyctl/uv-cache",
+          "UV_TOOL_DIR": "unset",
+          "exitCode": 1,
+          "childCommand": "npm run lint:python -> uvx --from ruff==0.15.12 ruff check --no-cache --ignore-noqa --config lint.mccabe.max-complexity=6 scripts/extract-web-package.py scripts/python-tool-complexity.py",
+          "childExitCode": 2,
+          "error": "Could not create temporary file: Operation not permitted (os error 1) at /Users/kevina/.local/share/uv/tools/.tmpvqLWND",
+          "childCwd": "测试创建的 clrn-proxy-complexity-* 临时目录，原始输出未包含完整名称，测试结束已自动清理。",
+          "resolved": true
+        },
+        {
+          "command": "export UV_TOOL_DIR=\"$UV_CACHE_DIR/tools\"\nuv run --no-project --python 3.12.12 --with radon==6.0.1 python -m unittest discover -s scripts -p 'test_e2e_proxy_complexity.py' -v",
+          "cwd": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6",
+          "UV_CACHE_DIR": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6/.ttyctl/uv-cache",
+          "exitCode": 1,
+          "childExitCode": 2,
+          "error": "pypi.org/simple/ruff/ DNS lookup failed",
+          "resolved": true
+        },
+        {
+          "command": "export UV_TOOL_DIR=\"$UV_CACHE_DIR/tools\"\nuvx --from ruff==0.15.12 ruff --version",
+          "cwd": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6",
+          "UV_CACHE_DIR": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6/.ttyctl/uv-cache",
+          "exitCode": 2,
+          "error": "pypi.org/simple/ruff/ DNS lookup failed",
+          "resolved": true
+        },
+        {
+          "command": "uv run --no-project --python 3.12.12 --with radon==6.0.1 python scripts/e2e-proxy-complexity.py",
+          "cwd": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6",
+          "UV_CACHE_DIR": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6/.ttyctl/uv-cache",
+          "exitCode": 2,
+          "error": "pypi.org/simple/radon/ DNS lookup failed",
+          "resolved": true
+        },
+        {
+          "command": "uv run --no-project --python 3.12.12 --with radon==6.0.1 --with mitmproxy==12.2.3 python -m unittest discover -s e2e/mitmproxy -p 'test_*.py'",
+          "cwd": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6",
+          "environment": {
+            "UV_CACHE_DIR": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6/.ttyctl/uv-cache",
+            "UV_TOOL_DIR": "/Users/kevina/orca/workspaces/clrn/e2e-python-3-6/.ttyctl/uv-cache/tools",
+            "UV_OFFLINE": "true"
+          },
+          "exitCode": 1,
+          "run": 93,
+          "passed": 88,
+          "failures": 1,
+          "errors": 4,
+          "skipped": 0,
+          "error": "4 项 Python ThreadingHTTPServer socket.bind 触发 PermissionError [Errno 1] Operation not permitted；Release Node 服务 1 项因 listen EPERM 提前退出，reason=listen-denied。",
+          "blockedTests": [
+            "test_release_lifecycle_integration.ReleaseLifecycleIntegrationTests.test_响应后关闭上游不复用旧连接且新建连接失败不能伪造HTTP状态",
+            "test_response_overrides_integration.LiveOverrideTests.test_五个代理保留全部候选节点及真实健康结果",
+            "test_settlement_preflight.SettlementPreflightTests.test_上游预检无响应时当前房间仍通过本地预检读取空榜",
+            "test_settlement_preflight.SettlementPreflightTests.test_不匹配预检仍依赖上游且真实业务失败保持失败",
+            "test_settlement_preflight.SettlementPreflightTests.test_独立依赖布局均能启动真实浏览器并保留预检负例"
+          ],
+          "resolved": false
+        }
+      ],
+      "environmentRecovery": "保持启动 UV_CACHE_DIR 不变，仅将 UV_TOOL_DIR 放在该目录下；把 /Users/kevina/.cache/uv 已有 Ruff 0.15.12 的对应 wheel 元数据和解包内容复制到原缓存，再设 UV_OFFLINE=true；未更改版本、检查入口、测试初始化或沙箱权限，最终门禁全部通过。",
+      "historicalRuntimeEvidence": [
+        {
+          "url": "https://github.com/kevinanew/clrn/actions/runs/42739907811/job/129581881578",
+          "readStatus": "原始 job 日志读取成功",
+          "sourceHead": "8425d7c83923075a84a3f5e28c4ad8ae3312b3b9",
+          "applicationCommit": "5d11c3e118f47538497cae30cca1799bd69d7977",
+          "result": "SETTINGS-006 桌面 02:18:31Z、手机 02:24:54Z 首次通过；全套 119 passed、1 flaky，不证明间歇性故障根因消失。"
+        },
+        {
+          "url": "https://github.com/kevinanew/clrn/actions/runs/42739916338/job/129580395850",
+          "readStatus": "原始 job 日志读取成功",
+          "sourceHead": "ee581efa81246f8340528616cf1419887466f038 (8425d7c merged into f5edd3b)",
+          "applicationCommit": "5d11c3e118f47538497cae30cca1799bd69d7977",
+          "result": "七组：六组 3 passed、一组 2 passed。"
+        },
+        {
+          "url": "https://github.com/kevinanew/clrn/actions/runs/42739916389",
+          "readStatus": "jobs 与步骤结果读取成功，未重新下载七组原始日志或画面附件",
+          "result": "七个动画关键帧 job 及各自手机/桌面连续三次比较步骤均 success。"
+        }
+      ],
+      "evidenceValidity": "本轮没有修改 e2e/ 或 visual/ 的任何源码；已重新核对历史报告的检出提交及应用构建；这些是旧 HEAD 的代表场景证据，不能冒充本轮未提交修复的完整 CI。当前静态报告由 sourceSha256 绑定到实际工作树。",
+      "fullDiffReview": {
+        "base": "f5edd3b3962ecd4006d4f90e3e8ab82a463f5682",
+        "result": "复查完整 PR diff 的检查器/接线/历史清单、代理拆分、业务断言、真实透传及错误/清理/账号和房间隔离；对视口和语言检查相关配置与三语双视口用例收集，未发现其他可独立确认的本PR P0-P2 或 base P1。未改阈值、时序、重试、视觉基准或产品契约。"
+      },
+      "pending": [
+        {
+          "task": "真实监听端口/mitmdump/Release 生命周期/浏览器预检五项集成验收",
+          "blocker": "已验证的本机沙箱 bind/listen EPERM，未请求或尝试解除沙箱。",
+          "nextAction": "由宿主或远端 CI 在可监听环境使用相同锁定依赖重新运行上述 93 项命令，要求零跳过；不得使用测试开关绕过初始化。"
+        },
+        {
+          "task": "最终候选完整门禁与独立复审",
+          "blocker": "用户未传 -t/--test，Agent 未执行本地完整 make test 或同等全量测试；宿主保留 make lint 和提交钩子。",
+          "nextAction": "交宿主执行 make lint/提交钩子，并由远端 CI 对最终候选执行完整门禁；独立复审确认 F1/F2 已解决及最终证据有效性。"
+        }
+      ],
+      "fullTestSuiteRun": false,
+      "weakNetworkOrMultiPlatformPerformanceRun": false,
+      "performanceScope": "Issue #107 未要求专门弱网/多平台性能验收；未用单元或场景收集替代此类验收。",
+      "committedOrPushed": false
+    }
+  },
+  "afterRevision": {
+    "head": "8425d7c83923075a84a3f5e28c4ad8ae3312b3b9",
+    "uncommittedWorkingTree": true,
+    "sourceSha256": {
+      "e2e/mitmproxy/account_connection_diagnostics.py": "e99400b778ba3fd9044eda76bb5fc59e64d28015026dde5a5e37fd8089deb393",
+      "e2e/mitmproxy/connection_diagnostics.py": "3d2a260dbf15e2e668b2d4235af958cd1bb09053dd7f9ed7bf6086a36e53a210",
+      "e2e/mitmproxy/diagnostic_release.py": "a65974653f4230e9f9469380abdd763c7c687b86dc2fd554f8ff325148657a03",
+      "e2e/mitmproxy/diagnostic_socket.py": "566447b2ea160faf92c2ee0d749cc55b5c6b9717ca1092f6bc693676ee45230e",
+      "e2e/mitmproxy/diagnostic_test_server.py": "1f2fef560bfef8f8d53ac5de0856f88eae8bb834f5cf264716aa6a9eaccbdf8e",
+      "e2e/mitmproxy/network_faults.py": "4101d0624c4ae0a9d8a91f9e3c5eac1d629e3875e3d7feab22806396dc3112f0",
+      "e2e/mitmproxy/proxy_test_support.py": "9a236c12d3335d3db95d81086011e21d7f353aa551b408be977374b125e9714c",
+      "e2e/mitmproxy/replay_scenes.py": "bbeaacaaac62fe428dc9855ab2d5fcdfe5fd19964da61f8c094f7bd0682e77e9",
+      "e2e/mitmproxy/replay_table.py": "7aaa074c6db5247d831fc6de816e5bff304e00b452a8618d049ab64cd7061216",
+      "e2e/mitmproxy/response_overrides.py": "b4c06f5c4c8f35e7f37ad94145f6c761957335562faed869dd2223daac08fdaf",
+      "e2e/mitmproxy/scenario_control.py": "71efbe70fa2d8c0bfb772ae0f4ffd498c1a0d6b276b1294ed9da92ddbaa1111d",
+      "e2e/mitmproxy/scenario_data.py": "6b5eb179c2fd5cd67cc2902e3218a9195653308a38f1504cbf7de5a1d348240d",
+      "e2e/mitmproxy/scenario_fixtures.py": "de2e249d7372b17b7f30ee85153bd1e21375d14f25f6874de324bfb6c9e59fa0",
+      "e2e/mitmproxy/scenario_http.py": "aded464e6a34f5ff4f7ee9ffee1e27a68f8148e655e19649ca1dbb64cbf21eb5",
+      "e2e/mitmproxy/scenario_response.py": "9ce179114474cfa1df64a3faecbfa54eaacb4a64973ad3304aa665b671646b12",
+      "e2e/mitmproxy/scenario_socket.py": "dcb525e6a50555363ee01e037f0eab69f50797c9c224b78ab73c331d13282ddb",
+      "e2e/mitmproxy/test_account_connection_diagnostics.py": "55c179c95637ff74f9a18b0177fb940f734803ca89c4db7047b6f035ba316f2f",
+      "e2e/mitmproxy/test_connection_diagnostics.py": "0ed06b227b22673121b62b558d7a0c93721ae34e765023699e839cbea58e2c40",
+      "e2e/mitmproxy/test_network_faults.py": "fe55b0875a5fd563b16f4887e1741db7f50d6c8d153561521847d1fd68b34dcb",
+      "e2e/mitmproxy/test_payment_isolation.py": "606cc8bf24ce3877af39ebd349a7816e86a9a6ee13e46fca81a563d99346fcba",
+      "e2e/mitmproxy/test_release_connection_lifecycle.py": "d20a1b5b989cae7c28f50d00afe11d88ce3712712422aeae831df1b0faa3402e",
+      "e2e/mitmproxy/test_release_http1_close.py": "02e65054f6163a52640eb491875f16004dad838e83599d4539fc2ec3aefe28a8",
+      "e2e/mitmproxy/test_release_lifecycle_integration.py": "85382937dd2d4741e490c618580255569fa9d22c6d2d59664f96260af0f9b371",
+      "e2e/mitmproxy/test_replay_scenes.py": "358487cc32a649c43f3a6042b619c8f8d61a6b231a2ad3a20202e54b11c1ede0",
+      "e2e/mitmproxy/test_response_overrides.py": "6af8245861791ab89c28d85b48fa5bc2f2531c0ef8519d1f2bc9241e224d13cf",
+      "e2e/mitmproxy/test_response_overrides_integration.py": "ce5c7d94fb153aee7f83c46651fe4609749ab5836c64e7042a9b6c2b545c89e4",
+      "e2e/mitmproxy/test_scenario_fixtures.py": "bbbc6764f2bbf9868b4bca91419ff5eb554481f1cf085ad3148a6b2f9f43fe3f",
+      "e2e/mitmproxy/test_settlement_browser_launcher.py": "f8e3459c75952df7b280ecb19022ada3e5e5bcd325c4af9aea3b2571c61e9348",
+      "e2e/mitmproxy/test_settlement_preflight.py": "067544bae20370d86da09105c3467f65a7e633115a995ca14bd5b8b57a4900c2",
+      "e2e/mitmproxy/test_wallet_statements.py": "996fe150d4fb523be18104683ba24d04bf3a1fa844a4b466f0e7ecc4cea2d901",
+      "e2e/mitmproxy/visual_control.py": "5824988e84210b1880133457a97296fffa9d1fca732c75650e336dba9c66613b",
+      "scripts/e2e-proxy-complexity.py": "44c03a8f18ecb50f1b8615a7195ae997ece7cf1284df0b14e96eb623fd806f0d",
+      "scripts/python-tool-complexity.py": "90a2599a0e4ff98ffa2f1442841092cb586190d2d6445dd5a0a62c164b8cc382",
+      "scripts/test_e2e_proxy_complexity.py": "bb6dd16e1e0478f456a923e1f2c8e9145dec1801e0047f98c8043824237488f4"
+    }
   }
 }

@@ -56,10 +56,13 @@ class ProxyComplexityTests(unittest.TestCase):
 
     def check_budget(self, filename, values):
         """每个预算边界在相同扫描范围内独立核验。"""
-        for value, count in values:
-            self.write(filename, probe(value))
-            self.assertEqual(len(self.invalid()), count, (filename, value))
-        self.write(filename, 'def seed(): pass\n')
+        original = (self.root / filename).read_text(encoding='utf-8')
+        try:
+            for value, count in values:
+                self.write(filename, original + '\n' + probe(value))
+                self.assertEqual(len(self.invalid()), count, (filename, value))
+        finally:
+            self.write(filename, original)
 
     def test_checker_tool_six_pass_seven_fail(self):
         """独立检查工具使用 6，不能放宽代理支持代码。"""
@@ -100,6 +103,45 @@ def outer(default=lambda flag: flag and flag and flag and flag):
         self.write('e2e/mitmproxy/helpers/nested.py', probe(4))
         self.assertEqual({item['file'] for item in self.invalid()}, {
             'e2e/mitmproxy/test_visual_control.py', 'e2e/mitmproxy/helpers/nested.py'})
+
+    def prepare_extraction(self):
+        """构造任意名称提取、包内相邻测试及测试再次提取的依赖。"""
+        self.write('e2e/mitmproxy/connection_diagnostics.py', 'import arbitrary_support\ndef seed(): pass\n')
+        sources = {
+            'arbitrary_support.py': 'from helpers import nested\ndef support(): pass\n',
+            'test_arbitrary_support.py': 'from helpers import callback_support\ndef test_support(): pass\n',
+            'helpers/nested.py': 'def nested(): pass\n',
+            'helpers/test_nested.py': 'from . import nested\ndef test_nested(): pass\n',
+            'helpers/callback_support.py': 'def callback(): pass\n',
+            'helpers/test_callback_support.py': 'def test_callback(): pass\n',
+        }
+        for filename, source in sources.items():
+            self.write(f'e2e/mitmproxy/{filename}', source)
+        return [f'e2e/mitmproxy/{filename}' for filename in sources]
+
+    def test_extracted_modules_and_adjacent_tests_three_pass_four_fail(self):
+        """任意命名、多层目录及相邻测试依赖均采用支持代码上限 3。"""
+        for filename in self.prepare_extraction():
+            with self.subTest(filename=filename):
+                self.check_budget(filename, ((3, 0), (4, 1)))
+
+    def test_extracted_modules_and_adjacent_tests_parse_failure_is_nonzero(self):
+        """提取模块和相邻测试均须实际解析，失败不能静默遗漏。"""
+        for filename in self.prepare_extraction():
+            with self.subTest(filename=filename):
+                self.check_parse_failure(filename)
+
+    def check_parse_failure(self, filename):
+        """独立进程必须指出出错文件并以非零状态结束。"""
+        original = (self.root / filename).read_text(encoding='utf-8')
+        try:
+            self.write(filename, 'def broken(:\n')
+            result = self.run_cli()
+            self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn('SyntaxError', result.stderr)
+            self.assertIn(filename, result.stderr)
+        finally:
+            self.write(filename, original)
 
     def test_noqa_and_configuration_cannot_disable_cli(self):
         """检查器忽略抑制注释、放宽配置和历史清单。"""
@@ -154,10 +196,11 @@ def outer(default=lambda flag: flag and flag and flag and flag):
         self.assertTrue(report)
         self.assertEqual(ENGINE.violations(report), [])
         self.assertIn('e2e/mitmproxy/scenario_http.py', {item['file'] for item in report})
+        self.assertIn('e2e/mitmproxy/test_account_connection_diagnostics.py', {item['file'] for item in report})
         json.dumps(report)
 
-    def test_existing_lint_python_entry_blocks_over_limit_support(self):
-        """在临时 Git 仓库证明 lint:python 的真实调用链阻断超限。"""
+    def prepare_lint_repository(self):
+        """准备真实 lint:python 在代理门禁前使用的既有检查入口。"""
         self.assertEqual(self.run_cli().returncode, 0)
         repository = CHECKER_PATH.parent.parent
         subprocess.run(['git', 'init', '--quiet', str(self.root)], check=True, capture_output=True)
@@ -165,11 +208,29 @@ def outer(default=lambda flag: flag and flag and flag and flag):
             shutil.copyfile(repository / filename, self.root / filename)
         self.write('scripts/extract-web-package.py', 'def extract(): pass\n')
         self.write('scripts/verify-pre-commit.py', 'def verify(): pass\n')
-        self.write('e2e/mitmproxy/scenario_fixtures.py', probe(4))
-        result = subprocess.run(['npm', 'run', 'lint:python'], cwd=self.root,
-                                capture_output=True, text=True, timeout=120)
-        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-        self.assertIn('scenario_fixtures.py:1:1 probe: 复杂度 4（上限 3）', result.stderr)
+
+    def test_existing_lint_python_entry_blocks_over_limit_support_and_adjacent_tests(self):
+        """真实 lint 调用链必须阻断提取模块及其任意层相邻测试。"""
+        self.prepare_lint_repository()
+        for filename in ('e2e/mitmproxy/scenario_fixtures.py', *self.prepare_extraction()):
+            with self.subTest(filename=filename):
+                self.check_lint_rejection(filename)
+
+    def check_lint_rejection(self, filename):
+        """相同发现路径的复杂度 3 先通过，再由真实入口拒绝 4。"""
+        original = (self.root / filename).read_text(encoding='utf-8')
+        try:
+            self.write(filename, original + '\n' + probe(3))
+            passing = self.run_cli()
+            self.assertEqual(passing.returncode, 0, passing.stdout + passing.stderr)
+            self.write(filename, original + '\n' + probe(4))
+            result = subprocess.run(['npm', 'run', 'lint:python'], cwd=self.root,
+                                    capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn(filename + ':', result.stderr)
+            self.assertIn('probe: 复杂度 4（上限 3）', result.stderr)
+        finally:
+            self.write(filename, original)
 
 
 if __name__ == '__main__':

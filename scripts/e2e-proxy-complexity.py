@@ -51,7 +51,7 @@ def scan(root=ROOT):
             tree = ast.parse(path.read_text(encoding='utf-8'), filename=filename)
             report.extend(engine.measurements(tree, filename, scope[filename]))
             processed.add(filename)
-            extend_scope(scope, read_dependencies(tree, path, root), root)
+            extend_scope(scope, [path, *read_dependencies(tree, path, root)], root)
     if not task_measured(report):
         raise ValueError('E2E 代理复杂度扫描为空')
     return report
@@ -63,9 +63,12 @@ def task_measured(report):
 
 
 def extend_scope(scope, dependencies, root):
-    """新增的本地辅助实现统一采用测试支持上限 3。"""
+    """本地辅助实现及其相邻测试统一采用 3，并继续跟踪测试依赖。"""
     for path in dependencies:
         scope.setdefault(path.relative_to(root).as_posix(), 3)
+        adjacent = path.with_name(f'test_{path.stem.removeprefix("test_")}.py')
+        if adjacent.is_file():
+            scope.setdefault(adjacent.relative_to(root).as_posix(), 3)
 
 
 def main():
