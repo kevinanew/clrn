@@ -1,0 +1,60 @@
+/** 离线验证 CORS 状态取证、隐私边界及诊断失败隔离。 */
+import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import type { Page, TestInfo } from '@playwright/test';
+import { collectGameRecordDiagnostics } from './diagnostics';
+import { diagnosticCaseDirectory } from '../../helpers/diagnostic-log';
+
+test('CORS 拒绝仍保留真实状态，不输出地址、身份、头部或正文', /** 验证被 Playwright 隐藏的响应可定位且保持脱敏。 */ async () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'clrn-record-cors-'));
+  const previous = process.env.CLRN_DIAGNOSTIC_SESSION;
+  process.env.CLRN_DIAGNOSTIC_SESSION = directory;
+  const session = Object.assign(new EventEmitter(), {
+    /** 本测试只允许启用观察，不允许修改浏览器网络行为。
+     * @param method - CDP 命令名。
+     */
+    async send(method: string) { assert.equal(method, 'Network.enable'); },
+    /** 模拟诊断清理失败，验证不产生未处理拒绝。 */
+    async detach() { throw new Error('secret'); },
+  });
+  const page = Object.assign(new EventEmitter(), {
+    /** 提供仅有观察功能的会话。 */
+    context() { return { newCDPSession: /** 返回离线诊断会话。 */ async () => session }; },
+  });
+  const info = { testId: 'record', retry: 1, workerIndex: 2 } as TestInfo;
+  try {
+    await collectGameRecordDiagnostics(page as unknown as Page, info);
+    session.emit('Network.requestWillBeSent', { requestId: '1', request: {
+      url: 'https://private.invalid/v1/texas_statistics/player/private-user/rounds/private-round?token=secret',
+      method: 'PUT', headers: { Authorization: 'secret' }, postData: 'secret',
+    } });
+    session.emit('Network.responseReceivedExtraInfo', {
+      requestId: '1', statusCode: 503, headers: { 'Set-Cookie': 'secret' },
+    });
+    session.emit('Network.loadingFailed', {
+      requestId: '1', corsErrorStatus: { corsError: 'MissingAllowOriginHeader' }, errorText: 'secret',
+    });
+    session.emit('Network.requestWillBeSent', { requestId: '2', request: {
+      url: 'https://private.invalid/private-entry?token=secret', method: 'PUT',
+    } });
+    session.emit('Network.responseReceivedExtraInfo', { requestId: '2', statusCode: 403 });
+    page.emit('close');
+    const output = readFileSync(path.join(diagnosticCaseDirectory(info), 'game-record-network.jsonl'), 'utf8');
+    assert.match(output, /"status":503/);
+    assert.match(output, /"reason":"cors"/);
+    assert.match(output, /\/v1\/texas_statistics\/player\/\{user\}\/rounds\/\{rounds\}/);
+    for (const secret of ['private.invalid', 'private-user', 'private-round', 'secret', 'private-entry', '403']) {
+      assert.ok(!output.includes(secret), secret);
+    }
+    const unavailable = { /** 模拟可选诊断安装失败。 */ context() { throw new Error('secret'); } } as unknown as Page;
+    await assert.doesNotReject(collectGameRecordDiagnostics(unavailable, info));
+  } finally {
+    if (previous === undefined) delete process.env.CLRN_DIAGNOSTIC_SESSION;
+    else process.env.CLRN_DIAGNOSTIC_SESSION = previous;
+    rmSync(directory, { recursive: true, force: true });
+  }
+});

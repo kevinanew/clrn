@@ -1,7 +1,9 @@
+import { pauseReadinessClock, waitForStaleRead } from './readinessTestHelpers';
+import { launchAnimationBrowser } from './appSessionBrowser';
 /** 验证玩家资料采样必须等本次三项读取完成，使用离线页面和受控响应。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { chromium, expect, type Route } from '@playwright/test';
+import { expect, type Route, type Page } from '@playwright/test';
 import { openPlayerProfile } from './playerProfileReadiness';
 
 const origin = 'https://player-profile.invalid';
@@ -22,8 +24,7 @@ const markup = `<button data-testid="texas-holdem-player-container-${player}">�
   </script>`;
 
 test('每次打开玩家资料都等待本次三项成功读取，旧响应和部分数据不能提前采样', /** 验证每次打开玩家资料都等待本次三项成功读取，旧响应和部分数据不能提前采样。 */ async () => {
-  const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
-    ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
+  const browser = await launchAnimationBrowser();
   try {
     const page = await browser.newPage();
     const pending = new Map<string, Route>();
@@ -47,13 +48,8 @@ test('每次打开玩家资料都等待本次三项成功读取，旧响应和�
       pending.clear();
       let ready = false;
       const opening = openPlayerProfile(page, player).then(/** 标记本次玩家资料打开操作已通过就绪检查。 */ () => { ready = true; });
-      await expect.poll(/** 轮询本次面板读取数量，等待新的资料请求全部发出。 */ () => pending.size).toBe(3);
-      if (order[0] === 0) {
-        await stale.fulfill({ json: { ok: true, result: {} } });
-        await expect.poll(/** 轮询旧资料请求的完成标记，验证旧响应不能替代本次读取。 */ () => page.evaluate(/** 读取旧资料请求的完成标记，区分请求归属。 */ () =>
-          (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)).toBe(true);
-        assert.equal(ready, false, '打开前发出的旧请求不能作为本次就绪依据');
-      }
+      await expect.poll(/** 重复读取`pending.size`，直到满足外层等待断言。 */ () => pending.size).toBe(3);
+      await releaseStaleProfile(page, stale, order, /** 读取异步操作的最新完成状态。 */ () => ready);
       for (const [index, selected] of order.entries()) {
         assert.equal(ready, false, '资料、钱包和统计必须全部读取成功');
         await pending.get(paths[selected])!.fulfill({ json: { ok: true, result: {} } });
@@ -66,8 +62,7 @@ test('每次打开玩家资料都等待本次三项成功读取，旧响应和�
 });
 
 test('玩家资料任一读取失败都阻止采样并保留真实状态，错误正文不得进入诊断', /** 验证玩家资料任一读取失败都阻止采样并保留真实状态，错误正文不得进入诊断。 */ async () => {
-  const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
-    ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
+  const browser = await launchAnimationBrowser();
   try {
     for (const [index, operation] of ['player-profile', 'player-wallet', 'player-statistics'].entries()) {
       for (const mode of ['http', 'business', 'json']) {
@@ -77,13 +72,9 @@ test('玩家资料任一读取失败都阻止采样并保留真实状态，错�
           const path = new URL(route.request().url()).pathname;
           if (path === '/') return route.fulfill({ contentType: 'text/html', body: markup });
           if (path !== paths[index]) return route.fulfill({ json: { ok: true, result: {} } });
-          if (mode === 'http') return route.fulfill({ status: 503, body: '不得传播的响应正文' });
-          if (mode === 'business') return route.fulfill({ json: { ok: false, message: '不得传播的响应正文' } });
-          return route.fulfill({ body: '不得传播的响应正文' });
+      return failRead(route, mode);
         });
-        await page.goto(origin);
-        await page.clock.install();
-        await page.clock.pauseAt(await page.evaluate(/** 以冻结时间后一秒构造玩家资料就绪等待的截止时刻。 */ () => Date.now() + 1000));
+        await pauseReadinessClock(page, origin);
         await assert.rejects(openPlayerProfile(page, player), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ error => {
           assert.match(String(error), new RegExp(`玩家资料准备失败：method=GET operation=${operation}`));
@@ -96,3 +87,40 @@ test('玩家资料任一读取失败都阻止采样并保留真实状态，错�
     }
   } finally { await browser.close(); }
 });
+
+/**
+ * 旧资料响应只在首个顺序返回，确认它不能让本次读取提前完成。
+ * @param page - 玩家资料页面。
+ * @param stale - 旧资料请求。
+ * @param order - 当前响应顺序。
+ * @param ready - 本次打开是否完成。
+ */
+async function releaseStaleProfile(page: Page, stale: Route, order: number[], ready: () => boolean): Promise<void> {
+      if (order[0] === 0) {
+        await stale.fulfill({ json: { ok: true, result: {} } });
+        await waitForStaleRead(page);
+        assert.equal(ready(), false, '打开前发出的旧请求不能作为本次就绪依据');
+      }
+}
+
+/**
+ * 注入原有业务拒绝或不可解析正文。
+ * @param route - 当前读取。
+ * @param mode - 失败模式。
+ * @returns 读取结果。
+ */
+function failBusinessRead(route: Route, mode: string): Promise<void> {
+  if (mode === 'business') return route.fulfill({ json: { ok: false, message: '不得传播的响应正文' } });
+  return route.fulfill({ body: '不得传播的响应正文' });
+}
+
+/**
+ * 注入原有 HTTP 失败，其余模式交给业务与 JSON 场景。
+ * @param route - 当前读取。
+ * @param mode - 失败模式。
+ * @returns 读取结果。
+ */
+function failRead(route: Route, mode: string): Promise<void> {
+  if (mode === 'http') return route.fulfill({ status: 503, body: '不得传播的响应正文' });
+  return failBusinessRead(route, mode);
+}

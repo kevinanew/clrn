@@ -1,11 +1,10 @@
+import { launchAnimationBrowser } from './appSessionBrowser';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { chromium } from '@playwright/test';
 import { cardSpriteClockState } from './cardSpriteClockState';
 
 test('时钟现场只读保留嵌套零延时、动画帧和周期回调，回调源码不进入报告', /** 验证时钟现场只读保留嵌套零延时、动画帧和周期回调，回调源码不进入报告。 */ async () => {
-  const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
-    ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
+  const browser = await launchAnimationBrowser();
   try {
     const page = await browser.newPage();
     assert.deepEqual(await cardSpriteClockState(page), { status: 'not-installed' });

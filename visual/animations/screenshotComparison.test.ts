@@ -10,13 +10,9 @@ import { areScreenshotsEquivalent } from './screenshotComparison';
  */
 function createScreenshot(blockWidth = 0, blockHeight = 0): Buffer {
   const bitmap = new PNG({ width: 100, height: 100 });
-  for (let row = 0; row < 100; row++) {
-    for (let column = 0; column < 100; column++) {
-      const offset = (row * 100 + column) * 4;
-      const color = row < blockHeight && column < blockWidth ? 255 : 0;
-      bitmap.data.set([color, color, color, 255], offset);
-    }
-  }
+  bitmap.data.fill(0);
+  makeOpaque(bitmap);
+  paintBlock(bitmap, blockWidth, blockHeight);
   return PNG.sync.write(bitmap);
 }
 
@@ -37,3 +33,25 @@ test('相同画面的不同 PNG 编码仍稳定，尺寸不同始终不稳定', 
   const differentSize = PNG.sync.write(new PNG({ width: 101, height: 100 }));
   assert.equal(areScreenshotsEquivalent(original, differentSize), false);
 });
+
+/**
+ * 将固定矩形涂白，保留原始像素布局。
+ * @param bitmap - 黑色不透明图片。
+ * @param width - 白色块宽度。
+ * @param height - 白色块高度。
+ */
+function paintBlock(bitmap: PNG, width: number, height: number): void {
+  for (let row = 0; row < Math.min(height, bitmap.height); row++) {
+    for (let column = 0; column < Math.min(width, bitmap.width); column++) {
+      bitmap.data.set([255, 255, 255, 255], (row * bitmap.width + column) * 4);
+    }
+  }
+}
+
+/**
+ * 将所有黑色像素设为不透明。
+ * @param bitmap - 初始图片。
+ */
+function makeOpaque(bitmap: PNG): void {
+  for (let offset = 3; offset < bitmap.data.length; offset += 4) bitmap.data[offset] = 255;
+}

@@ -7,8 +7,7 @@ import { readAuthStateEntries } from '../src/support/pageSetup';
 test('club list placeholders pulse while details are pending', /** 验证俱乐部详情挂起期间列表占位的脉冲动画。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。
  * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
-  const userId: unknown = JSON.parse(readAuthStateEntries()?.['save.user.origin.data.from.server.key'] || '{}').user_id;
-  expect(typeof userId === 'string' && userId.length > 0, '骨架夹具必须绑定本轮真实登录账号').toBe(true);
+  const userId = skeletonUser();
   await selectScenario(context, 'club-skeleton', { userId: userId as string });
   try {
     await openApplication(context, page, info);
@@ -26,3 +25,15 @@ test('club list placeholders pulse while details are pending', /** 验证俱乐�
     await expect(page.getByText('TestClub1', { exact: true })).toBeVisible();
   } finally { await selectScenario(context, 'club-skeleton', { phase: 'release' }); }
 });
+
+/** 读取并校验骨架场景绑定的本轮真实登录账号。 */
+function skeletonUser(): string {
+  const userId = authUserId();
+  expect(typeof userId === 'string' && userId.length > 0, '骨架夹具必须绑定本轮真实登录账号').toBe(true);
+  return userId as string;
+}
+
+/** 读取原始登录资料，缺失时使用空对象。 */
+function authUserId(): unknown {
+  return JSON.parse(readAuthStateEntries()?.['save.user.origin.data.from.server.key'] || '{}').user_id;
+}

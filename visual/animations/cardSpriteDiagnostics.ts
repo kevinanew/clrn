@@ -21,7 +21,7 @@ const limit = 1000;
  */
 export async function installCardSpriteDiagnostics(page: Page, lifecycle: boolean | 'callbacks' = false, info?: TestInfo): Promise<void> {
   const recording: Recording = { entries: [], dropped: 0, failed: false, total: 0, loaderCallbacks: lifecycle === 'callbacks',
-    journal: info?.outputPath('card-sprite-events.jsonl') };
+    journal: spriteJournalPath(info) };
   recordings.set(page, recording);
   await page.exposeBinding('__clrnCardSpriteEvent', /** 在宿主端限制诊断容量并脱敏图片路径，阻止页面敏感数据进入附件。
  * @param _source - 当前操作使用的 _source。
@@ -120,10 +120,7 @@ export async function installCardSpriteDiagnostics(page: Page, lifecycle: boolea
     }, true);
   })();`);
   if (lifecycle) await installCardSpriteLifecycle(page);
-  if (lifecycle === 'callbacks') {
-    if (!info) throw new Error('ImageLoader 观察缺少报告上下文');
-    recording.saveLoader = await installCardSpriteLoader(page, info);
-  }
+  await installLoaderRecording(page, lifecycle, recording, info);
 }
 
 /**
@@ -154,7 +151,7 @@ export function markCardSpriteFailure(page: Page): void {
  * @param page - 已经失败且即将清理的页面。
  */
 export async function observeCardSpriteClockControl(page: Page): Promise<void> {
-  if (!recordings.get(page)?.failed || hasNormalCardSpriteClock(page)) return;
+  if (!needsClockControl(page)) return;
   await sampleCardSprites(page, 'control-before-resume');
   await page.clock.resume();
   // 这些是诊断采样时刻，不是加长就绪等待；原始断言结果保持失败。
@@ -181,19 +178,17 @@ export async function saveCardSpriteDiagnostics(page: Page, info: TestInfo, phas
     const state = window as typeof window & { __clrnCardSpriteLifecycle?: (node: Element) => unknown };
     return state.__clrnCardSpriteLifecycle?.(document.documentElement) ?? { status: 'not-enabled' };
   });
-  const report = { applicationBuild: diagnosticText(applicationBuild), release: process.env.CLRN_RELEASE_TAG ?? null,
-    clock: hasNormalCardSpriteClock(page) ? 'normal' : 'frozen',
+  const report = { applicationBuild: diagnosticText(applicationBuild), ...buildIdentity(),
+    clock: diagnosticClock(page),
     lifecycle, loaderCallbacks: recording.loaderCallbacks,
-    testCommit: process.env.GITHUB_SHA ?? null, run: process.env.GITHUB_RUN_ID ?? null,
+    ...runIdentity(),
     project: info.project.name, viewport: page.viewportSize(), repeat: info.repeatEachIndex, retry: info.retry,
     failed: recording.failed, dropped: recording.dropped, total: recording.total, entries: recording.entries,
     limitations: 'realTime 是宿主收到事件的时间；decode 仅观察 DOM 图片，不代表应用内部 ImageLoader；'
       + 'React 取证仅观察受支持组件的提交状态；loaderCallbacks 为 true 时另附真实 ImageLoader 成功回调边界，'
       + '不等于单独捕获 SpriteImage onLoad 或其状态提交；'
       + 'control-running 为原始失败后的同页 JS 时钟恢复观察，CSS 采样暂停保持原状；不能单独证明因果。' };
-  const name = phase === 'frozen'
-    ? (hasNormalCardSpriteClock(page) ? 'card-sprite-diagnostics-normal-failure' : 'card-sprite-diagnostics-frozen')
-    : 'card-sprite-diagnostics';
+  const name = diagnosticsName(page, phase);
   const path = info.outputPath(name + '.json');
   await writeFile(path, JSON.stringify(report, null, 2));
   await info.attach(name, { path, contentType: 'application/json' });
@@ -222,3 +217,60 @@ async function attachSpriteJournal(recording: Recording, info: TestInfo) {
   if (!recording.journal || recording.total === 0) return;
   await info.attach('card-sprite-events', { path: recording.journal, contentType: 'application/x-ndjson' });
 }
+
+/**
+ * 回调取证要求报告上下文，普通诊断不启用加载器包装。
+ * @param page - 当前页面。
+ * @param lifecycle - 取证模式。
+ * @param recording - 当前采集记录。
+ * @param info - 可选报告上下文。
+ */
+async function installLoaderRecording(page: Page, lifecycle: boolean | 'callbacks', recording: Recording, info?: TestInfo): Promise<void> {
+  if (lifecycle === 'callbacks') {
+    if (!info) throw new Error('ImageLoader 观察缺少报告上下文');
+    recording.saveLoader = await installCardSpriteLoader(page, info);
+  }
+}
+
+/**
+ * 只在冻结时钟下原始断言失败后允许诊断性恢复。
+ * @param page - 当前页面。
+ * @returns 是否需要时钟对照。
+ */
+function needsClockControl(page: Page): boolean {
+  if (hasNormalCardSpriteClock(page)) return false;
+  return Boolean(recordings.get(page)?.failed);
+}
+
+/** 记录实际发布标记，缺失时保留空值。 */
+function buildIdentity() { return { release: process.env.CLRN_RELEASE_TAG ?? null }; }
+
+/** 记录测试提交和运行编号，缺失时保留空值。 */
+function runIdentity() {
+  return { testCommit: process.env.GITHUB_SHA ?? null, run: process.env.GITHUB_RUN_ID ?? null };
+}
+
+/**
+ * 原始失败单独存档，保留原生和冻结时间的不同文件名。
+ * @param page - 当前页面。
+ * @param phase - 保存阶段。
+ * @returns 附件基础文件名。
+ */
+function diagnosticsName(page: Page, phase: 'frozen' | 'final'): string {
+  if (phase !== 'frozen') return 'card-sprite-diagnostics';
+  return hasNormalCardSpriteClock(page) ? 'card-sprite-diagnostics-normal-failure' : 'card-sprite-diagnostics-frozen';
+}
+
+/**
+ * 明确本页实际使用的时钟模式。
+ * @param page - 当前页面。
+ * @returns 时钟模式。
+ */
+function diagnosticClock(page: Page): string { return hasNormalCardSpriteClock(page) ? 'normal' : 'frozen'; }
+
+/**
+ * 有报告上下文时创建完整事件日志路径。
+ * @param info - 可选报告上下文。
+ * @returns 日志路径或未启用状态。
+ */
+function spriteJournalPath(info?: TestInfo): string | undefined { return info?.outputPath('card-sprite-events.jsonl'); }

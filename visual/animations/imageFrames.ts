@@ -1,6 +1,5 @@
 import { imageComparisonOptions } from '../screenshotComparisonConfiguration';
 import { expect, type Page, type Response, type TestInfo } from '@playwright/test';
-
 /**
  * 对真实页面加载的 WebP 逐帧解码比较。图片内部播放不受 JS 时钟控制，独立验证素材帧和帧时长。
  * @param page - 用于获取实际资源和调用浏览器解码器的安全页面。
@@ -9,27 +8,53 @@ import { expect, type Page, type Response, type TestInfo } from '@playwright/tes
  * @param url - 真实组件所引用的动画资源。
  * @param loadedResponse - 优先使用页面刚加载的真实资源响应，避免再次下载同一素材。
  */
-export async function captureImageFrames(page: Page, info: TestInfo, name: string, url: string,
-  loadedResponse?: Pick<Response, 'ok' | 'body'>): Promise<void> {
+export async function captureImageFrames(page: Page, info: TestInfo, name: string, url: string, loadedResponse?: Pick<Response, 'ok' | 'body'>): Promise<void> {
   expect(new URL(url).origin).toBe(new URL(page.url()).origin);
-  const response = loadedResponse || await page.request.get(url, { timeout: 60_000 });
+  const response = loadedResponse || await page.request.get(url, { timeout: 60000 });
   expect(response.ok()).toBe(true);
   const bytes = await response.body();
   const frames = await page.evaluate(/** 在浏览器中解码动画图片的全部帧，返回可比较的逐帧像素数据。
- * @param encoded - 当前操作使用的 encoded。 */ async encoded => {
-    type Decoder = { tracks: { ready: Promise<void>; selectedTrack: { frameCount: number } };
-      decode(options: { frameIndex: number }): Promise<{ image: VideoFrame }>; close(): void };
-    const Constructor = (globalThis as unknown as { ImageDecoder: new (options: {
-      data: Uint8Array; type: string; preferAnimation: boolean;
-    }) => Decoder }).ImageDecoder;
-    if (!Constructor) throw new Error('当前浏览器不支持动画图片逐帧解码');
-    const decoder = new Constructor({ data: Uint8Array.from(atob(encoded), /** 将 Base64 解码后的字符转换为字节，交给图像解码器。
- * @param char - 当前操作使用的 char。 */ char => char.charCodeAt(0)),
+  * @param encoded - 当前操作使用的 encoded。 */ async (encoded) => {
+    const checks = {
+      /**
+       * 拒绝静态图片与异常帧数，保留原有 2 到 300 范围。
+       * @param count - 解码器报告的帧数。
+       */
+      validateFrameCount(count: number): void {
+        if (count < 2 || count > 300)
+          throw new Error(`动画素材帧数异常：${count}`);
+      }
+    };
+    type Decoder = {
+      tracks: {
+        ready: Promise<void>;
+        selectedTrack: {
+          frameCount: number;
+        };
+      };
+      decode(options: {
+        frameIndex: number;
+      }): Promise<{
+        image: VideoFrame;
+      }>;
+      close(): void;
+    };
+    const Constructor = (globalThis as unknown as {
+      ImageDecoder: new (options: {
+        data: Uint8Array;
+        type: string;
+        preferAnimation: boolean;
+      }) => Decoder;
+    }).ImageDecoder;
+    if (!Constructor)
+      throw new Error('当前浏览器不支持动画图片逐帧解码');
+    const decoder = new Constructor({ data: Uint8Array.from(atob(encoded), /** 为当前索引构造`char.charCodeAt(0)`。
+     * @param char - 当前操作使用的 char。 */ char => char.charCodeAt(0)),
       type: 'image/webp', preferAnimation: true });
     try {
       await decoder.tracks.ready;
       const count = decoder.tracks.selectedTrack.frameCount;
-      if (count < 2 || count > 300) throw new Error(`动画素材帧数异常：${count}`);
+      checks.validateFrameCount(count);
       const canvas = document.createElement('canvas');
       const result = [];
       for (let index = 0; index < count; index++) {
@@ -42,16 +67,18 @@ export async function captureImageFrames(page: Page, info: TestInfo, name: strin
         image.close();
       }
       return result;
-    } finally { decoder.close(); }
+    }
+    finally {
+      decoder.close();
+    }
   }, bytes.toString('base64'));
-  expect(new Set(frames.map(/** 提取各帧 PNG 内容，核对动画包含不同画面。
- * @param frame - 当前操作使用的 frame。 */ frame => frame.png)).size, '动画素材必须包含不同图像帧').toBeGreaterThan(1);
+  expect(new Set(frames.map(/** 将当前条目映射为`frame.png`。
+  * @param frame - 当前操作使用的 frame。 */ frame => frame.png)).size, '动画素材必须包含不同图像帧').toBeGreaterThan(1);
   for (const frame of frames) {
-    expect(Buffer.from(frame.png, 'base64')).toMatchSnapshot(`asset-${name}-${frame.index}frame.png`,
-      imageComparisonOptions(0));
+    expect(Buffer.from(frame.png, 'base64')).toMatchSnapshot(`asset-${name}-${frame.index}frame.png`, imageComparisonOptions(0));
   }
-  const timing = frames.map(/** 去除 PNG 内容，保留帧时刻、时长与尺寸供元数据基准比较。
- * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ png: _png, ...frame }) => frame);
+  const timing = frames.map(/** 将当前条目映射为`frame`。
+  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ ({ png: _png, ...frame }) => frame);
   expect(JSON.stringify(timing, null, 2)).toMatchSnapshot(`asset-${name}-timing.json`);
   await info.attach(`${name}-asset-timing`, { body: JSON.stringify(timing), contentType: 'application/json' });
 }

@@ -38,7 +38,7 @@ if (selectedPart !== 'all' && (selected === 'all' || !parts[selected][selectedPa
 function run(args: string[], environment: NodeJS.ProcessEnv): void {
   const result = spawnSync('pnpm', ['exec', ...args], { cwd: directory, env: environment, stdio: 'inherit' });
   if (result.error) throw result.error;
-  if (result.status !== 0) throw new Error(`动画子进程失败：${result.status ?? result.signal}`);
+  if (result.status !== 0) throw new Error(`动画子进程失败：${exitReason(result)}`);
 }
 
 const temporary = mkdtempSync(path.join(tmpdir(), 'clrn-animations-'));
@@ -58,3 +58,12 @@ try {
       ...process.argv.slice(2)], environment);
   }
 } finally { rmSync(temporary, { recursive: true, force: true }); }
+
+/**
+ * 保留子进程的退出码或终止信号。
+ * @param result - 动画子进程结果。
+ * @returns 失败原因。
+ */
+function exitReason(result: { status: number | null; signal: NodeJS.Signals | null }) {
+  return result.status ?? result.signal;
+}

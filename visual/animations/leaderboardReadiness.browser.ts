@@ -1,7 +1,9 @@
+import { pauseReadinessClock, waitForStaleRead } from './readinessTestHelpers';
+import { launchAnimationBrowser } from './appSessionBrowser';
 /** 以离线浏览器请求验证个人排行榜准备的顺序和失败边界，不访问真实账号。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { chromium, expect, type Route } from '@playwright/test';
+import { expect, type Route } from '@playwright/test';
 import { openPersonalLeaderboard } from './leaderboardReadiness';
 
 const origin = 'https://leaderboard.invalid';
@@ -21,8 +23,7 @@ const markup = `<button data-testid="texas-holdem-leaderboard-button">个人排�
   </script>`;
 
 test('每次打开个人排行榜面板均等待两项新读取，任一响应先到都不能提前采样', /** 验证每次打开个人排行榜面板均等待两项新读取，任一响应先到都不能提前采样。 */ async () => {
-  const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
-    ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
+  const browser = await launchAnimationBrowser();
   try {
     const page = await browser.newPage();
     const pending = new Map<string, Route>();
@@ -49,8 +50,7 @@ test('每次打开个人排行榜面板均等待两项新读取，任一响应�
       await expect.poll(/** 轮询本次打开产生的请求数，等待新的读取全部发出。 */ () => pending.size).toBe(2);
       if (order[0] === 'PUT') {
         await stale.fulfill({ json: { ok: true, result: {} } });
-        await expect.poll(/** 轮询旧请求的完成标记，等待迟到响应处理结束。 */ () => page.evaluate(/** 读取旧请求完成标记，区分旧响应与本次就绪请求。 */ () =>
-          (window as typeof window & { staleReadFinished?: boolean }).staleReadFinished)).toBe(true);
+        await waitForStaleRead(page);
         assert.equal(ready, false, '本次打开前发出的旧请求即使成功也不能作为就绪依据');
       }
       assert.equal(ready, false, '旧控件或未完成请求不能作为本次就绪依据');
@@ -66,8 +66,7 @@ test('每次打开个人排行榜面板均等待两项新读取，任一响应�
 });
 
 test('个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连接中断均须阻止后续采样', /** 验证个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连接中断均须阻止后续采样。 */ async () => {
-  const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
-    ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
+  const browser = await launchAnimationBrowser();
   try {
     for (const mode of ['http', 'business', 'json', 'abort']) {
       const page = await browser.newPage();
@@ -76,14 +75,9 @@ test('个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连�
         const path = new URL(route.request().url()).pathname;
         if (path === '/') return route.fulfill({ contentType: 'text/html', body: markup });
         if (!path.endsWith('/player_statistics')) return route.fulfill({ json: { ok: true, result: {} } });
-        if (mode === 'abort') return route.abort('connectionreset');
-        if (mode === 'http') return route.fulfill({ status: 503, body: '不得传播的响应正文' });
-        if (mode === 'business') return route.fulfill({ json: { ok: false, message: '不得传播的响应正文' } });
-        return route.fulfill({ body: '不得传播的响应正文' });
+      return failRead(route, mode);
       });
-      await page.goto(origin);
-      await page.clock.install();
-      await page.clock.pauseAt(await page.evaluate(/** 取冻结时间之后一秒作为截止时刻，构造排行榜等待超时。 */ () => Date.now() + 1000));
+      await pauseReadinessClock(page, origin);
       let sampled = false;
       await assert.rejects(openPersonalLeaderboard(page, roomId, self).then(/** 标记排行榜已采样，排除未就绪时提前返回。 */ () => { sampled = true; }), /** 核对抛出错误的类型、原因与脱敏内容，确认失败符合预期。
  * @param error - 当前操作抛出的错误。 */ error => {
@@ -98,3 +92,36 @@ test('个人排行榜读取的 HTTP 错误、业务拒绝、无效 JSON 和连�
     }
   } finally { await browser.close(); }
 });
+
+/**
+ * 注入原有 HTTP 失败，其余模式交给业务与 JSON 场景。
+ * @param route - 当前读取。
+ * @param mode - 失败模式。
+ * @returns 读取结果。
+ */
+function failRead(route: Route, mode: string): Promise<void> {
+  if (mode === 'abort') return route.abort('connectionreset');
+  return failHttpRead(route, mode);
+}
+
+/**
+ * 保留 HTTP 失败的原始状态与正文。
+ * @param route - 当前读取。
+ * @param mode - 失败模式。
+ * @returns 读取结果。
+ */
+function failHttpRead(route: Route, mode: string): Promise<void> {
+  if (mode === 'http') return route.fulfill({ status: 503, body: '不得传播的响应正文' });
+  return failBusinessRead(route, mode);
+}
+
+/**
+ * 注入原有业务拒绝或不可解析正文。
+ * @param route - 当前读取。
+ * @param mode - 失败模式。
+ * @returns 读取结果。
+ */
+function failBusinessRead(route: Route, mode: string): Promise<void> {
+  if (mode === 'business') return route.fulfill({ json: { ok: false, message: '不得传播的响应正文' } });
+  return route.fulfill({ body: '不得传播的响应正文' });
+}
