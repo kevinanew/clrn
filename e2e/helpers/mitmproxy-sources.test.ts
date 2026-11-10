@@ -22,11 +22,12 @@ test('代理只使用真实节点资料中的确切来源和本轮发布包的�
     globalThis.fetch = /** 核对节点发现使用只读 POST、固定请求头且不携带账号数据。
  * @param address - 当前操作使用的 address。
  * @param options - 当前操作使用的 options。 */ async (address, options) => {
+      assert.ok(options);
       calls.push(String(address));
-      assert.equal(options?.method, 'POST', '节点资料使用只读 POST，GET 会被真实服务拒绝');
-      assert.deepEqual(options?.headers, { 'Content-Type': 'application/json' });
-      assert.equal(options?.body, undefined, '节点发现不携带账号、令牌或业务写入数据');
-      assert.equal(options?.redirect, 'error', '真实节点读取必须拒绝重定向');
+      assert.equal(options.method, 'POST', '节点资料使用只读 POST，GET 会被真实服务拒绝');
+      assert.deepEqual(options.headers, { 'Content-Type': 'application/json' });
+      assert.equal(options.body, undefined, '节点发现不携带账号、令牌或业务写入数据');
+      assert.equal(options.redirect, 'error', '真实节点读取必须拒绝重定向');
       return Response.json({ ok: true, result: { servers: { 'node-a.invalid': '不保存地址', 'node-b.invalid': '不保存地址' } } });
     };
     const input = { VISUAL_API_BASE_URL: 'https://root.invalid', CLRN_RELEASE_WEB_ROOT: directory };

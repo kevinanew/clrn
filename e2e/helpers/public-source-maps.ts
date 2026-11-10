@@ -19,11 +19,21 @@ export async function readPublicResourceContents(
   const contentsByAddress = new Map<string, string>();
   for (const address of addresses) {
     if (new URL(address).origin !== origin) continue;
-    const response = await request.get(address);
-    if (!response.ok()) throw new Error(`无法读取已部署的公开资源：${address}`);
-    const contents = await response.text();
-    if (sourceMapReference.test(contents)) throw new Error(`公开资源包含源码映射引用：${address}`);
+    const contents = await readResource(address, request);
     contentsByAddress.set(address, contents);
   }
   return contentsByAddress;
+}
+
+/**
+ * 读取单个真实资源，拒绝下载失败与源码映射引用。
+ * @param address - 同源资源地址。
+ * @param request - 真实请求上下文。
+ */
+async function readResource(address: string, request: APIRequestContext): Promise<string> {
+  const response = await request.get(address);
+  if (!response.ok()) throw new Error(`无法读取已部署的公开资源：${address}`);
+  const contents = await response.text();
+  if (sourceMapReference.test(contents)) throw new Error(`公开资源包含源码映射引用：${address}`);
+  return contents;
 }

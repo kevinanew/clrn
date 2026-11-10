@@ -40,7 +40,7 @@ export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>,
   try {
     const port = await unusedPort();
     const proxy = new Mitmproxy(port, token);
-    const environment = await mitmproxySources(options.environment || process.env);
+    const environment = await mitmproxySources(proxyEnvironment(options.environment));
     const proxyProcess = startMitmdump(port, directory, token, options.addonPath, environment);
     try {
       await proxyProcess.waitUntilReady(/** 同时探测代理状态和夹具控制入口，确认代理可以接收场景命令。 */ async () => {
@@ -55,4 +55,12 @@ export async function withMitmproxy<T>(task: (proxy: Mitmproxy) => Promise<T>,
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+}
+
+/**
+ * 优先使用本轮代理环境，保留进程环境的默认行为。
+ * @param environment - 可选运行输入。
+ */
+function proxyEnvironment(environment: NodeJS.ProcessEnv | undefined): NodeJS.ProcessEnv {
+  return environment || process.env;
 }

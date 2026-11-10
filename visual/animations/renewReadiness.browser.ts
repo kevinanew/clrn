@@ -287,4 +287,3 @@ function failBusinessRead(route: Route, mode: string): Promise<void> {
   if (mode === 'business') return route.fulfill({ json: { ok: false, message: '不得传播的响应正文' } });
   return route.fulfill({ body: '不得传播的响应正文' });
 }
-

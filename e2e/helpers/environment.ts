@@ -8,11 +8,11 @@ import { readTestWebUrl } from "./web-target";
  */
 function readInteger(name: string, fallback: number): number {
   const raw = process.env[name];
-  if (raw === undefined || raw === '') {
+  if (isMissing(raw)) {
     return fallback;
   }
   const value = Number(raw);
-  if (!Number.isInteger(value) || value < 0) {
+  if (!isNonnegativeInteger(value)) {
     throw new Error(`${name} 必须是非负整数`);
   }
   return value;
@@ -34,3 +34,19 @@ export const environment = {
   testUsername: process.env.E2E_TEST_USERNAME || 'laiwanvisual01',
   testPassword: process.env.E2E_TEST_PASSWORD || 'visual2026test',
 };
+
+/**
+ * 区分缺失与可解析的环境配置。
+ * @param raw - 原始配置。
+ */
+function isMissing(raw: string | undefined): boolean {
+  return raw === undefined || raw === '';
+}
+
+/**
+ * 校验非负整数，保留 Number 的原有解析语义。
+ * @param value - 已解析值。
+ */
+function isNonnegativeInteger(value: number): boolean {
+  return Number.isInteger(value) && value >= 0;
+}

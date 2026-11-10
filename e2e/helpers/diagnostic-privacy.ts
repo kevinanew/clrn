@@ -12,16 +12,14 @@ const pathTemplates = diagnosticPaths.map(/** 将当前条目映射为`{ path, s
  * @param value - 不可信的请求路径或代理历史字段。
  */
 export function diagnosticPath(value: unknown): string {
-  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return '[未知接口]';
+  if (!isRequestPath(value)) return '[未知接口]';
   const segments = value.split(/[?#]/)[0].split('/');
   const match = pathTemplates.find(/** 按路径分段结构查找匹配的脱敏模板。
  * @param template - 当前操作使用的 template。 */ template => template.segments.length === segments.length
     && template.segments.every(/** 校验固定路径段与占位段，拒绝空值及相对路径段。
  * @param segment - 当前操作使用的 segment。
- * @param index - 当前条目在集合中的位置。 */ (segment, index) => segment.startsWith('{')
-      ? Boolean(segments[index]) && !['.', '..'].includes(segments[index])
-      : segment === segments[index]));
-  return match?.path ?? '[未知接口]';
+ * @param index - 当前条目在集合中的位置。 */ (segment, index) => matchesPathSegment(segment, segments[index])));
+  return match ? match.path : '[未知接口]';
 }
 
 /**
@@ -31,7 +29,7 @@ export function diagnosticPath(value: unknown): string {
 export function diagnosticNode(address: string): string {
   if (/^laiwan_proxy-[a-f0-9]{12}$/.test(address)) return address;
   try {
-    const host = new URL(address.includes('://') ? address : `https://${address}`).hostname.replace(/^\[|\]$/g, '');
+    const host = new URL(nodeAddress(address)).hostname.replace(/^\[|\]$/g, '');
     return `laiwan_proxy-${createHash('sha256').update(host).digest('hex').slice(0, 12)}`;
   } catch { return '[未知节点]'; }
 }
@@ -65,38 +63,127 @@ const allowedFields = new Set(['event', 'source', 'node', 'path', 'method', 'sta
   'backendDelay', 'serverLoad', 'outcome', 'observedAt', 'messageType', 'commandId', 'channel', 'dropped']);
 const nodeFields = new Set(['node', 'candidates', 'selected', 'excluded', 'before', 'after']);
 
+type SafeField = string | number | boolean | string[];
+
+/**
+ * 验证请求路径入口，拒绝非路径及协议相对地址。
+ * @param value - 外部输入。
+ */
+function isRequestPath(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  return value.startsWith('/') && !value.startsWith('//');
+}
+
+/**
+ * 匹配固定段或非空、非相对的实体占位段。
+ * @param template - 已登记的路径段。
+ * @param value - 输入路径段。
+ */
+function matchesPathSegment(template: string, value: string): boolean {
+  if (!template.startsWith('{')) return template === value;
+  return Boolean(value) && !['.', '..'].includes(value);
+}
+
+/**
+ * 为裸节点地址补齐解析协议。
+ * @param address - 输入地址。
+ */
+function nodeAddress(address: string): string {
+  return address.includes('://') ? address : `https://${address}`;
+}
+
+const originMatches = ['matched', 'different', 'unconfigured', 'invalid-configuration'];
+const upstreamMatches = [...originMatches, 'unavailable', 'not-applicable'];
+
+/**
+ * 将连接匹配状态限制为已登记词汇。
+ * @param item - 外部状态。
+ * @param allowed - 此类状态允许的值。
+ */
+function matchStatus(item: unknown, allowed: string[]): string {
+  return typeof item === 'string' && allowed.includes(item) ? item : 'unavailable';
+}
+
+/**
+ * 事件只允许逻辑阶段名称。
+ * @param item - 外部事件名。
+ */
+function eventName(item: unknown): string {
+  return typeof item === 'string' && /^(?:application|http|nodes?|page|probe|proxy|test|ui|websocket)\.[a-z][a-z-]*$/.test(item)
+    ? item : 'application.event';
+}
+
+const fieldSanitizers: Record<string, (item: unknown) => SafeField> = {
+  /** 清理来源匹配状态。
+   * @param item - 外部状态。 */
+  originMatch: item => matchStatus(item, originMatches),
+  /** 清理上游匹配状态。
+   * @param item - 外部状态。 */
+  upstreamMatch: item => matchStatus(item, upstreamMatches),
+  reason: safeDiagnosticReason, event: eventName, path: diagnosticPath,
+};
+
+/**
+ * 复制允许的字符串及有界字符串数组；拒绝任意嵌套对象。
+ * @param item - 外部字段值。
+ * @param sanitize - 字符串清理函数。
+ */
+function stringField(item: unknown, sanitize: (value: string) => string): SafeField | undefined {
+  if (typeof item === 'string') return sanitize(item);
+  if (Array.isArray(item)) return item.slice(0, 100).filter(/** 排除非字符串成员。
+   * @param entry - 数组成员。 */ (entry): entry is string => typeof entry === 'string').map(sanitize);
+  return undefined;
+}
+
+/**
+ * 检查允许原样保存的数字与布尔值。
+ * @param item - 外部字段值。
+ */
+function isScalar(item: unknown): item is number | boolean {
+  if (typeof item === 'boolean') return true;
+  return typeof item === 'number' && Number.isFinite(item);
+}
+
+/**
+ * 按字段语义分发白名单清理。
+ * @param key - 已允许的字段名。
+ * @param item - 外部字段值。
+ */
+function sanitizeField(key: string, item: unknown): SafeField | undefined {
+  if (Object.hasOwn(fieldSanitizers, key)) return fieldSanitizers[key](item);
+  if (isScalar(item)) return item;
+  return stringField(item, stringSanitizer(key));
+}
+
+/**
+ * 仅接受非数组对象事件。
+ * @param value - 外部诊断事件。
+ */
+function isEventObject(value: unknown): value is Record<string, unknown> {
+  if (!value) return false;
+  return typeof value === 'object' && !Array.isArray(value);
+}
+
 /**
  * 白名单复制外部诊断事件，拒绝凭据、请求正文及任意嵌套对象。
  * @param value - 应用或代理返回的事件。
  */
-export function diagnosticFields(value: unknown): Record<string, string | number | boolean | string[]> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
-  const result: Record<string, string | number | boolean | string[]> = {};
-  for (const [key, item] of Object.entries(value)) {
-    if (!allowedFields.has(key)) continue;
-    if (key === 'originMatch' || key === 'upstreamMatch') {
-      const allowed = key === 'originMatch' ? ['matched', 'different', 'unconfigured', 'invalid-configuration']
-        : ['matched', 'different', 'unconfigured', 'invalid-configuration', 'unavailable', 'not-applicable'];
-      result[key] = typeof item === 'string' && allowed.includes(item) ? item : 'unavailable';
-      continue;
-    }
-    if (key === 'reason') { result[key] = safeDiagnosticReason(item); continue; }
-    // 事件是逻辑阶段，不能把任意主机或自由文本作为事件名写入日志。
-    if (key === 'event') {
-      result[key] = typeof item === 'string'
-        && /^(?:application|http|nodes?|page|probe|proxy|test|ui|websocket)\.[a-z][a-z-]*$/.test(item)
-        ? item : 'application.event';
-      continue;
-    }
-    if (key === 'path') {
-      result[key] = diagnosticPath(item);
-      continue;
-    }
-    const sanitize = nodeFields.has(key) ? diagnosticNode : diagnosticText;
-    if (typeof item === 'number' && Number.isFinite(item) || typeof item === 'boolean') result[key] = item;
-    else if (typeof item === 'string') result[key] = sanitize(item);
-    else if (Array.isArray(item)) result[key] = item.slice(0, 100).filter(/** 仅保留满足以下条件的条目：`typeof entry === 'string'`。
- * @param entry - 当前处理的记录条目。 */ entry => typeof entry === 'string').map(sanitize);
-  }
+export function diagnosticFields(value: unknown): Record<string, SafeField> {
+  if (!isEventObject(value)) return {};
+  const result: Record<string, SafeField> = {};
+  Object.entries(value).filter(/** 只处理白名单字段。
+   * @param entry - 字段和值。 */ ([key]) => allowedFields.has(key)).forEach(/** 保留成功清理的值。
+   * @param entry - 白名单字段和值。 */ ([key, item]) => {
+    const safe = sanitizeField(key, item);
+    if (safe !== undefined) result[key] = safe;
+  });
   return result;
+}
+
+/**
+ * 节点字段使用统一散列，其余文本使用文本脱敏。
+ * @param key - 白名单字段。
+ */
+function stringSanitizer(key: string): (value: string) => string {
+  return nodeFields.has(key) ? diagnosticNode : diagnosticText;
 }

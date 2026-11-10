@@ -124,4 +124,3 @@ function failRead(route: Route, mode: string): Promise<void> {
   if (mode === 'http') return route.fulfill({ status: 503, body: '不得传播的响应正文' });
   return failBusinessRead(route, mode);
 }
-
