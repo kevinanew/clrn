@@ -9,7 +9,11 @@ import type { Page, TestInfo } from '@playwright/test';
 import { collectGameRecordDiagnostics } from './diagnostics';
 import { diagnosticCaseDirectory } from '../../helpers/diagnostic-log';
 
-test('CORS 拒绝仍保留真实状态，不输出地址、身份、头部或正文', /** 验证被 Playwright 隐藏的响应可定位且保持脱敏。 */ async () => {
+test('CORS 拒绝仍保留真实状态，不输出地址、身份、头部或正文', /** 验证被 Playwright 隐藏的响应可定位且保持脱敏。
+ * @param context - 提供测试结束后自动恢复的时钟替身。
+ */ async context => {
+  // 时间戳包含 403 时也不能被误判为未登记请求的 HTTP 状态。
+  context.mock.method(Date, 'now', /** 固定为包含干扰数字的毫秒时间戳。 */ () => Date.UTC(2026, 10, 10, 21, 46, 43, 403));
   const directory = mkdtempSync(path.join(tmpdir(), 'clrn-record-cors-'));
   const previous = process.env.CLRN_DIAGNOSTIC_SESSION;
   process.env.CLRN_DIAGNOSTIC_SESSION = directory;
@@ -47,7 +51,16 @@ test('CORS 拒绝仍保留真实状态，不输出地址、身份、头部或正
     assert.match(output, /"status":503/);
     assert.match(output, /"reason":"cors"/);
     assert.match(output, /\/v1\/texas_statistics\/player\/\{user\}\/rounds\/\{rounds\}/);
-    for (const secret of ['private.invalid', 'private-user', 'private-round', 'secret', 'private-entry', '403']) {
+    const events = output.trim().split('\n').map(/** 读取单条结构化诊断事件。
+     * @param line - 一行 JSON。
+     */ line => JSON.parse(line));
+    const statuses = events.filter(/** 只选择实际 HTTP 状态字段。
+     * @param event - 已解析事件。
+     */ event => 'status' in event).map(/** 提取状态，排除时间戳等元数据。
+     * @param event - 含状态的事件。
+     */ event => event.status);
+    assert.deepEqual(statuses, [503]);
+    for (const secret of ['private.invalid', 'private-user', 'private-round', 'secret', 'private-entry']) {
       assert.ok(!output.includes(secret), secret);
     }
     const unavailable = { /** 模拟可选诊断安装失败。 */ context() { throw new Error('secret'); } } as unknown as Page;
