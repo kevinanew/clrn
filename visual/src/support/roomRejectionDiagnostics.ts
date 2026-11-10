@@ -18,17 +18,22 @@ function roomDiagnostic(body: any) {
 }
 
 /**
- * 为房间 HTTP 或业务拒绝保留有限分类、数字错误码和类型指纹，不输出正文、参数或自由文本。
+ * 为房间及排行榜 HTTP 或业务拒绝保留有限分类、数字错误码和类型指纹，不输出正文、参数或自由文本。
  * @param body - 已读取的失败响应；不再次发送请求。
- * @param operation - 固定的建房或删房操作，用于区分附件。
+ * @param operation - 固定的建房、删房或排行榜操作，用于区分附件。
  * @param bodyRead - 正文读取结果，仅记录固定分类。
  */
-export async function attachRoomRejection(body: any, operation: 'room-delete' | 'room-create',
+export async function attachRoomRejection(body: any, operation: 'room-delete' | 'room-create' | 'leaderboard-statistics',
   bodyRead: 'json' | 'invalid-json' | 'body-read-failed' = 'json'): Promise<void> {
   try {
-    // 共享请求辅助代码也由仅安装 e2e 依赖的任务加载；仅在房间诊断时加载 visual 的测试运行器。
-    const { test } = await import('@playwright/test');
     const diagnostic = { ...roomDiagnostic(body), bodyRead };
-    await test.info().attach(`${operation}-rejection`, { body: JSON.stringify(diagnostic), contentType: 'application/json' });
-  } catch { /* 附件失败不能覆盖房间拒绝。 */ }
+    try {
+      // 共享请求辅助代码也由仅安装 e2e 依赖的任务加载；仅在失败诊断时加载 visual 的测试运行器。
+      const { test } = await import('@playwright/test');
+      await test.info().attach(`${operation}-rejection`, { body: JSON.stringify(diagnostic), contentType: 'application/json' });
+    } catch {
+      // 附件上下文不可用时仍保留有限分类；不输出异常或响应正文。
+      console.warn(`${operation}-rejection ${JSON.stringify(diagnostic)}`);
+    }
+  } catch { /* 诊断失败不能覆盖原始拒绝。 */ }
 }

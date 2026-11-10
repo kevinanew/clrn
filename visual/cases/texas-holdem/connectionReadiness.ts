@@ -1,5 +1,5 @@
 /** 德州初始化期间持续检查完整就绪状态，并只通过应用重试入口恢复连接。 */
-import { expect, type Page } from '@playwright/test';
+import { errors, expect, type Page } from '@playwright/test';
 import { recordDiagnostic } from '../../src/support/connectionDiagnostics';
 
 const required = ['countdown-text', 'texas-holdem-start-room-timer-button',
@@ -53,6 +53,9 @@ export async function waitForGameConnection(page: Page, timeout = 90_000): Promi
     recordDiagnostic(page, '德州初始化完成', { attempt: attempts });
   } catch (error) {
     recordDiagnostic(page, '德州初始化失败', { attempt: attempts, limit: retryLimit, timeoutMs: timeout });
+    if (error instanceof errors.TimeoutError) {
+      throw new Error('德州牌桌应完整就绪，且无加载遮罩或错误弹窗', { cause: error });
+    }
     throw error;
   }
 }

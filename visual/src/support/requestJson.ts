@@ -6,6 +6,14 @@ import { attachRoomRejection } from './roomRejectionDiagnostics';
 type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'>;
 
 /**
+ * 仅允许本轮失败接口进入有限响应诊断。
+ * @param operation - 代码固定的逻辑操作。
+ */
+function needsRejectionDiagnostic(operation: string): operation is 'room-delete' | 'room-create' | 'leaderboard-statistics' {
+  return ['room-delete', 'room-create', 'leaderboard-statistics'].includes(operation);
+}
+
+/**
  * 读取 HTTP 和业务均成功的 JSON，保留错误阶段与实际响应状态。
  * @param response - 已收到的真实响应。
  * @param operation - 代码固定的逻辑操作。
@@ -13,7 +21,7 @@ type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'>;
 export async function readRequestJson(response: JsonResponse, operation: string) {
   const status = response.status();
   if (!response.ok()) {
-    if (operation === 'room-delete' || operation === 'room-create') {
+    if (needsRejectionDiagnostic(operation)) {
       try { await attachRoomRejection(await response.json(), operation); }
       catch (error) {
         await attachRoomRejection(null, operation, error instanceof SyntaxError ? 'invalid-json' : 'body-read-failed');
@@ -26,7 +34,10 @@ export async function readRequestJson(response: JsonResponse, operation: string)
   catch (error) {
     throw requestFailure(operation, error instanceof SyntaxError ? 'invalid-json' : 'body-read-failed', status);
   }
-  if (body?.ok !== true) throw requestFailure(operation, 'business-rejected', status);
+  if (body?.ok !== true) {
+    if (operation === 'room-create') await attachRoomRejection(body, operation);
+    throw requestFailure(operation, 'business-rejected', status);
+  }
   return body;
 }
 
