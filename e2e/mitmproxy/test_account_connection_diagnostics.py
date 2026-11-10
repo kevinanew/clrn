@@ -84,3 +84,44 @@ class RoomConnectionTests(unittest.TestCase):
         self.assertEqual(recorder.targets, {})
         # 用固定匿名标识验证空连接不会产生诊断字段。
         self.assertIsNone(recorder.fields(None, lambda _: 'anonymous-node'))
+
+
+class AccountLifecycleTests(unittest.TestCase):
+    """验证实际钩子连接可与不同的 flow 占位连接关联，且异常隔离。"""
+    def test_real_connection_replaces_placeholder_without_leaking_target(self):
+        """复现本轮 flow 未建连而真实连接尚不明的诊断缺口。"""
+        from account_connection_diagnostics import AccountConnections
+        diagnostics = AccountConnections()
+        placeholder = SimpleNamespace(timestamp_start=None, timestamp_tcp_setup=None,
+                                      timestamp_tls_setup=None, tls=True)
+        flow = SimpleNamespace(request=SimpleNamespace(path='/v11/user/private-user/account',
+                               host='private.invalid', port=443), server_conn=placeholder,
+                               client_conn=SimpleNamespace(id='client-id'))
+        diagnostics.observe(flow)
+        real = SimpleNamespace(address=('private.invalid', 443), id='actual-connection',
+                               timestamp_start=1, timestamp_tcp_setup=2,
+                               timestamp_tls_setup=None, tls=True, error='private error with token')
+        data = SimpleNamespace(client=flow.client_conn, server=real)
+        # 用固定匿名节点标识验证诊断字段不会泄露目标信息。
+        fields = diagnostics.fields(data, lambda _: 'anonymous-node')
+        self.assertEqual(fields['upstreamConnectionId'], 'actual-connection')
+        self.assertEqual(fields['phase'], 'account-hook-tls-pending')
+        self.assertEqual(account_connection_fields(flow), {'phase': 'account-connect-not-started'})
+        self.assertNotIn('private', str(fields))
+        real.address = ('unrelated.invalid', 443)
+        # 无关地址使用固定匿名节点标识，不应匹配已观察的目标。
+        self.assertIsNone(diagnostics.fields(data, lambda _: 'anonymous-node'))
+        # 空上下文使用固定匿名节点标识，也不应产生诊断字段。
+        self.assertIsNone(diagnostics.fields(None, lambda _: 'anonymous-node'))
+
+    def test_bounded_associations_and_broken_observation(self):
+        """大量上下文仍保持上限，诊断读取异常不向调用者传播。"""
+        from account_connection_diagnostics import AccountConnections
+        diagnostics = AccountConnections()
+        diagnostics.observe(None)
+        for index in range(1001):
+            flow = SimpleNamespace(request=SimpleNamespace(path='/v11/user/private/account',
+                                   host='private.invalid', port=443), server_conn=SimpleNamespace(timestamp_start=None),
+                                   client_conn=SimpleNamespace(id=str(index)))
+            diagnostics.observe(flow)
+        self.assertEqual(len(diagnostics.targets), 1000)
