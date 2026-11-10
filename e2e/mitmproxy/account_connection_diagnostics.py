@@ -119,9 +119,10 @@ class RoomConnections:
 def is_room_path(value):
     """仅匹配建房及私人房列表依赖，忽略查询参数。"""
     path = urlsplit(value).path
-    return path in ('/v3/pay_action/batch/price', '/v2/building/rooms') or bool(re.fullmatch(
+    return path in ('/v3/pay_action/batch/price', '/v2/building/rooms', '/v1/game_log/room/game_amount') or bool(re.fullmatch(
         r'/v10/(?:profile|house/user|wallet)/[^/]+', path)) or bool(re.fullmatch(
-        r'/v1/room/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', path))
+        r'/v1/room/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', path)) or bool(re.fullmatch(
+        r'/v10/texas_holdem/room/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}/user_settings', path))
 
 
 def connection_reason(connection):

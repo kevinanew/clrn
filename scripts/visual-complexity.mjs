@@ -1,3 +1,4 @@
+import { captureSupportFiles, captureFiles } from './visual-complexity-capture-scope.mjs';
 import { ESLint } from 'eslint';
 import { relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -17,7 +18,7 @@ export function visualComplexityFiles(animationsOnly = false, entrypointsOnly = 
   for (const file of required) {
     if (!files.includes(file)) throw new Error(`视觉复杂度检查缺少文件：${file}`);
   }
-  return [...new Set([...required, ...scopedSupportFiles(files, animationsOnly, entrypointsOnly, browserOnly), ...files.filter(/** 根据当前条目计算结果。
+  return [...new Set([...required, ...scopedSupportFiles(files, animationsOnly, entrypointsOnly, browserOnly), ...defaultCaptureFiles(animationsOnly, entrypointsOnly, browserOnly), ...files.filter(/** 根据当前条目计算结果。
  * @param file - 当前回调参数。 */ file => /^scripts\/visual-complexity.*\.mjs$/.test(file))])];
 }
 
@@ -148,10 +149,36 @@ function scopedBrowserFiles(files, animationsOnly, entrypointsOnly) { return ani
  * @param args - 命令行参数。
  * @returns 正式入口需要检查的文件。 */
 function commandFiles(args) {
-  const modes = ['--animations', '--entrypoints', '--browser-support'];
+  const modes = ['--animations', '--entrypoints', '--browser-support', '--capture'];
   const selected = modes.filter(/** 按显式模式选择范围。
    * @param mode - 定向参数。 */ mode => args.includes(mode));
   if (selected.length > 1) throw new Error('复杂度定向模式不能同时使用');
-  return visualComplexityFiles(...modes.map(/** 保留已有 API 的参数顺序。
+  if (args.includes('--capture')) return captureComplexityFiles();
+  return visualComplexityFiles(...modes.slice(0, 3).map(/** 保留已有 API 的参数顺序。
    * @param mode - 定向参数。 */ mode => args.includes(mode)));
 }
+
+/** 扫描采集范围及共享门禁。
+ * @returns 采集范围文件。 */
+export function captureComplexityFiles() {
+  const files = sourceFiles();
+  for (const file of captureSupportFiles) {
+    if (!files.includes(file)) throw new Error(`动画采集复杂度检查缺少文件：${file}`);
+  }
+  return [...new Set([...captureFiles(files), 'eslint.config.mjs', ...files.filter(isVisualCheckFile)])];
+}
+
+/** 默认检查包含采集范围。
+ * @param animationsOnly - 动画范围。
+ * @param entrypointsOnly - 入口范围。
+ * @param browserOnly - 页面支持范围。
+ * @returns 采集文件。 */
+function defaultCaptureFiles(animationsOnly, entrypointsOnly, browserOnly) {
+  if (animationsOnly || entrypointsOnly || browserOnly) return [];
+  return captureComplexityFiles();
+}
+
+/** 判断共享视觉门禁文件。
+ * @param file - 文件路径。
+ * @returns 是否为门禁文件。 */
+function isVisualCheckFile(file) { return /^scripts\/visual-complexity.*\.mjs$/.test(file); }

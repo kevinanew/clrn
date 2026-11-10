@@ -31,13 +31,7 @@ const menuPanels = [
  * @param clip - 固定牌桌画幅。
  */
 export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'zhajinhua', clip: CaptureArea): Promise<void> {
-  if (game === 'zhajinhua') {
-    const arrows = page.locator('[data-testid^="seat-guide-"] img').locator('..');
-    await waitForSeatGuideStart(page, arrows);
-    await captureTimeline(page, info, 'zhajinhua-seat-guides', arrows,
-      { clip, times: [0, 160, 500, 1000, 1500, 2000], requireMotion: true });
-  }
-  const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
+  await captureSeatGuides(page, info, game, clip);
   await exercisePopup(page, info, { name: `${game}-menu`, target: page.getByTestId('drawer-menu-item-exit'), clip,
     open: /** 点击真实入口。 */ () => press(page, 'menu-button'), close: /** 通过实际按钮或遮罩关闭。 */ () => closeTableMask(page, 'drawer-menu-item-exit') });
   for (const panel of menuPanels) {
@@ -51,12 +45,61 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
         }, close: /** 通过实际按钮或遮罩关闭。 */ () => press(page, panel.close) });
     });
   }
-  for (const panel of [
+  await captureDirectPanels(page, info, game, clip);
+  await expect(visible(page, 'menu-button')).toBeVisible();
+}
+
+/**
+ * 在同一房间中记录子流程名称，失败保留对应的准备位置。
+ * @param info - 当前报告。
+ * @param name - 面板名称。
+ * @param task - 面板动画流程。
+ */
+async function testStep(info: TestInfo, name: string, task: () => Promise<void>): Promise<void> {
+  info.annotations.push({ type: 'panel', description: name });
+  await task();
+}
+
+/**
+ * 拼三张座位提示保留原相位和关键帧。
+ * @param page - 当前牌桌。
+ * @param info - 用例报告。
+ * @param game - 游戏名称。
+ * @param clip - 固定画幅。
+ */
+async function captureSeatGuides(page: Page, info: TestInfo, game: 'texas' | 'zhajinhua', clip: CaptureArea): Promise<void> {
+  if (game === 'zhajinhua') {
+    const arrows = page.locator('[data-testid^="seat-guide-"] img').locator('..');
+    await waitForSeatGuideStart(page, arrows);
+    await captureTimeline(page, info, 'zhajinhua-seat-guides', arrows,
+      { clip, times: [0, 160, 500, 1000, 1500, 2000], requireMotion: true });
+  }
+}
+
+/**
+ * 列出游戏自己的真实面板入口。
+ * @param game - 游戏名称。
+ * @returns 入口和关闭标记。
+ */
+function directPanels(game: 'texas' | 'zhajinhua'): { name: string; open: string; marker: string; close?: string }[] {
+  const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
+  return [
     { name: 'leaderboard', open: game === 'texas' ? `${prefix}-leaderboard-button` : 'zhajinhua-learder-borard-button', marker: 'public-leader-board-container' },
     { name: 'records', open: 'game-record-button', marker: 'review-board-description-text' },
     { name: 'chat', open: `${prefix}-chat-button`, marker: 'in-game-chat-animated-view', close: 'in-game-chat-mask' },
     { name: 'applications', open: 'buy-in-application-button', marker: 'buy-in-application-list' },
-  ]) {
+  ];
+}
+
+/**
+ * 逐个打开直接面板，保留排行榜的真实请求等待。
+ * @param page - 当前牌桌。
+ * @param info - 用例报告。
+ * @param game - 游戏名称。
+ * @param clip - 固定画幅。
+ */
+async function captureDirectPanels(page: Page, info: TestInfo, game: 'texas' | 'zhajinhua', clip: CaptureArea): Promise<void> {
+  for (const panel of directPanels(game)) {
     await exercisePopup(page, info, { name: `${game}-${panel.name}`, target: page.getByTestId(panel.marker), clip,
       open: /** 点击真实入口；排行榜完成请求后再采样动画，避免网络快慢决定“加载中”画面。 */ async () => {
         await press(page, panel.open);
@@ -71,16 +114,4 @@ export async function tablePanels(page: Page, info: TestInfo, game: 'texas' | 'z
       }, close: /** 通过实际按钮或遮罩关闭。 */ () => panel.close
         ? press(page, panel.close) : closeTableMask(page, panel.marker) });
   }
-  await expect(visible(page, 'menu-button')).toBeVisible();
-}
-
-/**
- * 在同一房间中记录子流程名称，失败保留对应的准备位置。
- * @param info - 当前报告。
- * @param name - 面板名称。
- * @param task - 面板动画流程。
- */
-async function testStep(info: TestInfo, name: string, task: () => Promise<void>): Promise<void> {
-  info.annotations.push({ type: 'panel', description: name });
-  await task();
 }
