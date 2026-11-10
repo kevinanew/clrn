@@ -1,3 +1,4 @@
+import { paceNetworkClock } from '../../animations/networkClock';
 import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import type { TexasProxy } from './proxy';
@@ -28,6 +29,8 @@ export async function captureGameplay(page: Page, scenario: VisualScenario, prox
   const self = await page.evaluate(/** 读取当前登录用户标识，关联德州游戏操作与代理场景。 */ () => JSON.parse(
     localStorage.getItem('save.user.origin.data.from.server.key') || '{}').user_id as string);
   // 连接成功后控制页面时钟；每步只推进确定时长，固定倒计时和筹码动画。
+  // 连续牌局采样需给真实心跳相同的经过时间，避免虚拟时间抢先触发断线。
+  paceNetworkClock(page);
   await freezeClock(page);
   let index = 0;
   /**
