@@ -1,5 +1,5 @@
 import { launchAnimationBrowser } from './appSessionBrowser';
-/** 离线验证牌桌连接弹窗恢复及重试上限。 */
+/** 离线验证牌桌健康缓存过期后恢复及重试上限。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { waitForTableConnection } from './tableSession';
@@ -14,14 +14,19 @@ for (const { id, persistent } of cases) {
     try {
       const page = await browser.newPage();
       await page.setContent(`<div data-testid="common-alert-container">
-        <span data-testid="common-alert-message">timeout of 10000ms exceeded</span>
+        <span data-testid="common-alert-message">Connection Timeout</span>
         <button data-testid="alert-custom-button">Cancel</button>
-        <button id="retry" data-testid="${id}">Retry</button></div><output>0</output>`);
+        <button id="retry" data-testid="${id}">Retry</button></div><output data-probes="0">0</output>`);
       await page.evaluate(/** 绑定牌桌重试按钮，按场景控制提示持续存在或恢复就绪。
  * @param persistent - 当前操作使用的 persistent。 */ persistent => {
+        let cachedUntil = Date.now() + 10_000;
         document.querySelector('#retry')!.addEventListener('click', /** 累计重试次数，非持续失败场景中移除提示并生成就绪入口。 */ () => {
           const output = document.querySelector('output')!;
           output.textContent = String(Number(output.textContent) + 1);
+          // 与本轮 Release 一样，缓存未过期的点击不会重新探测或恢复连接。
+          if (Date.now() < cachedUntil) return;
+          output.dataset.probes = String(Number(output.dataset.probes) + 1);
+          cachedUntil = Date.now() + 10_000;
           if (!persistent) {
             document.querySelector('div')!.remove();
             const ready = document.createElement('button');
@@ -33,7 +38,9 @@ for (const { id, persistent } of cases) {
       const waiting = waitForTableConnection(page, 'texas', 'texas-holdem');
       if (persistent) await assert.rejects(waiting, /牌桌未就绪，应用提示/);
       else await waiting;
-      assert.equal(await page.locator('output').textContent(), persistent ? '3' : '1');
+      const expected = persistent ? '3' : '1';
+      assert.equal(await page.locator('output').textContent(), expected);
+      assert.equal(await page.locator('output').getAttribute('data-probes'), expected);
     } finally { await browser.close(); }
   });
 }

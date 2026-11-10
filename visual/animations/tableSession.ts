@@ -69,7 +69,7 @@ async function recoverRoomForm(page: Page, error: unknown, attempt: number, room
  */
 export async function waitForTableConnection(page: Page, game: string, prefix: string) {
   const connection = { state: 'loading' };
-  const retryState = { retries: 0 };
+  const retryState = { retries: 0, retryAfter: 0, cacheWaitMs: game === 'texas' ? 10_000 : 0 };
   // 连接超时也会使用自定义 Alert，其按钮没有 common-alert 的业务 ID。
   const retry = visible(page, 'common-alert-button-retry').or(
     page.locator('[data-testid="alert-custom-button"]:visible').filter({ hasText: /^Retry$/ }),
@@ -222,20 +222,31 @@ function roomRecoveryMessage(preflightOnly: boolean): string {
 }
 
 /**
- * 只点击前三次重试，第四次发现弹窗时保留 alert 状态。
+ * 德州健康结果缓存十秒；过期后才点击前三次重试，第四次保留 alert 状态。
  * @param page - 当前牌桌。
  * @param retry - 真实重试按钮。
  * @param state - 当前重试次数。
  * @param connection - 轮询结果。
  */
 async function retryTableConnection(page: Page, retry: import('@playwright/test').Locator,
-  state: { retries: number }, connection: { state: string }): Promise<void> {
+  state: { retries: number; retryAfter: number; cacheWaitMs: number }, connection: { state: string }): Promise<void> {
   if (state.retries >= 3) connection.state = 'alert';
   else {
+    if (!tableRetryDue(state)) return;
     state.retries += 1;
+    state.retryAfter = 0;
     recordDiagnostic(page, '重试牌桌连接', { attempt: state.retries });
     await retry.click();
   }
+}
+
+/**
+ * 从弹窗出现后计时，确保最后一个探测结果也已超过 Release 的缓存有效期。
+ * @param state - 当前连接重试的缓存等待时间。
+ */
+function tableRetryDue(state: { retryAfter: number; cacheWaitMs: number }): boolean {
+  state.retryAfter ||= Date.now() + state.cacheWaitMs;
+  return Date.now() >= state.retryAfter;
 }
 
 /**
