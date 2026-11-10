@@ -18,6 +18,7 @@ class DiagnosticTests(unittest.TestCase):
         request = flow('https://fixture.invalid/v11/user/private-user/account')
         diagnostics.account_connections.observe(request)
         server = request.server_conn
+        server.address = (request.request.host, request.request.port)
         server.timestamp_start = 1
         server.timestamp_tcp_setup = None
         data = SimpleNamespace(client=request.client_conn, server=server)
