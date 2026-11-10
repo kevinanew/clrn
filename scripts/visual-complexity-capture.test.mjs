@@ -18,6 +18,46 @@ function probe(complexity) {
   return `export function probe(x) { ${'if (x) x++;'.repeat(complexity - 1)} return x; }`;
 }
 
+/**
+ * 生成独立计数的嵌套箭头回调，覆盖提取辅助实现中的回调边界。
+ * @param complexity - 回调需要达到的复杂度。
+ * @returns 临时回调源码。
+ */
+function nestedProbe(complexity) {
+  return `export const values = [1].map(x => { ${'if (x) x++;'.repeat(complexity - 1)} return x; });`;
+}
+
+const extractedSupportFiles = [
+  'visual/animations/appSessionBrowser.ts',
+  'visual/animations/cardSpriteReadinessState.ts',
+  'visual/animations/cardSpriteReadinessState.browser.ts',
+  'visual/animations/readinessTestHelpers.ts',
+  'visual/animations/slotBannerDiagnostics.ts',
+];
+const readinessSupportPaths = [
+  'visual/animations/readinessTestHelpers.ts',
+  'visual/animations/readinessTestHelpers.test.ts',
+  'visual/animations/readinessTestHelpersState.mjs',
+  'visual/animations/readinessTestHelpers/support.ts',
+];
+
+test('本 PR 实际提取模块独立于范围清单核对，两个入口均不得遗漏', /** 显式列出实际提取路径以发现清单自身的遗漏。 */ () => {
+  const capture = captureComplexityFiles();
+  const defaults = visualComplexityFiles();
+  for (const file of extractedSupportFiles) {
+    assert.ok(capture.includes(file), `采集入口遗漏 ${file}`);
+    assert.ok(defaults.includes(file), `默认入口遗漏 ${file}`);
+  }
+  assert.deepEqual(captureFiles(readinessSupportPaths), readinessSupportPaths);
+});
+
+for (const file of readinessSupportPaths) {
+  test(`${file} 实际辅助路径及相邻实现执行 3/4 边界`, /** 验证明确路径，避免断言依赖被测过滤器。 */ async () => {
+    assert.deepEqual(await checkVisualComplexityText(probe(3), file), []);
+    assert.ok((await checkVisualComplexityText(probe(4), file)).some(isComplexity));
+  });
+}
+
 for (const file of captureFiles(sourceFiles())) {
   test(`${file} 原模块、测试及拆出实现均执行 3/4 边界`, /** 逐路径验证实际配置。 */ async () => {
     assert.deepEqual(await checkVisualComplexityText(probe(3), file), []);
@@ -74,6 +114,22 @@ test('npm 定向入口实际阻断辅助实现 4、禁用指令与解析错误�
     assertVisualGateStatus(directory, file, 'export function (', 1, '--capture');
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
+
+for (const modes of [['--capture'], []]) {
+  for (const [name, source] of [['普通函数', probe], ['嵌套回调', nestedProbe]]) {
+    test(`npm ${modes.join(' ') || '默认'}入口对实际就绪辅助模块的${name}执行 3/4 边界并拒绝禁用注释`, /** 在隔离副本替换曾漏扫的真实路径。 */ () => {
+      const directory = isolatedVisualRepository();
+      const file = path.join(directory, 'visual/animations/readinessTestHelpers.ts');
+      try {
+        assertVisualGateStatus(directory, file, source(3), 0, ...modes);
+        const failure = assertVisualGateStatus(directory, file, source(4), 1, ...modes);
+        assert.match(failure.stderr, /readinessTestHelpers\.ts:.*complexity:.*complexity of 4.*Maximum allowed is 3/);
+        assertVisualGateStatus(directory, file, `/* eslint-disable complexity */\n${source(4)}`, 1, ...modes);
+        assertVisualGateStatus(directory, file, `/* eslint complexity: ["error", 99] */\n${source(4)}`, 1, ...modes);
+      } finally { rmSync(directory, { recursive: true, force: true }); }
+    });
+  }
+}
 
 test('npm 定向与默认入口都阻断工具 7，工具 6 通过', /** 共享工具采用精确 6/7 边界。 */ () => {
   const directory = isolatedVisualRepository();

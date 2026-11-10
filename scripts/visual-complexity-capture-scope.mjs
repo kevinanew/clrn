@@ -42,6 +42,7 @@ export const captureSupportFiles = [
   'visual/animations/playwright.config.ts',
   'visual/animations/popups.browser.ts',
   'visual/animations/popups.ts',
+  'visual/animations/readinessTestHelpers.ts',
   'visual/animations/renderReadiness.browser.ts',
   'visual/animations/renderReadiness.ts',
   'visual/animations/renewReadiness.browser.ts',
