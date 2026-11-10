@@ -1,4 +1,5 @@
 import { enableGameSettings } from '../_shared/gameSettings';
+import { paceNetworkClock } from '../../animations/networkClock';
 import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
@@ -19,6 +20,8 @@ type Capture = (page: Page, scenario: VisualScenario, state: string) => Promise<
 export async function capturePanels(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   roomId: string, capture: Capture): Promise<void> {
   const self = await selfId(page);
+  // 连续面板采样仍连接真实牌桌；沿用动画套件的节奏，避免快进抢先触发心跳超时。
+  paceNetworkClock(page);
   await freezeClock(page);
   let index = 0;
   /**
