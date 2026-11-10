@@ -6,6 +6,7 @@ import { resetViewportScroll } from './renderReadiness';
 import { selectScenario } from '../../e2e/helpers/scenario-proxy';
 import { installConnectionDiagnostics } from '../src/support/connectionDiagnostics';
 import { lockBottomSheetDocumentScroll } from './bottomSheetScroll';
+import { saveFailedClockControl } from './failedClockControl';
 
 test('guest search confirmation enter and exit', /** 验证游客搜索确认弹窗的进入与退出动画。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。
@@ -83,8 +84,13 @@ test('club rooms empty state fades in', /** 验证俱乐部房间空态的淡入
   await freeze(page);
   await press(page, 'club_tab_room');
   await page.clock.runFor(16);
-  await expect(target).toBeAttached();
-  await captureTimeline(page, info, 'club-empty', target, { startOffset: 16, requireMotion: true });
+  try {
+    await expect(target).toBeAttached();
+    await captureTimeline(page, info, 'club-empty', target, { startOffset: 16, requireMotion: true });
+  } catch (error) {
+    await saveFailedClockControl(page, info);
+    throw error;
+  }
 });
 
 test('hall matching spinner modal enter and exit', /** 验证大厅匹配等待弹窗的进入与退出动画。

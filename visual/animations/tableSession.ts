@@ -41,7 +41,6 @@ async function createRoomWithRetry(page: Page, game: 'texas' | 'zhajinhua',
   }
   throw new Error('建房未返回本轮房间');
 }
-
 /**
  * 已知的表单读取超时允许返回入口，其他错误保留原始失败。
  * @param page - 建房页面。
@@ -60,15 +59,14 @@ async function recoverRoomForm(page: Page, error: unknown, attempt: number, room
   await visible(page, 'navigation-bar-back-image').last().click();
   await expect(visible(page, 'create-game-button').last()).toBeVisible({ timeout: 90_000 });
 }
-
 /**
  * 等待牌桌连接，保留重试上限及应用错误诊断。
  * @param page - 牌桌页面。
  * @param game - 游戏类型。
  * @param prefix - 牌桌控件前缀。
- * @param readyId - 当前房间类型实际提供的就绪控件。
+ * @param ready - 当前房间模式的就绪判定或控件标识。
  */
-export async function waitForTableConnection(page: Page, game: string, prefix: string, readyId = `${prefix}-start-room-timer-button`) {
+export async function waitForTableConnection(page: Page, game: string, prefix: string, ready: string | (() => Promise<boolean>) = `${prefix}-start-room-timer-button`) {
   const connection = { state: 'loading' };
   // 德州选线失败后会避让节点 120 秒，需留出避让结束后重新探测及订阅的时间。
   const timing = game === 'texas' ? { cacheWaitMs: 10_000, timeout: 180_000 } : { cacheWaitMs: 0, timeout: 90_000 };
@@ -79,12 +77,20 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
   ).last();
   await expect.poll(/** 轮询牌桌连接状态，有限重试后保留明确的连接失败状态。 */ async () => {
     if (await retry.isVisible()) await retryTableConnection(page, retry, retryState, connection);
-    else if (await visible(page, readyId).isVisible()) connection.state = 'ready';
+    else if (await tableReady(page, ready)) connection.state = 'ready';
     return connection.state;
   }, { timeout: timing.timeout, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
   await assertTableConnected(page, game, connection.state);
 }
-
+/**
+ * 判断当前房间的指定控件或自定义条件是否就绪。
+ * @param page - 当前牌桌页面。
+ * @param ready - 就绪控件标识或判断函数。
+ * @returns 是否已就绪。
+ */
+async function tableReady(page: Page, ready: string | (() => Promise<boolean>)): Promise<boolean> {
+  return typeof ready === 'string' ? visible(page, ready).isVisible() : ready();
+}
 /**
  * 使用真实登录和创建入口建立隔离回放房间，无论断言结果如何都精确清理本轮房间。
  * @param browser - Playwright 浏览器。
@@ -122,7 +128,6 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     finally { await context.close(); }
   }
 }
-
 /**
  * 使用原有视口和登录用户采样牌桌。
  * @param page - 牌桌页面。
@@ -139,7 +144,6 @@ async function sampleTable(page: Page, info: TestInfo, room: RoomSession,
   await task({ page, roomId: room.roomId, self,
     clip: { x: Math.floor((viewport.width - width) / 2), y: 0, width, height: viewport.height } });
 }
-
 /**
  * 保留原始错误对象并清理诊断中的敏感字段。
  * @param error - 采样失败。
@@ -147,7 +151,6 @@ async function sampleTable(page: Page, info: TestInfo, room: RoomSession,
 function sanitizeTableError(error: unknown) {
   if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
 }
-
 /**
  * 只清理本轮已登记的房间。
  * @param room - 建房响应登记的房间。
@@ -155,7 +158,6 @@ function sanitizeTableError(error: unknown) {
 async function deleteRegisteredRoom(room?: RoomSession) {
   if (room) await deletePrivateGameRoom(room);
 }
-
 /**
  * 诊断快照缺失或失败时保留不完整状态，不据此允许重试。
  * @param snapshot - 可选的代理快照读取器。
@@ -164,7 +166,6 @@ async function deleteRegisteredRoom(room?: RoomSession) {
 async function optionalProxySnapshot(snapshot?: () => Promise<ProxySnapshot>): Promise<ProxySnapshot | undefined> {
   return snapshot?.().catch(/** 诊断失败不能覆盖建房错误。 */ () => undefined);
 }
-
 /**
  * 两次完整记录都存在才核对真实预检边界。
  * @param before - 建房前记录。
@@ -368,16 +369,22 @@ async function enterSampleTable(page: Page, room: RoomSession, game: 'texas' | '
   const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
   if (hall) {
     await enterTexasRoom(page, room);
-    await waitForHallSubscription(proxy);
-  } else await waitForTableConnection(page, game, prefix);
+    await waitForHallConnection(page, game, prefix, proxy);
+  }
+  else await waitForTableConnection(page, game, prefix);
 }
 
 /**
- * 等待大厅房间订阅完成。
+ * 等待大厅订阅及工具栏就绪。
+ * @param page - 当前页面。
+ * @param game - 游戏名称。
+ * @param prefix - 游戏标记前缀。
  * @param proxy - 当前场景代理。
  */
-async function waitForHallSubscription(proxy: TableProxy): Promise<void> {
+async function waitForHallConnection(page: Page, game: string, prefix: string, proxy: TableProxy): Promise<void> {
   await proxy.waitForRoomSubscription?.();
+  await waitForTableConnection(page, game, prefix, /** 大厅加载完成且工具栏可见。 */ async () =>
+    !await visible(page, 'game-splash-screen-bg').isVisible() && await visible(page, 'menu-button').isVisible());
 }
 
 /**

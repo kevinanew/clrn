@@ -1,6 +1,7 @@
 /** 从既有入口的真实节点资料和本轮发布包生成确切来源，不保存连接默认值。 */
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { metadataHosts } from './mitmproxy-metadata';
 import { stagingUserOrigin } from '../cases/_shared/test-user';
 
 /**
@@ -10,8 +11,7 @@ import { stagingUserOrigin } from '../cases/_shared/test-user';
 function origin(value: string): string {
   try {
     const url = new URL(value);
-    if (url.protocol === 'https:' && !url.username && !url.password
-      && url.pathname === '/' && !url.search && !url.hash) return url.origin;
+    if (isOriginUrl(url)) return url.origin;
   } catch { /* 统一报告，不附带原始输入。 */ }
   throw new Error('laiwan_proxy 来源配置无效');
 }
@@ -23,13 +23,45 @@ function origin(value: string): string {
 async function feedbackOrigin(environment: NodeJS.ProcessEnv): Promise<string | undefined> {
   if (environment.MITMPROXY_FEEDBACK_ORIGIN) return origin(environment.MITMPROXY_FEEDBACK_ORIGIN);
   if (!environment.CLRN_RELEASE_WEB_ROOT) return undefined;
-  const directory = path.join(environment.CLRN_RELEASE_WEB_ROOT, '_expo/static/js/web');
+  return releaseFeedbackOrigin(environment.CLRN_RELEASE_WEB_ROOT);
+}
+
+/**
+ * 只接受无认证、路径及查询的 HTTPS 来源。
+ * @param url - 已解析来源。
+ */
+function isOriginUrl(url: URL): boolean {
+  return [url.protocol === 'https:', !url.username, !url.password, url.pathname === '/', !url.search, !url.hash].every(Boolean);
+}
+
+/**
+ * 从单个反馈组件行读取 staging 分支。
+ * @param source - 当前发布脚本。
+ */
+function feedbackAddress(source: string): string | undefined {
+  const component = source.split('\n').find(/** 只定位已登记的反馈组件。
+   * @param line - 脚本行。 */ line => line.includes('testID:"feedback-user-report-screen"'));
+  return component?.match(/isStagingEnvironment\(\)\?'(https:\/\/[^']+)'/)?.[1];
+}
+
+/**
+ * 读取匹配的发布脚本，不尝试解析其他文件。
+ * @param directory - 发布脚本目录。
+ * @param file - 目录项。
+ */
+async function feedbackInFile(directory: string, file: string): Promise<string | undefined> {
+  if (!/^index-.*\.js$/.test(file)) return undefined;
+  return feedbackAddress(await readFile(path.join(directory, file), 'utf8'));
+}
+
+/**
+ * 按原有目录顺序寻找第一个可识别的反馈入口。
+ * @param root - 本轮发布包目录。
+ */
+async function releaseFeedbackOrigin(root: string): Promise<string> {
+  const directory = path.join(root, '_expo/static/js/web');
   for (const file of await readdir(directory)) {
-    if (!/^index-.*\.js$/.test(file)) continue;
-    const source = await readFile(path.join(directory, file), 'utf8');
-    const component = source.split('\n').find(/** 查找满足以下条件的首个条目：`line.includes('testID:"feedback-user-report-screen"')`。
- * @param line - 当前操作使用的 line。 */ line => line.includes('testID:"feedback-user-report-screen"'));
-    const address = component?.match(/isStagingEnvironment\(\)\?'(https:\/\/[^']+)'/)?.[1];
+    const address = await feedbackInFile(directory, file);
     if (address) return origin(new URL(address).origin);
   }
   throw new Error('本轮发布包未提供可识别的 laiwan_proxy 反馈来源，请明确提供运行输入');
@@ -38,57 +70,60 @@ async function feedbackOrigin(environment: NodeJS.ProcessEnv): Promise<string | 
 const sources = new Map<string, Promise<NodeJS.ProcessEnv>>();
 
 /**
- * 按应用的只读 POST 契约读取节点；仅报告固定阶段和状态码，隐藏底层连接资料。
- * @param base - 经过校验的既有入口。
- */
-async function metadataHosts(base: string): Promise<string[]> {
-  const failure = /**
-   * 只包含预先定义的失败类别。
-   * @param reason - 固定阶段或响应状态码。
-   */ (reason: string) => new Error(`读取 laiwan_proxy 真实节点资料失败（${reason}），未启动响应夹具`);
-  let response: Response;
-  try {
-    response = await fetch(`${base}/public/v13/metadata/servers`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      redirect: 'error', signal: AbortSignal.timeout(15_000),
-    });
-  } catch (error) {
-    throw failure(error instanceof Error && error.name === 'TimeoutError' ? '请求超时' : '传输失败');
-  }
-  if (!response.ok) throw failure(`HTTP ${response.status}`);
-  let body;
-  try { body = await response.json(); } catch { throw failure('JSON 解析失败'); }
-  if (body?.ok !== true || !body.result?.servers || typeof body.result.servers !== 'object') {
-    throw failure('节点契约无效');
-  }
-  const servers = body.result.servers;
-  const names = Array.isArray(servers) ? servers : Object.keys(servers);
-  if (!names.length || !names.every(/** 确认所有条目均满足：`typeof name === 'string' && /^[a-zA-Z0-9.-]+$/.test(name)`。
- * @param name - 当前操作使用的 name。 */ (name: unknown) => typeof name === 'string'
-    && /^[a-zA-Z0-9.-]+$/.test(name))) throw failure('节点主机无效');
-  return [...new Set([new URL(base).hostname, ...names as string[]])];
-}
-
-/**
  * 只读请求真实 metadata，按返回的确切节点配置代理；不生成或修改 metadata 和健康响应。
  * @param environment - 本轮环境；离线回归通过明确主机列表与真实服务隔离。
  */
 export async function mitmproxySources(environment: NodeJS.ProcessEnv): Promise<NodeJS.ProcessEnv> {
   if (environment.MITMPROXY_API_HOSTS !== undefined) return environment;
-  const base = origin(environment.VISUAL_API_BASE_URL || stagingUserOrigin);
+  const base = sourceOrigin(environment);
   const key = JSON.stringify([base, environment.CLRN_RELEASE_WEB_ROOT, environment.MITMPROXY_FEEDBACK_ORIGIN]);
-  let pending = sources.get(key);
-  if (!pending) {
-    pending = (/** 汇总 API 主机及反馈来源，构造代理进程的环境变量。 */ async () => {
-      const hosts = await metadataHosts(base);
-      const feedback = await feedbackOrigin(environment);
-      return { MITMPROXY_API_HOSTS: JSON.stringify(hosts), MITMPROXY_FEEDBACK_ORIGIN: feedback };
-    })();
-    sources.set(key, pending);
-  }
+  const pending = pendingSources(key, base, environment);
   try { return { ...environment, ...await pending }; } catch (error) {
     // 当前调用仍然失败且不重试；后续独立初始化不能永久复用已经失败的结果。
-    if (sources.get(key) === pending) sources.delete(key);
+    removeFailedSources(key, pending);
     throw error;
   }
+}
+
+/**
+ * 选择运行输入或既有 staging 入口。
+ * @param environment - 当前环境。
+ */
+function sourceOrigin(environment: NodeJS.ProcessEnv): string {
+  return origin(environment.VISUAL_API_BASE_URL || stagingUserOrigin);
+}
+
+/**
+ * 共享同轮初始化；失败后由调用方清除，不自动重试。
+ * @param key - 来源缓存键。
+ * @param base - 已校验入口。
+ * @param environment - 当前运行输入。
+ */
+function pendingSources(key: string, base: string, environment: NodeJS.ProcessEnv): Promise<NodeJS.ProcessEnv> {
+  let pending = sources.get(key);
+  if (!pending) {
+    pending = discoverSources(base, environment);
+    sources.set(key, pending);
+  }
+  return pending;
+}
+
+/**
+ * 顺序读取真实节点及发布包反馈来源。
+ * @param base - 已校验入口。
+ * @param environment - 当前运行输入。
+ */
+async function discoverSources(base: string, environment: NodeJS.ProcessEnv): Promise<NodeJS.ProcessEnv> {
+  const hosts = await metadataHosts(base);
+  const feedback = await feedbackOrigin(environment);
+  return { MITMPROXY_API_HOSTS: JSON.stringify(hosts), MITMPROXY_FEEDBACK_ORIGIN: feedback };
+}
+
+/**
+ * 只清除本次失败对应的缓存，不删除后续独立初始化。
+ * @param key - 来源键。
+ * @param pending - 本次共享请求。
+ */
+function removeFailedSources(key: string, pending: Promise<NodeJS.ProcessEnv>): void {
+  if (sources.get(key) === pending) sources.delete(key);
 }

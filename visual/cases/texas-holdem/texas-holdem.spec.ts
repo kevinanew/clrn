@@ -23,6 +23,8 @@ import { captureTableStates } from './tableVariants';
 import { capturePanelVariants } from './panelVariants';
 import { captureHallVariants } from './hallVariants';
 import { selfId } from './replay';
+import { waitForGameConnection } from './connectionReadiness';
+import { saveFailedClockControl } from '../../animations/failedClockControl';
 import { waitForTableConnection } from '../../animations/tableSession';
 import config from '../../playwright.config';
 
@@ -88,22 +90,6 @@ async function alignGameToViewport(page: Page): Promise<void> {
     const element = node as HTMLElement;
     element.style.setProperty('translate', `0 ${amount}px`, 'important');
   }, correction);
-}
-
-/**
- * 等待游戏连接完成和加载指示消失，再进行牌桌操作。
- * @param page - 执行操作的 Playwright 页面。
- */
-async function waitForGameConnection(page: Page): Promise<void> {
-  await expect.poll(/** 等待牌桌倒计时，遇到应用连接提示时执行有限重试。 */ async () => {
-    if (await visible(page, 'countdown-text').isVisible()) return true;
-    const retry = visible(page, 'common-alert-button-retry');
-    if (await retry.isVisible()) { recordDiagnostic(page, '点击应用重试按钮'); await retry.click(); }
-    return false;
-  }, { timeout: 90_000, message: '德州牌桌应连上游戏服务' }).toBe(true);
-  await expect(visible(page, 'texas-holdem-start-room-timer-button')).toBeVisible({ timeout: 30_000 });
-  await expect(visible(page, 'menu-button')).toBeVisible({ timeout: 30_000 });
-  await expect(visible(page, 'texas-holdem-leaderboard-button')).toBeVisible({ timeout: 30_000 });
 }
 
 /**
@@ -281,6 +267,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       await diagnostics.save(error).catch(/** 记录德州诊断附件保存失败，保留原始案例错误。
  * @param failure - 当前操作使用的 failure。 */ failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
       await page.screenshot({ path: test.info().outputPath('failure.png') }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
+      await saveFailedClockControl(page, test.info(), scenario.pageLabel === 'signed_in_texas_panel_variants');
       if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
       throw error;
     } finally {
