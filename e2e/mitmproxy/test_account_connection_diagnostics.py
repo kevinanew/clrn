@@ -29,6 +29,9 @@ class AccountConnectionTests(unittest.TestCase):
         flow.request.path = '/v10/texas_holdem/room/00000000-0000-4000-8000-000000000001/user_settings?token=secret'
         self.assertEqual(account_connection_fields(flow), {'phase': 'room-transport-ready'})
         self.assertEqual(vars(connection), before)
+        flow.request.path = '/v3/pay_action/do?token=secret'
+        self.assertEqual(account_connection_fields(flow), {'phase': 'room-transport-ready'})
+        self.assertEqual(vars(connection), before)
         flow.request.path = '/v10/profile/private-user'
         self.assertEqual(account_connection_fields(flow), {})
 

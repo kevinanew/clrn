@@ -3,7 +3,7 @@ import { test as playwrightTest } from '@playwright/test';
 import test from 'node:test';
 import { readRequestJson } from './requestJson';
 
-const operation = 'room-delete';
+for (const operation of ['room-delete', 'room-create'] as const) {
 test(`${operation} HTTP 500 记录有限分类，正文或附件失败不覆盖 HTTP 错误`, /** 验证 HTTP 错误诊断及其失败优先级。
  * @param context - 当前测试的模拟范围。 */ async context => {
   const attachments: string[] = [];
@@ -40,3 +40,4 @@ test(`${operation} HTTP 500 记录有限分类，正文或附件失败不覆盖 
     await assert.rejects(readRequestJson({ ...response, json: /** 模拟正文解析或读取失败。 */ async () => { throw error; } }, operation), originalError);
   }
 });
+}
