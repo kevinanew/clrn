@@ -12,7 +12,13 @@ type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'>;
  */
 export async function readRequestJson(response: JsonResponse, operation: string) {
   const status = response.status();
-  if (!response.ok()) throw requestFailure(operation, 'http-error', status);
+  if (!response.ok()) {
+    if (operation === 'room-create') {
+      try { await attachRoomRejection(await response.json()); }
+      catch { /* 非 JSON 或正文读取失败不能覆盖原始 HTTP 错误。 */ }
+    }
+    throw requestFailure(operation, 'http-error', status);
+  }
   let body;
   try { body = await response.json(); }
   catch (error) {

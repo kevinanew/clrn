@@ -4,7 +4,7 @@ const categories = new Set(['server_error', 'invalid_parameter', 'permission_den
   'not_enough_diamond', 'invalid_token', 'room_limit_exceeded']);
 
 /**
- * 仅为建房业务拒绝保留有限分类、数字错误码和类型指纹，不输出正文、参数或自由文本。
+ * 为建房 HTTP 或业务拒绝保留有限分类、数字错误码和类型指纹，不输出正文、参数或自由文本。
  * @param body - 已读取的失败响应；不再次发送请求。
  */
 export async function attachRoomRejection(body: any): Promise<void> {
