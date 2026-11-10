@@ -14,6 +14,8 @@ def connection_scope(path):
     if urlsplit(path).path in ('/v3/pay_action/batch/price',) or (
             len(parts) == 4 and parts[1:3] == ['v10', 'wallet']):
         return 'renewal'
+    if len(parts) == 6 and parts[1:4] == ['v10', 'texas_holdem', 'room'] and parts[5] == 'profile':
+        return 'table'
     if len(parts) == 6 and parts[1:4] == ['v1', 'game_log', 'room'] and parts[5] == 'settlement':
         return 'settlement'
     if len(parts) == 6 and parts[1:3] == ['v11', 'game_log'] and parts[4] == 'play_session_record':

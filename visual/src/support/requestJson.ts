@@ -1,6 +1,7 @@
 /** 在读取响应的边界丢弃不可信诊断；实际 HTTP 状态在读取正文之前取得。 */
 import type { APIResponse } from '@playwright/test';
 import { requestFailure, requestErrorSummary } from './requestError';
+import { attachRoomRejection } from './roomRejectionDiagnostics';
 
 type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'>;
 
@@ -17,7 +18,10 @@ export async function readRequestJson(response: JsonResponse, operation: string)
   catch (error) {
     throw requestFailure(operation, error instanceof SyntaxError ? 'invalid-json' : 'body-read-failed', status);
   }
-  if (body?.ok !== true) throw requestFailure(operation, 'business-rejected', status);
+  if (body?.ok !== true) {
+    if (operation === 'room-create') await attachRoomRejection(body);
+    throw requestFailure(operation, 'business-rejected', status);
+  }
   return body;
 }
 

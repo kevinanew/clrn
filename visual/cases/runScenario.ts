@@ -7,6 +7,7 @@ import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
 import { preparePage } from '../src/support/preparePage';
 import { assertGuestClubReady } from './club/guestReadiness';
+import { screenshotWithArtworkDiagnostics } from './account/artworkDiagnostics';
 
 import { visualBaseUrl as baseUrl } from '../target';
 const backAccessibilityLabels = {
@@ -47,7 +48,7 @@ export async function runVisualScenario(
     // 截图前再次确认就绪元素，避免菜单退场后记录空白截图。
     await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
     await assertScenarioContent(page, scenario);
-    await expect(page).toHaveScreenshot(`${scenario.label}.png`);
+    await screenshotWithArtworkDiagnostics(page, scenario);
   } finally {
     await context.close();
   }

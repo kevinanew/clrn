@@ -32,8 +32,8 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         """为每个用例配置隔离来源环境、控制令牌和独立代理状态。"""
         self.enterContext(source_environment())
-        with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
-            self.proxy = GameRecordProxy()
+        self.enterContext(patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}))
+        self.proxy = GameRecordProxy()
         self.proxy.scenario = 'visual-stable'
         self.proxy.user_id = SELF
         self.proxy.mode = 'list'

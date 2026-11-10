@@ -32,6 +32,7 @@ class AccountConnectionTests(unittest.TestCase):
         for path, scope in (
                 ('/v3/pay_action/batch/price', 'renewal'),
                 ('/v10/wallet/private-user', 'renewal'),
+                ('/v10/texas_holdem/room/private-room/profile', 'table'),
                 ('/v1/game_log/room/private-room/settlement', 'settlement'),
                 ('/v11/game_log/private-user/play_session_record/private-session', 'record'),
                 ('/v2/centrifugo/connection/websocket', 'table')):
