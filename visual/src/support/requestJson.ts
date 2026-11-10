@@ -1,6 +1,7 @@
 /** 在读取响应的边界丢弃不可信诊断；实际 HTTP 状态在读取正文之前取得。 */
 import type { APIResponse } from '@playwright/test';
 import { requestFailure, requestErrorSummary } from './requestError';
+import { attachRoomRejection } from './roomRejectionDiagnostics';
 
 type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'>;
 
@@ -11,10 +12,22 @@ type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'>;
  */
 export async function readRequestJson(response: JsonResponse, operation: string) {
   const status = response.status();
-  if (!response.ok()) throw requestFailure(operation, 'http-error', status);
+  if (!response.ok()) {
+    await attachRoomHttpRejection(response, operation);
+    throw requestFailure(operation, 'http-error', status);
+  }
   const body = await parseResponseJson(response, operation, status);
   assertBusinessSuccess(body, operation, status);
   return body;
+}
+
+/** 仅为删房 HTTP 失败补充脱敏分类，不改变原始错误。
+ * @param response - 已收到的失败响应。
+ * @param operation - 代码固定的逻辑操作。 */
+async function attachRoomHttpRejection(response: JsonResponse, operation: string): Promise<void> {
+  if (operation !== 'room-delete') return;
+  try { await attachRoomRejection(await response.json(), operation); }
+  catch { /* 非 JSON 或正文读取失败不能覆盖原始 HTTP 错误。 */ }
 }
 
 /** 在读取正文的边界保留实际响应状态并丢弃不可信错误。

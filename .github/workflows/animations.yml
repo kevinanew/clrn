@@ -183,6 +183,9 @@ jobs:
       - name: 验证关键帧差异汇总、牌面就绪、素材定位与续时准备
         if: matrix.suite == 'texas' && matrix.part == 'gameplay'
         run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/timelineClock.browser.ts visual/animations/cardSpriteReadiness.browser.ts visual/animations/cardSpriteDiagnostics.browser.ts visual/animations/cardSpriteClock.browser.ts visual/animations/cardSpriteLoader.browser.ts visual/animations/cardSpriteHistory.browser.ts visual/animations/playerAnimationAsset.browser.ts visual/animations/renewReadiness.browser.ts visual/animations/leaderboardReadiness.browser.ts visual/animations/playerProfileReadiness.browser.ts visual/animations/tableConnection.browser.ts
+      - name: 验证删房失败诊断的脱敏和原始错误保留
+        if: matrix.suite == 'texas' && matrix.part == 'table'
+        run: node --import tsx --test visual/src/support/roomRejectionDiagnostics.test.ts
       - name: 准备本轮 Release 构建包
         id: release
         uses: ./.github/actions/prepare-release-web
