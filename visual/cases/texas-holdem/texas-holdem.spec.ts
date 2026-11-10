@@ -231,6 +231,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
     const diagnostics = await installConnectionDiagnostics(context, page, test.info(), mitmproxy);
     let room: Awaited<ReturnType<typeof createTexasRoom>> | undefined;
     let recordEntry: Response | undefined;
+    let roomDetails: Response | undefined;
     page.on('pageerror', /** 输出脱敏的德州页面运行错误。
  * @param error - 当前操作抛出的错误。 */ error => console.error(`TEXAS PAGE ERROR > ${diagnosticText(error.message)}`));
     page.on('response', /** 记录失败 HTTP 响应的状态、脱敏节点与请求路径。
@@ -240,6 +241,9 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
         && new URL(response.url()).pathname === `/v10/texas_holdem/room/${room.roomId}/enter`) {
         recordEntry = response;
       }
+      if (scenario.pageLabel === 'signed_in_texas_hall' && room
+        && response.request().method() === 'GET'
+        && new URL(response.url()).pathname === `/v1/room/${room.roomId}`) roomDetails = response;
       if (response.status() < 400) return;
       const url = new URL(response.url());
       console.error(`TEXAS HTTP ERROR > ${response.status()} ${diagnosticNode(url.origin)}${url.pathname}`);
@@ -275,7 +279,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
           roomId: created.roomId, apiNode: diagnosticNode(created.apiOrigin),
         }));
       }, optional);
-      await captureScenario(page, scenario, mitmproxy, room, optional, /** 读取最新入场响应。 */ () => recordEntry);
+      await captureScenario(page, scenario, mitmproxy, room, optional, /** 读取最新入场响应。 */ () => recordEntry, /** 读取当前大厅详情响应。 */ () => roomDetails);
       await diagnostics.save();
     } catch (error) {
       await saveImageFailureDiagnostics(page, test.info(), scenario.pageLabel);
@@ -306,10 +310,11 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
  * @param room - 本轮创建的房间。
  * @param optional - 是否启用可选建房功能。
  * @param getRecordEntry - 读取当前房间最新的入场响应。
+ * @param getRoomDetails - 读取大厅展示配置的真实响应。
  */
 async function captureScenario(page: Page, scenario: VisualScenario, mitmproxy: TexasProxy,
   room: Awaited<ReturnType<typeof createTexasRoom>>, optional: boolean,
-  getRecordEntry: () => Response | undefined): Promise<void> {
+  getRecordEntry: () => Response | undefined, getRoomDetails: () => Response | undefined): Promise<void> {
   if (['signed_in_texas_controls', 'signed_in_texas_table_states', 'signed_in_texas_panel_variants', 'signed_in_texas_hall_variants'].includes(scenario.pageLabel)) {
     if (['signed_in_texas_hall_variants', 'signed_in_texas_table_states'].includes(scenario.pageLabel)) {
       await enterTexasRoom(page, room);
@@ -336,6 +341,9 @@ async function captureScenario(page: Page, scenario: VisualScenario, mitmproxy: 
     await enterTexasRoom(page, room);
     await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
+    // 启动画面消失和回放订阅成功都不代表大厅配置已读取；冻结前等待真实详情。
+    await expect.poll(getRoomDetails, { timeout: 30_000, message: '大厅采样需要房间详情响应' }).toBeDefined();
+    await readRequestJson(getRoomDetails()!, 'room-read-details');
     await captureHall(page, scenario, mitmproxy, room.roomId, capture);
   } else if (scenario.pageLabel === 'signed_in_texas_records_v2') {
     await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });

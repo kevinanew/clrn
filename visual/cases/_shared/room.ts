@@ -5,6 +5,7 @@ const expect = playwrightExpect.configure({ timeout: 30_000 });
 import { canTopUpVisualAccount } from '../../test-account';
 import { readRequestJson, fetchRequestJson } from '../../src/support/requestJson';
 import { requestFailure, requestErrorSummary } from '../../src/support/requestError';
+import { diagnoseRoomDelete } from '../../src/support/roomDeleteDiagnostics';
 import { recordDiagnostic } from '../../src/support/connectionDiagnostics';
 
 export type RoomSession = { roomId: string; apiOrigin: string; authorization: string };
@@ -146,9 +147,10 @@ export async function createPrivateGameRoom(
 export async function deletePrivateGameRoom(room: RoomSession): Promise<void> {
   if (!ROOM_ID_PATTERN.test(room.roomId)) throw new Error('清理房间需要本轮创建响应中的有效 UUID');
   // 固定 staging 入口；客户端选中的地区代理可能已不可用，收尾不再依赖该节点。
-  await fetchRequestJson(`https://api.shafayouxi.org/v1/room/${room.roomId}`, {
+  const url = `https://api.shafayouxi.org/v1/room/${room.roomId}`;
+  await diagnoseRoomDelete(url, /** 执行原有删除请求，保持超时和响应断言。 */ () => fetchRequestJson(url, {
     method: 'DELETE', headers: { Authorization: room.authorization },
     redirect: 'error', signal: AbortSignal.timeout(15_000),
-  }, 'room-delete');
+  }, 'room-delete'));
   console.log('ROOM CLEANUP > 本次新建房间已解散');
 }

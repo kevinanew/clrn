@@ -1,5 +1,6 @@
 """只读采集账户校验的连接阶段，不记录连接地址、错误正文或认证资料。"""
 
+import re
 from urllib.parse import urlsplit
 
 
@@ -80,7 +81,7 @@ def tls_phase(connection):
 
 
 class RoomConnections:
-    """复用已有分支的连接关联诊断，仅观察建房价格的真实连接。"""
+    """复用已有分支的连接关联诊断，观察建房价格和房间详情的真实连接。"""
     def __init__(self):
         """有界保存客户端与目标的关联，输出不包含地址。"""
         self.targets = {}
@@ -115,9 +116,10 @@ class RoomConnections:
 
 
 def is_room_path(value):
-    """仅匹配本轮失败的建房接口，忽略查询参数。"""
+    """仅匹配建房价格和 UUID 房间详情接口，忽略查询参数。"""
     path = urlsplit(value).path
-    return path == '/v3/pay_action/batch/price'
+    return path == '/v3/pay_action/batch/price' or bool(re.fullmatch(
+        r'/v1/room/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', path))
 
 
 def connection_reason(connection):
