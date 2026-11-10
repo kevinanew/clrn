@@ -7,7 +7,7 @@ from unittest.mock import patch
 from mitmproxy import connection, http
 
 with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
-    from addon import GameRecordProxy
+    from addon import GameRecordProxy, addons, diagnostics
     from test_network_faults import source_environment
 from data import CLUB, PLAYER, PREFIX, all_records
 
@@ -47,6 +47,17 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
     def result(self, flow):
         """从战绩响应正文提取业务结果供测试断言。"""
         return json.loads(flow.response.content)['result']
+
+    async def test_战绩诊断入口复用已注册收集器并保留认证(self):
+        """失败后的诊断读取必须可用，未认证读取不能暴露事件。"""
+        self.assertIs(addons[-1], diagnostics)
+        before = diagnostics.snapshot()
+        response = await self.request('/diagnostics', host='test-mitmproxy.invalid', token='test-token')
+        self.assertEqual(response.response.status_code, 200)
+        self.assertEqual(json.loads(response.response.content), before)
+        denied = await self.request('/diagnostics', host='test-mitmproxy.invalid')
+        self.assertEqual(denied.response.status_code, 403)
+        self.assertEqual(diagnostics.snapshot(), before)
 
     def test_房间名称遵守界面创建限制(self):
         # 建房按 UTF-16 字符单元计数：ASCII 为 1，其他为 2，上限 20。

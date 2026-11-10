@@ -1305,16 +1305,6 @@
     {
       "file": "visual/cases/game-record/mitmproxy/addon.py",
       "rule": "C901",
-      "line": 50,
-      "column": 9,
-      "message": "`control` is too complex (12 > 10)",
-      "anchor": "5d62add86206fe8bfbaf31e566191e979b275b412a0787b75afa7592656cf823",
-      "kind": "migration",
-      "reason": "现有 Python 代理场景分派/回放逻辑；须保留原测试和失败退出语义，逐函数迁移，当前复杂度不得增加。"
-    },
-    {
-      "file": "visual/cases/game-record/mitmproxy/addon.py",
-      "rule": "C901",
       "line": 90,
       "column": 9,
       "message": "`fixture` is too complex (29 > 10)",

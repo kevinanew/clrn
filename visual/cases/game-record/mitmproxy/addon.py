@@ -13,6 +13,9 @@ from data import CLUB, HOUSE, PLAYER, all_records, detail, records, replay, room
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
 from response_overrides import is_staging, prepare_profiles, patch_profiles, patch_version  # noqa: E402
 from visual_control import respond as respond_json  # noqa: E402
+from connection_diagnostics import ConnectionDiagnostics  # noqa: E402
+
+diagnostics = ConnectionDiagnostics()
 
 CONTROL_HOST = 'test-mitmproxy.invalid'
 MODES = ('empty', 'list', 'no-hands', 'paged', 'list-error', 'detail-error', 'delete-error')
@@ -53,6 +56,9 @@ class GameRecordProxy:
             respond(flow, {'error': 'Forbidden'}, 403, False)
             return
         path = urlsplit(flow.request.path).path
+        if flow.request.method == 'GET' and path == '/diagnostics':
+            diagnostics.control(flow)
+            return
         try:
             if flow.request.method == 'POST':
                 body = json.loads(flow.request.content)
@@ -64,20 +70,7 @@ class GameRecordProxy:
                 elif path == '/records/release':
                     self.hold.set()
                 elif self.scenario == 'visual-stable' and path in ('/records/configure', '/records/mode'):
-                    mode = body.get('mode')
-                    hold = body.get('hold', False)
-                    if mode not in MODES or not isinstance(hold, bool):
-                        raise ValueError('Invalid mode')
-                    if path == '/records/configure':
-                        user_id, version = body.get('userId'), body.get('version')
-                        if not isinstance(user_id, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,128}', user_id):
-                            raise ValueError('Invalid user')
-                        if version not in ('legacy', 'v2'):
-                            raise ValueError('Invalid version')
-                        self.user_id, self.version = user_id, version
-                        self.deleted, self.counts, self.faults = [], {}, {}
-                    self.mode = mode
-                    self.hold.clear() if hold else self.hold.set()
+                    self.configure_records(path, body)
                 else:
                     raise ValueError('Unknown command')
             elif flow.request.method != 'GET' or path != '/status':
@@ -86,6 +79,23 @@ class GameRecordProxy:
             respond(flow, {'error': 'Invalid command'}, 400, False)
             return
         respond(flow, self.status(), wrapped=False)
+
+    def configure_records(self, path, body):
+        """验证并更新战绩模式及可选账号配置。"""
+        mode = body.get('mode')
+        hold = body.get('hold', False)
+        if mode not in MODES or not isinstance(hold, bool):
+            raise ValueError('Invalid mode')
+        if path == '/records/configure':
+            user_id, version = body.get('userId'), body.get('version')
+            if not isinstance(user_id, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,128}', user_id):
+                raise ValueError('Invalid user')
+            if version not in ('legacy', 'v2'):
+                raise ValueError('Invalid version')
+            self.user_id, self.version = user_id, version
+            self.deleted, self.counts, self.faults = [], {}, {}
+        self.mode = mode
+        self.hold.clear() if hold else self.hold.set()
 
     def fixture(self, path, method, body, query):
         """根据战绩版本、分页游标与已删除记录构造当前接口结果。"""
@@ -221,4 +231,4 @@ class GameRecordProxy:
             respond(flow, fixture)
 
 
-addons = [GameRecordProxy()]
+addons = [GameRecordProxy(), diagnostics]
