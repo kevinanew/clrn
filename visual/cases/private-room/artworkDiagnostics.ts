@@ -23,7 +23,15 @@ async function attachArtworkDiagnostics(page: Page, pageLabel: string): Promise<
   if (pageLabel !== 'signed_in_create_room_advanced_texas') return;
   try {
     const body = await page.evaluate(/** 只读取 SVG 几何及绘制定义的计数。 */ () =>
-      ({ layout: ['base-create-room-screen', 'advanced-options-button', 'operation-duration-title-text'].map(/** 只读取固定标记及祖先的几何，不记录页面文本或属性。
+      ({ images: Array.from(document.querySelectorAll('[data-testid="base-create-room-screen"] img')).map(
+        /** 记录图片解码和几何，地址只保留是否为内联图片。
+         * @param image - 建房页图片。 */ image => {
+          const node = image as HTMLImageElement;
+          const rect = node.getBoundingClientRect();
+          return { complete: node.complete, naturalWidth: node.naturalWidth, naturalHeight: node.naturalHeight,
+            inline: node.currentSrc.startsWith('data:'), top: rect.top, left: rect.left,
+            width: rect.width, height: rect.height, visibility: getComputedStyle(node).visibility };
+        }), layout: ['base-create-room-screen', 'advanced-options-button', 'operation-duration-title-text'].map(/** 只读取固定标记及祖先的几何，不记录页面文本或属性。
        * @param testId - 固定标记。 */ testId => {
         const element = Array.from(document.querySelectorAll(`[data-testid="${testId}"]`)).find(
           /** 查找当前可见的固定标记元素。
@@ -35,7 +43,13 @@ async function attachArtworkDiagnostics(page: Page, pageLabel: string): Promise<
           const style = getComputedStyle(node);
           ancestors.push({ top: rect.top, height: rect.height, scrollTop: node.scrollTop,
             scrollHeight: node.scrollHeight, clientHeight: node.clientHeight,
-            overflowY: style.overflowY, position: style.position });
+            overflowY: style.overflowY, position: style.position, paddingTop: style.paddingTop,
+            paddingBottom: style.paddingBottom, marginTop: style.marginTop, marginBottom: style.marginBottom,
+            children: Array.from(node.children).map(/** 记录相邻内容占用的空间，不读取内容。
+             * @param child - 当前布局的直接子元素。 */ child => {
+              const bounds = child.getBoundingClientRect();
+              return { top: bounds.top, height: bounds.height };
+            }) });
         }
         return { testId, ancestors };
       }), svg: Array.from(document.querySelectorAll('svg')).slice(0, 100).map(/** 保留隐藏 SVG 作为重复引用的对照。

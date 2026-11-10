@@ -15,7 +15,9 @@ export async function readRequestJson(response: JsonResponse, operation: string)
   if (!response.ok()) {
     if (operation === 'room-delete' || operation === 'room-create') {
       try { await attachRoomRejection(await response.json(), operation); }
-      catch { /* 非 JSON 或正文读取失败不能覆盖原始 HTTP 错误。 */ }
+      catch (error) {
+        await attachRoomRejection(null, operation, error instanceof SyntaxError ? 'invalid-json' : 'body-read-failed');
+      }
     }
     throw requestFailure(operation, 'http-error', status);
   }

@@ -36,8 +36,15 @@ test(`${operation} HTTP 500 记录有限分类，正文或附件失败不覆盖 
   assert.doesNotMatch(attachments[1], /private-token|example|synthetic-secret/);
   failAttachment = true;
   await assert.rejects(readRequestJson(response, operation), originalError);
+  failAttachment = false;
   for (const error of [new SyntaxError('synthetic non-JSON body'), new Error('synthetic read failure')]) {
     await assert.rejects(readRequestJson({ ...response, json: /** 模拟正文解析或读取失败。 */ async () => { throw error; } }, operation), originalError);
+    const diagnostic = JSON.parse(attachments.at(-1)!);
+    assert.equal(diagnostic.bodyRead, error instanceof SyntaxError ? 'invalid-json' : 'body-read-failed');
+    assert.doesNotMatch(attachments.at(-1)!, /synthetic/);
+    failAttachment = true;
+    await assert.rejects(readRequestJson({ ...response, json: /** 同时模拟正文与附件失败。 */ async () => { throw error; } }, operation), originalError);
+    failAttachment = false;
   }
 });
 }
