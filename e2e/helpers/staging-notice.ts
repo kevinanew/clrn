@@ -24,16 +24,31 @@ export async function confirmStagingNotice(page: StagingNoticePage): Promise<boo
   const dialog = page.getByTestId('staging-dialog');
   if (!await dialog.isVisible()) return false;
   const input = dialog.locator('input[data-testid="staging-confirmation-input"], [data-testid="staging-confirmation-input"] input').first();
-  if (await input.count()) {
-    await input.waitFor({ state: 'visible', timeout: 15_000 });
-    const confirmation = (await input.getAttribute('placeholder'))?.trim();
-    if (!confirmation) throw new Error('测试版确认输入框缺少当前语言的确认文字');
-    await input.fill(confirmation);
-  }
+  await fillConfirmation(input);
   const confirm = dialog.getByTestId('confirm-button');
   // 正常点击会等待按钮启用；共享模块不加载另一套 Playwright 运行时。
   await confirm.click({ timeout: 15_000, noWaitAfter: true });
   // 确认后会同时初始化大厅；软件渲染的动画测试环境也沿用大厅的 60 秒就绪预算。
   await dialog.waitFor({ state: 'hidden', timeout: 60_000 });
   return true;
+}
+
+/**
+ * 兼容无输入框的旧提示；新提示按当前语言的占位文字确认。
+ * @param input - 当前确认输入框。
+ */
+async function fillConfirmation(input: StagingNoticeLocator): Promise<void> {
+  if (!await input.count()) return;
+  await input.waitFor({ state: 'visible', timeout: 15_000 });
+  const confirmation = confirmationText(await input.getAttribute('placeholder'));
+  if (!confirmation) throw new Error('测试版确认输入框缺少当前语言的确认文字');
+  await input.fill(confirmation);
+}
+
+/**
+ * 清理占位文字，缺失时保留失败语义。
+ * @param value - 当前语言占位文字。
+ */
+function confirmationText(value: string | null): string | undefined {
+  return value?.trim();
 }

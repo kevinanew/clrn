@@ -94,7 +94,7 @@ test('相对路径仅输出已知操作模板，记录和代理合并均不保�
   const recorder = new DiagnosticRecorder();
   for (const input of inputs) {
     const path = `/nested/${input}/operation.json`;
-    assert.equal(diagnosticFields({ path }).path, '[未知接口]');
+    assertUnknownPath(path);
     assert.equal(diagnosticFields({ path: `/v10/wallet/${input}` }).path, '/v10/wallet/{user}');
     recorder.record('http.failed', { path, status: 503 });
     recorder.merge([{ event: 'proxy.error', path }]);
@@ -104,14 +104,12 @@ test('相对路径仅输出已知操作模板，记录和代理合并均不保�
     '/v3/pay_action/batch/price']) {
     assert.equal(diagnosticFields({ path: `${path}?token=synthetic-secret#private` }).path, path);
   }
-  for (const path of ['//api.fixture.invalid/private', 'https://api.fixture.invalid/private',
-    '/v10/wallet/user/extra', '/v10/wallet/../profile', '/v10/wallet/', '/', '[未知接口]']) {
-    assert.equal(diagnosticFields({ path }).path, '[未知接口]');
-  }
+  ['//api.fixture.invalid/private', 'https://api.fixture.invalid/private',
+    '/v10/wallet/user/extra', '/v10/wallet/../profile', '/v10/wallet/', '/', '[未知接口]'].forEach(assertUnknownPath);
   assert.equal(diagnosticFields({ path: ['secret'] }).path, '[未知接口]');
   const output = JSON.stringify(recorder.snapshot()) + recorder.markdown('case');
-  for (const input of inputs) assert.ok(!output.includes(input), '任意路径段不能进入附件或终端摘要');
-  assert.ok(recorder.snapshot().events.some(/** 确认失败诊断保留实际的 503 响应状态。
+  assertNoPaths(output, inputs);
+  assert.ok(recorder.snapshot().events.some(/** 判断是否存在满足以下条件的条目：`event.status === 503`。
  * @param event - 当前触发的事件。 */ event => event.status === 503), '真实失败状态仍保留');
 });
 
@@ -121,3 +119,20 @@ test('共用路径登记保留操作语义且重复清理不改变实体模板',
     assert.equal(diagnosticFields({ path: path.replace(/\{[^}]+\}/g, 'token=synthetic-secret') }).path, path);
   }
 });
+
+/**
+ * 明确拒绝未知接口路径。
+ * @param path - 非白名单路径。
+ */
+function assertUnknownPath(path: string): void {
+  assert.equal(diagnosticFields({ path }).path, '[未知接口]');
+}
+
+/**
+ * 检查每个原始路径段都未进入持久化输出。
+ * @param output - 实际输出。
+ * @param inputs - 原始敏感路径段。
+ */
+function assertNoPaths(output: string, inputs: string[]): void {
+  for (const input of inputs) assert.ok(!output.includes(input), '任意路径段不能进入附件或终端摘要');
+}

@@ -1,3 +1,4 @@
+import { installConnectionDiagnostics } from '../../src/support/connectionDiagnostics';
 import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
 import fs from 'node:fs';
 import { test, expect, type RecordProxy } from './proxy';
@@ -162,6 +163,71 @@ async function legacyEnd(page: Page, proxy: RecordProxy,
   await snapshot('reopen');
 }
 
+/**
+ * 验证列表底部、分页记录及返回初始列表的状态。
+ * @param page - 执行操作的 Playwright 页面。
+ * @param recordProxy - 本轮独占的代理控制对象。
+ * @param version - 战绩页面版本。
+ * @param snapshot - 按状态名保存当前场景截图的回调。
+ */
+async function captureListBottom(page: Page, recordProxy: RecordProxy, version: 'legacy' | 'v2',
+  snapshot: (state: string) => Promise<void>): Promise<void> {
+  if (version === 'v2') {
+    // 新版一次返回全部记录；长列表必须真实滚动才能看到末尾。
+    await recordProxy.mode('paged');
+    await reopen(page);
+    await expect(row(page, 'Paged Texas 01', version)).toBeVisible();
+    await expect(visible(page, 'loading-indicator')).toHaveCount(0);
+    // SectionList 可能尚未挂载末行；先滚动并随内容高度更新继续滚动。
+    await expect.poll(/** 滚动列表直到目标长房间名记录进入可见区域。 */ async () => {
+      await scrollList(page, true);
+      return row(page, 'Long Room Name', version).isVisible();
+    }, { message: '滚动长列表后应挂载末条记录' }).toBe(true);
+    await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(23);
+    await expect(page.locator('[data-testid^="record-visual-record-"]:visible')
+      .getByTestId('room-name-text')).toHaveText([
+      'Private Texas', 'Club Cards', 'Hall Texas', ...pagedRoomNames,
+      'Short Deck', 'No Hands', 'Long Room Name ABCDE',
+    ]);
+    await row(page, 'Long Room Name', version).scrollIntoViewIfNeeded();
+  }
+  await scrollList(page, true);
+  if (version === 'v2') {
+    await expect.poll(/** 轮询可见战绩列表滚动量，等待列表滚动生效。 */ () => visible(page, 'my-game-record-list').evaluate(/** 读取当前战绩列表偏移，核对列表确实滚动。
+ * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.scrollTop)).toBeGreaterThan(0);
+    await expect(row(page, 'Long Room Name', version)).toBeInViewport();
+  }
+  await expect(row(page, 'Long Room Name', version)).toBeVisible();
+  await snapshot('list_bottom');
+  if (version === 'v2') {
+    await recordProxy.mode('list');
+    await reopen(page);
+    await scrollList(page, false);
+    await expect(row(page, 'Private Texas', version)).toBeVisible();
+    await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(6);
+    await expect(row(page, 'Paged Texas 01', version)).toHaveCount(0);
+  }
+  await scrollList(page, false);
+}
+
+/**
+ * 核验场景结束时代理记录的请求与故障。
+ * @param recordProxy - 本轮独占的代理控制对象。
+ * @param version - 战绩页面版本。
+ * @param userId - 当前账号标识。
+ */
+async function verifyRecordStatus(recordProxy: RecordProxy, version: 'legacy' | 'v2', userId: string): Promise<void> {
+  const status = await recordProxy.status();
+  if (version === 'v2') expect(status.deleted).toEqual([]);
+  expect(Object.keys(status.recordRequests).length).toBeGreaterThan(5);
+  expect(status.recordRequests[`/v1/game_log/user/${userId}/room/visual-record-private`] ?? 0).toBe(0);
+  const faults = version === 'legacy'
+    ? [`/v1/game_log/user/${userId}/room/visual-record-hall`]
+    : [`/v11/game_log/${userId}/play_session_record/recent`,
+      `/v11/game_log/${userId}/play_session_record/visual-record-private`];
+  for (const endpoint of faults) expect(status.faultRequests[endpoint] ?? 0).toBeGreaterThan(0);
+}
+
 for (const scenario of buildScenarios().filter(/** 选取战绩场景，注册列表、编辑与重放的截图用例。
  * @param item - 当前遍历的条目。 */ item => item.group === 'game-record')) {
   test(scenario.label, /** 按新旧战绩版本准备代理与账号，执行编辑、删除和列表状态截图。
@@ -184,6 +250,13 @@ for (const scenario of buildScenarios().filter(/** 选取战绩场景，注册�
     page.on('pageerror', /** 收集页面运行错误，供战绩场景结束时核验。
  * @param error - 当前操作抛出的错误。 */ error => errors.push(error.message));
     const { snapshot, complete } = captureStates(page, scenario);
+    let diagnostics: Awaited<ReturnType<typeof installConnectionDiagnostics>> | undefined;
+    try {
+      diagnostics = await installConnectionDiagnostics(context, page, test.info(), {
+        /** 失败时只读获取当前代理快照，不改变战绩请求或响应释放时序。 */
+        diagnostics: () => recordProxy.network.command('diagnostics', undefined, 2000),
+      });
+    } catch { /* 可选诊断不能改变原场景结果。 */ }
     try {
       await setupContextForScenario(context, scenario, page);
       await page.goto(scenario.path, { waitUntil: 'domcontentloaded', timeout: 120_000 });
@@ -207,42 +280,7 @@ for (const scenario of buildScenarios().filter(/** 选取战绩场景，注册�
       await expect(visible(page, 'club-game-text')).toHaveCount(1);
       await expect(visible(page, 'club-game-text')).toContainText('Visual Club');
       await snapshot('list');
-      if (version === 'v2') {
-        // 新版一次返回全部记录；长列表必须真实滚动才能看到末尾。
-        await recordProxy.mode('paged');
-        await reopen(page);
-        await expect(row(page, 'Paged Texas 01', version)).toBeVisible();
-        await expect(visible(page, 'loading-indicator')).toHaveCount(0);
-        // SectionList 可能尚未挂载末行；先滚动并随内容高度更新继续滚动。
-        await expect.poll(/** 滚动列表直到目标长房间名记录进入可见区域。 */ async () => {
-          await scrollList(page, true);
-          return row(page, 'Long Room Name', version).isVisible();
-        }, { message: '滚动长列表后应挂载末条记录' }).toBe(true);
-        await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(23);
-        await expect(page.locator('[data-testid^="record-visual-record-"]:visible')
-          .getByTestId('room-name-text')).toHaveText([
-          'Private Texas', 'Club Cards', 'Hall Texas', ...pagedRoomNames,
-          'Short Deck', 'No Hands', 'Long Room Name ABCDE',
-        ]);
-        await row(page, 'Long Room Name', version).scrollIntoViewIfNeeded();
-      }
-      await scrollList(page, true);
-      if (version === 'v2') {
-        await expect.poll(/** 轮询可见战绩列表滚动量，等待列表滚动生效。 */ () => visible(page, 'my-game-record-list').evaluate(/** 读取当前战绩列表偏移，核对列表确实滚动。
- * @param node - 当前遍历的 DOM 或语法节点。 */ node => node.scrollTop)).toBeGreaterThan(0);
-        await expect(row(page, 'Long Room Name', version)).toBeInViewport();
-      }
-      await expect(row(page, 'Long Room Name', version)).toBeVisible();
-      await snapshot('list_bottom');
-      if (version === 'v2') {
-        await recordProxy.mode('list');
-        await reopen(page);
-        await scrollList(page, false);
-        await expect(row(page, 'Private Texas', version)).toBeVisible();
-        await expect(page.locator('[data-testid^="record-visual-record-"]:visible')).toHaveCount(6);
-        await expect(row(page, 'Paged Texas 01', version)).toHaveCount(0);
-      }
-      await scrollList(page, false);
+      await captureListBottom(page, recordProxy, version, snapshot);
       await selections(page, version, snapshot);
       await deletion(page, version, snapshot);
       await captureDetails(page, version, snapshot, recordProxy);
@@ -271,15 +309,10 @@ for (const scenario of buildScenarios().filter(/** 选取战绩场景，注册�
       }
       complete();
       expect(errors, '战绩流程不能出现未捕获的页面异常').toEqual([]);
-      const status = await recordProxy.status();
-      if (version === 'v2') expect(status.deleted).toEqual([]);
-      expect(Object.keys(status.recordRequests).length).toBeGreaterThan(5);
-      expect(status.recordRequests[`/v1/game_log/user/${userId}/room/visual-record-private`] ?? 0).toBe(0);
-      const faults = version === 'legacy'
-        ? [`/v1/game_log/user/${userId}/room/visual-record-hall`]
-        : [`/v11/game_log/${userId}/play_session_record/recent`,
-          `/v11/game_log/${userId}/play_session_record/visual-record-private`];
-      for (const endpoint of faults) expect(status.faultRequests[endpoint] ?? 0).toBeGreaterThan(0);
+      await verifyRecordStatus(recordProxy, version, userId);
+    } catch (error) {
+      try { await diagnostics?.save(error); } catch { /* 保留原始测试异常。 */ }
+      throw error;
     } finally {
       const alerts = await visible(page, 'alert-message-text').allTextContents().catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []);
       if (alerts.length) console.error(`RECORD ALERT > ${JSON.stringify(alerts)}`);

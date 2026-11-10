@@ -16,22 +16,8 @@ export async function gotoDeployedSite(page: Page, url: string): Promise<Respons
   // 一次原始请求加两次重试：短暂断连可以恢复，持续故障仍会在同一用例中失败。
   const maximumAttempts = 3;
   for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
-    try {
-      return await page.goto(url, { waitUntil: 'domcontentloaded' });
-    } catch (error) {
-      const shouldRetry =
-        attempt < maximumAttempts &&
-        error instanceof Error &&
-        RETRYABLE_NAVIGATION_ERRORS.test(error.message);
-      if (!shouldRetry) {
-        throw error;
-      }
-
-      // 连续重试会落在同一个刚关闭的代理/TCP 连接窗口中；短暂等待后再试，
-      // 仍保持三次上限和原有的持续故障失败语义。
-      await new Promise(/** 按当前重试次数递增等待，避免立即重复导航。
- * @param resolve - 完成当前异步等待的通知。 */ (resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
-    }
+    const result = await navigateAttempt(page, url, attempt, maximumAttempts);
+    if (result) return result.response;
   }
 
   throw new Error(`无法导航到 ${url}`);
@@ -115,4 +101,36 @@ async function dismissAppAlert(page: Page): Promise<void> {
     .getByText('好的', { exact: true })
     .click({ force: true, timeout: 2_000 })
     .catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
+}
+
+/**
+ * 识别原有允许重试的瞬时导航错误。
+ * @param error - 导航错误。
+ */
+function retryableNavigation(error: unknown): boolean {
+  return error instanceof Error && RETRYABLE_NAVIGATION_ERRORS.test(error.message);
+}
+
+/**
+ * 只对剩余预算内的瞬时错误等待，最终错误原样传播。
+ * @param page - 当前页面。
+ * @param url - 入口地址。
+ * @param attempt - 当前尝试次数。
+ * @param maximumAttempts - 原有三次上限。
+ */
+async function navigateAttempt(page: Page, url: string, attempt: number, maximumAttempts: number): Promise<{ response: Response | null } | undefined> {
+  try { return { response: await page.goto(url, { waitUntil: 'domcontentloaded' }) }; }
+  catch (error) { await waitForNavigationRetry(error, attempt, maximumAttempts); }
+}
+
+/**
+ * 保留递增等待与原有错误传播，不扩大重试预算。
+ * @param error - 本次失败。
+ * @param attempt - 当前次数。
+ * @param maximumAttempts - 允许次数。
+ */
+async function waitForNavigationRetry(error: unknown, attempt: number, maximumAttempts: number): Promise<void> {
+  if (attempt >= maximumAttempts || !retryableNavigation(error)) throw error;
+  await new Promise(/** 等待当前重试间隔。
+   * @param resolve - 等待结束通知。 */ resolve => setTimeout(resolve, RETRY_DELAY_MS * attempt));
 }

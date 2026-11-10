@@ -68,9 +68,11 @@ test('复杂度 10 和嵌套 3 是实际失败阈值', /** 验证复杂度 10 �
   assert.ok((await lint('function deep(x: boolean) { if(x) { if(x) { if(x) { if(x) { return 1; } } } } } deep(true);'))
     .some(/** 确认超限嵌套触发深度诊断。
  * @param item - 当前遍历的条目。 */ item => item.ruleId === 'max-depth'));
-  const config = await eslint.calculateConfigForFile('e2e/helpers/scenario-proxy.ts');
+  const config = await eslint.calculateConfigForFile('quality-probe.ts');
   assert.deepEqual(config.rules.complexity, [2, { max: 10, variant: 'classic' }]);
   assert.deepEqual(config.rules['max-depth'], [2, 3]);
+  const protocol = await eslint.calculateConfigForFile('e2e/helpers/scenario-proxy.ts');
+  assert.deepEqual(protocol.rules.complexity, [2, { max: 3, variant: 'classic' }]);
 });
 
 test('网络响应语法覆盖直接、下标、可选链、别名、服务器与 mock 接口', /** 验证网络响应语法覆盖直接、下标、可选链、别名、服务器与 mock 接口。 */ async () => {
@@ -245,9 +247,11 @@ test('真实代理适配器单测只使用已逐位置审查的例外', /** 验�
   const mock = result.messages.filter(/** 提取网络边界诊断，核对同一入口的重复出现次数。
  * @param item - 当前遍历的条目。 */ item => item.ruleId === 'quality/no-network-response');
   assert.ok(mock.length > 0);
-  for (const message of mock) {
-    assert.ok(findings.some(/** 查找与代理源单测诊断对应的逐位置历史例外及其审查理由。
- * @param item - 当前遍历的条目。 */ item => item.file === file && item.line === message.line
-      && item.rule === message.ruleId && item.kind === 'adapter-unit' && item.reason.includes('代理源')));
-  }
+  const reviewed = findings.filter(/** 仅使用已审查的代理源适配器例外。
+ * @param item - 历史诊断。 */ item => item.file === file
+    && item.kind === 'adapter-unit' && item.reason.includes('代理源'));
+  const current = mock.map(/** 使用门禁的源码指纹定位诊断，允许行号移动但不增加例外次数。
+ * @param message - ESLint 诊断。 */ message => fingerprint({ file, rule: message.ruleId,
+    line: message.line, message: message.message }, result.source));
+  assert.deepEqual(newFindings(current, reviewed), []);
 });

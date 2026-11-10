@@ -5,11 +5,12 @@ import { chromium, devices, type TestInfo } from '@playwright/test';
 import { observePaginationGesture } from './pagination-diagnostics';
 import { drag } from './gestures';
 
-test('分页诊断记录真实触摸结束与取消，保持页面和业务监听不变并排除敏感字段', /** 验证分页诊断记录真实触摸结束与取消，保持页面和业务监听不变并排除敏感字段。 */ async () => {
-  const browser = await chromium.launch();
-  try {
-    for (const touch of [false, true]) {
-      const context = await browser.newContext(touch ? devices['Pixel 7'] : devices['Desktop Chrome']);
+for (const touch of [false, true]) {
+  const profile = touch ? devices['Pixel 7'] : devices['Desktop Chrome'];
+  test(`分页诊断记录真实输入，保持页面和业务监听不变并排除敏感字段：${touch ? '触屏' : '桌面'}`, /** 验证分页诊断记录真实触摸结束与取消，保持页面和业务监听不变并排除敏感字段。 */ async () => {
+    const browser = await chromium.launch();
+    try {
+      const context = await browser.newContext(profile);
       const page = await context.newPage();
       await page.setContent(`<meta name="viewport" content="width=device-width,initial-scale=1">
         <div data-testid="game-buy-in-application-list-screen" style="width:300px;height:500px;touch-action:none">
@@ -52,7 +53,7 @@ test('分页诊断记录真实触摸结束与取消，保持页面和业务监�
         for (let count = 0; count < 500; count += 1) document.dispatchEvent(new MouseEvent('mousemove'));
       });
       let saved = '';
-      const info = { project: { use: { ...(touch ? devices['Pixel 7'] : devices['Desktop Chrome']), baseURL: '不应保存的连接地址',
+      const info = { project: { use: { ...profile, baseURL: '不应保存的连接地址',
         storageState: '不应保存的存储路径' } },
       attach: /** 捕获已筛选的报告内容。
        * @param name - 附件名称。
@@ -81,8 +82,8 @@ test('分页诊断记录真实触摸结束与取消，保持页面和业务监�
         assert.equal(start.defaultPreventedAtBubble, true, '冒泡阶段应保留业务阻止默认行为的证据');
       }
       assert.deepEqual(result.records[0].tabs, ['true'], '应保留选中状态而不记录标签文字');
-      assert.equal(result.records[0].viewport.width, touch ? devices['Pixel 7'].viewport.width : devices['Desktop Chrome'].viewport.width);
-      assert.ok(result.records[0].layers.some(/** 确认诊断记录保留了目标层的平移矩阵。
+      assert.equal(result.records[0].viewport.width, profile.viewport.width);
+      assert.ok(result.records[0].layers.some(/** 判断是否存在满足以下条件的条目：`layer.transform === 'matrix(1, 0, 0, 1, -12, 0)'`。
  * @param layer - 当前操作使用的 layer。 */ (layer: { transform: string }) =>
         layer.transform === 'matrix(1, 0, 0, 1, -12, 0)'), '应保留组件实际位移');
       assert.equal(await page.getByTestId('game-buy-in-application-list-screen').evaluate(
@@ -94,9 +95,9 @@ test('分页诊断记录真实触摸结束与取消，保持页面和业务监�
       assert.equal(remainingListeners.listeners.length, originalListeners.listeners.length, '保存后必须移除全部诊断监听');
       await inspector.detach();
       await context.close();
-    }
-  } finally { await browser.close(); }
-});
+    } finally { await browser.close(); }
+  });
+}
 
 test('触摸目标卸载后仍保留失联证据，完整输入命令不等于文档收到结束事件', /** 验证触摸目标卸载后仍保留失联证据，完整输入命令不等于文档收到结束事件。 */ async () => {
   const browser = await chromium.launch();

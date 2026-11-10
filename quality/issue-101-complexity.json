@@ -1,0 +1,6269 @@
+{
+  "issue": "https://github.com/kevinanew/clrn/issues/101",
+  "baselineRef": "f5edd3b3962ecd4006d4f90e3e8ab82a463f5682",
+  "metric": {
+    "engine": "ESLint",
+    "version": "10.12.0",
+    "variant": "classic",
+    "measurement": "Native max=0. Every function, method, constructor, accessor, arrow and nested callback is measured independently, including default parameters, optional chains and short circuits. The original embedded browser script is additionally parsed as JavaScript and mapped back to its original source lines."
+  },
+  "budgets": {
+    "testAndSupport": 3,
+    "independentCheckToolAndRootConfig": 6
+  },
+  "summary": {
+    "beforeFunctions": 355,
+    "beforeOverLimit": 37,
+    "beforeEmbeddedOverLimit": 4,
+    "afterFunctions": 469,
+    "afterOverLimit": 0,
+    "maximumAfterTestAndSupport": 3,
+    "maximumAfterCheckTool": 4
+  },
+  "files": [
+    {
+      "file": "e2e/freshchat.config.ts",
+      "limit": 3,
+      "beforeSHA256": "77add8479b70275107b0e8f29144f0c2ca9ec7b35289537edeb9e29093f2168e",
+      "afterSHA256": "77add8479b70275107b0e8f29144f0c2ca9ec7b35289537edeb9e29093f2168e"
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "limit": 3,
+      "beforeSHA256": "0c23e0fb3847286232ad5a68e56549ec2999d8b74199578efa0f911e5609888c",
+      "afterSHA256": "0c23e0fb3847286232ad5a68e56549ec2999d8b74199578efa0f911e5609888c"
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "limit": 3,
+      "beforeSHA256": "a77c8cb975c30c446dcc25b9e4a354ac426c4568847778c1eb26eb512f3231aa",
+      "afterSHA256": "500c37cf42c71bbf21139683798ffbb65779e9c4637b2df937d5109e620e717a"
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "limit": 3,
+      "beforeSHA256": "b172a820cc9604ff7752f0e63d8718fb681dcc3b61c7aba73b3922ecea7a645f",
+      "afterSHA256": "b172a820cc9604ff7752f0e63d8718fb681dcc3b61c7aba73b3922ecea7a645f"
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "limit": 3,
+      "beforeSHA256": "09ce090bc767ffa61c6c22adf3d59ba62dd5c3adfe504ec337dd5f2f0c0c381b",
+      "afterSHA256": "89bbfc6674d1f027716104281487efa5cea2254c80fd8cf559959136e7e9ee4e"
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "limit": 3,
+      "beforeSHA256": "3c00827970fca21d47cc21440374ece2b5f52df9aa64c758ee35efcfd99dbd3b",
+      "afterSHA256": "3e33291c76b72125faa77d4c4c65ed16990cd0f0bec4a1ba63c2092e5f5ad683"
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "limit": 3,
+      "beforeSHA256": "3cb6d4598359d05483671eaa443977102fefeaceb818da15c8a826601d3e3fc2",
+      "afterSHA256": "d74fba3e93c387a9330fcdf74b27aabe4e197a8f72d3bc03ce9c494abc3e6c79"
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "limit": 3,
+      "beforeSHA256": null,
+      "afterSHA256": "21044206891139032b0b577bf2743e646dd9893791609f9cfc1a594111fba60f"
+    },
+    {
+      "file": "e2e/helpers/environment.ts",
+      "limit": 3,
+      "beforeSHA256": "b7a7d5312bb87c620ca4f4fd058b64106742ca69a279c8b96e9900821429673d",
+      "afterSHA256": "2fab8bf54e29d6fba2de2631be2a351f320c897314ca27cfadf1378570bab54c"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.test.ts",
+      "limit": 3,
+      "beforeSHA256": null,
+      "afterSHA256": "ebd3cb77581ea2efda4a179b37bc2238851d9dca665b5f826b5bb239afde9834"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "limit": 3,
+      "beforeSHA256": "603033e2934f2acccc67095dfe97725eeb486bc6eca3cde9aa7d77693012a43f",
+      "afterSHA256": "a8394ab9897c6a6ac30e4f3bf24e3b0ad863f0d41417d49a8dceca46c1c6c7e3"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "limit": 3,
+      "beforeSHA256": null,
+      "afterSHA256": "1aac3964357b3509444204dacb35b9eb7e97eb458819a213d2d82b5b05b01b0a"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "limit": 3,
+      "beforeSHA256": "c3f898df7e61ba2509c9d715f376a814086d470d60fe878d2244058efebea4d3",
+      "afterSHA256": "2c39affa81b3f1948c3a711269402f499cacef86d0483fc5f8ba45961374c553"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "limit": 3,
+      "beforeSHA256": "04a75bda967c0eb8f747d37c0d77bb0489ff1af7e85afa4574dad4c8071d2a05",
+      "afterSHA256": "e3bcf1d112f60c9796d5c3e26138c11287f6d1c177b15fbb6fe130f4f757e87a"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "limit": 3,
+      "beforeSHA256": "762208768f5a0ceaa80df3c3b0b4010d7b64ae9d6184047d224198fecc708526",
+      "afterSHA256": "c7f12a4045e75f10308732e6ccf499cc4f3975483689d55ab0bf70b083c886cd"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "limit": 3,
+      "beforeSHA256": "2e38e01afd65a2787206174b69fc41e1d179d1d749b1fec06ef064e376528f44",
+      "afterSHA256": "ec2899859091aaf7636fc6c50a4e0430dbab70d545b69ecf8c9fc876c555ab33"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy.ts",
+      "limit": 3,
+      "beforeSHA256": "2889e238a9a6d706c10de0cfee6b40065f8b45379994bd95d7c41bfe5d07b2c2",
+      "afterSHA256": "2889e238a9a6d706c10de0cfee6b40065f8b45379994bd95d7c41bfe5d07b2c2"
+    },
+    {
+      "file": "e2e/helpers/network-fixture.ts",
+      "limit": 3,
+      "beforeSHA256": "9dc652b698c31a3c6cd59024556529b33e11f58c84f679fd758df3749792d458",
+      "afterSHA256": "9dc652b698c31a3c6cd59024556529b33e11f58c84f679fd758df3749792d458"
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "limit": 3,
+      "beforeSHA256": "c15f5b89c208e4591ca7b865f10ac7b64e0e7e91a8b1b769b0623a4afc247c33",
+      "afterSHA256": "69c412e4352a5a9014dff5de789ef35e271e21483a9683ab0daa686bdccc880e"
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "limit": 3,
+      "beforeSHA256": "ed2dc334cdf2cf636d0d6f0121f9decb30d442735262f4a574891159aadf7c4e",
+      "afterSHA256": "ed2dc334cdf2cf636d0d6f0121f9decb30d442735262f4a574891159aadf7c4e"
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.ts",
+      "limit": 3,
+      "beforeSHA256": "0771de9bbe715372e17204920825b6231482b75ff69476a5f634cce3f5e5a902",
+      "afterSHA256": "2b02aca764b1b3f3878219f9429610ebe182402a143360e0c6cb06d4a900c2d6"
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "limit": 3,
+      "beforeSHA256": "95be0a6255c7711661ea051c4b6b8cf87f90ece39c8814457af62a34967dda91",
+      "afterSHA256": "95be0a6255c7711661ea051c4b6b8cf87f90ece39c8814457af62a34967dda91"
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.ts",
+      "limit": 3,
+      "beforeSHA256": "89402fcc33c6401e81dba00c69fc725f6df6babb29a3dd6990ab3896e3418906",
+      "afterSHA256": "89402fcc33c6401e81dba00c69fc725f6df6babb29a3dd6990ab3896e3418906"
+    },
+    {
+      "file": "e2e/helpers/sites.ts",
+      "limit": 3,
+      "beforeSHA256": "0d205b3622fd749abd2af1a27c3d2abfcbf0b1e5698e0d42c6969a0904f2d470",
+      "afterSHA256": "0d205b3622fd749abd2af1a27c3d2abfcbf0b1e5698e0d42c6969a0904f2d470"
+    },
+    {
+      "file": "e2e/helpers/staging-notice.ts",
+      "limit": 3,
+      "beforeSHA256": "a8279ba3b2832eab0dfa244eb778647c21f6f8bcb4521d15f6659979baaf2f16",
+      "afterSHA256": "9bc79d566f65f431c0878ed554e4cfac3e4dbc74a66c931308e86f6d18b7816c"
+    },
+    {
+      "file": "e2e/helpers/tutorials.ts",
+      "limit": 3,
+      "beforeSHA256": "8d854cb5787d9040eb837c082469cb82dc7b8896eecd4105b9cfcf4a6bff01ef",
+      "afterSHA256": "8d854cb5787d9040eb837c082469cb82dc7b8896eecd4105b9cfcf4a6bff01ef"
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "limit": 3,
+      "beforeSHA256": null,
+      "afterSHA256": "936f7f14185a11fe53e58c1a10594e3ef113ac68df14cfcca15029b302308af9"
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "limit": 3,
+      "beforeSHA256": "c19c378ce1cd27eed1bede7de0bdcc9baa541c51adb26693ac25a41a56555a02",
+      "afterSHA256": "c6e3bfeaa50c2cf1a7a9c8f9237005da67fdfa4fe91751f3a35145794dcff7b9"
+    },
+    {
+      "file": "e2e/interactions.config.ts",
+      "limit": 3,
+      "beforeSHA256": "2b862fecaeb5e675d14eea560e0aa36f56f97a142658fa5d5cff6e653db9c356",
+      "afterSHA256": "2b862fecaeb5e675d14eea560e0aa36f56f97a142658fa5d5cff6e653db9c356"
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "limit": 3,
+      "beforeSHA256": "e4e9633c8e5a86b2189788a8ecce2661b692ef1338bcac92e90635c1354dde07",
+      "afterSHA256": "e4e9633c8e5a86b2189788a8ecce2661b692ef1338bcac92e90635c1354dde07"
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "622648e54844ed061ff5d08a5f2a2ea8c1af4ed67f36a49ba4d75f0fa8c6241e",
+      "afterSHA256": "622648e54844ed061ff5d08a5f2a2ea8c1af4ed67f36a49ba4d75f0fa8c6241e"
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "limit": 3,
+      "beforeSHA256": "8cf818fd43210cc2a48596df2613639d2d43b801bf920e05c1998a6fdd33582d",
+      "afterSHA256": "b08283bef5c4c2376b2897bdb04c9e418c987a6d31148b8c17b4d99dc0a52d0a"
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "limit": 3,
+      "beforeSHA256": "f1d819a398c00cf401130d8aba5a7797080b38e2def0b41fe63ad34524c768eb",
+      "afterSHA256": "ef48b75772d72e5341d4f579487de46a6089ff083d79753d835c87c65d79b5fd"
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "limit": 3,
+      "beforeSHA256": "de56bfdc5de5487fc2a3da52391cb54e7bc4bd956f666037a72031356b1456f3",
+      "afterSHA256": "4c8f2cd593ece3a2e4e27fc8b47823de2c3028d382a9e3d53f5c8ffb09232490"
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "limit": 3,
+      "beforeSHA256": null,
+      "afterSHA256": "173522dbc843b18cb511b4d8f0f5d918ca881c69c6915d1d044fa0ae046924c1"
+    },
+    {
+      "file": "e2e/interactions/pagination.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "f940657ebe4ed6e4aba9829d0a94c79037318494eaa62d373f8e8d7423974efe",
+      "afterSHA256": "f940657ebe4ed6e4aba9829d0a94c79037318494eaa62d373f8e8d7423974efe"
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "bcabd5e8620fc34dbd884580d7307c06819e718ebb1360eb2ee653b4b1a58d2e",
+      "afterSHA256": "1a8e5fbb1e1edf468ad27dcdbe882ecfe56f3f0739bdfac11c709effdf074711"
+    },
+    {
+      "file": "e2e/interactions/settings-scroll.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "61412abf17c1fa5df8ded7d0e4937af961383680664c4dde00817ffa11517222",
+      "afterSHA256": "61412abf17c1fa5df8ded7d0e4937af961383680664c4dde00817ffa11517222"
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "2ac24de7d130c5efad6643c444d9d1ed012109db2837ba1239a3f573a74c95ce",
+      "afterSHA256": "1d48c604916a25de4fb92d17b2b1ffaee96b23e792949e8b0bd44ffe91d0f1d2"
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "5e243f58c41d88a87752d5096513cb80c1ea178d3f5f7051d5bb089bb664c28e",
+      "afterSHA256": "5e243f58c41d88a87752d5096513cb80c1ea178d3f5f7051d5bb089bb664c28e"
+    },
+    {
+      "file": "e2e/playwright.config.ts",
+      "limit": 3,
+      "beforeSHA256": "f96525c1ee968be644ea992fe0288c6c2bad20d0f3e4e9af34768ad4442fd9c6",
+      "afterSHA256": "f96525c1ee968be644ea992fe0288c6c2bad20d0f3e4e9af34768ad4442fd9c6"
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "9ff89afaa4674173ce30c2a810e454089d28b5aba913e7627176fded7eaf43cd",
+      "afterSHA256": "3eef5eae3be67d38cc86a78e175d7d8d2cf8fb9f0779b48c9022797dcca6a8b6"
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "ea295bf9022da7fd17f2741f56140f1a2a54cdbe560c04c0c20a7890f9ad454c",
+      "afterSHA256": "ea295bf9022da7fd17f2741f56140f1a2a54cdbe560c04c0c20a7890f9ad454c"
+    },
+    {
+      "file": "e2e/staging-notice.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "cd00647a57eb68ac803ec4a25484ce81a9fa9e7acc5c833508bd99bd31a08c66",
+      "afterSHA256": "cd00647a57eb68ac803ec4a25484ce81a9fa9e7acc5c833508bd99bd31a08c66"
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "347ffba7801f2ed49b221943e7233e3b09168494e1b1f5e0ca9810a30874090d",
+      "afterSHA256": "347ffba7801f2ed49b221943e7233e3b09168494e1b1f5e0ca9810a30874090d"
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "cbf93467286ba1d3acefb0bbe287f61125a808e955d2254c3b17185c743181ed",
+      "afterSHA256": "5e0cfb70bd69f6b6562c94572fe4fa14598c57845ad47358601876140cbb02d2"
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "9e3742f9fcf0cb3237149546e36cb99157facf095a5b5f77cba1051534cdc5e4",
+      "afterSHA256": "b25c6f16d40f57c93917795806aef665b2d3acac8f25b2c3ff3fdfa597546b7f"
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "limit": 3,
+      "beforeSHA256": "e6a6ca5679e2cecc6f07d7e7c7bdf8efe83fe2bfec2885f24909979692f15308",
+      "afterSHA256": "e2bf5f8c48cb2aacb949036586e4709de8ca757c4e10d6a7cc8ec234cabe8986"
+    },
+    {
+      "file": "eslint.config.mjs",
+      "limit": 6,
+      "beforeSHA256": "cf2b675fb6888014b7e143cf7e7cc31357f70767201e0c95689d790662aaf39c",
+      "afterSHA256": "18ee1256b2b33df22061eca9e2afd83d95a21e10ff999e10f2eff3dd202db81c"
+    },
+    {
+      "file": "scripts/e2e-complexity-protocol-scope.mjs",
+      "limit": 6,
+      "beforeSHA256": null,
+      "afterSHA256": "e3dbbc71b2abfd7d72091866b70b0cd460b291d3827967f22dbb3f0ca8d56d9f"
+    },
+    {
+      "file": "scripts/e2e-complexity-scope.mjs",
+      "limit": 6,
+      "beforeSHA256": "f607a4da2e7971be9c78a5f669bf904cbfa06d37825c98cb58c81c019d5dfa74",
+      "afterSHA256": "f607a4da2e7971be9c78a5f669bf904cbfa06d37825c98cb58c81c019d5dfa74"
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "limit": 6,
+      "beforeSHA256": "0a77389c552902327a751e07d1553eb0c579a66e6cf38b7781fae176cfaf250b",
+      "afterSHA256": "ac2d766aac976a287ec14c307020aa1608b8350fa4d5486da7ce0f7b426b969b"
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "limit": 3,
+      "beforeSHA256": "16b6e22af591bd7f3d436497cf1830f5af30f567915ff7ca4ea35c7693564b90",
+      "afterSHA256": "9fde965012633f3786ce7c741618044e748aa610de0851a77b58ce939e7aae70"
+    }
+  ],
+  "before": [
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 9,
+      "column": 8,
+      "name": "Async function 'expectSiteReady'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 14,
+      "column": 43,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 18,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 23,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 37,
+      "column": 8,
+      "name": "Async function 'expectBuildVersion'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 12,
+      "column": 92,
+      "name": "Async arrow function",
+      "complexity": 4
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 15,
+      "column": 56,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 25,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 36,
+      "column": 7,
+      "name": "Method 'outputPath'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 39,
+      "column": 7,
+      "name": "Async method 'attach'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 45,
+      "column": 70,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 51,
+      "column": 72,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 62,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 64,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 66,
+      "column": 74,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 69,
+      "column": 80,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 72,
+      "column": 72,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 84,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 85,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 12,
+      "column": 42,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 14,
+      "column": 66,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 23,
+      "column": 5,
+      "name": "Async method 'exposeBinding'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 25,
+      "column": 5,
+      "name": "Async method 'addInitScript'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 32,
+      "column": 5,
+      "name": "Method 'outputPath'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 36,
+      "column": 5,
+      "name": "Async method 'attach'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 40,
+      "column": 51,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 44,
+      "column": 7,
+      "name": "Async method 'diagnostics'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 51,
+      "column": 7,
+      "name": "Method 'url'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 53,
+      "column": 7,
+      "name": "Method 'resourceType'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 55,
+      "column": 7,
+      "name": "Method 'method'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 70,
+      "column": 75,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 72,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 74,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 76,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 8,
+      "column": 40,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 14,
+      "column": 8,
+      "name": "Function 'diagnosticPath'",
+      "complexity": 6
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 18,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 21,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 31,
+      "column": 8,
+      "name": "Function 'diagnosticNode'",
+      "complexity": 4
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 43,
+      "column": 8,
+      "name": "Function 'diagnosticText'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 51,
+      "column": 8,
+      "name": "Function 'diagnosticFullText'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 58,
+      "column": 43,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 72,
+      "column": 8,
+      "name": "Function 'diagnosticFields'",
+      "complexity": 22
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 99,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 8,
+      "column": 88,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 39,
+      "column": 73,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 53,
+      "column": 90,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 70,
+      "column": 64,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 80,
+      "column": 66,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 85,
+      "column": 46,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 90,
+      "column": 84,
+      "name": "Arrow function",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 115,
+      "column": 37,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 118,
+      "column": 72,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 8,
+      "column": 24,
+      "name": "Class field initializer",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 9,
+      "column": 40,
+      "name": "Class field initializer",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 10,
+      "column": 13,
+      "name": "Class field initializer",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 16,
+      "column": 3,
+      "name": "Constructor",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 23,
+      "column": 3,
+      "name": "Method 'record'",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 37,
+      "column": 3,
+      "name": "Method 'merge'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 39,
+      "column": 40,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 46,
+      "column": 51,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 54,
+      "column": 3,
+      "name": "Method 'snapshot'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 58,
+      "column": 51,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 65,
+      "column": 3,
+      "name": "Method 'markdown'",
+      "complexity": 20
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 86,
+      "column": 35,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/environment.ts",
+      "line": 9,
+      "column": 1,
+      "name": "Function 'readInteger'",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 24,
+      "column": 3,
+      "name": "Constructor",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 34,
+      "column": 3,
+      "name": "Method 'command'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 37,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 50,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 54,
+      "column": 38,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 56,
+      "column": 75,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 69,
+      "column": 65,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 75,
+      "column": 3,
+      "name": "Method 'status'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 83,
+      "column": 3,
+      "name": "Method 'inject'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 88,
+      "column": 3,
+      "name": "Method 'enableVisualFixtures'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 93,
+      "column": 3,
+      "name": "Method 'clear'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 16,
+      "column": 25,
+      "name": "Class field initializer",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 23,
+      "column": 3,
+      "name": "Constructor",
+      "complexity": 6
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 31,
+      "column": 42,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 38,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 41,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 43,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 47,
+      "column": 24,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 52,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 52,
+      "column": 93,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 56,
+      "column": 3,
+      "name": "Getter 'isRunning'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 64,
+      "column": 3,
+      "name": "Async method 'waitUntilReady'",
+      "complexity": 7
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 84,
+      "column": 3,
+      "name": "Async method 'stop'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 91,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 109,
+      "column": 8,
+      "name": "Function 'startMitmdump'",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 11,
+      "column": 1,
+      "name": "Async function 'unusedPort'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 15,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 23,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 25,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 35,
+      "column": 8,
+      "name": "Async function 'withMitmproxy'",
+      "complexity": 4
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 46,
+      "column": 87,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 8,
+      "column": 86,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 24,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 44,
+      "column": 78,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 57,
+      "column": 60,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 62,
+      "column": 67,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 68,
+      "column": 90,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 74,
+      "column": 68,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 81,
+      "column": 46,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 92,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 10,
+      "column": 1,
+      "name": "Function 'origin'",
+      "complexity": 8
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 23,
+      "column": 1,
+      "name": "Async function 'feedbackOrigin'",
+      "complexity": 8
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 31,
+      "column": 40,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 44,
+      "column": 1,
+      "name": "Async function 'metadataHosts'",
+      "complexity": 14
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 48,
+      "column": 24,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 67,
+      "column": 51,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 76,
+      "column": 8,
+      "name": "Async function 'mitmproxySources'",
+      "complexity": 6
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 82,
+      "column": 60,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy.ts",
+      "line": 11,
+      "column": 3,
+      "name": "Async method 'mitmproxy'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy.ts",
+      "line": 19,
+      "column": 3,
+      "name": "Async method 'proxy'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/network-fixture.ts",
+      "line": 13,
+      "column": 3,
+      "name": "Async method 'network'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/network-fixture.ts",
+      "line": 19,
+      "column": 3,
+      "name": "Async method 'proxy'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/network-fixture.ts",
+      "line": 27,
+      "column": 39,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 15,
+      "column": 8,
+      "name": "Async function 'gotoDeployedSite'",
+      "complexity": 6
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 33,
+      "column": 47,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 44,
+      "column": 8,
+      "name": "Async function 'initializePage'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 45,
+      "column": 62,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 55,
+      "column": 8,
+      "name": "Async function 'openHall'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 69,
+      "column": 8,
+      "name": "Async function 'openUsernameLogin'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 79,
+      "column": 8,
+      "name": "Async function 'signIn'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 99,
+      "column": 48,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 107,
+      "column": 1,
+      "name": "Async function 'dismissAppAlert'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 112,
+      "column": 48,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 117,
+      "column": 48,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 26,
+      "column": 1,
+      "name": "Function 'requestWithResources'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 28,
+      "column": 5,
+      "name": "Async method 'get'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 32,
+      "column": 7,
+      "name": "Method 'ok'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 33,
+      "column": 7,
+      "name": "Async method 'text'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 38,
+      "column": 106,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.ts",
+      "line": 16,
+      "column": 8,
+      "name": "Async function 'readPublicResourceContents'",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 11,
+      "column": 67,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 26,
+      "column": 32,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 33,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 42,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 50,
+      "column": 40,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.ts",
+      "line": 12,
+      "column": 8,
+      "name": "Function 'bindScenarioProxy'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.ts",
+      "line": 20,
+      "column": 8,
+      "name": "Function 'scenarioProxy'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.ts",
+      "line": 32,
+      "column": 8,
+      "name": "Function 'selectScenario'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.ts",
+      "line": 41,
+      "column": 8,
+      "name": "Function 'scenarioStatus'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/staging-notice.ts",
+      "line": 23,
+      "column": 8,
+      "name": "Async function 'confirmStagingNotice'",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/helpers/tutorials.ts",
+      "line": 21,
+      "column": 8,
+      "name": "Async function 'installTutorialHandler'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/tutorials.ts",
+      "line": 24,
+      "column": 88,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "line": 8,
+      "column": 8,
+      "name": "Function 'readTestWebUrl'",
+      "complexity": 19
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 18,
+      "column": 8,
+      "name": "Async function 'openApp'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 36,
+      "column": 1,
+      "name": "Async function 'dismissWelcome'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 54,
+      "column": 40,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 72,
+      "column": 7,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 94,
+      "column": 3,
+      "name": "Async method 'storageState'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 10,
+      "column": 1,
+      "name": "Async function 'widgetState'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 15,
+      "column": 16,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 27,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 40,
+      "column": 46,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 48,
+      "column": 37,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 53,
+      "column": 38,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 60,
+      "column": 41,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 77,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 84,
+      "column": 37,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 93,
+      "column": 35,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 12,
+      "column": 8,
+      "name": "Async function 'drag'",
+      "complexity": 6
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 57,
+      "column": 8,
+      "name": "Async function 'scroll'",
+      "complexity": 6
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 71,
+      "column": 25,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 96,
+      "column": 8,
+      "name": "Async function 'scrollToItem'",
+      "complexity": 4
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 108,
+      "column": 18,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 124,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 8,
+      "column": 98,
+      "name": "Async arrow function",
+      "complexity": 7
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 21,
+      "column": 60,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 23,
+      "column": 74,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 29,
+      "column": 19,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 34,
+      "column": 21,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 51,
+      "column": 59,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 57,
+      "column": 7,
+      "name": "Async method 'attach'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 71,
+      "column": 66,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 73,
+      "column": 75,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 76,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 79,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 86,
+      "column": 68,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 91,
+      "column": 21,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 101,
+      "column": 94,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 110,
+      "column": 60,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 115,
+      "column": 17,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 119,
+      "column": 53,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 129,
+      "column": 7,
+      "name": "Async method 'attach'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 136,
+      "column": 66,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 138,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 141,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 13,
+      "column": 8,
+      "name": "Async function 'observePaginationGesture'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 155,
+      "column": 5,
+      "name": "Async method 'mark'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 157,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 159,
+      "column": 5,
+      "name": "Async method 'begin'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 160,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 165,
+      "column": 5,
+      "name": "Async method 'save'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 168,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination.spec.ts",
+      "line": 14,
+      "column": 10,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination.spec.ts",
+      "line": 16,
+      "column": 162,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination.spec.ts",
+      "line": 48,
+      "column": 73,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination.spec.ts",
+      "line": 55,
+      "column": 39,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 11,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 16,
+      "column": 29,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 20,
+      "column": 18,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 25,
+      "column": 31,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 28,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 32,
+      "column": 31,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 35,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 47,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 98,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 109,
+      "column": 20,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 116,
+      "column": 48,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 137,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 147,
+      "column": 20,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 153,
+      "column": 49,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/settings-scroll.spec.ts",
+      "line": 10,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/settings-scroll.spec.ts",
+      "line": 17,
+      "column": 31,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/settings-scroll.spec.ts",
+      "line": 20,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/settings-scroll.spec.ts",
+      "line": 32,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 6,
+      "column": 69,
+      "name": "Async arrow function",
+      "complexity": 4
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 9,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 14,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 31,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 33,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 40,
+      "column": 75,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 11,
+      "column": 47,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 15,
+      "column": 61,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 20,
+      "column": 69,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 35,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 45,
+      "column": 69,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 68,
+      "column": 69,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 87,
+      "column": 104,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 97,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 19,
+      "column": 67,
+      "name": "Async arrow function",
+      "complexity": 12
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 25,
+      "column": 49,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 27,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 30,
+      "column": 49,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 32,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 35,
+      "column": 51,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 17,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 22,
+      "column": 47,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 31,
+      "column": 47,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 46,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 51,
+      "column": 5,
+      "name": "Async method 'goto'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 64,
+      "column": 9,
+      "name": "Method 'ok'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 77,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 82,
+      "column": 47,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 85,
+      "column": 47,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 103,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/staging-notice.spec.ts",
+      "line": 7,
+      "column": 67,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/staging-notice.spec.ts",
+      "line": 9,
+      "column": 41,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 6,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 16,
+      "column": 62,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 18,
+      "column": 114,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 21,
+      "column": 126,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 24,
+      "column": 128,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 34,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 47,
+      "column": 63,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 51,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 63,
+      "column": 65,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 64,
+      "column": 101,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 67,
+      "column": 133,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 70,
+      "column": 135,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 78,
+      "column": 61,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 80,
+      "column": 99,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 81,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 86,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 94,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 106,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 107,
+      "column": 117,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 117,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 131,
+      "column": 61,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 132,
+      "column": 121,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 135,
+      "column": 129,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 138,
+      "column": 132,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 141,
+      "column": 97,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 154,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 162,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 163,
+      "column": 129,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 167,
+      "column": 128,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 179,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 191,
+      "column": 62,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 192,
+      "column": 99,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 195,
+      "column": 128,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 198,
+      "column": 92,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 9,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 11,
+      "column": 92,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 19,
+      "column": 62,
+      "name": "Async arrow function",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 30,
+      "column": 62,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 33,
+      "column": 65,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 39,
+      "column": 86,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 42,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 48,
+      "column": 84,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 55,
+      "column": 64,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 59,
+      "column": 63,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 62,
+      "column": 61,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 13,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 15,
+      "column": 3,
+      "name": "Method 'ok'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 17,
+      "column": 3,
+      "name": "Async method 'json'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 20,
+      "column": 120,
+      "name": "Async arrow function",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 39,
+      "column": 35,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 46,
+      "column": 7,
+      "name": "Method 'ok'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 48,
+      "column": 7,
+      "name": "Async method 'json'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 59,
+      "column": 87,
+      "name": "Arrow function",
+      "complexity": 4
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 67,
+      "column": 89,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 71,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 87,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 94,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 15,
+      "column": 59,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 23,
+      "column": 86,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 31,
+      "column": 96,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 33,
+      "column": 59,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 44,
+      "column": 126,
+      "name": "Async arrow function",
+      "complexity": 5
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 53,
+      "column": 62,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 66,
+      "column": 108,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 68,
+      "column": 68,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 74,
+      "column": 84,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 82,
+      "column": 62,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 86,
+      "column": 64,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 90,
+      "column": 68,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 92,
+      "column": 63,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 11,
+      "column": 8,
+      "name": "Function 'e2eComplexityFiles'",
+      "complexity": 3
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 24,
+      "column": 1,
+      "name": "Function 'engine'",
+      "complexity": 2
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 34,
+      "column": 1,
+      "name": "Function 'gateMessage'",
+      "complexity": 3
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 44,
+      "column": 8,
+      "name": "Async function 'checkE2eComplexityText'",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 55,
+      "column": 8,
+      "name": "Async function 'checkE2eComplexity'",
+      "complexity": 3
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 58,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 63,
+      "column": 42,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 65,
+      "column": 42,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 66,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 72,
+      "column": 1,
+      "name": "Async function 'main'",
+      "complexity": 4
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 15,
+      "column": 1,
+      "name": "Function 'sourceWithComplexity'",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 23,
+      "column": 85,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 39,
+      "column": 65,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 46,
+      "column": 70,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 49,
+      "column": 42,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 57,
+      "column": 1,
+      "name": "Function 'isolatedRepository'",
+      "complexity": 3
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 60,
+      "column": 36,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 74,
+      "column": 1,
+      "name": "Function 'runProbe'",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 90,
+      "column": 55,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 97,
+      "column": 86,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 15,
+      "column": 5,
+      "name": "Arrow function",
+      "complexity": 2,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 30,
+      "column": 5,
+      "name": "Function 'append'",
+      "complexity": 2,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 39,
+      "column": 5,
+      "name": "Function 'identity'",
+      "complexity": 6,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 47,
+      "column": 5,
+      "name": "Function 'geometry'",
+      "complexity": 1,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 59,
+      "column": 5,
+      "name": "Function 'snapshot'",
+      "complexity": 13,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 81,
+      "column": 17,
+      "name": "Arrow function",
+      "complexity": 1,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 86,
+      "column": 5,
+      "name": "Function 'sample'",
+      "complexity": 5,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 96,
+      "column": 5,
+      "name": "Function 'input'",
+      "complexity": 12,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 107,
+      "column": 19,
+      "name": "Arrow function",
+      "complexity": 1,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 112,
+      "column": 46,
+      "name": "Arrow function",
+      "complexity": 1,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 120,
+      "column": 5,
+      "name": "Function 'bubbled'",
+      "complexity": 2,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 136,
+      "column": 7,
+      "name": "Method 'begin'",
+      "complexity": 1,
+      "embedded": true
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 138,
+      "column": 7,
+      "name": "Method 'finish'",
+      "complexity": 2,
+      "embedded": true
+    }
+  ],
+  "after": [
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 18,
+      "column": 8,
+      "name": "Async function 'openApp'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 36,
+      "column": 1,
+      "name": "Async function 'dismissWelcome'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 54,
+      "column": 40,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 72,
+      "column": 7,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/fixtures.ts",
+      "line": 94,
+      "column": 3,
+      "name": "Async method 'storageState'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 10,
+      "column": 1,
+      "name": "Async function 'widgetState'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 15,
+      "column": 16,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 27,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 40,
+      "column": 46,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 48,
+      "column": 37,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 53,
+      "column": 38,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 60,
+      "column": 41,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 77,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 84,
+      "column": 37,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/freshchat.spec.ts",
+      "line": 93,
+      "column": 35,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 12,
+      "column": 8,
+      "name": "Async function 'drag'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 30,
+      "column": 1,
+      "name": "Async function 'dragInput'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 34,
+      "column": 5,
+      "name": "Async method 'start'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 37,
+      "column": 5,
+      "name": "Async method 'move'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 39,
+      "column": 5,
+      "name": "Async method 'finish'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 45,
+      "column": 5,
+      "name": "Async method 'start'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 48,
+      "column": 5,
+      "name": "Async method 'move'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 50,
+      "column": 5,
+      "name": "Async method 'finish'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 61,
+      "column": 8,
+      "name": "Async function 'scroll'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 75,
+      "column": 25,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 93,
+      "column": 8,
+      "name": "Async function 'scrollToItem'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 110,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 127,
+      "column": 1,
+      "name": "Async function 'scrollInput'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 141,
+      "column": 1,
+      "name": "Async function 'touchScroll'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 151,
+      "column": 1,
+      "name": "Async function 'itemInsideViewport'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/gestures.ts",
+      "line": 154,
+      "column": 30,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 10,
+      "column": 118,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 22,
+      "column": 60,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 24,
+      "column": 74,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 30,
+      "column": 19,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 35,
+      "column": 21,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 52,
+      "column": 59,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 58,
+      "column": 7,
+      "name": "Async method 'attach'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 72,
+      "column": 66,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 74,
+      "column": 75,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 77,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 80,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 87,
+      "column": 68,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 92,
+      "column": 21,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 102,
+      "column": 94,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 111,
+      "column": 60,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 116,
+      "column": 17,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 120,
+      "column": 53,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 130,
+      "column": 7,
+      "name": "Async method 'attach'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 137,
+      "column": 66,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 139,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.browser.ts",
+      "line": 142,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 17,
+      "column": 8,
+      "name": "Async function 'observePaginationGesture'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 25,
+      "column": 5,
+      "name": "Async method 'mark'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 27,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 29,
+      "column": 5,
+      "name": "Async method 'begin'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 30,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 35,
+      "column": 5,
+      "name": "Async method 'save'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-diagnostics.ts",
+      "line": 38,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination.spec.ts",
+      "line": 14,
+      "column": 10,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination.spec.ts",
+      "line": 16,
+      "column": 162,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination.spec.ts",
+      "line": 48,
+      "column": 73,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination.spec.ts",
+      "line": 55,
+      "column": 39,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 12,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 17,
+      "column": 29,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 21,
+      "column": 18,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 26,
+      "column": 31,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 29,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 33,
+      "column": 31,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 36,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 48,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 76,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 87,
+      "column": 20,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 94,
+      "column": 48,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 115,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 125,
+      "column": 20,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 131,
+      "column": 49,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 142,
+      "column": 1,
+      "name": "Async function 'assertSliderDrag'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/scroll-and-controls.spec.ts",
+      "line": 169,
+      "column": 1,
+      "name": "Async function 'sliderLimit'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/settings-scroll.spec.ts",
+      "line": 10,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/settings-scroll.spec.ts",
+      "line": 17,
+      "column": 31,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/settings-scroll.spec.ts",
+      "line": 20,
+      "column": 14,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/settings-scroll.spec.ts",
+      "line": 32,
+      "column": 4,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 2,
+      "column": 32,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 17,
+      "column": 3,
+      "name": "Function 'append'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 26,
+      "column": 3,
+      "name": "Function 'identity'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 34,
+      "column": 3,
+      "name": "Function 'geometry'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 46,
+      "column": 3,
+      "name": "Function 'snapshot'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 60,
+      "column": 15,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 65,
+      "column": 3,
+      "name": "Function 'sample'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 75,
+      "column": 3,
+      "name": "Function 'input'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 90,
+      "column": 3,
+      "name": "Function 'bubbled'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 101,
+      "column": 3,
+      "name": "Function 'marker'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 106,
+      "column": 3,
+      "name": "Function 'touchIdentity'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 111,
+      "column": 3,
+      "name": "Function 'screenTabs'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 117,
+      "column": 3,
+      "name": "Function 'collectLayers'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 128,
+      "column": 3,
+      "name": "Function 'addLayers'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 136,
+      "column": 3,
+      "name": "Function 'parentLayer'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 141,
+      "column": 3,
+      "name": "Function 'visualViewportMetrics'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 147,
+      "column": 3,
+      "name": "Function 'canSample'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 152,
+      "column": 3,
+      "name": "Function 'withinScreen'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 157,
+      "column": 3,
+      "name": "Function 'touchFields'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 165,
+      "column": 3,
+      "name": "Function 'touchPoint'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 172,
+      "column": 3,
+      "name": "Function 'pointerFields'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 180,
+      "column": 3,
+      "name": "Function 'hitPath'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 183,
+      "column": 38,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 194,
+      "column": 5,
+      "name": "Method 'begin'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/interactions/pagination-observer.browser.js",
+      "line": 196,
+      "column": 5,
+      "name": "Method 'finish'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 7,
+      "column": 69,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 10,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 15,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 32,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 34,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 41,
+      "column": 75,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/mitmproxy.spec.ts",
+      "line": 61,
+      "column": 1,
+      "name": "Function 'requireAddress'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 11,
+      "column": 47,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 15,
+      "column": 61,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 20,
+      "column": 69,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 35,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 45,
+      "column": 69,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 68,
+      "column": 69,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 87,
+      "column": 104,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/network-resilience.spec.ts",
+      "line": 97,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 20,
+      "column": 67,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 26,
+      "column": 49,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 28,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 31,
+      "column": 49,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 33,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 36,
+      "column": 51,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 47,
+      "column": 40,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 63,
+      "column": 1,
+      "name": "Function 'assertProductionBundle'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 75,
+      "column": 1,
+      "name": "Function 'averageLineLength'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 83,
+      "column": 1,
+      "name": "Function 'assertWorker'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 95,
+      "column": 1,
+      "name": "Async function 'assertSourceMapsAbsent'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "line": 110,
+      "column": 1,
+      "name": "Function 'assertWorkerResource'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 17,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 22,
+      "column": 47,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 31,
+      "column": 47,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 46,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 51,
+      "column": 5,
+      "name": "Async method 'goto'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 64,
+      "column": 9,
+      "name": "Method 'ok'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 77,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 82,
+      "column": 47,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 85,
+      "column": 47,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/sites-availability.spec.ts",
+      "line": 103,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/staging-notice.spec.ts",
+      "line": 7,
+      "column": 67,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/staging-notice.spec.ts",
+      "line": 9,
+      "column": 41,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 6,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 16,
+      "column": 62,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 18,
+      "column": 114,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 21,
+      "column": 126,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 24,
+      "column": 128,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 34,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 47,
+      "column": 63,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 51,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 63,
+      "column": 65,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 64,
+      "column": 101,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 67,
+      "column": 133,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 70,
+      "column": 135,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 78,
+      "column": 61,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 80,
+      "column": 99,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 81,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 86,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 94,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 106,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 107,
+      "column": 117,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 117,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 131,
+      "column": 61,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 132,
+      "column": 121,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 135,
+      "column": 129,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 138,
+      "column": 132,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 141,
+      "column": 97,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 154,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 162,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 163,
+      "column": 129,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 167,
+      "column": 128,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 179,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 191,
+      "column": 62,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 192,
+      "column": 99,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 195,
+      "column": 128,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-sign-in-notices.spec.ts",
+      "line": 198,
+      "column": 92,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 9,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 11,
+      "column": 92,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 19,
+      "column": 62,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 32,
+      "column": 62,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 35,
+      "column": 65,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 41,
+      "column": 86,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 44,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 50,
+      "column": 84,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 57,
+      "column": 64,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 61,
+      "column": 63,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-user.spec.ts",
+      "line": 64,
+      "column": 61,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 13,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 15,
+      "column": 3,
+      "name": "Method 'ok'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 17,
+      "column": 3,
+      "name": "Async method 'json'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 22,
+      "column": 120,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 40,
+      "column": 35,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 47,
+      "column": 7,
+      "name": "Method 'ok'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 49,
+      "column": 7,
+      "name": "Async method 'json'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 60,
+      "column": 72,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 68,
+      "column": 1,
+      "name": "Function 'rowHtml'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 76,
+      "column": 89,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 80,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 96,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 103,
+      "column": 58,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet-statements.spec.ts",
+      "line": 116,
+      "column": 1,
+      "name": "Function 'rowDate'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 15,
+      "column": 59,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 23,
+      "column": 86,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 31,
+      "column": 96,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 33,
+      "column": 59,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 44,
+      "column": 126,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 53,
+      "column": 62,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 68,
+      "column": 108,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 70,
+      "column": 68,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 76,
+      "column": 84,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 84,
+      "column": 62,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 88,
+      "column": 64,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 92,
+      "column": 68,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/test-wallet.spec.ts",
+      "line": 94,
+      "column": 63,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 9,
+      "column": 8,
+      "name": "Async function 'expectSiteReady'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 14,
+      "column": 43,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 18,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 23,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/assertions.ts",
+      "line": 37,
+      "column": 8,
+      "name": "Async function 'expectBuildVersion'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 13,
+      "column": 92,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 16,
+      "column": 56,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 26,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 37,
+      "column": 7,
+      "name": "Method 'outputPath'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 40,
+      "column": 7,
+      "name": "Async method 'attach'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 46,
+      "column": 70,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 52,
+      "column": 72,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 63,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 65,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 67,
+      "column": 74,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 70,
+      "column": 80,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 73,
+      "column": 72,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 85,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 86,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/connection-diagnostics.browser.ts",
+      "line": 95,
+      "column": 1,
+      "name": "Function 'assertAddress'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 12,
+      "column": 42,
+      "name": "Async arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 14,
+      "column": 66,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 23,
+      "column": 5,
+      "name": "Async method 'exposeBinding'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 25,
+      "column": 5,
+      "name": "Async method 'addInitScript'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 32,
+      "column": 5,
+      "name": "Method 'outputPath'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 36,
+      "column": 5,
+      "name": "Async method 'attach'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 40,
+      "column": 51,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 44,
+      "column": 7,
+      "name": "Async method 'diagnostics'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 51,
+      "column": 7,
+      "name": "Method 'url'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 53,
+      "column": 7,
+      "name": "Method 'resourceType'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 55,
+      "column": 7,
+      "name": "Method 'method'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 70,
+      "column": 75,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 72,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 74,
+      "column": 57,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-persistence.test.ts",
+      "line": 76,
+      "column": 58,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 8,
+      "column": 40,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 14,
+      "column": 8,
+      "name": "Function 'diagnosticPath'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 18,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 21,
+      "column": 52,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 29,
+      "column": 8,
+      "name": "Function 'diagnosticNode'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 41,
+      "column": 8,
+      "name": "Function 'diagnosticText'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 49,
+      "column": 8,
+      "name": "Function 'diagnosticFullText'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 56,
+      "column": 43,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 72,
+      "column": 1,
+      "name": "Function 'isRequestPath'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 82,
+      "column": 1,
+      "name": "Function 'matchesPathSegment'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 91,
+      "column": 1,
+      "name": "Function 'nodeAddress'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 103,
+      "column": 1,
+      "name": "Function 'matchStatus'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 111,
+      "column": 1,
+      "name": "Function 'eventName'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 119,
+      "column": 3,
+      "name": "Method 'originMatch'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 122,
+      "column": 3,
+      "name": "Method 'upstreamMatch'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 131,
+      "column": 1,
+      "name": "Function 'stringField'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 134,
+      "column": 55,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 142,
+      "column": 1,
+      "name": "Function 'isScalar'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 152,
+      "column": 1,
+      "name": "Function 'sanitizeField'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 162,
+      "column": 1,
+      "name": "Function 'isEventObject'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 171,
+      "column": 8,
+      "name": "Function 'diagnosticFields'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 175,
+      "column": 38,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 176,
+      "column": 47,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "line": 187,
+      "column": 1,
+      "name": "Function 'stringSanitizer'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 8,
+      "column": 88,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 39,
+      "column": 73,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 53,
+      "column": 90,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 70,
+      "column": 64,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 80,
+      "column": 66,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 85,
+      "column": 46,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 90,
+      "column": 84,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 113,
+      "column": 37,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 116,
+      "column": 72,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 127,
+      "column": 1,
+      "name": "Function 'assertUnknownPath'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.test.ts",
+      "line": 136,
+      "column": 1,
+      "name": "Function 'assertNoPaths'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 9,
+      "column": 24,
+      "name": "Class field initializer",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 10,
+      "column": 40,
+      "name": "Class field initializer",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 11,
+      "column": 13,
+      "name": "Class field initializer",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 17,
+      "column": 3,
+      "name": "Constructor",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 24,
+      "column": 3,
+      "name": "Method 'record'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 38,
+      "column": 3,
+      "name": "Method 'merge'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 40,
+      "column": 40,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 47,
+      "column": 51,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 55,
+      "column": 3,
+      "name": "Method 'snapshot'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 59,
+      "column": 51,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 66,
+      "column": 3,
+      "name": "Method 'markdown'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 71,
+      "column": 3,
+      "name": "Method 'trim'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "line": 80,
+      "column": 1,
+      "name": "Function 'eventTime'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 13,
+      "column": 1,
+      "name": "Function 'registerNode'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 23,
+      "column": 1,
+      "name": "Function 'countResponse'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 33,
+      "column": 1,
+      "name": "Function 'countResponseSource'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 43,
+      "column": 1,
+      "name": "Function 'countHealth'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 53,
+      "column": 1,
+      "name": "Function 'countNode'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 63,
+      "column": 1,
+      "name": "Function 'countEvent'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 73,
+      "column": 1,
+      "name": "Function 'countConnection'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 83,
+      "column": 1,
+      "name": "Function 'collectNode'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 93,
+      "column": 1,
+      "name": "Function 'applicationNotice'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 95,
+      "column": 34,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 103,
+      "column": 1,
+      "name": "Function 'nodeLine'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 112,
+      "column": 1,
+      "name": "Function 'eventLine'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 122,
+      "column": 8,
+      "name": "Function 'diagnosticSummary'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/diagnostic-summary.ts",
+      "line": 132,
+      "column": 36,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/environment.ts",
+      "line": 9,
+      "column": 1,
+      "name": "Function 'readInteger'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/environment.ts",
+      "line": 42,
+      "column": 1,
+      "name": "Function 'isMissing'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/environment.ts",
+      "line": 50,
+      "column": 1,
+      "name": "Function 'isNonnegativeInteger'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 24,
+      "column": 3,
+      "name": "Constructor",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 34,
+      "column": 3,
+      "name": "Method 'command'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 37,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 51,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 55,
+      "column": 38,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 57,
+      "column": 75,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 70,
+      "column": 65,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 76,
+      "column": 3,
+      "name": "Method 'status'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 84,
+      "column": 3,
+      "name": "Method 'inject'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 89,
+      "column": 3,
+      "name": "Method 'enableVisualFixtures'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 94,
+      "column": 3,
+      "name": "Method 'clear'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 103,
+      "column": 1,
+      "name": "Function 'controlHost'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.ts",
+      "line": 111,
+      "column": 1,
+      "name": "Function 'commandBody'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 17,
+      "column": 25,
+      "name": "Class field initializer",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 24,
+      "column": 3,
+      "name": "Constructor",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 32,
+      "column": 42,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 38,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 42,
+      "column": 24,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 47,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 47,
+      "column": 93,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 51,
+      "column": 3,
+      "name": "Getter 'isRunning'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 59,
+      "column": 3,
+      "name": "Async method 'waitUntilReady'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 68,
+      "column": 3,
+      "name": "Method 'checkRunning'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 73,
+      "column": 3,
+      "name": "Method 'failureReason'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 82,
+      "column": 3,
+      "name": "Async method 'pollReady'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 92,
+      "column": 3,
+      "name": "Async method 'stop'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 99,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 117,
+      "column": 8,
+      "name": "Function 'startMitmdump'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 143,
+      "column": 1,
+      "name": "Function 'captureStream'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 146,
+      "column": 35,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-process.ts",
+      "line": 150,
+      "column": 1,
+      "name": "Function 'mitmdumpExecutable'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 11,
+      "column": 1,
+      "name": "Async function 'unusedPort'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 15,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 23,
+      "column": 54,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 25,
+      "column": 39,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 35,
+      "column": 8,
+      "name": "Async function 'withMitmproxy'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 46,
+      "column": 87,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-session.ts",
+      "line": 64,
+      "column": 1,
+      "name": "Function 'proxyEnvironment'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 7,
+      "column": 8,
+      "name": "Function 'metadataFailure'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 15,
+      "column": 1,
+      "name": "Function 'transportReason'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 23,
+      "column": 1,
+      "name": "Async function 'metadataResponse'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 36,
+      "column": 1,
+      "name": "Async function 'metadataBody'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 45,
+      "column": 1,
+      "name": "Function 'serverField'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 54,
+      "column": 1,
+      "name": "Function 'serverNames'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 64,
+      "column": 1,
+      "name": "Function 'namesFromServers'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 72,
+      "column": 1,
+      "name": "Function 'isHostName'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 80,
+      "column": 8,
+      "name": "Async function 'metadataHosts'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-metadata.ts",
+      "line": 90,
+      "column": 1,
+      "name": "Function 'resultServers'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 8,
+      "column": 86,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 24,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 45,
+      "column": 78,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 58,
+      "column": 60,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 63,
+      "column": 67,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 69,
+      "column": 90,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 75,
+      "column": 68,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 82,
+      "column": 46,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.test.ts",
+      "line": 93,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 11,
+      "column": 1,
+      "name": "Function 'origin'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 23,
+      "column": 1,
+      "name": "Async function 'feedbackOrigin'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 33,
+      "column": 1,
+      "name": "Function 'isOriginUrl'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 41,
+      "column": 1,
+      "name": "Function 'feedbackAddress'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 43,
+      "column": 33,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 52,
+      "column": 1,
+      "name": "Async function 'feedbackInFile'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 61,
+      "column": 1,
+      "name": "Async function 'releaseFeedbackOrigin'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 76,
+      "column": 8,
+      "name": "Async function 'mitmproxySources'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 92,
+      "column": 1,
+      "name": "Function 'sourceOrigin'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 102,
+      "column": 1,
+      "name": "Function 'pendingSources'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 116,
+      "column": 1,
+      "name": "Async function 'discoverSources'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "line": 127,
+      "column": 1,
+      "name": "Function 'removeFailedSources'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/mitmproxy.ts",
+      "line": 11,
+      "column": 3,
+      "name": "Async method 'mitmproxy'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy.ts",
+      "line": 19,
+      "column": 3,
+      "name": "Async method 'proxy'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/network-fixture.ts",
+      "line": 13,
+      "column": 3,
+      "name": "Async method 'network'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/network-fixture.ts",
+      "line": 19,
+      "column": 3,
+      "name": "Async method 'proxy'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/network-fixture.ts",
+      "line": 27,
+      "column": 39,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 15,
+      "column": 8,
+      "name": "Async function 'gotoDeployedSite'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 30,
+      "column": 8,
+      "name": "Async function 'initializePage'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 31,
+      "column": 62,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 41,
+      "column": 8,
+      "name": "Async function 'openHall'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 55,
+      "column": 8,
+      "name": "Async function 'openUsernameLogin'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 65,
+      "column": 8,
+      "name": "Async function 'signIn'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 85,
+      "column": 48,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 93,
+      "column": 1,
+      "name": "Async function 'dismissAppAlert'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 98,
+      "column": 48,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 103,
+      "column": 48,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 110,
+      "column": 1,
+      "name": "Function 'retryableNavigation'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 121,
+      "column": 1,
+      "name": "Async function 'navigateAttempt'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 132,
+      "column": 1,
+      "name": "Async function 'waitForNavigationRetry'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/page.ts",
+      "line": 135,
+      "column": 42,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 26,
+      "column": 1,
+      "name": "Function 'requestWithResources'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 28,
+      "column": 5,
+      "name": "Async method 'get'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 32,
+      "column": 7,
+      "name": "Method 'ok'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 33,
+      "column": 7,
+      "name": "Async method 'text'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.test.ts",
+      "line": 38,
+      "column": 106,
+      "name": "Async arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.ts",
+      "line": 16,
+      "column": 8,
+      "name": "Async function 'readPublicResourceContents'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/public-source-maps.ts",
+      "line": 33,
+      "column": 1,
+      "name": "Async function 'readResource'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 11,
+      "column": 67,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 26,
+      "column": 32,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 33,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 42,
+      "column": 66,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.test.ts",
+      "line": 50,
+      "column": 40,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.ts",
+      "line": 12,
+      "column": 8,
+      "name": "Function 'bindScenarioProxy'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.ts",
+      "line": 20,
+      "column": 8,
+      "name": "Function 'scenarioProxy'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.ts",
+      "line": 32,
+      "column": 8,
+      "name": "Function 'selectScenario'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/scenario-proxy.ts",
+      "line": 41,
+      "column": 8,
+      "name": "Function 'scenarioStatus'",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/staging-notice.ts",
+      "line": 23,
+      "column": 8,
+      "name": "Async function 'confirmStagingNotice'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/staging-notice.ts",
+      "line": 40,
+      "column": 1,
+      "name": "Async function 'fillConfirmation'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/staging-notice.ts",
+      "line": 52,
+      "column": 1,
+      "name": "Function 'confirmationText'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/tutorials.ts",
+      "line": 21,
+      "column": 8,
+      "name": "Async function 'installTutorialHandler'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/tutorials.ts",
+      "line": 24,
+      "column": 88,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "line": 7,
+      "column": 1,
+      "name": "Function 'validateBareUrl'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "line": 17,
+      "column": 1,
+      "name": "Function 'validateRelease'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "line": 28,
+      "column": 1,
+      "name": "Function 'validateStaging'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "line": 38,
+      "column": 1,
+      "name": "Function 'stagingAddress'",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "line": 47,
+      "column": 8,
+      "name": "Function 'readTestWebUrl'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "line": 61,
+      "column": 1,
+      "name": "Function 'validatedUrl'",
+      "complexity": 3
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "line": 11,
+      "column": 77,
+      "name": "Arrow function",
+      "complexity": 2
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "line": 16,
+      "column": 65,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "line": 18,
+      "column": 43,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "line": 24,
+      "column": 61,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "line": 25,
+      "column": 41,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "line": 31,
+      "column": 66,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "line": 32,
+      "column": 42,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "line": 42,
+      "column": 88,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/web-target.test.ts",
+      "line": 43,
+      "column": 49,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-client.test.ts",
+      "line": 6,
+      "column": 75,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity-protocol-scope.mjs",
+      "line": 5,
+      "column": 35,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity-protocol-scope.mjs",
+      "line": 16,
+      "column": 35,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity-protocol-scope.mjs",
+      "line": 24,
+      "column": 31,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 13,
+      "column": 8,
+      "name": "Function 'e2eComplexityFiles'",
+      "complexity": 4
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 26,
+      "column": 1,
+      "name": "Function 'engine'",
+      "complexity": 2
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 36,
+      "column": 1,
+      "name": "Function 'gateMessage'",
+      "complexity": 3
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 46,
+      "column": 8,
+      "name": "Async function 'checkE2eComplexityText'",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 57,
+      "column": 8,
+      "name": "Async function 'checkE2eComplexity'",
+      "complexity": 3
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 60,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 3
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 65,
+      "column": 42,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 67,
+      "column": 42,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 68,
+      "column": 45,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 74,
+      "column": 1,
+      "name": "Async function 'main'",
+      "complexity": 4
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 89,
+      "column": 1,
+      "name": "Function 'requiredFiles'",
+      "complexity": 2
+    },
+    {
+      "file": "scripts/e2e-complexity.mjs",
+      "line": 97,
+      "column": 1,
+      "name": "Function 'supportPatterns'",
+      "complexity": 2
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 16,
+      "column": 1,
+      "name": "Function 'sourceWithComplexity'",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 24,
+      "column": 85,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 41,
+      "column": 80,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 48,
+      "column": 85,
+      "name": "Async arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 51,
+      "column": 44,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 60,
+      "column": 1,
+      "name": "Function 'isolatedRepository'",
+      "complexity": 3
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 63,
+      "column": 36,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 79,
+      "column": 1,
+      "name": "Function 'runProbe'",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 100,
+      "column": 70,
+      "name": "Arrow function",
+      "complexity": 1
+    },
+    {
+      "file": "scripts/e2e-complexity.test.mjs",
+      "line": 108,
+      "column": 86,
+      "name": "Async arrow function",
+      "complexity": 1
+    }
+  ],
+  "removedBaselineEntries": [
+    {
+      "file": "e2e/helpers/diagnostic-privacy.ts",
+      "rule": "complexity",
+      "line": 65,
+      "column": 8,
+      "message": "Function 'diagnosticFields' has a complexity of 22. Maximum allowed is 10.",
+      "anchor": "201ec5b8b22955a56334f436541bd167e2c33a800f8f754edb7808aae96e8544",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/helpers/diagnostic-recorder.ts",
+      "rule": "complexity",
+      "line": 57,
+      "column": 3,
+      "message": "Method 'markdown' has a complexity of 20. Maximum allowed is 10.",
+      "anchor": "578d6324de4d9a2ce0e54d1e8c481427fcbee174d63142a2696cd662bb27fce0",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/helpers/mitmproxy-sources.ts",
+      "rule": "complexity",
+      "line": 44,
+      "column": 1,
+      "message": "Async function 'metadataHosts' has a complexity of 14. Maximum allowed is 10.",
+      "anchor": "ec6be07f760edeeb8f9572450f68687a9cb16caf4a1e19e9fee02b417eb2189d",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/helpers/web-target.ts",
+      "rule": "complexity",
+      "line": 8,
+      "column": 8,
+      "message": "Function 'readTestWebUrl' has a complexity of 19. Maximum allowed is 10.",
+      "anchor": "75ea8c11fd4ad995171fb0b881ff363f5b277a67cfb6362fa1e80c8042f18045",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    },
+    {
+      "file": "e2e/public-artifacts.spec.ts",
+      "rule": "complexity",
+      "line": 19,
+      "column": 67,
+      "message": "Async arrow function has a complexity of 12. Maximum allowed is 10.",
+      "anchor": "4d868a4c81c005ec8b9cb336bc4a40ab66cbb7bf6a3f6f2f711d9dcf1ad9d835",
+      "kind": "migration",
+      "reason": "现有账号、诊断或视觉辅助控制流；先保持既有行为和回归测试，逐函数迁移，当前复杂度不得增加。"
+    }
+  ],
+  "validation": {
+    "fullSuiteRun": false,
+    "staticGate": {
+      "command": "npm run lint:e2e-complexity -- --protocol",
+      "result": "0 violations"
+    },
+    "gateRegression": {
+      "command": "node --test scripts/e2e-complexity.test.mjs",
+      "passed": 159,
+      "covers": [
+        "support 3 passes / 4 fails",
+        "tool 6 passes / 7 fails",
+        "methods, constructors, accessors, nested callbacks, defaults, optional chains and short circuits",
+        "disable comments cannot bypass checks",
+        "CLI exit codes for over-limit, parse failure and missing dependencies",
+        "existing lint/check -> pre-commit -> CI wiring"
+      ]
+    },
+    "unit": [
+      {
+        "command": "node --import tsx --test e2e/helpers/diagnostic-recorder.test.ts e2e/helpers/diagnostic-persistence.test.ts e2e/helpers/mitmproxy-sources.test.ts e2e/helpers/public-source-maps.test.ts e2e/helpers/scenario-proxy.test.ts",
+        "passed": 15
+      },
+      {
+        "command": "node --import tsx --test e2e/helpers/connection-diagnostics.browser.ts e2e/interactions/pagination-diagnostics.browser.ts",
+        "passed": 4
+      },
+      {
+        "command": "node --import tsx --test e2e/helpers/web-target.test.ts e2e/helpers/diagnostic-log.test.ts e2e/helpers/diagnostic-attachments.test.ts e2e/interactions/pagination-diagnostics.browser.ts",
+        "passed": 39
+      },
+      {
+        "command": "node --import tsx --test e2e/helpers/mitmproxy-client.test.ts",
+        "passed": 1
+      }
+    ],
+    "playwright": [
+      {
+        "command": "E2E_RETRIES=0 MITMDUMP_PATH=<existing mitmdump> MITMPROXY_API_HOSTS='[\"api.shafayouxi.org\"]' MITMPROXY_FEEDBACK_ORIGIN=https://feedback.invalid node e2e/node_modules/@playwright/test/cli.js test --config e2e/playwright.config.ts e2e/mitmproxy.spec.ts e2e/test-user.spec.ts e2e/test-wallet.spec.ts e2e/test-wallet-statements.spec.ts --reporter=line",
+        "passed": 30
+      },
+      {
+        "command": "E2E_RETRIES=0 node e2e/node_modules/@playwright/test/cli.js test --config e2e/playwright.config.ts e2e/staging-notice.spec.ts e2e/sites-availability.spec.ts --grep \"测试版|重试|超时\" --reporter=line",
+        "passed": 6
+      }
+    ],
+    "collection": [
+      {
+        "command": "node e2e/node_modules/@playwright/test/cli.js test --config e2e/interactions.config.ts --list",
+        "collected": 16
+      },
+      {
+        "command": "node e2e/node_modules/@playwright/test/cli.js test --config e2e/playwright.config.ts --list",
+        "collected": 53
+      }
+    ],
+    "typecheck": {
+      "result": "passed",
+      "scope": "All issue 101 TypeScript sources and their imported dependencies. Same strict ES2022/Bundler compiler options as repository tsconfig; no full-project typecheck."
+    },
+    "architecture": {
+      "command": "node node_modules/dependency-cruiser/bin/dependency-cruiser.mjs --config .dependency-cruiser.cjs --output-type err e2e/helpers/diagnostic-recorder.ts e2e/helpers/mitmproxy-sources.ts e2e/interactions/pagination-diagnostics.ts",
+      "result": "16 modules, 18 dependencies, no violations"
+    },
+    "baseline": {
+      "removed": 5,
+      "addedOrExpanded": 0,
+      "result": "Only eliminated exact complexity entries removed. Existing adapter exceptions retained. Scoped ordinary ESLint findings compared by existing fingerprints: no added findings and no stale entries."
+    },
+    "fixedBuild": {
+      "prepare": "uv run --no-project --python 3.12 node scripts/prepare-release-web.mjs",
+      "applicationCommit": "5d11c3e118f47538497cae30cca1799bd69d7977",
+      "releaseTag": "web-staging-200001901-5d11c3e118f4",
+      "sha256": "dfe91c4bbd3ed7156de02db4c3b50979ccf363568bc2a669acfe5583457a14f4",
+      "environment": "CLRN_RELEASE_WEB_ROOT / CLRN_EXPECTED_APPLICATION_COMMIT / CLRN_RELEASE_TAG exported from verified preparation; existing mitmdump; TESTING_API_TOKEN read in memory from existing local staging configuration.",
+      "scenarios": [
+        {
+          "command": "E2E_RETRIES=0 node scripts/with-release-web-server.mjs node scripts/with-test-account.mjs -- node e2e/node_modules/@playwright/test/cli.js test --config e2e/interactions.config.ts --grep \"大厅滚动后|弹层关闭后|申请标签\" --reporter=line",
+          "passed": 6,
+          "coverage": "Desktop and touch: pagination swipe/cursors/end-of-list, hall scroll and search, slider round trip and bounds."
+        },
+        {
+          "command": "E2E_RETRIES=0 node scripts/with-release-web-server.mjs node e2e/node_modules/@playwright/test/cli.js test --config e2e/playwright.config.ts e2e/public-artifacts.spec.ts --reporter=line",
+          "passed": 1
+        }
+      ],
+      "limits": "Real Chromium H5 runs with real mitmdump and a leased staging account. Does not claim native iOS/Android or Safari coverage."
+    }
+  }
+}

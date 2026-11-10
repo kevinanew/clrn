@@ -66,9 +66,9 @@ async function recoverRoomForm(page: Page, error: unknown, attempt: number, room
  * @param page - 牌桌页面。
  * @param game - 游戏类型。
  * @param prefix - 牌桌控件前缀。
- * @param readyId - 当前房间类型实际提供的就绪控件。
+ * @param ready - 当前房间模式的就绪判定或控件标识。
  */
-export async function waitForTableConnection(page: Page, game: string, prefix: string, readyId = `${prefix}-start-room-timer-button`) {
+export async function waitForTableConnection(page: Page, game: string, prefix: string, ready: string | (() => Promise<boolean>) = `${prefix}-start-room-timer-button`) {
   const connection = { state: 'loading' };
   // 德州选线失败后会避让节点 120 秒，需留出避让结束后重新探测及订阅的时间。
   const timing = game === 'texas' ? { cacheWaitMs: 10_000, timeout: 180_000 } : { cacheWaitMs: 0, timeout: 90_000 };
@@ -79,10 +79,20 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
   ).last();
   await expect.poll(/** 轮询牌桌连接状态，有限重试后保留明确的连接失败状态。 */ async () => {
     if (await retry.isVisible()) await retryTableConnection(page, retry, retryState, connection);
-    else if (await visible(page, readyId).isVisible()) connection.state = 'ready';
+    else if (await tableReady(page, ready)) connection.state = 'ready';
     return connection.state;
   }, { timeout: timing.timeout, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
   await assertTableConnected(page, game, connection.state);
+}
+
+/**
+ * 判断当前房间的指定控件或自定义条件是否就绪。
+ * @param page - 当前牌桌页面。
+ * @param ready - 就绪控件标识或判断函数。
+ * @returns 是否已就绪。
+ */
+async function tableReady(page: Page, ready: string | (() => Promise<boolean>)): Promise<boolean> {
+  return typeof ready === 'string' ? visible(page, ready).isVisible() : ready();
 }
 
 /**
@@ -365,7 +375,11 @@ async function prepareAndSampleTable(runtime: TableRuntime): Promise<void> {
  */
 async function enterSampleTable(page: Page, room: RoomSession, game: 'texas' | 'zhajinhua', hall: boolean): Promise<void> {
   const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
-  if (hall) await enterTexasRoom(page, room);
+  if (hall) {
+    await enterTexasRoom(page, room);
+    await waitForTableConnection(page, game, prefix, /** 大厅加载完成且工具栏可见。 */ async () =>
+      !await visible(page, 'game-splash-screen-bg').isVisible() && await visible(page, 'menu-button').isVisible());
+  }
   else await waitForTableConnection(page, game, prefix);
 }
 
