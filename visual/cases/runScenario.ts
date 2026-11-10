@@ -1,3 +1,4 @@
+import { screenshotWithArtworkDiagnostics } from './account/artworkDiagnostics';
 import { withMitmproxy } from '../../e2e/helpers/mitmproxy-session';
 import type { Mitmproxy } from '../../e2e/helpers/mitmproxy-client';
 import { bindScenarioProxy } from '../../e2e/helpers/scenario-proxy';
@@ -94,7 +95,7 @@ export async function runVisualScenario(
       const accessibilityLabel = await visibleBackButton.getAttribute('aria-label');
       expect(accessibilityLabel).toBe(backAccessibilityLabels[scenario.locale]);
     }
-    await expect(page).toHaveScreenshot(`${scenario.label}.png`);
+    await screenshotWithArtworkDiagnostics(page, scenario);
     });
   } finally {
     await context.close();
