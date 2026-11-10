@@ -123,7 +123,7 @@ test('报告解析失败非零退出，定向参数不可同时使用', /** 测�
     assert.match(report.stderr, /复杂度测量解析失败/);
     const ambiguous = runVisualGate(directory, ...modes, '--entrypoints');
     assert.equal(ambiguous.status, 1);
-    assert.match(ambiguous.stderr, /不能同时使用/);
+    assert.match(ambiguous.stderr, /复杂度定向模式不能与其他定向参数同时使用/);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
