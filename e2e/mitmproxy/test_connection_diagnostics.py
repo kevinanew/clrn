@@ -218,6 +218,8 @@ class DiagnosticTests(unittest.TestCase):
 
     def test_请求地址实际连接及模拟响应分别核验且不猜测无响应状态(self):
         """验证请求地址实际连接及模拟响应分别核验且不猜测无响应状态。"""
+        # 全文脱敏断言包含纯数字端口，固定合法关联编号和时间，避免随机碰撞。
+        self.enterContext(patch('connection_diagnostics.time.time', return_value=1))
         server_id = '12345678-1234-4234-8234-123456789012'
         with patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': 'http://127.0.0.1:18080/',
                                       'CLRN_RELEASE_SERVER_ID': server_id}):
@@ -232,6 +234,10 @@ class DiagnosticTests(unittest.TestCase):
             ]:
                 with self.subTest(peer=peer, connected=connected, fixture=fixture):
                     request = flow('http://127.0.0.1:18080/asset.webp?token=synthetic-secret')
+                    request.id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+                    request.client_conn.id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
+                    request.server_conn.id = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc'
+                    request.request.timestamp_start = 1
                     request.request.headers['Authorization'] = 'Bearer synthetic-secret'
                     request.server_conn.peername = peer
                     request.server_conn.timestamp_tcp_setup = connected
