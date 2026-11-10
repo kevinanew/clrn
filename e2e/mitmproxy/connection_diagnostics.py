@@ -14,7 +14,7 @@ from diagnostic_release import (release_origin_match, release_upstream_match, re
                                 error_reason, release_server, request_operation, error_source,
                                 response_state, release_identifier)
 from diagnostic_socket import DiagnosticSocket
-from account_connection_diagnostics import account_connection_fields
+from account_connection_diagnostics import RoomConnections, account_connection_fields
 
 CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 PATH_TEMPLATES = [(path, path.split('/')) for path in json.loads(
@@ -89,9 +89,13 @@ class ConnectionDiagnostics(DiagnosticSocket):
         self.events = deque(maxlen=5000)
         self.dropped = 0
         self.pending_commands = {}
+        self.room_connections = RoomConnections()
 
     def server_event(self, event, data):
-        """仅收集本任务 Release 目标的真实连接钩子，不记录其他目标或异常正文。"""
+        """收集 Release 与已登记建房接口的真实连接钩子，不记录地址或异常正文。"""
+        room = self.room_connections.fields(data, node_name)
+        if room is not None:
+            self.append_event({'event': event, 'observedAt': int(time.time() * 1000), **room})
         if not release_server(data):
             return
         self.append_event({'event': event, 'observedAt': int(time.time() * 1000),
@@ -153,6 +157,7 @@ class ConnectionDiagnostics(DiagnosticSocket):
         """记录业务请求的来源与关联信息，排除代理控制流量。"""
         if flow.request.host in CONTROL_HOSTS:
             return
+        self.room_connections.observe(flow)
         source = 'fixture' if flow.response is not None else 'upstream'
         flow.metadata['diagnostic_source'] = source
         self.record('proxy.request', flow, source=source, fixtureHit=source == 'fixture',

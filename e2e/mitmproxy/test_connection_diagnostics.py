@@ -1,6 +1,7 @@
 """验证代理记录不泄露认证数据，且能区分本地模拟与真实上游响应。"""
 import json
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 from mitmproxy import http
 from mitmproxy.flow import Error
@@ -11,6 +12,25 @@ from test_network_faults import flow
 
 class DiagnosticTests(unittest.TestCase):
     """验证连接诊断的路径语义、来源关联、容量与脱敏边界。"""
+    def test_room_request_correlates_real_connection_without_changing_result(self):
+        """建房接口登记后，连接错误钩子只附加脱敏阶段。"""
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://api.fixture.invalid/v3/pay_action/batch/price')
+        diagnostics.request(request)
+        server = SimpleNamespace(id='real-upstream', address=('api.fixture.invalid', 443),
+                                 timestamp_start=1, timestamp_tcp_setup=None,
+                                 timestamp_tls_setup=None, tls=True, error='private error')
+        data = SimpleNamespace(client=request.client_conn, server=server)
+        with patch('connection_diagnostics.release_server', return_value=False):
+            diagnostics.server_connect_error(data)
+        event = diagnostics.events[-1]
+        self.assertEqual(event['event'], 'proxy.server-connect-error')
+        self.assertEqual(event['phase'], 'room-hook-tcp-pending')
+        self.assertEqual(event['upstreamConnectionId'], 'real-upstream')
+        self.assertNotIn('private error', json.dumps(event))
+        self.assertIsNone(request.response)
+        self.assertIsNone(request.error)
+
     def test_新节点标签与浏览器一致且重复脱敏保持稳定(self):
         """验证主机和含凭据地址使用同一指纹，重复处理不改变节点及请求关联。"""
         node = 'laiwan_proxy-d5e6a40756c6'
