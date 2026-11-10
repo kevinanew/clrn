@@ -1,3 +1,4 @@
+import { captureSupportFiles, captureFiles } from './visual-complexity-capture-scope.mjs';
 import { ESLint } from 'eslint';
 import { relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -17,7 +18,7 @@ export function visualComplexityFiles(animationsOnly = false, entrypointsOnly = 
   for (const file of required) {
     if (!files.includes(file)) throw new Error(`视觉复杂度检查缺少文件：${file}`);
   }
-  return [...new Set([...required, ...scopedSupportFiles(files, animationsOnly, entrypointsOnly, casesOnly), ...files.filter(/** 根据当前条目计算结果。
+  return [...new Set([...required, ...scopedSupportFiles(files, animationsOnly, entrypointsOnly, casesOnly), ...defaultCaptureFiles(animationsOnly, entrypointsOnly, casesOnly), ...files.filter(/** 根据当前条目计算结果。
  * @param file - 当前回调参数。 */ file => /^scripts\/visual-complexity.*\.mjs$/.test(file))])];
 }
 
@@ -84,11 +85,7 @@ function functionMeasurements(result) {
 
 /** 执行独立门禁或打印完整测量结果，失败均返回非零状态。 */
 async function main() {
-  const animationsOnly = process.argv.includes('--animations');
-  const entrypointsOnly = process.argv.includes('--entrypoints');
-  const casesOnly = process.argv.includes('--cases');
-  if ([animationsOnly, entrypointsOnly, casesOnly].filter(Boolean).length > 1) throw new Error('定向范围参数不能同时使用');
-  const files = visualComplexityFiles(animationsOnly, entrypointsOnly, casesOnly);
+  const files = selectedFiles();
   if (process.argv.includes('--report')) {
     console.log(JSON.stringify(await measureVisualComplexity(files), null, 2));
     return;
@@ -146,4 +143,46 @@ function requiredFiles(animationsOnly, entrypointsOnly, casesOnly) {
   if (casesOnly) return [...visualCaseSupportFiles, 'eslint.config.mjs'];
   const cases = animationsOnly || entrypointsOnly ? [] : visualCaseSupportFiles;
   return [...existingAnimationFiles(entrypointsOnly), ...existingVisualFiles(animationsOnly), ...cases, 'eslint.config.mjs'];
+}
+
+/**
+ * 独立扫描采集范围及共享门禁，不要求其他视觉目录先清零。
+ * @returns 原始文件、相邻测试、新辅助实现与检查工具。
+ */
+export function captureComplexityFiles() {
+  const files = sourceFiles();
+  for (const file of captureSupportFiles) {
+    if (!files.includes(file)) throw new Error(`动画采集复杂度检查缺少文件：${file}`);
+  }
+  return [...new Set([...captureFiles(files), 'eslint.config.mjs', ...files.filter(isVisualCheckFile)])];
+}
+
+/**
+ * 保留默认 lint 调用链对采集范围的强制检查。
+ * @param animationsOnly - Issue 103 定向入口。
+ * @param entrypointsOnly - 视觉入口定向模式。
+ * @param casesOnly - 业务场景定向模式。
+ * @returns 默认入口需要追加的采集范围。
+ */
+function defaultCaptureFiles(animationsOnly, entrypointsOnly, casesOnly) {
+  if (animationsOnly || entrypointsOnly || casesOnly) return [];
+  return captureComplexityFiles();
+}
+
+/**
+ * 识别所有共享视觉门禁实现。
+ * @param file - 当前源码路径。
+ * @returns 是否属于门禁工具。
+ */
+function isVisualCheckFile(file) { return /^scripts\/visual-complexity.*\.mjs$/.test(file); }
+
+/** 选择互斥的定向范围并返回扫描文件。 */
+function selectedFiles() {
+  const animationsOnly = process.argv.includes('--animations');
+  const entrypointsOnly = process.argv.includes('--entrypoints');
+  const casesOnly = process.argv.includes('--cases');
+  if ([animationsOnly, entrypointsOnly, casesOnly, process.argv.includes('--capture')].filter(Boolean).length > 1) {
+    throw new Error('定向范围参数不能同时使用');
+  }
+  return process.argv.includes('--capture') ? captureComplexityFiles() : visualComplexityFiles(animationsOnly, entrypointsOnly, casesOnly);
 }

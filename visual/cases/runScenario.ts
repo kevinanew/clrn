@@ -7,6 +7,7 @@ import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
 import { preparePage } from '../src/support/preparePage';
 import { assertGuestClubReady } from './club/guestReadiness';
+import { withAccountValidationDiagnostics } from './accountValidationDiagnostics';
 import { screenshotWithArtworkDiagnostics } from './account/artworkDiagnostics';
 
 import { visualBaseUrl as baseUrl } from '../target';
@@ -41,6 +42,7 @@ export async function runVisualScenario(
   const page = await context.newPage();
 
   try {
+    await withAccountValidationDiagnostics(scenario, context, page, options.network, /** 执行场景并保存失败诊断。 */ async () => {
     await setupContextForScenario(context, scenario, page);
     await page.goto(scenario.path);
     await preparePage(page, scenario);
@@ -49,6 +51,7 @@ export async function runVisualScenario(
     await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
     await assertScenarioContent(page, scenario);
     await screenshotWithArtworkDiagnostics(page, scenario);
+    });
   } finally {
     await context.close();
   }

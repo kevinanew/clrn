@@ -1,23 +1,24 @@
+import { launchAnimationBrowser } from './appSessionBrowser';
 /** 离线验证牌桌健康缓存过期后恢复及重试上限。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { chromium } from '@playwright/test';
 import { waitForTableConnection } from './tableSession';
 
-test('识别两种连接重试按钮，恢复后才就绪，持续失败最多点击三次', /** 验证识别两种连接重试按钮，恢复后才就绪，持续失败最多点击三次。 */ async () => {
-  const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
-    ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
-  try {
-    const page = await browser.newPage();
-    const cases = ['common-alert-button-retry', 'alert-custom-button']
+const cases = ['common-alert-button-retry', 'alert-custom-button']
       .flatMap(/** 展开当前条目对应的`[false, true].map(persistent => ({ id, persistent }))`。
  * @param id - 当前操作使用的 id。 */ id => [false, true].map(/** 将当前条目映射为`{ id, persistent }`。
- * @param persistent - 当前操作使用的 persistent。 */ persistent => ({ id, persistent })));
-    for (const { id, persistent } of cases) {
+ * @param persistent - 当前操作使用的 persistent。 */ persistent => ({ id, persistent, label: 'Retry' })))
+      .concat(['重试', '重試'].map(/** 覆盖简繁中文连接弹窗，确保不会误点退出按钮。
+ * @param label - 应用重试按钮的本地化文案。 */ label => ({ id: 'alert-custom-button', persistent: false, label })));
+for (const { id, persistent, label } of cases) {
+  test(`连接按钮 ${id} ${label} persistent=${persistent} 恢复后才就绪，最多点击三次`, /** 验证恢复与持续失败的原始重试边界。 */ async () => {
+    const browser = await launchAnimationBrowser();
+    try {
+      const page = await browser.newPage();
       await page.setContent(`<div data-testid="common-alert-container">
         <span data-testid="common-alert-message">Connection Timeout</span>
         <button data-testid="alert-custom-button">Cancel</button>
-        <button id="retry" data-testid="${id}">Retry</button></div><output data-probes="0">0</output>`);
+        <button id="retry" data-testid="${id}">${label}</button></div><output data-probes="0">0</output>`);
       await page.evaluate(/** 绑定牌桌重试按钮，按场景控制提示持续存在或恢复就绪。
  * @param persistent - 当前操作使用的 persistent。 */ persistent => {
         let cachedUntil = Date.now() + 10_000;
@@ -39,8 +40,19 @@ test('识别两种连接重试按钮，恢复后才就绪，持续失败最多�
       const waiting = waitForTableConnection(page, 'texas', 'texas-holdem');
       if (persistent) await assert.rejects(waiting, /牌桌未就绪，应用提示/);
       else await waiting;
-      assert.equal(await page.locator('output').textContent(), persistent ? '3' : '1');
-      assert.equal(await page.locator('output').getAttribute('data-probes'), persistent ? '3' : '1');
-    }
+      const expected = persistent ? '3' : '1';
+      assert.equal(await page.locator('output').textContent(), expected);
+      assert.equal(await page.locator('output').getAttribute('data-probes'), expected);
+    } finally { await browser.close(); }
+  });
+}
+
+test('大厅使用自动补码入口判定就绪', /** 验证大厅使用自动补码入口判定就绪。 */ async () => {
+  const browser = await launchAnimationBrowser();
+  try {
+    const page = await browser.newPage();
+    await page.setContent('<button data-testid="auto-rebuy-button">Auto rebuy</button>');
+    await waitForTableConnection(page, 'texas', 'texas-holdem', 'auto-rebuy-button');
+    assert.equal(await page.locator('[data-testid="texas-holdem-start-room-timer-button"]').count(), 0);
   } finally { await browser.close(); }
 });

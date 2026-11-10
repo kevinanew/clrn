@@ -59,6 +59,13 @@ test(`${operation} HTTP 500 记录有限分类，正文或附件失败不覆盖 
   await assert.rejects(readRequestJson(response, operation), originalError);
   assert.equal(JSON.parse(attachments[0]).category, 'server_error');
   assert.doesNotMatch(attachments[0], /synthetic-secret/);
+  await assert.rejects(readRequestJson({ ...response,
+    /** 未知类型中的自由文本仅保留哈希。 */ json: async () => ({ error_type: 'private-token@example.invalid', errors: 'synthetic-secret' }),
+  }, operation), originalError);
+  const unknown = JSON.parse(attachments[1]);
+  assert.equal(unknown.category, 'unclassified');
+  assert.match(unknown.typeFingerprint, /^[a-f0-9]{64}$/);
+  assert.doesNotMatch(attachments[1], /private-token|example|synthetic-secret/);
   failAttachment = true;
   await assert.rejects(readRequestJson(response, operation), originalError);
   for (const error of [new SyntaxError('synthetic non-JSON body'), new Error('synthetic read failure')]) {

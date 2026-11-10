@@ -1,6 +1,6 @@
 import { enableGameSettings } from '../_shared/gameSettings';
-import { paceNetworkClock } from '../../animations/networkClock';
 import type { Page } from '@playwright/test';
+import { paceNetworkClock } from '../../animations/networkClock';
 import { expect } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import type { TexasProxy } from './proxy';

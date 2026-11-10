@@ -1,6 +1,14 @@
 import { expect, test } from '../_shared/read-account-fixture';
 import { unique } from '../_shared/page';
 import { goBack } from '../_shared/navigation';
+import { collectGameRecordDiagnostics } from './diagnostics';
+
+test.beforeEach(/** 在业务操作前安装只读战绩诊断。
+ * @param root0 - 当前用例的页面。
+ * @param info - 本次设备与重试身份。
+ */ async ({ page }, info) => {
+  await collectGameRecordDiagnostics(page, info);
+});
 
 test('SETTINGS-006：我的战绩加载为空态并返回个人设置', /** 验证SETTINGS-006：我的战绩加载为空态并返回个人设置。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。 */ async ({ page, signedInAccount }) => {

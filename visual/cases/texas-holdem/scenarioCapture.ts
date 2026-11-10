@@ -1,4 +1,5 @@
 /** 德州截图场景分发，保留每种场景原有入房、连接和加载条件。 */
+import { waitForTableConnection } from '../../animations/tableSession';
 import type { Page, Response } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
 import { readRequestJson } from '../../src/support/requestJson';
@@ -100,7 +101,9 @@ async function captureConnected(state: ScenarioCapture, handler: typeof captureG
  */
 async function captureHallScenario(state: ScenarioCapture) {
   await enterTexasRoom(state.page, state.room);
-  await assertLoaded(state.page);
+  await expect(visible(state.page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+  await waitForTableConnection(state.page, 'texas', 'texas-holdem', 'auto-rebuy-button');
+  await expect(visible(state.page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
   await captureHall(state.page, state.scenario, state.proxy, state.room.roomId, state.capture);
 }
 

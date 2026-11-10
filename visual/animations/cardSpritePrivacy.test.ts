@@ -101,10 +101,9 @@ test('实际注入、接收及冻结／最终附件持久化边界不输出原�
        */ outputPath: (name: string) => path.join(directory, name),
       /** 附件通过磁盘内容核对，不模拟成功返回值。 */ attach: async () => {},
     } as unknown as TestInfo;
-    for (const phase of ['frozen', 'final'] as const) {
+    for (const [phase, filename] of [['frozen', 'card-sprite-diagnostics-frozen.json'], ['final', 'card-sprite-diagnostics.json']] as const) {
       await saveCardSpriteDiagnostics(page, info, phase);
-      const contents = await readFile(path.join(directory, phase === 'frozen'
-        ? 'card-sprite-diagnostics-frozen.json' : 'card-sprite-diagnostics.json'), 'utf8');
+      const contents = await readFile(path.join(directory, filename), 'utf8');
       assert.doesNotMatch(contents, /example\.invalid|192\.0\.2\.7|2001:db8|fixture-secret|\/assets\//);
       assert.match(contents, /asset-[a-f0-9]{16}/);
       assert.ok(JSON.parse(contents).entries.length >= 4);

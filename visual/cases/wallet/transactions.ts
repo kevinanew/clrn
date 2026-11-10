@@ -1,5 +1,6 @@
 /** 通过真实应用导航与 mitmproxy 固定流水，采集并校验金币、钻石页签。 */
 import { expect, test, type Browser } from '../../src/support/diagnosticTest';
+import path from 'node:path';
 import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
 import { bindScenarioProxy, scenarioStatus } from '../../../e2e/helpers/scenario-proxy';
 import { buildStorageStateForScenario, readAuthStateEntries, setupContextForScenario } from '../../src/support/pageSetup';
@@ -59,12 +60,22 @@ export async function runCurrencyTransactionScenario(scenario: VisualScenario, b
           .toEqual(expect.arrayContaining(['wallet:coin', 'wallet:diamond']));
         await expect(page).toHaveScreenshot(`${scenario.label}.png`);
       } catch (error) {
-        await test.info().attach('流水校验失败页面', { body: await page.screenshot(), contentType: 'image/png' });
+        // 先在代理仍存活时取证；诊断和截图失败均不得覆盖原始异常。
+        await (/** 收集代理连接和夹具状态，附加到失败报告。 */ async () => {
+          const connections = await network.command('diagnostics');
+          const fixture = await scenarioStatus(context);
+          await test.info().attach('wallet-proxy-diagnostics', {
+            body: JSON.stringify({ connections, fixture }), contentType: 'application/json',
+          });
+        })().catch(/** 诊断不可用时保留原失败结果。 */ () => undefined);
+        await test.info().attach('流水校验失败页面', { body: await page.screenshot(), contentType: 'image/png' })
+          .catch(/** 页面已关闭时仍抛出原始异常。 */ () => undefined);
         throw error;
       } finally {
         await context.close();
       }
     },
+    { addonPath: path.resolve(__dirname, '../../../e2e/mitmproxy/wallet_diagnostics.py') },
   );
 }
 

@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from urllib.parse import urlsplit
 from mitmproxy import http
-from account_connection_diagnostics import AccountConnections, account_connection_fields
+from account_connection_diagnostics import AccountConnections, RoomConnections, account_connection_fields, room_error_fields
 
 CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 PATH_TEMPLATES = [(path, path.split('/')) for path in json.loads(
@@ -125,6 +125,8 @@ def release_peer_match(connection):
 def error_reason(value):
     """只识别固定错误或已知 OS 错误首部，不从地址、凭据和后续文本猜测原因。"""
     text = value.lower() if isinstance(value, str) else ''
+    if text == 'stream reset by client (cancel)':
+        return 'http2-stream-cancelled'
     if text in ('timeout', 'timed out', 'connection timed out') or re.fullmatch(
             r'\[errno (?:60|110|10060)\] (?:operation|connection) timed out', text):
         return 'timeout'
@@ -144,15 +146,21 @@ class ConnectionDiagnostics:
         self.events = deque(maxlen=5000)
         self.dropped = 0
         self.pending_commands = {}
+        self.room_connections = RoomConnections()
         self.account_connections = AccountConnections()
 
     def server_event(self, event, data):
-        """收集 Release 及本轮失败接口的真实连接钩子，不记录地址或异常正文。"""
+        """仅收集本任务 Release 目标的真实连接钩子，不记录其他目标或异常正文。"""
         account = self.account_connections.fields(data, node_name)
         if account is not None:
             if len(self.events) == self.events.maxlen:
                 self.dropped += 1
             self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **account})
+        room = self.room_connections.fields(data, node_name)
+        if room is not None:
+            if len(self.events) == self.events.maxlen:
+                self.dropped += 1
+            self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **room})
         try:
             expected = urlsplit(os.environ.get('CLRN_RELEASE_WEB_URL', ''))
             if (expected.scheme != 'http' or expected.hostname != '127.0.0.1'
@@ -216,6 +224,7 @@ class ConnectionDiagnostics:
         """记录业务请求的来源与关联信息，排除代理控制流量。"""
         if flow.request.host in CONTROL_HOSTS:
             return
+        self.room_connections.observe(flow)
         self.account_connections.observe(flow)
         source = 'fixture' if flow.response is not None else 'upstream'
         flow.metadata['diagnostic_source'] = source
@@ -250,7 +259,7 @@ class ConnectionDiagnostics:
             self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
                         source='release-static' if release_origin_match(flow) == 'matched' else 'laiwan_proxy',
                         status=flow.response.status_code if flow.response else 'unavailable',
-                        response='received' if flow.response else 'not-received')
+                        response='received' if flow.response else 'not-received', **room_error_fields(flow))
 
     def websocket_start(self, flow):
         """记录 WebSocket 建立事件及连接标识。"""

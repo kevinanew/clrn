@@ -18,7 +18,7 @@ export async function openRenewPopup(page: Page): Promise<void> {
     // 只恢复一次已确认中断的只读请求；HTTP、业务及解析错误仍立即失败。
     console.log('ANIMATION > renewal read interrupted; reopening once');
     await page.clock.runFor(0);
-    if (await page.getByTestId('alert-ok-button').isVisible()) await press(page, 'alert-ok-button');
+    await dismissRenewAlert(page);
     await settleAnimations(page, 1600, true);
     await press(page, 'renew-popup-close-button');
     await settleAnimations(page, 1600, true);
@@ -114,4 +114,12 @@ function waitForRead(page: Page, requests: Set<Request>, method: string, path: R
     page.on('response', responded);
     page.on('requestfailed', failed);
   });
+}
+
+/**
+ * 恢复真实入口前关闭已出现的提示，缺失时继续原恢复流程。
+ * @param page - 续时页面。
+ */
+async function dismissRenewAlert(page: Page): Promise<void> {
+  if (await page.getByTestId('alert-ok-button').isVisible()) await press(page, 'alert-ok-button');
 }
