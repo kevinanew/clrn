@@ -67,8 +67,10 @@ async function recoverRoomForm(page: Page, error: unknown, attempt: number, room
  * @param page - 牌桌页面。
  * @param game - 游戏类型。
  * @param prefix - 牌桌控件前缀。
+ * @param ready - 当前房间模式的就绪判定；大厅没有房主开始按钮。
  */
-export async function waitForTableConnection(page: Page, game: string, prefix: string) {
+export async function waitForTableConnection(page: Page, game: string, prefix: string,
+  ready = /** 私人房沿用房主开始按钮作为就绪标记。 */ () => visible(page, `${prefix}-start-room-timer-button`).isVisible()) {
   const connection = { state: 'loading' };
   let retries = 0;
   // 连接超时也会使用自定义 Alert，其按钮没有 common-alert 的业务 ID。
@@ -85,7 +87,7 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
         recordDiagnostic(page, '重试牌桌连接', { attempt: retries });
         await retry.click();
       }
-    } else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
+    } else if (await ready()) connection.state = 'ready';
     return connection.state;
   }, { timeout, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
   if (connection.state === 'alert') {
@@ -142,7 +144,11 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
       /** 提供代理诊断快照，缺失时标记取证不完整。 */ async () => await proxy.diagnostics?.() ?? { events: [], dropped: 1 });
     recordDiagnostic(page, '等待牌桌连接及订阅就绪');
     const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
-    if (hall) await enterTexasRoom(page, room);
+    if (hall) {
+      await enterTexasRoom(page, room);
+      await waitForTableConnection(page, game, prefix, /** 大厅需完成加载且显示工具栏。 */ async () =>
+        !await visible(page, 'game-splash-screen-bg').isVisible() && await visible(page, 'menu-button').isVisible());
+    }
     else {
       await waitForTableConnection(page, game, prefix);
     }

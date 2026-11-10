@@ -24,6 +24,7 @@ import { capturePanelVariants } from './panelVariants';
 import { captureHallVariants } from './hallVariants';
 import { selfId } from './replay';
 import { waitForGameConnection } from './connectionReadiness';
+import { saveFailedClockControl } from '../../animations/failedClockControl';
 import config from '../../playwright.config';
 
 // 德州语音弹窗只检查界面，使用浏览器的虚拟麦克风，不读取开发机设备。
@@ -265,6 +266,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       await diagnostics.save(error).catch(/** 记录德州诊断附件保存失败，保留原始案例错误。
  * @param failure - 当前操作使用的 failure。 */ failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
       await page.screenshot({ path: test.info().outputPath('failure.png') }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
+      await saveFailedClockControl(page, test.info(), scenario.pageLabel === 'signed_in_texas_panel_variants');
       if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
       throw error;
     } finally {
