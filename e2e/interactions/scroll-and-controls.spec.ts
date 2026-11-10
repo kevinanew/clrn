@@ -101,7 +101,16 @@ test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /**
   await page.getByTestId('club-tab').click();
   await expect(page.getByTestId('club-list-load-error')).toBeVisible({ timeout: 45_000 });
   const failedRequests = (await scenarioStatus(context)).requests;
+  expect(failedRequests).toBeGreaterThan(0);
   await selectScenario(context, 'club-error', { phase: 'release' });
+  // 传输故障耗尽选线时会另弹错误确认；只处理本次注入对应的一次提示。
+  const offlineAlert = page.getByTestId('alert-message-text').filter({ hasText: /^server_load_offline$/ });
+  await page.addLocatorHandler(offlineAlert, /** 确认已注入的网络故障，再操作列表重试。 */ async () => {
+    await expect(offlineAlert).toHaveText('server_load_offline');
+    const confirm = page.getByRole('dialog').getByTestId('alert-custom-button');
+    await expect(confirm).toHaveText('好的');
+    await confirm.click();
+  }, { times: 1 });
   const recovered = page.waitForResponse(
     /**
      * 等待重试接口成功响应。
@@ -112,6 +121,7 @@ test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /**
     },
   );
   await page.getByTestId('club-list-retry-button').click();
+  await page.removeLocatorHandler(offlineAlert);
   await recovered;
   await expect.poll(/** 读取俱乐部请求次数。 */ async () => (await scenarioStatus(context)).requests).toBeGreaterThan(failedRequests);
   await expect(page.getByTestId('club-list-load-error')).toBeHidden();

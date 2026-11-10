@@ -2,12 +2,12 @@ import { withMitmproxy } from '../../e2e/helpers/mitmproxy-session';
 import type { Mitmproxy } from '../../e2e/helpers/mitmproxy-client';
 import { bindScenarioProxy } from '../../e2e/helpers/scenario-proxy';
 /** 执行独立视觉场景，并在截图前核对场景内容仍然完整可见。 */
-import { expect, type Browser, type Page } from '@playwright/test';
+import { expect, type Browser } from '@playwright/test';
 import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
 import { preparePage } from '../src/support/preparePage';
-import { accountValidationDiagnostics } from './accountValidationDiagnostics';
 import { assertGuestClubReady } from './club/guestReadiness';
+import { withAccountValidationDiagnostics } from './accountValidationDiagnostics';
 
 import { visualBaseUrl as baseUrl } from '../target';
 const backAccessibilityLabels = {
@@ -15,20 +15,6 @@ const backAccessibilityLabels = {
   'zh-Hant': '返回',
   en: 'Back',
 };
-
-/** 核对场景中精灵图的数量和可见状态。
- * @param page - 当前场景页面。
- * @param count - 预期的精灵图数量。
- */
-async function assertSpriteImages(page: Page, count: number): Promise<void> {
-  const sprites = page.locator('[data-testid="sprite-image-container"]');
-  const spriteContents = page.locator('[data-testid="sprite-image-content"]');
-  await expect(sprites).toHaveCount(count);
-  await expect(spriteContents).toHaveCount(count);
-  for (let index = 0; index < count; index += 1) {
-    await expect(spriteContents.nth(index)).toHaveCSS('opacity', '1');
-  }
-}
 
 /**
  * 为单个视觉场景创建隔离上下文，准备页面并执行截图后清理资源。
@@ -54,13 +40,19 @@ export async function runVisualScenario(
   bindScenarioProxy(context, options.network);
   const page = await context.newPage();
 
-  const saveDiagnostics = await accountValidationDiagnostics(scenario, context, page, options.network);
   try {
+    await withAccountValidationDiagnostics(scenario, context, page, options.network, /** 执行原场景，失败后保存只读诊断。 */ async () => {
     await setupContextForScenario(context, scenario, page);
     await page.goto(scenario.path);
     await preparePage(page, scenario);
     if (scenario.spriteImageCount) {
-      await assertSpriteImages(page, scenario.spriteImageCount);
+      const sprites = page.locator('[data-testid="sprite-image-container"]');
+      const spriteContents = page.locator('[data-testid="sprite-image-content"]');
+      await expect(sprites).toHaveCount(scenario.spriteImageCount);
+      await expect(spriteContents).toHaveCount(scenario.spriteImageCount);
+      for (let index = 0; index < scenario.spriteImageCount; index += 1) {
+        await expect(spriteContents.nth(index)).toHaveCSS('opacity', '1');
+      }
     }
     // preparePage 内的稳定化步骤可能耗时较长。截图前再次断言就绪元素仍可见，
     // 避免「更多」菜单等短暂出现后又消失时，被空白页面静默写入视觉基准图。
@@ -103,9 +95,7 @@ export async function runVisualScenario(
       expect(accessibilityLabel).toBe(backAccessibilityLabels[scenario.locale]);
     }
     await expect(page).toHaveScreenshot(`${scenario.label}.png`);
-  } catch (error) {
-    await saveDiagnostics(error);
-    throw error;
+    });
   } finally {
     await context.close();
   }

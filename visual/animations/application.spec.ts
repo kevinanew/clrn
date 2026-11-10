@@ -35,7 +35,7 @@ test('club more menu enter and exit', /** 验证俱乐部更多菜单的进入�
       close: /** 点击实际遮罩关闭，不依赖 Modal 重开后的键盘焦点。 */ () => pressTarget(visible(page, 'popup-backdrop')),
     });
   } catch (error) {
-    try { await diagnostics?.save(error); } catch { /* 诊断不得覆盖原始异常。 */ }
+    await diagnostics?.save(error).catch(/** 诊断失败不得覆盖原始异常。 */ () => undefined);
     throw error;
   }
 });
