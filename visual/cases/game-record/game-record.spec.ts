@@ -281,6 +281,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
           `/v11/game_log/${userId}/play_session_record/visual-record-private`];
       for (const endpoint of faults) expect(status.faultRequests[endpoint] ?? 0).toBeGreaterThan(0);
     } finally {
+      await recordProxy.saveListDiagnostics(test.info());
       const alerts = await visible(page, 'alert-message-text').allTextContents().catch(/** 读取失败时提供空列表，避免诊断采集再次抛错。 */ () => []);
       if (alerts.length) console.error(`RECORD ALERT > ${JSON.stringify(alerts)}`);
       await recordProxy.release();

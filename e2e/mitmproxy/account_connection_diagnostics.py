@@ -116,9 +116,10 @@ class RoomConnections:
 
 
 def is_room_path(value):
-    """仅匹配建房价格和 UUID 房间详情接口，忽略查询参数。"""
+    """仅匹配建房及私人房列表依赖，忽略查询参数。"""
     path = urlsplit(value).path
-    return path == '/v3/pay_action/batch/price' or bool(re.fullmatch(
+    return path in ('/v3/pay_action/batch/price', '/v2/building/rooms') or bool(re.fullmatch(
+        r'/v10/(?:profile|house/user)/[^/]+', path)) or bool(re.fullmatch(
         r'/v1/room/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', path))
 
 

@@ -26,7 +26,7 @@ class AccountConnectionTests(unittest.TestCase):
         flow.request.path = '/v3/pay_action/batch/price?token=secret'
         self.assertEqual(account_connection_fields(flow), {'phase': 'room-transport-ready'})
         self.assertEqual(vars(connection), before)
-        flow.request.path = '/v10/profile/private-user'
+        flow.request.path = '/unrelated/private-user'
         self.assertEqual(account_connection_fields(flow), {})
 
     def test_diagnostic_failure_is_contained(self):
@@ -91,6 +91,9 @@ class RoomConnectionTests(unittest.TestCase):
         recorder = RoomConnections()
         client = SimpleNamespace(id='client')
         for path in ('/v3/pay_action/batch/price?token=secret',
+                     '/v10/profile/private-user?token=secret',
+                     '/v10/house/user/private-user?token=secret',
+                     '/v2/building/rooms',
                      '/v1/room/00000000-0000-4000-8000-000000000001?token=secret'):
             flow = SimpleNamespace(client_conn=client, request=SimpleNamespace(
                 path=path, host='private.invalid', port=443))
@@ -124,7 +127,7 @@ class RoomConnectionTests(unittest.TestCase):
         """白名单之外无采集，诊断失败不传播或泄露错误正文。"""
         recorder = RoomConnections()
         flow = SimpleNamespace(client_conn=SimpleNamespace(id='client'), request=SimpleNamespace(
-            path='/v10/profile/private-user', host='private.invalid', port=443))
+            path='/unrelated/private-user', host='private.invalid', port=443))
         recorder.observe(flow)
         recorder.observe(None)
         self.assertEqual(recorder.targets, {})

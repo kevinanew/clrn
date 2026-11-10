@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 from data import CLUB, HOUSE, PLAYER, all_records, detail, records, replay, rooms, round_data, settlements
+from list_diagnostics import observe_list
 
 # mitmdump 将 addon 目录加入 sys.path；三个独立代理共用字段覆盖工具。
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'e2e' / 'mitmproxy'))
@@ -40,12 +41,14 @@ class GameRecordProxy:
         self.faults = {}
         self.proxied = 0
         self.stabilized = 0
+        self.list_diagnostics = []
 
     def status(self):
         """返回战绩场景、请求计数及删除状态等观测数据。"""
         return {'scenario': self.scenario, 'interceptedRequests': sum(self.counts.values()),
                 'proxiedRequests': self.proxied, 'stabilizedRequests': self.stabilized,
-                'recordRequests': self.counts, 'faultRequests': self.faults, 'deleted': self.deleted}
+                'recordRequests': self.counts, 'faultRequests': self.faults, 'deleted': self.deleted,
+                'listDiagnostics': self.list_diagnostics}
 
     def control(self, flow):
         """验证令牌并执行战绩场景切换、模式设置和状态读取。"""
@@ -203,6 +206,7 @@ class GameRecordProxy:
             return
         if fixture is None:
             return
+        observe_list(self.list_diagnostics, path, parse_qs(url.query), self.mode, fixture)
         self.counts[path] = self.counts.get(path, 0) + 1
         is_list = path.endswith('/game_records') or path.endswith('/recent')
         if is_list and (self.mode != 'paged' or parse_qs(url.query).get('next_page')):

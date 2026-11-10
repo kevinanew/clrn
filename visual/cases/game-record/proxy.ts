@@ -1,3 +1,4 @@
+import type { TestInfo } from '@playwright/test';
 import { expect as baseExpect, test as base } from '../../src/support/diagnosticTest';
 import path from 'node:path';
 import type { Mitmproxy, ProxyStatus } from '../../../e2e/helpers/mitmproxy-client';
@@ -6,6 +7,7 @@ import { withMitmproxy } from '../../../e2e/helpers/mitmproxy-session';
 export type RecordMode = 'empty' | 'list' | 'no-hands' | 'paged' | 'list-error' | 'detail-error' | 'delete-error';
 export type RecordStatus = ProxyStatus & {
   recordRequests: Record<string, number>; faultRequests: Record<string, number>; deleted: string[];
+  listDiagnostics: { mode: RecordMode; nextPage: boolean; items: number; hasNextPage: boolean }[];
 };
 
 /** 封装战绩专用代理的固定数据、分页和错误场景控制。 */
@@ -47,6 +49,16 @@ export class RecordProxy {
   }
   /** 释放代理暂缓的响应，让测试继续进入完成状态。 */
   release(): Promise<RecordStatus> { return this.command('records/release', {}); }
+  /** 保存有界列表夹具摘要，诊断失败不影响原始测试结果。
+   * @param info - 当前测试报告。 */
+  async saveListDiagnostics(info: TestInfo): Promise<void> {
+    try {
+      const { listDiagnostics } = await this.status();
+      await info.attach('record-list-fixtures', {
+        body: JSON.stringify({ listDiagnostics }), contentType: 'application/json',
+      });
+    } catch { /* 诊断失败不能替换原始断言异常。 */ }
+  }
   /** 读取当前代理场景、拦截统计及回放状态。 */
   status(): Promise<RecordStatus> { return this.command('status'); }
 }

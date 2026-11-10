@@ -1,3 +1,4 @@
+import { saveScenarioFailure } from '../texas-holdem/imageFailureDiagnostics';
 import { bindScenarioProxy } from '../../../e2e/helpers/scenario-proxy';
 /** 真实牌桌视觉回归，失败前保存节点探测和连接诊断。 */
 import { installConnectionDiagnostics, recordDiagnostic } from '../../src/support/connectionDiagnostics';
@@ -64,10 +65,7 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       } else await capturePreGame(page, scenario);
       await diagnostics.save();
     } catch (error) {
-      await diagnostics.save(error).catch(/** 记录炸金花诊断附件保存失败，保留原始案例结果。
- * @param failure - 当前操作使用的 failure。 */ failure => console.log(`诊断保存失败：${diagnosticText(failure)}`));
-      await page.screenshot({ path: test.info().outputPath('failure.png'), timeout: 5000 }).catch(/** 忽略本次可选操作的失败，让后续清理或就绪检查继续。 */ () => undefined);
-      if (error instanceof Error) { error.message = diagnosticText(error.message); error.stack = diagnosticText(error.stack); }
+      await saveScenarioFailure(page, test.info(), scenario.pageLabel, diagnostics, error, 5000);
       throw error;
     } finally {
       try {

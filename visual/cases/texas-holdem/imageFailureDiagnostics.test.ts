@@ -14,7 +14,8 @@ test('图片失败附件脱敏资源且只读一次页面', /** 验证持久化�
    * @param _name - 附件名称。
    * @param options - 附件内容。 */ async (_name: string, options: { body: string }) => { body = options.body; } } as unknown as TestInfo;
   await saveImageFailureDiagnostics(page, info, 'signed_in_texas_game');
-  assert.equal(reads, 1);
+  await saveImageFailureDiagnostics(page, info, 'signed_in_zhajinhua_game');
+  assert.equal(reads, 2);
   assert.match(body, /asset-[a-f0-9]{16}/);
   for (const privateValue of ['private.invalid', 'card.png', 'token', 'secret']) assert.ok(!body.includes(privateValue));
 });
