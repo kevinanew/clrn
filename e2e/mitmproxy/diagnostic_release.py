@@ -98,7 +98,9 @@ def classify_error(text):
 
 def error_reason(value):
     """仅处理字符串错误描述，其他类型一律隐藏。"""
-    return classify_error(value.lower() if isinstance(value, str) else '')
+    text = value.lower() if isinstance(value, str) else ''
+    known = {'stream reset by client (cancel)': 'http2-stream-cancelled'}
+    return known.get(text, classify_error(text))
 
 
 def request_operation(flow):

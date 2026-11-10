@@ -30,6 +30,44 @@ class DiagnosticTests(unittest.TestCase):
         self.assertNotIn('private error', json.dumps(event))
         self.assertIsNone(request.response)
         self.assertIsNone(request.error)
+    def test_room_error_progress_is_read_only_and_failure_is_contained(self):
+        """读取中断时区分响应头前后，诊断失败仍保留原始失败事件与错误。"""
+        from account_connection_diagnostics import room_error_fields
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://fixture.invalid/v3/pay_action/batch/price?token=synthetic-secret')
+        original = Error('stream reset by client (CANCEL)')
+        request.error = original
+        request.request.timestamp_end = None
+        request.server_conn.alpn = b'h2'
+        for response in (None, http.Response.make(200, b'private-response')):
+            request.response = response
+            if response is not None:
+                response.timestamp_end = None
+            before = request.get_state()
+            diagnostics.error(request)
+            self.assertEqual(request.get_state(), before)
+            event = diagnostics.events[-1]
+            self.assertFalse(event['requestBodyReceived'])
+            self.assertEqual(event['responseHeadersReceived'], response is not None)
+            self.assertFalse(event['responseBodyReceived'])
+            self.assertEqual(event['upstreamAlpn'], 'h2')
+            self.assertEqual(event['reason'], 'http2-stream-cancelled')
+            self.assertNotIn('private', json.dumps(event))
+        request.response.timestamp_end = 3
+        request.request.timestamp_end = 2
+        self.assertTrue(room_error_fields(request)['responseBodyReceived'])
+        self.assertTrue(room_error_fields(request)['requestBodyReceived'])
+        request.request.http_version = 'private-protocol'
+        request.server_conn.alpn = b'private-protocol'
+        self.assertEqual(room_error_fields(request)['clientHttpVersion'], 'unknown')
+        self.assertEqual(room_error_fields(request)['upstreamAlpn'], 'unknown')
+        self.assertEqual(room_error_fields(None), {})
+        with patch('account_connection_diagnostics.is_room_path', side_effect=RuntimeError('secret')):
+            diagnostics.error(request)
+        self.assertEqual(diagnostics.events[-1]['reason'], 'http2-stream-cancelled')
+        self.assertIs(request.error, original)
+        request.request.path = '/unrelated'
+        self.assertEqual(room_error_fields(request), {})
 
     def test_新节点标签与浏览器一致且重复脱敏保持稳定(self):
         """验证主机和含凭据地址使用同一指纹，重复处理不改变节点及请求关联。"""

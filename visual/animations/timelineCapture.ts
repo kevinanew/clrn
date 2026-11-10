@@ -8,6 +8,7 @@ import { clipOffset, preparePartialComparison, timelineExcludedRegions } from '.
 import { maskNumericFields } from './numericMask';
 import type { CaptureArea } from './captureTypes';
 import type { TimelineElement, TimelineOptions } from './timelineTypes';
+import { recordSlotBannerFrame } from './slotBannerDiagnostics';
 
 /**
  * 计算普通截图中原有定位器遮罩以外的有效面积，不改变浏览器实际绘制的遮罩。
@@ -62,6 +63,7 @@ export async function captureFrame(page: Page, info: TestInfo, name: string, opt
   // 截图、稳定性与资源失败仍立即中止；像素差异继续后续采样。
   const captured = await captureOrdinaryFrame(page, options, snapshot);
   await saveOrCompareFrame(captured.frame, info, snapshot, options, captured.comparedPixels);
+  await recordSlotBannerFrame(page, info, name, snapshot);
   return captured.frame;
 }
 

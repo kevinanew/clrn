@@ -18,10 +18,8 @@ export type PopupFlow = { name: string; target: Locator; open: () => Promise<unk
 async function isPresented(target: Locator): Promise<boolean> {
   if (!(await target.isVisible())) return false;
   const viewport = target.page().viewportSize()!;
-  return (await appearance(target)).some(/** 判断弹层是否有非透明且与视口相交的可见部分。
- * @param state - 当前操作使用的 state。 */ state => state.opacity > 0 && state.width > 0 && state.height > 0
-    && state.x < viewport.width && state.x + state.width > 0
-    && state.y < viewport.height && state.y + state.height > 0);
+  return (await appearance(target)).some(/** 逐一检查真实绘制状态。
+   * @param state - 当前弹层的样式和位置。 */ state => presentedState(state, viewport));
 }
 
 /**
@@ -50,9 +48,8 @@ export async function expectDismissed(target: Locator): Promise<void> {
     // 网络响应可能在预热结束后才返回；真实时间轮询不会推进暂停的渲染和定时器。
     await advanceCardSpriteClock(target.page(), 16);
     const viewport = target.page().viewportSize()!;
-    return (await appearance(target)).every(/** 确认当前弹层完全透明或在视口边界之外。
- * @param state - 当前操作使用的 state。 */ state => state.opacity === 0 || state.y >= viewport.height
-      || state.y + state.height <= 0 || state.x >= viewport.width || state.x + state.width <= 0);
+    return (await appearance(target)).every(/** 确认当前节点透明或完全离屏。
+     * @param state - 当前弹层的样式和位置。 */ state => dismissedState(state, viewport));
   }, { intervals: [20], message: '关闭后的弹层应卸载、完全透明或移出视口' }).toBe(true);
 }
 
@@ -87,25 +84,17 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await flow.close();
   await settleAnimations(page, 1600, flow.fastPreparation);
   await expectDismissed(flow.target);
-  if (flow.waitForUnmountBeforeReopen) await waitForUnmount(flow.target);
+  await unmountForReopen(flow);
   await freeze(page);
   await flow.open();
   // BottomSheet 在下一次 requestAnimationFrame 挂载内容；时间线保留这 16ms。
   await advanceCardSpriteClock(page, 16);
   await waitForMount(flow.target, flow.requirePresentation);
-  await flow.beforeEntrance?.();
-  await (flow.capture ?? captureTimeline)(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
-    requireMotion: true, foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground,
-    numericMask: flow.numericMask });
-  await expect(flow.target).toBeVisible();
-  await flow.afterEntrance?.();
-  await flow.close();
-  await (flow.capture ?? captureTimeline)(page, info, `${flow.name}-exit`, flow.target,
-    { clip, requireChange: flow.exitAnimated !== false, requireMotion: flow.exitAnimated !== false,
-      foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground, numericMask: flow.numericMask });
+  await capturePopupEntrance(page, info, flow, clip);
+  await capturePopupExit(page, info, flow, clip);
   await settleAnimations(page, 32);
   await expectDismissed(flow.target);
-  if (flow.waitForUnmountBeforeReopen) await waitForUnmount(flow.target);
+  await unmountForReopen(flow);
   await flow.open();
   await waitForMount(flow.target, flow.requirePresentation);
   await settleAnimations(page, 1600, flow.fastPreparation);
@@ -113,7 +102,7 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
   await flow.close();
   await settleAnimations(page, 1600, flow.fastPreparation);
   await expectDismissed(flow.target);
-  if (flow.waitForUnmountBeforeReopen) await waitForUnmount(flow.target);
+  await unmountForReopen(flow);
 }
 
 /**
@@ -124,4 +113,114 @@ export async function exercisePopup(page: Page, info: TestInfo, flow: PopupFlow)
  */
 export function exerciseTablePopup(page: Page, info: TestInfo, flow: PopupFlow): Promise<void> {
   return exercisePopup(page, info, { ...flow, fastPreparation: true });
+}
+
+type AppearanceState = Awaited<ReturnType<typeof appearance>>[number];
+type Viewport = { width: number; height: number };
+
+/**
+ * 判断水平方向是否与视口相交。
+ * @param state - 当前弹层状态。
+ * @param viewport - 当前视口。
+ * @returns 是否相交。
+ */
+function intersectsHorizontal(state: AppearanceState, viewport: Viewport): boolean {
+  return state.x < viewport.width && state.x + state.width > 0;
+}
+
+/**
+ * 判断竖直方向是否与视口相交。
+ * @param state - 当前弹层状态。
+ * @param viewport - 当前视口。
+ * @returns 是否相交。
+ */
+function intersectsVertical(state: AppearanceState, viewport: Viewport): boolean {
+  return state.y < viewport.height && state.y + state.height > 0;
+}
+
+/**
+ * 检查弹层是否有可绘制面积。
+ * @param state - 当前弹层状态。
+ * @returns 是否可绘制。
+ */
+function paintsContent(state: AppearanceState): boolean {
+  return state.opacity > 0 && state.width > 0 && state.height > 0;
+}
+
+/**
+ * 不能把透明或屏幕之外的旧节点当成本次呈现。
+ * @param state - 当前弹层状态。
+ * @param viewport - 当前视口。
+ * @returns 是否进入画面。
+ */
+function presentedState(state: AppearanceState, viewport: Viewport): boolean {
+  return paintsContent(state) && intersectsHorizontal(state, viewport) && intersectsVertical(state, viewport);
+}
+
+/**
+ * 使用原退场边界判断，不将 NaN 坐标当作已经离屏。
+ * @param state - 当前弹层状态。
+ * @param viewport - 当前视口。
+ * @returns 是否在水平方向离屏。
+ */
+function outsideHorizontal(state: AppearanceState, viewport: Viewport): boolean {
+  return state.x >= viewport.width || state.x + state.width <= 0;
+}
+
+/**
+ * 使用原退场边界判断竖直离屏。
+ * @param state - 当前弹层状态。
+ * @param viewport - 当前视口。
+ * @returns 是否在竖直方向离屏。
+ */
+function outsideVertical(state: AppearanceState, viewport: Viewport): boolean {
+  return state.y >= viewport.height || state.y + state.height <= 0;
+}
+
+/**
+ * 退场要求透明或完全离开任一视口方向。
+ * @param state - 当前弹层状态。
+ * @param viewport - 当前视口。
+ * @returns 是否已经退场。
+ */
+function dismissedState(state: AppearanceState, viewport: Viewport): boolean {
+  return state.opacity === 0 || outsideVertical(state, viewport) || outsideHorizontal(state, viewport);
+}
+
+/**
+ * 需要卸载的弹层在下一次真实打开前等待旧实例消失。
+ * @param flow - 当前弹层流程。
+ */
+async function unmountForReopen(flow: PopupFlow): Promise<void> {
+  if (flow.waitForUnmountBeforeReopen) await waitForUnmount(flow.target);
+}
+
+/**
+ * 捕获正式入场，保留准备后 16ms 相位和业务钩子。
+ * @param page - 当前页面。
+ * @param info - 测试报告。
+ * @param flow - 弹层流程。
+ * @param clip - 固定裁切范围。
+ */
+async function capturePopupEntrance(page: Page, info: TestInfo, flow: PopupFlow, clip: CaptureArea): Promise<void> {
+  await flow.beforeEntrance?.();
+  await (flow.capture ?? captureTimeline)(page, info, `${flow.name}-enter`, flow.target, { clip, startOffset: 16,
+    requireMotion: true, foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground,
+    numericMask: flow.numericMask });
+  await expect(flow.target).toBeVisible();
+}
+
+/**
+ * 捕获正式退场，非动画流程仍保留原始比较设置。
+ * @param page - 当前页面。
+ * @param info - 测试报告。
+ * @param flow - 弹层流程。
+ * @param clip - 固定裁切范围。
+ */
+async function capturePopupExit(page: Page, info: TestInfo, flow: PopupFlow, clip: CaptureArea): Promise<void> {
+  await flow.afterEntrance?.();
+  await flow.close();
+  await (flow.capture ?? captureTimeline)(page, info, `${flow.name}-exit`, flow.target,
+    { clip, requireChange: flow.exitAnimated !== false, requireMotion: flow.exitAnimated !== false,
+      foregroundBelow: flow.foregroundBelow, excludedBackground: flow.excludedBackground, numericMask: flow.numericMask });
 }

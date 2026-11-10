@@ -14,7 +14,7 @@ from diagnostic_release import (release_origin_match, release_upstream_match, re
                                 error_reason, release_server, request_operation, error_source,
                                 response_state, release_identifier)
 from diagnostic_socket import DiagnosticSocket
-from account_connection_diagnostics import RoomConnections, account_connection_fields
+from account_connection_diagnostics import AccountConnections, RoomConnections, account_connection_fields, room_error_fields
 
 CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 PATH_TEMPLATES = [(path, path.split('/')) for path in json.loads(
@@ -90,18 +90,24 @@ class ConnectionDiagnostics(DiagnosticSocket):
         self.dropped = 0
         self.pending_commands = {}
         self.room_connections = RoomConnections()
+        self.account_connections = AccountConnections()
 
     def server_event(self, event, data):
         """收集 Release 与已登记建房接口的真实连接钩子，不记录地址或异常正文。"""
-        room = self.room_connections.fields(data, node_name)
-        if room is not None:
-            self.append_event({'event': event, 'observedAt': int(time.time() * 1000), **room})
+        self.record_transport(event, data, self.account_connections)
+        self.record_transport(event, data, self.room_connections)
         if not release_server(data):
             return
         self.append_event({'event': event, 'observedAt': int(time.time() * 1000),
                            'source': 'release-static', 'operation': 'release-static-connect',
                            'connectionId': str(data.client.id), 'upstreamConnectionId': str(data.server.id),
                            'upstreamMatch': release_peer_match(data.server)})
+
+    def record_transport(self, event, data, connections):
+        """记录已关联目标的脱敏连接事件。"""
+        fields = connections.fields(data, node_name)
+        if fields is not None:
+            self.append_event({'event': event, 'observedAt': int(time.time() * 1000), **fields})
 
     def server_connect(self, data):
         """记录代理准备连接上游的事件。"""
@@ -158,6 +164,7 @@ class ConnectionDiagnostics(DiagnosticSocket):
         if flow.request.host in CONTROL_HOSTS:
             return
         self.room_connections.observe(flow)
+        self.account_connections.observe(flow)
         source = 'fixture' if flow.response is not None else 'upstream'
         flow.metadata['diagnostic_source'] = source
         self.record('proxy.request', flow, source=source, fixtureHit=source == 'fixture',
@@ -176,7 +183,7 @@ class ConnectionDiagnostics(DiagnosticSocket):
         """为业务请求记录安全错误原因，避免猜测未收到的响应状态。"""
         if flow.request.host not in CONTROL_HOSTS:
             self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
-                        source=error_source(flow), **response_state(flow))
+                        source=error_source(flow), **response_state(flow), **room_error_fields(flow))
 
     def websocket_start(self, flow):
         """记录 WebSocket 建立事件及连接标识。"""

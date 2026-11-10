@@ -21,11 +21,7 @@ async function findLoader(directory: string): Promise<{ filename: string; source
   const found: { filename: string; source: string }[] = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const filename = path.join(directory, entry.name);
-    if (entry.isDirectory()) found.push(...await findLoader(filename));
-    else if (entry.name.endsWith('.js')) {
-      const source = await readFile(filename, 'utf8');
-      if (source.includes(loaderMethod) && source.includes(loaderAbortMethod)) found.push({ filename, source });
-    }
+    found.push(...await inspectLoaderEntry(filename, entry));
   }
   return found;
 }
@@ -36,13 +32,7 @@ async function findLoader(directory: string): Promise<{ filename: string; source
  * @param info - 当前用例的私有附件目录。
  */
 export async function installCardSpriteLoader(page: Page, info: TestInfo): Promise<() => Promise<void>> {
-  if (process.env.CLRN_EXPECTED_APPLICATION_COMMIT !== applicationCommit || !process.env.CLRN_RELEASE_WEB_ROOT) {
-    throw new Error('ImageLoader 回调观察只支持 #68 的原固定 Release');
-  }
-  const matches = await findLoader(process.env.CLRN_RELEASE_WEB_ROOT);
-  if (matches.length !== 1) throw new Error('未唯一识别受支持的 ImageLoader；不能冒充回调已取证');
-  const { filename, source } = matches[0];
-  if (source.indexOf(loaderMethod) !== source.lastIndexOf(loaderMethod)) throw new Error('ImageLoader 方法不唯一');
+  const { filename, source } = await supportedLoader();
   const journal = info.outputPath('card-sprite-loader.jsonl');
   let sequence = 0;
   appendFileSync(journal, JSON.stringify({ schema: 1, applicationCommit,
@@ -142,4 +132,51 @@ async function installLoaderBreakpoints(session: CDPSession, filename: string, s
     await session.detach();
     throw error;
   }
+}
+
+/**
+ * 递归访问目录，普通文件仅检查 JavaScript。
+ * @param filename - 当前完整路径。
+ * @param entry - 目录项。
+ * @returns 当前项中识别到的加载器。
+ */
+async function inspectLoaderEntry(filename: string, entry: import('node:fs').Dirent): Promise<{ filename: string; source: string }[]> {
+  if (entry.isDirectory()) return findLoader(filename);
+  if (!entry.name.endsWith('.js')) return [];
+  return readLoaderFile(filename);
+}
+
+/**
+ * 同时确认加载与取消方法，避免猜测构建局部变量。
+ * @param filename - JavaScript 构建路径。
+ * @returns 受支持的脚本或空列表。
+ */
+async function readLoaderFile(filename: string): Promise<{ filename: string; source: string }[]> {
+  const source = await readFile(filename, 'utf8');
+  if (source.includes(loaderMethod) && source.includes(loaderAbortMethod)) return [{ filename, source }];
+  return [];
+}
+
+/**
+ * 只识别原固定 Release，拒绝缺失、重复或不同形状的加载器。
+ * @returns 唯一已校验的脚本。
+ */
+async function supportedLoader(): Promise<{ filename: string; source: string }> {
+  const directory = supportedReleaseDirectory();
+  const matches = await findLoader(directory);
+  if (matches.length !== 1) throw new Error('未唯一识别受支持的 ImageLoader；不能冒充回调已取证');
+  const { filename, source } = matches[0];
+  if (source.indexOf(loaderMethod) !== source.lastIndexOf(loaderMethod)) throw new Error('ImageLoader 方法不唯一');
+  return { filename, source };
+}
+
+/**
+ * 限定观察器可接受的发布提交和本地原包目录。
+ * @returns 已校验存在的目录配置。
+ */
+function supportedReleaseDirectory(): string {
+  if (process.env.CLRN_EXPECTED_APPLICATION_COMMIT !== applicationCommit || !process.env.CLRN_RELEASE_WEB_ROOT) {
+    throw new Error('ImageLoader 回调观察只支持 #68 的原固定 Release');
+  }
+  return process.env.CLRN_RELEASE_WEB_ROOT;
 }
