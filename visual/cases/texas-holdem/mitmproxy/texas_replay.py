@@ -34,6 +34,11 @@ class TexasReplay(ReplayTransport):
         self.room_id = self.created_room_id = room_id
         self.self_id = self_id
 
+    def room_subscribed(self):
+        """只有存活连接上已确认的本房间频道才表示可回放。"""
+        return any(self.flow_targets(flow, channels, self.room_id)
+                   for flow, channels in self.subscriptions.values())
+
     def release(self):
         """清除活动房间、当前玩家、创建房间与界面状态绑定。"""
         self.room_id = None

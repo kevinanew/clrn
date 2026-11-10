@@ -93,6 +93,7 @@ class TexasVisualProxy(VisualCommands):
             'scenario': self.scenario, 'interceptedRequests': 0,
             'proxiedRequests': self.proxied_requests, 'stabilizedRequests': self.stabilized_requests,
             'replayedMessages': self.texas.replayed_messages,
+            'roomSubscribed': self.texas.room_subscribed(),
         }
 
     def websocket_message(self, flow):
@@ -169,7 +170,7 @@ class TexasVisualProxy(VisualCommands):
         """路由控制与预检后，再处理当前场景读取。"""
         if not route_request(self, flow, diagnostics, is_staging):
             return
-        if respond_virtual_player_preflight(flow, self.texas.room_id):
+        if respond_virtual_player_preflight(flow, self.texas.room_id, self.texas.self_id):
             self.stabilized_requests += 1
             return
         self.read_request(flow)

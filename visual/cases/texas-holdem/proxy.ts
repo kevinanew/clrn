@@ -23,6 +23,13 @@ export class TexasProxy {
   status(): Promise<ProxyStatus & { replayedMessages: number }> {
     return this.proxy.command('status');
   }
+  /** 在冻结动画时钟前等待本房间的真实订阅确认，不发送回放或改变采样。 */
+  async waitForRoomSubscription(): Promise<void> {
+    await playwrightExpect.poll(/** 查询当前房间是否已完成真实订阅。 */ async () => {
+      const status = await this.proxy.command<ProxyStatus & { roomSubscribed: boolean }>('status');
+      return status.roomSubscribed;
+    }, { timeout: 180_000, message: '冻结前本轮德州房间应完成真实订阅' }).toBe(true);
+  }
   /**
    * 向当前德州房间推送固定回放消息。
    * @param roomId - 接收回放消息的房间 ID。

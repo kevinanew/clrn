@@ -53,6 +53,24 @@ class TexasAddonTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         addon.texas.publish(OTHER, {})
 
+    def test_冻结前就绪状态必须有本房间存活的已确认订阅(self):
+        """HTTP 建房、其他频道、待确认和关闭连接均不能提前进入冻结阶段。"""
+        socket = socket_flow()
+        self.assertFalse(self.addon.status()['roomSubscribed'])
+        message(socket, [{'id': 1, 'method': 1, 'params': {'channel': CHANNEL}}])
+        self.addon.websocket_message(socket)
+        self.assertFalse(self.addon.status()['roomSubscribed'])
+        message(socket, [{'id': 1, 'result': {}}], False)
+        self.addon.websocket_message(socket)
+        self.assertTrue(self.addon.status()['roomSubscribed'])
+        self.addon.texas.room_id = OTHER
+        self.assertFalse(self.addon.status()['roomSubscribed'])
+        self.addon.texas.room_id = ROOM
+        socket.websocket.timestamp_end = 1
+        self.assertFalse(self.addon.status()['roomSubscribed'])
+        self.addon.websocket_end(socket)
+        self.assertFalse(self.addon.status()['roomSubscribed'])
+
     def test_只读夹具不掩盖写入或其他用户(self):
         """验证只读夹具不掩盖写入或其他用户。"""
         player = PLAYER_IDS[0]

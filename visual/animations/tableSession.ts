@@ -108,7 +108,7 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
  * @param lifecycle - 是否安装独立 React 提交观察；callbacks 同时取证原构建的实际加载回调。
  */
 export async function withTable(browser: Browser, info: TestInfo, game: 'texas' | 'zhajinhua',
-  proxy: { server: string; network: Mitmproxy; diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> }, task: (session: TableSession) => Promise<void>, hall = false,
+  proxy: { server: string; network: Mitmproxy; waitForRoomSubscription?: () => Promise<void>; diagnostics?: () => Promise<{ events: unknown[]; dropped: number }> }, task: (session: TableSession) => Promise<void>, hall = false,
   clock: CardSpriteClock = 'frozen', lifecycle: boolean | 'callbacks' = false): Promise<void> {
   const viewport = info.project.use.viewport!;
   const context = await browser.newContext({ viewport, locale: 'en-US', deviceScaleFactor: 1,
@@ -141,9 +141,12 @@ export async function withTable(browser: Browser, info: TestInfo, game: 'texas' 
     room = await createRoomWithRetry(page, game, registerRoom, /** 向建房重试器返回本次已创建的房间资料。 */ () => room,
       /** 提供代理诊断快照，缺失时标记取证不完整。 */ async () => await proxy.diagnostics?.() ?? { events: [], dropped: 1 });
     recordDiagnostic(page, '等待牌桌连接及订阅就绪');
-    const prefix = game === 'texas' ? 'texas-holdem' : 'zhajinhua';
-    if (hall) await enterTexasRoom(page, room);
-    else {
+    const prefix = { texas: 'texas-holdem', zhajinhua: 'zhajinhua' }[game];
+    if (hall) {
+      await enterTexasRoom(page, room);
+      // HTTP 入场和加载遮罩消失不代表 WebSocket 已完成订阅。
+      await proxy.waitForRoomSubscription?.();
+    } else {
       await waitForTableConnection(page, game, prefix);
     }
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });

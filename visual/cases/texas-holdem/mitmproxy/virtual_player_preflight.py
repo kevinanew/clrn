@@ -16,10 +16,10 @@ READ_PATHS = {path for player in TABLE_PLAYER_IDS for path in (
 )}
 
 
-def respond_virtual_player_preflight(flow, room_id):
-    """只为当前房间的已登记虚拟玩家读取响应预检。"""
+def respond_virtual_player_preflight(flow, room_id, self_id=None):
+    """只为当前房间已有的虚拟玩家或结算读取夹具响应预检。"""
     if not room_id or urlsplit(flow.request.path).path not in READ_PATHS:
-        return False
+        return respond_settlement_preflight(flow, room_id, self_id)
     return respond_read_preflight(flow)
 
 
@@ -28,3 +28,12 @@ def respond_read_preflight(flow):
     if not is_read_preflight(flow):
         return False
     return preflight_response(flow, http.Response.make)
+
+
+def respond_settlement_preflight(flow, room_id, self_id):
+    """复用只读预检校验，仅覆盖已有结算 GET 夹具的确切绑定路径。"""
+    if not all((room_id, self_id)):
+        return False
+    if urlsplit(flow.request.path).path != f'/v1/game_log/room/{room_id}/settlement':
+        return False
+    return respond_read_preflight(flow)

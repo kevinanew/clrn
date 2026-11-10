@@ -93,3 +93,28 @@ class VirtualPlayerPreflightTests(unittest.TestCase):
                            'http://127.0.0.1:43210/other', 'http://127.0.0.1:43210?token=offline'):
             with self.subTest(configured=configured), patch.dict('os.environ', {'CLRN_RELEASE_WEB_URL': configured}):
                 self.assertIsNone(self.preflight().response)
+
+    def test_结算夹具预检不依赖上游且严格绑定当前房间(self):
+        """已有 GET 夹具不应依赖其他节点的 OPTIONS，但不得扩大许可范围。"""
+        path = f'/v1/game_log/room/{ROOM}/settlement'
+        response = self.preflight(path).response
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.headers['Access-Control-Allow-Methods'], 'GET')
+        read = flow(f'https://node-0.service.invalid{path}')
+        self.addon.request(read)
+        self.assertEqual(len(read.response.json()['result']['settlements']), 5)
+        for headers in ({'Origin': 'https://other.invalid'},
+                        {'Access-Control-Request-Method': 'POST'},
+                        {'Access-Control-Request-Headers': 'authorization,x-unknown'}):
+            self.assertIsNone(self.preflight(path, **headers).response)
+        self.assertIsNone(self.preflight(f'/v1/game_log/room/{OTHER}/settlement').response)
+        self.assertIsNone(self.preflight(path + '/extra').response)
+        self.assertIsNone(self.preflight(path, host='node-9.service.invalid').response)
+        self.addon.texas.self_id = None
+        self.assertIsNone(self.preflight(path).response)
+        self.addon.texas.self_id = SELF
+        self.addon.scenario = None
+        self.assertIsNone(self.preflight(path).response)
+        self.addon.scenario = 'visual-stable'
+        self.addon.texas.release()
+        self.assertIsNone(self.preflight(path).response)
