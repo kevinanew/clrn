@@ -1,4 +1,4 @@
-/** 离线验证牌桌连接弹窗恢复及重试上限。 */
+/** 离线验证牌桌健康缓存过期后恢复及重试上限。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { chromium } from '@playwright/test';
@@ -15,14 +15,19 @@ test('识别两种连接重试按钮，恢复后才就绪，持续失败最多�
  * @param persistent - 当前操作使用的 persistent。 */ persistent => ({ id, persistent })));
     for (const { id, persistent } of cases) {
       await page.setContent(`<div data-testid="common-alert-container">
-        <span data-testid="common-alert-message">timeout of 10000ms exceeded</span>
+        <span data-testid="common-alert-message">Connection Timeout</span>
         <button data-testid="alert-custom-button">Cancel</button>
-        <button id="retry" data-testid="${id}">Retry</button></div><output>0</output>`);
+        <button id="retry" data-testid="${id}">Retry</button></div><output data-probes="0">0</output>`);
       await page.evaluate(/** 绑定牌桌重试按钮，按场景控制提示持续存在或恢复就绪。
  * @param persistent - 当前操作使用的 persistent。 */ persistent => {
+        let cachedUntil = Date.now() + 10_000;
         document.querySelector('#retry')!.addEventListener('click', /** 累计重试次数，非持续失败场景中移除提示并生成就绪入口。 */ () => {
           const output = document.querySelector('output')!;
           output.textContent = String(Number(output.textContent) + 1);
+          // 缓存未过期时点击不会触发新的健康探测。
+          if (Date.now() < cachedUntil) return;
+          output.setAttribute('data-probes', String(Number(output.getAttribute('data-probes')) + 1));
+          cachedUntil = Date.now() + 10_000;
           if (!persistent) {
             document.querySelector('div')!.remove();
             const ready = document.createElement('button');
@@ -35,6 +40,7 @@ test('识别两种连接重试按钮，恢复后才就绪，持续失败最多�
       if (persistent) await assert.rejects(waiting, /牌桌未就绪，应用提示/);
       else await waiting;
       assert.equal(await page.locator('output').textContent(), persistent ? '3' : '1');
+      assert.equal(await page.locator('output').getAttribute('data-probes'), persistent ? '3' : '1');
     }
   } finally { await browser.close(); }
 });

@@ -71,6 +71,7 @@ async function recoverRoomForm(page: Page, error: unknown, attempt: number, room
 export async function waitForTableConnection(page: Page, game: string, prefix: string) {
   const connection = { state: 'loading' };
   let retries = 0;
+  let retryAfter = 0;
   // 连接超时也会使用自定义 Alert，其按钮没有 common-alert 的业务 ID。
   const retry = visible(page, 'common-alert-button-retry').or(
     page.locator('[data-testid="alert-custom-button"]:visible').filter({ hasText: /^Retry$/ }),
@@ -81,6 +82,10 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
     if (await retry.isVisible()) {
       if (retries >= 3) connection.state = 'alert';
       else {
+        // 沿用 af7848d：弹窗出现后等待十秒健康缓存过期，避免耗尽重试却未重新探测。
+        retryAfter ||= Date.now() + (game === 'texas' ? 10_000 : 0);
+        if (Date.now() < retryAfter) return connection.state;
+        retryAfter = 0;
         retries += 1;
         recordDiagnostic(page, '重试牌桌连接', { attempt: retries });
         await retry.click();
