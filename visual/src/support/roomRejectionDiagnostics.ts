@@ -1,5 +1,4 @@
 import { createHash } from 'node:crypto';
-import { test } from '@playwright/test';
 
 const categories = new Set(['server_error', 'invalid_parameter', 'permission_denied', 'insufficient_balance',
   'not_enough_diamond', 'invalid_token', 'room_limit_exceeded']);
@@ -10,6 +9,8 @@ const categories = new Set(['server_error', 'invalid_parameter', 'permission_den
  */
 export async function attachRoomRejection(body: any): Promise<void> {
   try {
+    // 共享请求辅助代码也由仅安装 e2e 依赖的任务加载；仅在建房诊断时加载 visual 的测试运行器。
+    const { test } = await import('@playwright/test');
     const errorType = typeof body?.error_type === 'string' ? body.error_type : '';
     const diagnostic = {
       category: categories.has(errorType) ? errorType : 'unclassified',
