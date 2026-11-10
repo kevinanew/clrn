@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from urllib.parse import urlsplit
 from mitmproxy import http
-from account_connection_diagnostics import AccountConnections, account_connection_fields
+from account_connection_diagnostics import AccountConnections, RoomConnections, account_connection_fields
 
 CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 PATH_TEMPLATES = [(path, path.split('/')) for path in json.loads(
@@ -145,9 +145,15 @@ class ConnectionDiagnostics:
         self.dropped = 0
         self.pending_commands = {}
         self.account_connections = AccountConnections()
+        self.room_connections = RoomConnections()
 
     def server_event(self, event, data):
         """收集 Release 和已登记账户请求的真实连接钩子，不记录地址或异常正文。"""
+        room = self.room_connections.fields(data, node_name)
+        if room is not None:
+            if len(self.events) == self.events.maxlen:
+                self.dropped += 1
+            self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **room})
         account = self.account_connections.fields(data, node_name)
         if account is not None:
             if len(self.events) == self.events.maxlen:
@@ -217,6 +223,7 @@ class ConnectionDiagnostics:
         if flow.request.host in CONTROL_HOSTS:
             return
         self.account_connections.observe(flow)
+        self.room_connections.observe(flow)
         source = 'fixture' if flow.response is not None else 'upstream'
         flow.metadata['diagnostic_source'] = source
         self.record('proxy.request', flow, source=source, fixtureHit=source == 'fixture',
