@@ -26,6 +26,9 @@ class AccountConnectionTests(unittest.TestCase):
         flow.request.path = '/v3/pay_action/batch/price?token=secret'
         self.assertEqual(account_connection_fields(flow), {'phase': 'room-transport-ready'})
         self.assertEqual(vars(connection), before)
+        flow.request.path = '/v10/texas_holdem/room/00000000-0000-4000-8000-000000000001/user_settings?token=secret'
+        self.assertEqual(account_connection_fields(flow), {'phase': 'room-transport-ready'})
+        self.assertEqual(vars(connection), before)
         flow.request.path = '/v10/profile/private-user'
         self.assertEqual(account_connection_fields(flow), {})
 
@@ -49,7 +52,8 @@ class RoomConnectionTests(unittest.TestCase):
         """flow 占位连接不参与判断，真实钩子按客户端和目标关联。"""
         recorder = RoomConnections()
         client = SimpleNamespace(id='client')
-        for path in ('/v3/pay_action/batch/price?token=secret',):
+        for path in ('/v3/pay_action/batch/price?token=secret',
+                     '/v10/texas_holdem/room/00000000-0000-4000-8000-000000000001/user_settings?token=secret'):
             flow = SimpleNamespace(client_conn=client, request=SimpleNamespace(
                 path=path, host='private.invalid', port=443))
             recorder.observe(flow)
