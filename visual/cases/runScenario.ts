@@ -6,6 +6,7 @@ import { expect, type Browser } from '@playwright/test';
 import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
 import { preparePage } from '../src/support/preparePage';
+import { screenshotWithArtworkDiagnostics } from './private-room/artworkDiagnostics';
 import { assertGuestClubReady } from './club/guestReadiness';
 import { withAccountValidationDiagnostics } from './accountValidationDiagnostics';
 
@@ -94,7 +95,7 @@ export async function runVisualScenario(
       const accessibilityLabel = await visibleBackButton.getAttribute('aria-label');
       expect(accessibilityLabel).toBe(backAccessibilityLabels[scenario.locale]);
     }
-    await expect(page).toHaveScreenshot(`${scenario.label}.png`);
+    await screenshotWithArtworkDiagnostics(page, scenario);
     });
   } finally {
     await context.close();
