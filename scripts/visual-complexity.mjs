@@ -182,7 +182,7 @@ function selectedFiles() {
   const entrypointsOnly = process.argv.includes('--entrypoints');
   const casesOnly = process.argv.includes('--cases');
   if ([animationsOnly, entrypointsOnly, casesOnly, process.argv.includes('--capture')].filter(Boolean).length > 1) {
-    throw new Error('定向范围参数不能同时使用');
+    throw new Error('定向范围参数不能与其他定向参数同时使用');
   }
   return process.argv.includes('--capture') ? captureComplexityFiles() : visualComplexityFiles(animationsOnly, entrypointsOnly, casesOnly);
 }
