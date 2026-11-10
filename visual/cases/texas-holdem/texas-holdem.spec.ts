@@ -23,6 +23,7 @@ import { captureTableStates } from './tableVariants';
 import { capturePanelVariants } from './panelVariants';
 import { captureHallVariants } from './hallVariants';
 import { selfId } from './replay';
+import { waitForTableConnection } from '../../animations/tableSession';
 import config from '../../playwright.config';
 
 // 德州语音弹窗只检查界面，使用浏览器的虚拟麦克风，不读取开发机设备。
@@ -333,6 +334,7 @@ async function captureScenario(page: Page, scenario: VisualScenario, mitmproxy: 
   } else if (scenario.pageLabel === 'signed_in_texas_hall') {
     await enterTexasRoom(page, room);
     await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
+    await waitForTableConnection(page, 'texas', 'texas-holdem');
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
     await captureHall(page, scenario, mitmproxy, room.roomId, capture);
   } else if (scenario.pageLabel === 'signed_in_texas_records_v2') {

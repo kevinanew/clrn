@@ -72,7 +72,7 @@ export async function waitForTableConnection(page: Page, game: string, prefix: s
   const retryState = { retries: 0, retryAfter: 0, cacheWaitMs: game === 'texas' ? 10_000 : 0 };
   // 连接超时也会使用自定义 Alert，其按钮没有 common-alert 的业务 ID。
   const retry = visible(page, 'common-alert-button-retry').or(
-    page.locator('[data-testid="alert-custom-button"]:visible').filter({ hasText: /^Retry$/ }),
+    page.locator('[data-testid="alert-custom-button"]:visible').filter({ hasText: /^(Retry|重试|重試)$/ }),
   ).last();
   // 德州选线失败后会避让节点 120 秒，需留出避让结束后重新探测及订阅的时间。
   const timeout = game === 'texas' ? 180_000 : 90_000;
