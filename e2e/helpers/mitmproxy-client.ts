@@ -35,14 +35,15 @@ export class Mitmproxy {
     return new Promise(/** 发送本机代理控制请求，并将响应、超时与连接错误映射到等待结果。
  * @param resolve - 完成当前异步等待的通知。
  * @param reject - 传播当前异步失败的通知。 */ (resolve, reject) => {
-      const body = payload === undefined ? undefined : JSON.stringify(payload);
+      const body = commandBody(payload);
+      const host = controlHost(endpoint);
       const req = request({
         hostname: '127.0.0.1',
         port: this.port,
-        path: `http://${endpoint.startsWith('fixtures/') ? 'fixtures-mitmproxy.invalid' : CONTROL_HOST}/${endpoint}`,
+        path: `http://${host}/${endpoint}`,
         method: body === undefined ? 'GET' : 'POST',
         headers: {
-          Host: endpoint.startsWith('fixtures/') ? 'fixtures-mitmproxy.invalid' : CONTROL_HOST,
+          Host: host,
           'X-E2E-Control-Token': this.token,
           'Content-Type': 'application/json',
         },
@@ -93,4 +94,20 @@ export class Mitmproxy {
   clear(): Promise<ProxyStatus> {
     return this.command('scenario', { scenario: null });
   }
+}
+
+/**
+ * 按控制接口选择保留域名，不向浏览器传递凭据。
+ * @param endpoint - 控制接口路径。
+ */
+function controlHost(endpoint: string): string {
+  return endpoint.startsWith('fixtures/') ? 'fixtures-mitmproxy.invalid' : CONTROL_HOST;
+}
+
+/**
+ * 在 Promise 执行器内序列化正文，保证序列化错误仍以拒绝结果传播。
+ * @param payload - 可选控制正文。
+ */
+function commandBody(payload: unknown): string | undefined {
+  return payload === undefined ? undefined : JSON.stringify(payload);
 }

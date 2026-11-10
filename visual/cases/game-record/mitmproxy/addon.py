@@ -17,6 +17,10 @@ from connection_diagnostics import ConnectionDiagnostics  # noqa: E402
 
 diagnostics = ConnectionDiagnostics()
 
+from connection_diagnostics import ConnectionDiagnostics  # noqa: E402
+
+diagnostics = ConnectionDiagnostics()
+
 CONTROL_HOST = 'test-mitmproxy.invalid'
 MODES = ('empty', 'list', 'no-hands', 'paged', 'list-error', 'detail-error', 'delete-error')
 
@@ -197,7 +201,10 @@ class GameRecordProxy:
         if flow.response:
             return
         if flow.request.host == CONTROL_HOST:
-            self.control(flow)
+            if flow.request.method == 'GET' and urlsplit(flow.request.path).path == '/diagnostics':
+                diagnostics.control(flow)
+            else:
+                self.control(flow)
             return
         self.proxied += 1
         if self.scenario != 'visual-stable' or not is_staging(flow.request.host):

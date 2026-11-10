@@ -201,5 +201,23 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(preflight.response)
 
 
+class RecordDiagnosticTests(unittest.IsolatedAsyncioTestCase):
+    """诊断读取必须认证，且不能释放测试主动挂起的列表。"""
+    async def test_snapshot_does_not_release_or_change_fixture(self):
+        """同时覆盖未授权快照及持有响应时的只读快照。"""
+        with patch.dict('os.environ', {'MITMPROXY_CONTROL_TOKEN': 'test-token'}):
+            proxy = GameRecordProxy()
+            proxy.scenario, proxy.user_id = 'visual-stable', SELF
+            proxy.hold.clear()
+            for token, expected in ((None, 403), ('test-token', 200)):
+                request = flow('/diagnostics', token=token, host='test-mitmproxy.invalid')
+                await proxy.request(request)
+                self.assertEqual(request.response.status_code, expected)
+                self.assertFalse(proxy.hold.is_set())
+                self.assertEqual(proxy.mode, 'empty')
+                self.assertEqual(proxy.counts, {})
+            self.assertEqual(request.response.json().keys(), {'events', 'dropped'})
+
+
 if __name__ == '__main__':
     unittest.main()

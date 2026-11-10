@@ -17,11 +17,13 @@ test('测试注册使用专用请求头和用户名密码，不发送设备信�
   globalThis.fetch = /** 核对创建测试账号请求的地址、方法、重定向策略与请求体。
  * @param url - 当前操作使用的 url。
  * @param options - 当前操作使用的 options。 */ async (url, options) => {
+    expect(options).toBeDefined();
+    if (!options) throw new Error('缺少请求参数');
     expect(url).toBe('https://api.shafayouxi.org/public/v10/user/register/username_password/testing');
-    expect(options?.method).toBe('POST');
-    expect(options?.redirect).toBe('error');
-    expect(options?.headers).toEqual({ 'Content-Type': 'application/json', 'X-Testing-Api-Token': 'test-token' });
-    expect(JSON.parse(options?.body as string)).toEqual(credentials);
+    expect(options.method).toBe('POST');
+    expect(options.redirect).toBe('error');
+    expect(options.headers).toEqual({ 'Content-Type': 'application/json', 'X-Testing-Api-Token': 'test-token' });
+    expect(JSON.parse(options.body as string)).toEqual(credentials);
     return Response.json({ ok: true, result: { user_id: userId, username: credentials.username } });
   };
   expect(await createTestingAccount(credentials, 'test-token')).toEqual({ userId, username: credentials.username });
