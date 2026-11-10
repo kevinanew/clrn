@@ -152,7 +152,7 @@ function commandFiles(args) {
   const modes = ['--animations', '--entrypoints', '--browser-support', '--capture'];
   const selected = modes.filter(/** 按显式模式选择范围。
    * @param mode - 定向参数。 */ mode => args.includes(mode));
-  if (selected.length > 1) throw new Error('复杂度定向模式不能同时使用');
+  if (selected.length > 1) throw new Error('复杂度定向模式不能与其他定向参数同时使用');
   if (args.includes('--capture')) return captureComplexityFiles();
   return visualComplexityFiles(...modes.slice(0, 3).map(/** 保留已有 API 的参数顺序。
    * @param mode - 定向参数。 */ mode => args.includes(mode)));
