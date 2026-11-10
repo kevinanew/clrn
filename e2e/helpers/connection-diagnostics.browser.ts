@@ -1,6 +1,7 @@
 /** 使用本机 HTTP 服务和真实 Chromium 验证诊断链路；无需测试账号或外网服务。 */
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import type { AddressInfo } from 'node:net';
 import { createServer } from 'node:http';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -24,7 +25,7 @@ test('真实浏览器保留失败前的操作、节点列表、未完成请求�
   await new Promise<void>(/** 等待连接诊断测试服务开始监听。
  * @param resolve - 完成当前异步等待的通知。 */ resolve => server.listen(0, '127.0.0.1', resolve));
   const address = server.address();
-  assert.ok(address && typeof address !== 'string');
+  assertAddress(address);
   const directory = await mkdtemp(path.join(tmpdir(), 'clrn-diagnostics-test-'));
   const browser = await chromium.launch({ ...(process.env.DIAGNOSTIC_CHROME_PATH
     ? { executablePath: process.env.DIAGNOSTIC_CHROME_PATH } : {}) });
@@ -86,3 +87,11 @@ test('真实浏览器保留失败前的操作、节点列表、未完成请求�
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+/**
+ * 校验本机监听结果，保留端口断言。
+ * @param address - 真实服务地址。
+ */
+function assertAddress(address: AddressInfo | string | null): asserts address is AddressInfo {
+  assert.ok(address && typeof address !== 'string');
+}

@@ -155,3 +155,31 @@ class RoomConnectionTests(unittest.TestCase):
         self.assertEqual(recorder.targets, {})
         # 用固定匿名标识验证空连接不会产生诊断字段。
         self.assertIsNone(recorder.fields(None, lambda _: 'anonymous-node'))
+
+
+class TableLifecycleTests(unittest.TestCase):
+    """选线成功与独立连接失败可同时发生，必须观察实际连接而非推断全网故障。"""
+    def test_table_paths_and_real_connection_stages(self):
+        """只对白名单接口采集，验证匿名关联、阶段及只读属性。"""
+        from account_connection_diagnostics import AccountConnections
+        diagnostics = AccountConnections()
+        for path in ('/node/v1/status', '/public/v12/metadata/servers',
+                     '/public/v13/metadata/servers', '/v2/centrifugo/connection/websocket'):
+            connection = SimpleNamespace(address=('private.invalid', 443), id='real-id',
+                                         timestamp_start=1, timestamp_tcp_setup=None,
+                                         timestamp_tls_setup=None, tls=True, error=None)
+            flow = SimpleNamespace(request=SimpleNamespace(path=path, host='private.invalid', port=443),
+                                   client_conn=SimpleNamespace(id='client-id'), server_conn=connection)
+            diagnostics.observe(flow)
+            data = SimpleNamespace(client=flow.client_conn, server=connection)
+            for field, value, phase in (('timestamp_start', 1, 'tcp-pending'),
+                                        ('timestamp_tcp_setup', 2, 'tls-pending'),
+                                        ('timestamp_tls_setup', 3, 'transport-ready')):
+                setattr(connection, field, value)
+                before = vars(connection).copy()
+                # 用固定匿名节点标识验证各连接阶段不会泄露目标信息。
+                fields = diagnostics.fields(data, lambda _: 'anonymous-node')
+                self.assertEqual(fields['phase'], 'table-hook-' + phase)
+                self.assertNotIn('private', str(fields))
+                self.assertEqual(vars(connection), before)
+            self.assertEqual(account_connection_fields(flow), {'phase': 'table-transport-ready'})

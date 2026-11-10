@@ -2,18 +2,20 @@ import { ESLint } from 'eslint';
 import { relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repository, sourceFiles } from './source-files.mjs';
+import { protocolSupportFiles, protocolSupportPatterns, existingOtherDiagnosticFiles } from './e2e-complexity-protocol-scope.mjs';
 import { e2eSupportFiles, e2eSupportPatterns, e2eCheckPatterns } from './e2e-complexity-scope.mjs';
 
 /**
  * 校验显式清单后扫描整个案例目录，防止新提取的实现漏出门禁。
+ * @param protocolOnly - 是否仅扫描协议诊断与交互范围。
  * @returns ESLint 扫描路径和模式。
  */
-export function e2eComplexityFiles() {
+export function e2eComplexityFiles(protocolOnly = false) {
   const available = new Set(sourceFiles());
-  for (const file of e2eSupportFiles) {
+  for (const file of requiredFiles(protocolOnly)) {
     if (!available.has(file)) throw new Error(`E2E 复杂度检查缺少文件：${file}`);
   }
-  return [...e2eSupportPatterns, ...e2eCheckPatterns, 'eslint.config.mjs'];
+  return [...supportPatterns(protocolOnly), ...e2eCheckPatterns, 'eslint.config.mjs'];
 }
 
 /**
@@ -23,7 +25,7 @@ export function e2eComplexityFiles() {
  */
 function engine(report) {
   const rules = report ? { complexity: ['error', { max: 0, variant: 'classic' }] } : {};
-  return new ESLint({ cwd: repository, overrideConfig: { linterOptions: { noInlineConfig: true }, rules } });
+  return new ESLint({ cwd: repository, overrideConfig: [{ ignores: existingOtherDiagnosticFiles }, { linterOptions: { noInlineConfig: true }, rules }] });
 }
 
 /**
@@ -71,7 +73,7 @@ export async function checkE2eComplexity(report = false, files = e2eComplexityFi
 /** 执行门禁；超限、依赖缺失、文件缺失或解析失败均返回非零状态。 */
 async function main() {
   const report = process.argv.includes('--report');
-  const results = await checkE2eComplexity(report);
+  const results = await checkE2eComplexity(report, e2eComplexityFiles(process.argv.includes('--protocol')));
   if (report) return console.log(JSON.stringify(results, null, 2));
   for (const item of results) console.error(`${item.file}:${item.line}:${item.column} ${item.message}`);
   console.log(`E2E 复杂度：${results.length} 个违规（用例/辅助/配置 ≤3，独立检查工具/根配置 ≤6）。`);
@@ -79,3 +81,19 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
+
+/**
+ * 定向入口不要求业务目录先通过，默认入口仍保持原有范围。
+ * @param protocolOnly - 是否仅检查 issue 101。
+ */
+function requiredFiles(protocolOnly) {
+  return protocolOnly ? protocolSupportFiles : [...e2eSupportFiles, ...protocolSupportFiles];
+}
+
+/**
+ * 新提取辅助与浏览器脚本均复用相同预算。
+ * @param protocolOnly - 是否仅检查 issue 101。
+ */
+function supportPatterns(protocolOnly) {
+  return protocolOnly ? protocolSupportPatterns : [...e2eSupportPatterns, ...protocolSupportPatterns];
+}

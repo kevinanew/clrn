@@ -1,7 +1,8 @@
 /** 每条用例独立收集有界的诊断时间线，并输出可直接阅读的节点摘要。 */
-import { diagnosticFields, diagnosticText } from './diagnostic-privacy';
+import { diagnosticSummary, type DiagnosticEvent } from './diagnostic-summary';
+import { diagnosticFields } from './diagnostic-privacy';
 
-export type DiagnosticEvent = ReturnType<typeof diagnosticFields> & { event: string; observedAt: number };
+export type { DiagnosticEvent } from './diagnostic-summary';
 
 /** 按真实收集时间记录事件；不使用被动画测试冻结的浏览器时钟。 */
 export class DiagnosticRecorder {
@@ -22,11 +23,11 @@ export class DiagnosticRecorder {
    */
   record(event: string, fields: unknown = {}): void {
     const safe = diagnosticFields(fields);
-    const observedAt = typeof safe.observedAt === 'number' ? safe.observedAt : Date.now();
+    const observedAt = eventTime(safe.observedAt);
     const entry = { ...safe, event: String(diagnosticFields({ event }).event), observedAt };
     this.events.push(entry);
     this.onEvent?.(entry);
-    if (this.events.length > 5000) { this.events.shift(); this.dropped++; }
+    this.trim();
   }
 
   /**
@@ -63,37 +64,19 @@ export class DiagnosticRecorder {
    * @param title - 用例和视口名称。
    */
   markdown(title: string): string {
-    const { events } = this.snapshot();
-    const nodes = new Map<string, { probes: number; upstream: number; mocked: number; cached: number; sockets: number }>();
-    for (const item of events) {
-      const names = [item.node, ...(Array.isArray(item.candidates) ? item.candidates : [])];
-      for (const name of names) if (typeof name === 'string' && !nodes.has(name)) {
-        nodes.set(name, { probes: 0, upstream: 0, mocked: 0, cached: 0, sockets: 0 });
-      }
-      const row = typeof item.node === 'string' ? nodes.get(item.node) : undefined;
-      if (!row) continue;
-      if (item.path === '/node/v1/status' && item.method === 'GET') {
-        if (item.event === 'http.start') row.probes++;
-        if (item.event === 'proxy.response' && item.source === 'upstream') row.upstream++;
-        if (item.event === 'proxy.response' && item.source === 'fixture') row.mocked++;
-      }
-      if (item.event === 'probe.cache') row.cached++;
-      if (item.event === 'websocket.start') row.sockets++;
-    }
-    const lines = [`### ${diagnosticText(title).replace(/[\r\n|<>]/g, ' ')}`, '',
-      `事件 ${events.length} 条；截断 ${this.dropped} 条。浏览器发出请求不等于上游已收到。`,
-      events.some(/** 判断是否存在满足以下条件的条目：`item.source === 'application'`。
- * @param item - 当前遍历的条目。 */ item => item.source === 'application') ? '已采集应用选线与缓存决策。' :
-        '当前构建未提供应用决策事件：缓存命中、未尝试原因和主动线路切换无法确定。', '',
-      '| 节点 | 浏览器健康探测 | 上游健康响应 | 模拟健康响应 | 缓存命中 | WebSocket 尝试 |',
-      '| --- | ---: | ---: | ---: | ---: | ---: |'];
-    for (const [node, row] of nodes) lines.push(`| ${node.replace(/[|<>\r\n]/g, '')} | ${row.probes} | ${row.upstream} | ${row.mocked} | ${row.cached} | ${row.sockets} |`);
-    lines.push('', '最近事件（完整记录见 connection-diagnostics.json）：', '', '```text');
-    for (const item of events.slice(-35)) {
-      const { observedAt, event, ...fields } = item;
-      lines.push(`+${Math.max(0, observedAt - this.startedAt)}ms ${event} ${JSON.stringify(fields)}`.replace(/`/g, ''));
-    }
-    lines.push('```', '');
-    return lines.join('\n');
+    return diagnosticSummary(title, this.snapshot());
   }
+
+  /** 保留最近五千条现场，并准确累计丢弃数。 */
+  private trim(): void {
+    if (this.events.length > 5000) { this.events.shift(); this.dropped++; }
+  }
+}
+
+/**
+ * 优先保留数值观测时间，否则读取真实宿主时钟。
+ * @param value - 脱敏事件的观测时间。
+ */
+function eventTime(value: unknown): number {
+  return typeof value === 'number' ? value : Date.now();
 }
