@@ -91,6 +91,7 @@ class RoomConnectionTests(unittest.TestCase):
         recorder = RoomConnections()
         client = SimpleNamespace(id='client')
         for path in ('/v3/pay_action/batch/price?token=secret',
+                     '/v10/wallet/private-user?token=secret',
                      '/v10/profile/private-user?token=secret',
                      '/v10/house/user/private-user?token=secret',
                      '/v2/building/rooms',

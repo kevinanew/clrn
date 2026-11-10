@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from urllib.parse import urlsplit
 from mitmproxy import http
-from account_connection_diagnostics import AccountConnections, RoomConnections, account_connection_fields
+from account_connection_diagnostics import AccountConnections, RoomConnections, account_connection_fields, room_error_fields
 
 CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
 PATH_TEMPLATES = [(path, path.split('/')) for path in json.loads(
@@ -125,6 +125,9 @@ def release_peer_match(connection):
 def error_reason(value):
     """只识别固定错误或已知 OS 错误首部，不从地址、凭据和后续文本猜测原因。"""
     text = value.lower() if isinstance(value, str) else ''
+    # mitmproxy 的固定 HTTP/2 StreamReset 文本；不根据地址或后续正文推断原因。
+    if text == 'stream reset by client (cancel)':
+        return 'http2-stream-cancelled'
     if text in ('timeout', 'timed out', 'connection timed out') or re.fullmatch(
             r'\[errno (?:60|110|10060)\] (?:operation|connection) timed out', text):
         return 'timeout'
@@ -257,7 +260,7 @@ class ConnectionDiagnostics:
             self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
                         source='release-static' if release_origin_match(flow) == 'matched' else 'laiwan_proxy',
                         status=flow.response.status_code if flow.response else 'unavailable',
-                        response='received' if flow.response else 'not-received')
+                        response='received' if flow.response else 'not-received', **room_error_fields(flow))
 
     def websocket_start(self, flow):
         """记录 WebSocket 建立事件及连接标识。"""

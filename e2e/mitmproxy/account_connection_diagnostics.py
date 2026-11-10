@@ -119,10 +119,31 @@ def is_room_path(value):
     """仅匹配建房及私人房列表依赖，忽略查询参数。"""
     path = urlsplit(value).path
     return path in ('/v3/pay_action/batch/price', '/v2/building/rooms') or bool(re.fullmatch(
-        r'/v10/(?:profile|house/user)/[^/]+', path)) or bool(re.fullmatch(
+        r'/v10/(?:profile|house/user|wallet)/[^/]+', path)) or bool(re.fullmatch(
         r'/v1/room/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', path))
 
 
 def connection_reason(connection):
     """只输出固定错误分类，不输出上游错误正文。"""
     return 'connection-error' if connection.error else 'none'
+
+
+def room_error_fields(flow):
+    """区分本轮建房读取的请求接收、响应头及响应体阶段，异常不影响原错误。"""
+    try:
+        if not is_room_path(flow.request.path):
+            return {}
+        return {
+            'requestBodyReceived': flow.request.timestamp_end is not None,
+            'responseHeadersReceived': flow.response is not None,
+            'responseBodyReceived': flow.response is not None and flow.response.timestamp_end is not None,
+            'clientHttpVersion': known_http_version(flow.request.http_version),
+            'upstreamAlpn': {b'h2': 'h2', b'http/1.1': 'http/1.1'}.get(flow.server_conn.alpn, 'unknown'),
+        }
+    except Exception:
+        return {}
+
+
+def known_http_version(value):
+    """只输出协议白名单，不保存任意请求行内容。"""
+    return value if value in ('HTTP/1.0', 'HTTP/1.1', 'HTTP/2', 'HTTP/3') else 'unknown'
