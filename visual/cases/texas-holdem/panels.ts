@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { paceNetworkClock } from '../../animations/networkClock';
 import { expect } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import type { TexasProxy } from './proxy';
@@ -18,6 +19,8 @@ type Capture = (page: Page, scenario: VisualScenario, state: string) => Promise<
 export async function capturePanels(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   roomId: string, capture: Capture): Promise<void> {
   const self = await selfId(page);
+  // 连续面板采样仍连接真实牌桌；避免虚拟快进提前触发网络心跳超时。
+  paceNetworkClock(page);
   await freezeClock(page);
   let index = 0;
   /**
