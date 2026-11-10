@@ -11,6 +11,28 @@ from test_network_faults import flow
 
 class DiagnosticTests(unittest.TestCase):
     """验证连接诊断的路径语义、来源关联、容量与脱敏边界。"""
+    def test_account_hook_preserves_reviewed_transport_error(self):
+        """独立校验超时保留真实钩子错误类别，不受 flow 占位阶段误导。"""
+        from types import SimpleNamespace
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://fixture.invalid/v11/user/private-user/account')
+        diagnostics.account_connections.observe(request)
+        server = request.server_conn
+        server.timestamp_start = 1
+        server.timestamp_tcp_setup = None
+        data = SimpleNamespace(client=request.client_conn, server=server)
+        for error, expected in (('timeout', 'timeout'),
+                                ('connection cancelled', 'connection-failed'),
+                                ('private error token=secret', 'detail-withheld')):
+            server.error = error
+            before = request.get_state()
+            diagnostics.server_connect_error(data)
+            event = diagnostics.events[-1]
+            self.assertEqual(event['reason'], expected)
+            self.assertEqual(event['phase'], 'account-hook-tcp-pending')
+            self.assertNotIn('secret', json.dumps(event))
+            self.assertEqual(request.get_state(), before)
+
     def test_room_error_progress_is_read_only_and_failure_is_contained(self):
         """读取中断时区分响应头前后，诊断失败仍保留原始失败事件与错误。"""
         from account_connection_diagnostics import room_error_fields

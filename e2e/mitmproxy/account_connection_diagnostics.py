@@ -43,7 +43,7 @@ class AccountConnections:
         except Exception:
             pass
 
-    def fields(self, data, node_name):
+    def fields(self, data, node_name, classify_error=None):
         """只输出账户连接的匿名关联和实际 TCP/TLS 时间戳状态。"""
         try:
             target = self.targets.get(str(data.client.id))
@@ -58,7 +58,8 @@ class AccountConnections:
                     'node': node_name(target[0]), 'connectionId': str(data.client.id),
                     'upstreamConnectionId': str(connection.id),
                     'phase': 'account-hook-' + phase,
-                    'reason': 'connection-error' if connection.error else 'none'}
+                    'reason': (classify_error(connection.error) if classify_error else 'connection-error')
+                    if connection.error else 'none'}
         except Exception:
             return None
 

@@ -64,6 +64,25 @@ class AccountLifecycleTests(unittest.TestCase):
         self.assertEqual(fields['phase'], 'account-hook-tls-pending')
         self.assertEqual(account_connection_fields(flow), {'phase': 'account-connect-not-started'})
         self.assertNotIn('private', str(fields))
+        # 分类发生在异常隔离边界内，只输出白名单，不保存原始错误。
+        before = vars(real).copy()
+        observed = []
+        def classify(value):
+            """记录原始错误并返回可公开的分类。"""
+            observed.append(value)
+            return 'timeout'
+        # 使用固定匿名节点标识检查分类结果。
+        fields = diagnostics.fields(data, lambda _: 'anonymous-node', classify)
+        self.assertEqual(observed, ['private error with token'])
+        self.assertEqual(fields['reason'], 'timeout')
+        self.assertEqual(vars(real), before)
+        self.assertNotIn('private', str(fields))
+        def broken_classifier(_):
+            """模拟分类器失败以验证异常隔离。"""
+            raise RuntimeError('private diagnostic error')
+        # 使用固定匿名节点标识检查分类器异常的隔离。
+        self.assertIsNone(diagnostics.fields(data, lambda _: 'anonymous-node', broken_classifier))
+        self.assertEqual(vars(real), before)
         real.address = ('unrelated.invalid', 443)
         # 无关地址使用固定匿名节点标识，不应匹配已观察的目标。
         self.assertIsNone(diagnostics.fields(data, lambda _: 'anonymous-node'))

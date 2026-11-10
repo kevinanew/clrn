@@ -157,7 +157,7 @@ class ConnectionDiagnostics:
             if len(self.events) == self.events.maxlen:
                 self.dropped += 1
             self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **room})
-        account = self.account_connections.fields(data, node_name)
+        account = self.account_connections.fields(data, node_name, error_reason)
         if account is not None:
             if len(self.events) == self.events.maxlen:
                 self.dropped += 1
