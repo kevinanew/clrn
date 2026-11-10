@@ -1,3 +1,4 @@
+import type { AddressInfo } from 'node:net';
 import { createServer } from 'node:http';
 import { test, expect } from './helpers/mitmproxy';
 
@@ -17,7 +18,7 @@ test('mitmproxy 透传本地请求，故障切换与清除可读回', /** 验证
     const forbidden = await page.goto('http://test-mitmproxy.invalid/status');
     expect(forbidden?.status()).toBe(403);
     const address = upstream.address();
-    if (!address || typeof address === 'string') throw new Error('无法分配上游端口');
+    requireAddress(address);
     await mitmproxy.inject('club-failure');
     expect((await mitmproxy.status()).scenario).toBe('club-failure');
     // fixture 禁用 Chromium 对本机地址的默认代理绕过。
@@ -52,3 +53,11 @@ test('mitmproxy 在真实 HTTPS 请求中断开登录接口并记录命中', /**
     await client.dispose();
   }
 });
+
+/**
+ * 校验真实上游端口，失败时保持原有错误。
+ * @param address - 上游监听结果。
+ */
+function requireAddress(address: AddressInfo | string | null): asserts address is AddressInfo {
+  if (!address || typeof address === 'string') throw new Error('无法分配上游端口');
+}

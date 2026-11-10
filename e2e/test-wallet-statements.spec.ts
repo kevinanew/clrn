@@ -16,23 +16,24 @@ const response = (body: unknown, ok = true) => ({
   /** 返回测试响应的预设 JSON 正文。 */
   json: async () => body }) as Response;
 
-for (const currency of ['coin', 'diamond'] as const) {
+for (const [currency, localizedName, other, otherLocalized] of [
+  ['coin', '金币', 'diamond', '钻石'], ['diamond', '钻石', 'coin', '金币'],
+] as const) {
   test(`流水响应校验：${currency} 接受有效和空数据，拒绝业务失败、错币种及无效结构`, /** 验证流水响应校验：$\{currency\} 接受有效和空数据，拒绝业务失败、错币种及无效结构。 */ async () => {
     const valid = { ...statement, currency_name: currency };
     const body = { ok: true, result: { currency_name: currency, statements: [valid] } };
     expect(await readStatements(response(body), currency)).toEqual([valid]);
     const nullableMemo = { ...valid, memo: null };
     expect(await readStatements(response({ ...body, result: { ...body.result, statements: [nullableMemo] } }), currency)).toEqual([nullableMemo]);
-    const localized = { ...valid, currency_name: currency === 'coin' ? '金币' : '钻石' };
+    const localized = { ...valid, currency_name: localizedName };
     expect(await readStatements(response({ ...body, result: { ...body.result, statements: [localized] } }), currency)).toEqual([localized]);
     expect(await readStatements(response({ ...body, result: { ...body.result, statements: [] } }), currency)).toEqual([]);
-    const other = currency === 'coin' ? 'diamond' : 'coin';
     for (const invalid of [
       null, { ...body, ok: false }, { ...body, result: null },
       { ...body, result: { ...body.result, currency_name: other } },
       { ...body, result: { ...body.result, statements: {} } },
       ...[null, {}, { ...valid, currency_name: other },
-        { ...valid, currency_name: currency === 'coin' ? '钻石' : '金币' }, { ...valid, amount: 'NaN' },
+        { ...valid, currency_name: otherLocalized }, { ...valid, amount: 'NaN' },
         { ...valid, balance: null }, { ...valid, event: 'unknown' },
         { ...valid, create_at: 'invalid' }, { ...valid, memo: 42 }, { ...valid, memo: undefined },
         { ...valid, statement_id: '' }].map(/** 将当前条目映射为`{ ...body, result: { ...body.result, statements: [item] } }`。
@@ -56,12 +57,20 @@ for (const currency of ['coin', 'diamond'] as const) {
  * @param balance - 页面显示的交易后余额文本。
  * @param date - 页面显示的交易时间文本。
  */
-const row = (amount = '+12.50', balance = '余额: 101.25', date = '2026-10-09 09:02:03') => `
+const row = (amount = '+12.50', balance = '余额: 101.25', date?: string) => rowHtml(amount, balance, rowDate(date));
+
+/**
+ * 输出明确字段的流水行标记。
+ * @param amount - 金额文本。
+ * @param balance - 余额文本。
+ * @param date - 日期文本。
+ */
+function rowHtml(amount: string, balance: string, date: string): string { return `
   <div data-testid="CurrencyTransactionRecordItem_container">
     <div data-testid="CurrencyTransactionRecordItem_amount">${amount}</div>
     <div data-testid="CurrencyTransactionRecordItem_balance">${balance}</div>
     <div data-testid="CurrencyTransactionRecordItem_date">${date}</div>
-  </div>`;
+  </div>`; }
 
 for (const viewport of [{ width: 1280, height: 720 }, { width: 390, height: 844 }]) {
   test.describe(`流水展示校验：${viewport.width}px`, /** 覆盖流水展示校验：$\{viewport.width\}px。 */ () => {
@@ -98,4 +107,12 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 390, height: 844 
       await expect(expectStatementList(page.getByTestId('list'), [statement])).rejects.toThrow();
     });
   });
+}
+
+/**
+ * 使用原有默认日期。
+ * @param date - 可选日期文本。
+ */
+function rowDate(date: string | undefined): string {
+  return date === undefined ? '2026-10-09 09:02:03' : date;
 }

@@ -1,13 +1,67 @@
-"""只读采集账户校验的连接阶段，不记录连接地址、错误正文或认证资料。"""
+"""只读采集账户校验和牌桌选线的连接阶段，不记录连接地址、错误正文或认证资料。"""
 
 from urllib.parse import urlsplit
 import re
 
 
+def connection_scope(path):
+    """仅登记账户、牌桌选线和订阅接口；不保存实体标识。"""
+    if is_account_path(path):
+        return 'account'
+    if urlsplit(path).path in ('/node/v1/status', '/public/v12/metadata/servers',
+                              '/public/v13/metadata/servers', '/v2/centrifugo/connection/websocket'):
+        return 'table'
+    return None
+
+
 def is_account_path(path):
-    """只匹配账户接口，不将用户标识放入诊断。"""
+    """只匹配账户接口。"""
     parts = urlsplit(path).path.split('/')
     return len(parts) == 5 and parts[1:3] == ['v11', 'user'] and parts[4] == 'account'
+
+
+class AccountConnections:
+    """关联失败接口的客户端与真实连接钩子，避免把 flow 占位连接当作 TCP 状态。"""
+    def __init__(self):
+        """仅保留有界关联，不保存认证头、用户路径或异常正文。"""
+        self.targets = {}
+
+    def observe(self, flow):
+        """只读登记白名单接口目标；任何诊断错误都不影响请求。"""
+        try:
+            scope = connection_scope(flow.request.path)
+            if scope is None:
+                return
+            self.remember(flow, scope)
+        except Exception:
+            pass
+
+    def remember(self, flow, scope):
+        """有界保存目标与诊断范围。"""
+        if len(self.targets) >= 1000:
+            self.targets.pop(next(iter(self.targets)))
+        self.targets[str(flow.client_conn.id)] = (flow.request.host, flow.request.port, scope)
+
+    def fields(self, data, node_name):
+        """只输出白名单连接的匿名关联和实际 TCP/TLS 时间戳状态。"""
+        try:
+            target = self.targets.get(str(data.client.id))
+            if not matches_target(target, data.server.address):
+                return None
+            connection = data.server
+            phase = transport_phase(connection).replace('account-', target[2] + '-hook-', 1)
+            return {'source': target[2] + '-transport', 'operation': target[2] + '-connect',
+                    'node': node_name(target[0]), 'connectionId': str(data.client.id),
+                    'upstreamConnectionId': str(connection.id),
+                    'phase': phase,
+                    'reason': connection_reason(connection)}
+        except Exception:
+            return None
+
+
+def matches_target(target, address):
+    """只关联与登记目标一致的连接。"""
+    return target is not None and target[:2] == address
 
 
 def transport_phase(connection):
@@ -28,7 +82,7 @@ def tls_phase(connection):
 
 def connection_fields(flow):
     """只为账户和健康探测接口生成固定阶段分类。"""
-    if is_account_path(flow.request.path):
+    if connection_scope(flow.request.path) == 'account':
         return {'phase': transport_phase(flow.server_conn)}
     return other_connection_fields(flow)
 
@@ -37,8 +91,8 @@ def other_connection_fields(flow):
     """对房间和健康探测接口标记各自阶段。"""
     if is_room_path(flow.request.path):
         return {'phase': transport_phase(flow.server_conn).replace('account-', 'room-', 1)}
-    if urlsplit(flow.request.path).path == '/node/v1/status':
-        return {'phase': transport_phase(flow.server_conn).replace('account-', 'probe-', 1)}
+    if connection_scope(flow.request.path) == 'table':
+        return {'phase': transport_phase(flow.server_conn).replace('account-', 'table-', 1)}
     return {}
 
 
@@ -99,30 +153,7 @@ def connection_reason(connection):
     return 'connection-error' if connection.error else 'none'
 
 
-class AccountConnections(RoomConnections):
-    """关联账户请求的客户端与真实连接钩子，避免把 flow 占位连接当作 TCP 状态。"""
-    def observe(self, flow):
-        """只读登记账户请求目标；任何诊断错误都不影响请求。"""
-        try:
-            if is_account_path(flow.request.path):
-                self.remember(flow)
-        except Exception:
-            pass
 
-    def fields(self, data, node_name):
-        """只输出账户连接的匿名关联和实际 TCP/TLS 时间戳状态。"""
-        try:
-            target = self.targets.get(str(data.client.id))
-            if target != data.server.address:
-                return None
-            connection = data.server
-            return {'source': 'account-transport', 'operation': 'account-connect',
-                    'node': node_name(target[0]), 'connectionId': str(data.client.id),
-                    'upstreamConnectionId': str(connection.id),
-                    'phase': transport_phase(connection).replace('account-', 'account-hook-', 1),
-                    'reason': connection_reason(connection)}
-        except Exception:
-            return None
 
 
 def room_error_fields(flow):

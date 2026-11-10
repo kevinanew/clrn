@@ -56,10 +56,12 @@ test('设置固定余额使用 X-Testing-Api-Token 请求头，禁止重定向�
     return Response.json({ ok: true, result: { wallet_id: userId, currency_name: 'diamond', balance: '60' } });
   };
   await setCreationDiamondBalance(account, 'test-only-token');
-  expect(captured?.method).toBe('POST');
-  expect(captured?.redirect).toBe('error');
-  expect(captured?.headers).toEqual({ 'Content-Type': 'application/json', 'X-Testing-Api-Token': 'test-only-token' });
-  expect(JSON.parse(captured?.body as string)).toEqual({ currency_name: 'diamond', balance: '60' });
+  expect(captured).toBeDefined();
+  if (!captured) throw new Error('缺少钱包请求参数');
+  expect(captured.method).toBe('POST');
+  expect(captured.redirect).toBe('error');
+  expect(captured.headers).toEqual({ 'Content-Type': 'application/json', 'X-Testing-Api-Token': 'test-only-token' });
+  expect(JSON.parse(captured.body as string)).toEqual({ currency_name: 'diamond', balance: '60' });
 });
 
 for (const status of [401, 404, 500]) {
