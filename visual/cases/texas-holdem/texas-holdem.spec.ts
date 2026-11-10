@@ -334,7 +334,8 @@ async function captureScenario(page: Page, scenario: VisualScenario, mitmproxy: 
   } else if (scenario.pageLabel === 'signed_in_texas_hall') {
     await enterTexasRoom(page, room);
     await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
-    await waitForTableConnection(page, 'texas', 'texas-holdem');
+    // 大厅没有私人房的开始计时按钮；自动补码入口随大厅牌桌就绪。
+    await waitForTableConnection(page, 'texas', 'texas-holdem', 'auto-rebuy-button');
     await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
     await captureHall(page, scenario, mitmproxy, room.roomId, capture);
   } else if (scenario.pageLabel === 'signed_in_texas_records_v2') {

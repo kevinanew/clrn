@@ -66,21 +66,22 @@ async function recoverRoomForm(page: Page, error: unknown, attempt: number, room
  * @param page - 牌桌页面。
  * @param game - 游戏类型。
  * @param prefix - 牌桌控件前缀。
+ * @param readyId - 当前房间类型实际提供的就绪控件。
  */
-export async function waitForTableConnection(page: Page, game: string, prefix: string) {
+export async function waitForTableConnection(page: Page, game: string, prefix: string, readyId = `${prefix}-start-room-timer-button`) {
   const connection = { state: 'loading' };
-  const retryState = { retries: 0, retryAfter: 0, cacheWaitMs: game === 'texas' ? 10_000 : 0 };
+  // 德州选线失败后会避让节点 120 秒，需留出避让结束后重新探测及订阅的时间。
+  const timing = game === 'texas' ? { cacheWaitMs: 10_000, timeout: 180_000 } : { cacheWaitMs: 0, timeout: 90_000 };
+  const retryState = { retries: 0, retryAfter: 0, cacheWaitMs: timing.cacheWaitMs };
   // 连接超时也会使用自定义 Alert，其按钮没有 common-alert 的业务 ID。
   const retry = visible(page, 'common-alert-button-retry').or(
     page.locator('[data-testid="alert-custom-button"]:visible').filter({ hasText: /^(Retry|重试|重試)$/ }),
   ).last();
-  // 德州选线失败后会避让节点 120 秒，需留出避让结束后重新探测及订阅的时间。
-  const timeout = game === 'texas' ? 180_000 : 90_000;
   await expect.poll(/** 轮询牌桌连接状态，有限重试后保留明确的连接失败状态。 */ async () => {
     if (await retry.isVisible()) await retryTableConnection(page, retry, retryState, connection);
-    else if (await visible(page, `${prefix}-start-room-timer-button`).isVisible()) connection.state = 'ready';
+    else if (await visible(page, readyId).isVisible()) connection.state = 'ready';
     return connection.state;
-  }, { timeout, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
+  }, { timeout: timing.timeout, message: `${game} 牌桌应完成连接或显示应用错误弹窗` }).not.toBe('loading');
   await assertTableConnected(page, game, connection.state);
 }
 

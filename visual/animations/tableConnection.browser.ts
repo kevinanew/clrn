@@ -46,3 +46,13 @@ for (const { id, persistent, label } of cases) {
     } finally { await browser.close(); }
   });
 }
+
+test('大厅使用自动补码入口判定就绪', /** 验证大厅使用自动补码入口判定就绪。 */ async () => {
+  const browser = await launchAnimationBrowser();
+  try {
+    const page = await browser.newPage();
+    await page.setContent('<button data-testid="auto-rebuy-button">Auto rebuy</button>');
+    await waitForTableConnection(page, 'texas', 'texas-holdem', 'auto-rebuy-button');
+    assert.equal(await page.locator('[data-testid="texas-holdem-start-room-timer-button"]').count(), 0);
+  } finally { await browser.close(); }
+});

@@ -125,3 +125,24 @@ class AccountConnections:
                     'reason': 'connection-error' if connection.error else 'none'}
         except Exception:
             return None
+
+
+def room_error_fields(flow):
+    """区分本轮建房读取的请求接收、响应头及响应体阶段，异常不影响原错误。"""
+    try:
+        if not is_room_path(flow.request.path):
+            return {}
+        return {
+            'requestBodyReceived': flow.request.timestamp_end is not None,
+            'responseHeadersReceived': flow.response is not None,
+            'responseBodyReceived': flow.response is not None and flow.response.timestamp_end is not None,
+            'clientHttpVersion': known_http_version(flow.request.http_version),
+            'upstreamAlpn': {b'h2': 'h2', b'http/1.1': 'http/1.1'}.get(flow.server_conn.alpn, 'unknown'),
+        }
+    except Exception:
+        return {}
+
+
+def known_http_version(value):
+    """只输出协议白名单，不保存任意请求行内容。"""
+    return value if value in ('HTTP/1.0', 'HTTP/1.1', 'HTTP/2', 'HTTP/3') else 'unknown'
