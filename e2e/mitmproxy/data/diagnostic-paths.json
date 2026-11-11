@@ -49,6 +49,8 @@
   "/v10/texas_holdem/room/{room}/user_settings/disable_auto_rebuy",
   "/v10/texas_holdem/room/{room}/hand_prediction",
   "/v10/texas_holdem/room/{room}/hand_prediction/rule",
+  "/v1/zhajinhua/room/{room}",
+  "/v11/user/{user}/permission/zhajinhua/room",
   "/v10/zhajinhua/room/{room}/enter",
   "/v10/zhajinhua/room/{room}/enter_and_sit",
   "/v1/game_log/room/game_amount",

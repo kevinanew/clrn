@@ -340,6 +340,32 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(diagnostics.events[-1]['code'], 1001)
         self.assertNotIn(request.id, diagnostics.pending_commands)
 
+    def test_rpc_paths_are_correlated_without_mutating_frames(self):
+        """RPC 路径关联到回复，隐藏房号、查询及认证，保持原消息不变。"""
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://node-12.service.invalid/socket')
+        request.websocket = WebSocketData()
+        frames = [(True, {'id': 7, 'method': 9, 'params': {'data': {
+            'method': 'PUT', 'path': '/v10/zhajinhua/room/private-room/enter?token=secret',
+            'authorization': 'secret', 'body': {'token': 'secret'}}}}),
+                  (False, {'id': 7, 'result': {'data': {'ok': False, 'private': 'secret'}}})]
+        for from_client, frame in frames:
+            message = WebSocketMessage(1, from_client, json.dumps(frame).encode())
+            request.websocket.messages.append(message)
+            before = message.content
+            diagnostics.websocket_message(request)
+            self.assertEqual(message.content, before)
+        events = list(diagnostics.events)
+        self.assertEqual(len(events), 2)
+        for event in events:
+            self.assertEqual(event['path'], '/v10/zhajinhua/room/{room}/enter')
+            self.assertEqual(event['method'], 'PUT')
+            self.assertEqual(event['messageType'], 'rpc')
+            self.assertEqual(event['commandId'], 7)
+        self.assertEqual(events[-1]['source'], 'upstream')
+        self.assertNotIn('secret', json.dumps(events))
+        self.assertNotIn('private-room', json.dumps(events))
+
     def test_容量边界与错误脱敏(self):
         """验证容量边界与错误脱敏。"""
         diagnostics = ConnectionDiagnostics()

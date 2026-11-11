@@ -32,6 +32,17 @@ def safe_path(value):
     return '[未知接口]'
 
 
+def rpc_diagnostic_fields(frame):
+    """只保留 RPC 的登记路径和 HTTP 方法，用于关联重复入房命令与回复。"""
+    params = frame.get('params')
+    data = params.get('data') if isinstance(params, dict) else None
+    if frame.get('method') != 9 or not isinstance(data, dict):
+        return {}
+    method = data.get('method')
+    return {'path': safe_path(data.get('path')),
+            'method': method if method in ('GET', 'POST', 'PUT', 'DELETE', 'PATCH') else 'UNKNOWN'}
+
+
 def safe_address(match):
     """将匹配到的连接地址转换为脱敏节点名。"""
     try:
@@ -291,10 +302,11 @@ class ConnectionDiagnostics:
                 if message.from_client and method in (1, 2, 9) and isinstance(identifier, int):
                     if len(pending) >= 1000:
                         pending.pop(next(iter(pending)))
-                    pending[identifier] = {1: 'subscribe', 2: 'unsubscribe', 9: 'rpc'}[method]
+                    pending[identifier] = {'messageType': {1: 'subscribe', 2: 'unsubscribe', 9: 'rpc'}[method],
+                                           **rpc_diagnostic_fields(frame)}
                 elif not message.from_client and identifier in pending:
                     self.record('proxy.websocket-reply', flow, connectionId=flow.id,
-                                commandId=identifier, messageType=pending.pop(identifier),
+                                commandId=identifier, **pending.pop(identifier),
                                 outcome='error' if error is not None else 'success',
                                 source='fixture' if message.injected else 'upstream')
                 if method in (1, 2, 9) or error is not None:
@@ -302,7 +314,8 @@ class ConnectionDiagnostics:
                                 source='fixture' if message.injected else 'client' if message.from_client else 'upstream',
                                 messageType={1: 'subscribe', 2: 'unsubscribe', 9: 'rpc'}.get(method, 'error'),
                                 commandId=frame.get('id') if isinstance(frame.get('id'), int) else None,
-                                code=error.get('code') if isinstance(error, dict) and isinstance(error.get('code'), int) else None)
+                                code=error.get('code') if isinstance(error, dict) and isinstance(error.get('code'), int) else None,
+                                **rpc_diagnostic_fields(frame))
         except (ValueError, TypeError):
             pass
 
