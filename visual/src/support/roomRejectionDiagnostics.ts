@@ -25,8 +25,10 @@ function roomDiagnostic(body: any) {
 export async function attachRoomRejection(body: any, operation: 'room-delete' | 'room-create'): Promise<void> {
   try {
     // 共享请求辅助代码也由仅安装 e2e 依赖的任务加载；仅在房间诊断时加载 visual 的测试运行器。
-    const { test } = await import('@playwright/test');
     const diagnostic = roomDiagnostic(body);
+    // 日志保留同一份有限分类，即使运行器附件不可用也不丢失拒绝证据。
+    console.warn(`${operation}-rejection ${JSON.stringify(diagnostic)}`);
+    const { test } = await import('@playwright/test');
     await test.info().attach(`${operation}-rejection`, { body: JSON.stringify(diagnostic), contentType: 'application/json' });
   } catch { /* 附件失败不能覆盖房间拒绝。 */ }
 }

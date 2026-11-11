@@ -4,6 +4,7 @@ import { restoreTable } from '../cases/zhajinhua/replayData';
 import { press } from './appSession';
 import { captureTimeline } from './timeline';
 import type { TableSession } from './tableSession';
+import { installLevelUpDiagnostics, saveLevelUpDiagnostics } from './levelUpDiagnostics';
 
 /**
  * 验证拼三张独立实现的玩家倒计时、经验和升级进退场。
@@ -33,6 +34,7 @@ export async function zhajinhuaFeedback(session: TableSession, proxy: ZhajinhuaP
   await expect(page.getByTestId('countdown-text')).toHaveAttribute('data-seconds', '3600');
   await page.clock.runFor(3200);
   await proxy.operationReward(roomId, true);
+  await installLevelUpDiagnostics(page);
   try {
     await press(page, 'zhajinhua-operation-button-call');
     const title = page.getByTestId('zhajinhua-level-up-level-text');
@@ -43,5 +45,8 @@ export async function zhajinhuaFeedback(session: TableSession, proxy: ZhajinhuaP
     await captureTimeline(page, info, 'zhajinhua-experience-level-up', title,
       { clip, times: [0, 80, 160, 320, 1000, 4800, 5200, 5600] });
     await expect(title).not.toBeInViewport();
-  } finally { await proxy.operationReward(roomId, false); }
+  } finally {
+    await saveLevelUpDiagnostics(page, info);
+    await proxy.operationReward(roomId, false);
+  }
 }
