@@ -3,8 +3,8 @@ import { test as playwrightTest } from '@playwright/test';
 import test from 'node:test';
 import { readRequestJson } from './requestJson';
 
-const operation = 'room-delete';
-test(`${operation} HTTP 500 记录有限分类，正文或附件失败不覆盖 HTTP 错误`, /** 验证 HTTP 错误诊断及其失败优先级。
+for (const [operation, status] of [['room-delete', 500], ['leaderboard-statistics', 503]] as const) {
+test(`${operation} HTTP ${status} 记录有限分类，正文或附件失败不覆盖 HTTP 错误`, /** 验证 HTTP 错误诊断及其失败优先级。
  * @param context - 当前测试的模拟范围。 */ async context => {
   const attachments: string[] = [];
   let failAttachment = false;
@@ -19,11 +19,11 @@ test(`${operation} HTTP 500 记录有限分类，正文或附件失败不覆盖 
     },
   }));
   const response = {
-    /** 返回模拟的服务器错误状态。 */ status: () => 500,
+    /** 返回模拟的服务器错误状态。 */ status: () => status,
     /** 标记 HTTP 响应失败。 */ ok: () => false,
     /** 返回包含合成敏感信息的错误正文。 */ json: async () => ({ error_type: 'server_error', code: 42, errors: 'synthetic-secret' }),
   };
-  const originalError = /status=500 .*reason=http-error/;
+  const originalError = new RegExp(`status=${status} .*reason=http-error`);
   await assert.rejects(readRequestJson(response, operation), originalError);
   assert.equal(JSON.parse(attachments[0]).category, 'server_error');
   assert.doesNotMatch(attachments[0], /synthetic-secret/);
@@ -40,3 +40,4 @@ test(`${operation} HTTP 500 记录有限分类，正文或附件失败不覆盖 
     await assert.rejects(readRequestJson({ ...response, json: /** 模拟正文解析或读取失败。 */ async () => { throw error; } }, operation), originalError);
   }
 });
+}

@@ -136,3 +136,13 @@ function assertUnknownPath(path: string): void {
 function assertNoPaths(output: string, inputs: string[]): void {
   for (const input of inputs) assert.ok(!output.includes(input), '任意路径段不能进入附件或终端摘要');
 }
+
+test('建房中止的固定错误分类经重复脱敏保留，未知自由文本不进入报告', /** 验证代理错误分类的白名单及重复清理。 */ () => {
+  const recorder = new DiagnosticRecorder();
+  recorder.merge([{ event: 'proxy.error', path: '/v3/pay_action/do', method: 'POST',
+    errorFamily: 'http2-protocol', reason: 'detail-withheld' }]);
+  const event = recorder.snapshot().events[0];
+  assert.equal(event.errorFamily, 'http2-protocol');
+  assert.equal(diagnosticFields(event).errorFamily, 'http2-protocol');
+  assert.equal(diagnosticFields({ errorFamily: 'synthetic-secret' }).errorFamily, 'unavailable');
+});
