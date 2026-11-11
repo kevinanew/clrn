@@ -205,7 +205,8 @@ class RecordDiagnosticTests(unittest.IsolatedAsyncioTestCase):
                 self.assertFalse(proxy.hold.is_set())
                 self.assertEqual(proxy.mode, 'empty')
                 self.assertEqual(proxy.counts, {})
-            self.assertEqual(request.response.json().keys(), {'events', 'dropped'})
+            self.assertEqual(request.response.json().keys(), {'events', 'dropped', 'activeConnections'})
+            self.assertEqual(request.response.json()['activeConnections'], [])
 
 
 if __name__ == '__main__':

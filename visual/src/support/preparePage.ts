@@ -327,10 +327,10 @@ export async function preparePage(page: Page, scenario: VisualScenario): Promise
     }
   }
 
-  // 仅大厅本身依赖牌局注码。底部 tab 会保留大厅的 DOM；若对所有页面全局等待，
+  // 大厅及搜索登录弹窗的可见背景依赖牌局注码。底部 tab 会保留大厅的 DOM；若对所有页面全局等待，
   // 远端牌局接口慢/失败会让消息、私人房、我的等无关场景各白等一分钟。
   if (
-    scenario.pageLabel === 'hall' ||
+    ['hall', 'search_sign_in_prompt'].includes(scenario.pageLabel) ||
     scenario.pageLabel === 'signed_in_hall' ||
     scenario.pageLabel === 'signed_in_hall_match'
   ) {
