@@ -1,3 +1,4 @@
+import { paceNetworkClock } from '../../animations/networkClock';
 import type { Page } from '@playwright/test';
 import { expect, type TexasProxy } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
@@ -16,6 +17,8 @@ import { enableSetting, sequence, table, type Capture } from './variantSupport';
 export async function capturePanelVariants(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   room: string, capture: Capture) {
   const self = await selfId(page);
+  // 连续面板采样保留真实心跳时间，沿用已有面板流程的网络节奏。
+  paceNetworkClock(page);
   await freezeClock(page);
   await table(page, proxy, room, self);
   const { snapshot, done } = sequence(page, scenario, PANEL_VARIANT_STATES, capture);

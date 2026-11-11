@@ -24,7 +24,10 @@ export async function readRequestJson(response: JsonResponse, operation: string)
   catch (error) {
     throw requestFailure(operation, error instanceof SyntaxError ? 'invalid-json' : 'body-read-failed', status);
   }
-  if (body?.ok !== true) throw requestFailure(operation, 'business-rejected', status);
+  if (body?.ok !== true) {
+    if (operation === 'room-create') await attachRoomRejection(body, operation);
+    throw requestFailure(operation, 'business-rejected', status);
+  }
   return body;
 }
 
