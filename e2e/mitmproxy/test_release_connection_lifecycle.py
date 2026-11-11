@@ -19,6 +19,28 @@ class ReleaseConnectionTests(unittest.TestCase):
         self.request.server_conn.error = 'https://connection.invalid/private Cookie: synthetic-secret'
         self.data = ServerConnectionHookData(server=self.request.server_conn, client=self.request.client_conn)
 
+    def test_状态探测失败快照读取真实连接当前阶段且不泄漏地址(self):
+        """复现钩子后仍待建连及 TLS 完成后无后续钩子的两种反例。"""
+        request = flow('https://private.invalid/node/v1/status?token=synthetic-secret')
+        request.server_conn.address = ('private.invalid', 443)
+        request.server_conn.tls = True
+        self.diagnostics.request(request)
+        data = ServerConnectionHookData(server=request.server_conn, client=request.client_conn)
+        self.diagnostics.server_connect(data)
+        data.server.timestamp_start = 1
+        self.assertEqual(self.diagnostics.snapshot()['activeConnections'][0]['phase'], 'table-hook-tcp-pending')
+        data.server.timestamp_tcp_setup = 2
+        self.assertEqual(self.diagnostics.snapshot()['activeConnections'][0]['phase'], 'table-hook-tls-pending')
+        data.server.timestamp_tls_setup = 3
+        before = vars(data.server).copy()
+        snapshot = self.diagnostics.snapshot()
+        self.assertEqual(snapshot['activeConnections'][0]['phase'], 'table-hook-transport-ready')
+        self.assertEqual(vars(data.server), before)
+        self.assertNotIn('private.invalid', json.dumps(snapshot))
+        self.assertNotIn('synthetic-secret', json.dumps(snapshot))
+        self.diagnostics.server_disconnected(data)
+        self.assertEqual(self.diagnostics.snapshot()['activeConnections'], [])
+
     def test_真实钩子类型记录连接及断开且同一连接的多请求可以关联(self):
         """验证真实钩子类型记录连接及断开且同一连接的多请求可以关联。"""
         self.diagnostics.server_connect(self.data)

@@ -176,11 +176,20 @@ class ConnectionDiagnostics:
         self.pending_commands = {}
         self.room_connections = RoomConnections()
         self.account_connections = AccountConnections()
+        self.active_account_connections = {}
 
     def server_event(self, event, data):
         """仅收集本任务 Release 目标的真实连接钩子，不记录其他目标或异常正文。"""
         account = self.account_connections.fields(data, node_name)
         if account is not None:
+            # 保存真实连接引用，失败快照可读取钩子之后变化的 TCP/TLS 状态。
+            key = str(data.server.id)
+            if event == 'proxy.server-disconnected':
+                self.active_account_connections.pop(key, None)
+            else:
+                if len(self.active_account_connections) >= 1000:
+                    self.active_account_connections.pop(next(iter(self.active_account_connections)))
+                self.active_account_connections[key] = data
             # 从真实钩子的错误分类，避免仅输出 connection-error 而丢失超时/拒绝证据。
             account['reason'] = error_reason(data.server.error) if data.server.error else 'none'
             account['errorFamily'] = error_family(data.server.error)
@@ -251,7 +260,16 @@ class ConnectionDiagnostics:
 
     def snapshot(self):
         """返回已保存的诊断事件及丢弃计数。"""
-        return {'events': list(self.events), 'dropped': self.dropped}
+        connections = []
+        for data in list(self.active_account_connections.values()):
+            try:
+                fields = self.account_connections.fields(data, node_name)
+                if fields is not None:
+                    connections.append({**fields, 'errorFamily': error_family(data.server.error)})
+            except Exception:
+                pass  # 只读诊断不能改变请求或覆盖原始测试异常。
+        return {'events': list(self.events), 'dropped': self.dropped,
+                'activeConnections': connections}
 
     def request(self, flow):
         """记录业务请求的来源与关联信息，排除代理控制流量。"""
