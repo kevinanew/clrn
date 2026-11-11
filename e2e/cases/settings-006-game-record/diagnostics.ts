@@ -4,6 +4,9 @@ import { diagnosticNode, diagnosticPath } from '../../helpers/diagnostic-privacy
 import { DiagnosticLog, diagnosticCaseDirectory } from '../../helpers/diagnostic-log';
 
 const recordPaths = new Set([
+  '/v10/texas_holdem/user/{user}/game_records',
+  '/v1/game_log/user/{user}/rooms/settlement',
+  '/v1/game_log/room/settlement',
   '/v1/texas_statistics/player/{user}/rounds/{rounds}',
   '/v11/game_log/{user}/play_session_record/recent',
 ]);

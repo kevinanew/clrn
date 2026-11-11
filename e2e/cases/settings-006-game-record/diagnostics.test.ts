@@ -46,6 +46,19 @@ test('CORS 拒绝仍保留真实状态，不输出地址、身份、头部或正
       url: 'https://private.invalid/private-entry?token=secret', method: 'PUT',
     } });
     session.emit('Network.responseReceivedExtraInfo', { requestId: '2', statusCode: 403 });
+    const legacyPaths = ['/v10/texas_holdem/user/private-user/game_records',
+      '/v1/game_log/user/private-user/rooms/settlement', '/v1/game_log/room/settlement'];
+    legacyPaths.forEach(/** 验证旧版列表及后续批次接口都能保留 CORS 前的状态。
+     * @param endpoint - 不含真实身份的测试接口。
+     * @param index - 独立请求编号。
+     */ (endpoint, index) => {
+      const requestId = `legacy-${index}`;
+      session.emit('Network.requestWillBeSent', { requestId, request: {
+        url: `https://private.invalid${endpoint}?token=secret`, method: index ? 'PUT' : 'GET',
+      } });
+      session.emit('Network.responseReceivedExtraInfo', { requestId, statusCode: 502 });
+      session.emit('Network.loadingFailed', { requestId, corsErrorStatus: {} });
+    });
     page.emit('close');
     const output = readFileSync(path.join(diagnosticCaseDirectory(info), 'game-record-network.jsonl'), 'utf8');
     assert.match(output, /"status":503/);
@@ -59,7 +72,10 @@ test('CORS 拒绝仍保留真实状态，不输出地址、身份、头部或正
      */ event => 'status' in event).map(/** 提取状态，排除时间戳等元数据。
      * @param event - 含状态的事件。
      */ event => event.status);
-    assert.deepEqual(statuses, [503]);
+    assert.deepEqual(statuses, [503, 502, 502, 502]);
+    assert.equal(events.filter(/** 仅统计已关联的真实请求。
+     * @param event - 已解析事件。
+     */ event => event.event === 'http.start').length, 4);
     for (const secret of ['private.invalid', 'private-user', 'private-round', 'secret', 'private-entry']) {
       assert.ok(!output.includes(secret), secret);
     }

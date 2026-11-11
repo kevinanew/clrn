@@ -36,3 +36,13 @@ Run `42713263865` / job `129495607890` / attempt `1` / HEAD `42b4da3f3f25003c35a
 Run 42784143885 / job 129721210541 / attempt 1，HEAD `983ede72d6871ab4727015dcec07b4033b33302b`：桌面通过，手机首次及 retry 1 都在 15 秒空态断言失败，页面仍显示加载指示器。三次 `/public/v11/game_log/available.json` 都返回 200；桌面通过时也有 CORS 错误，因此不能单凭 CORS 或一次桌面通过判断因果。现有浏览器附件将后续部分接口记为「未知接口」，不能确认战绩数据请求的真实 HTTP 状态。
 
 复用历史提交 `ef73836` 的必要诊断：登记两个战绩路径，并通过只读 CDP 事件保存真实 HTTP 状态、完成事件及 CORS/网络失败分类。输出位于每次设备/重试独立目录的 `game-record-network.jsonl`，不保存请求头、正文、查询参数或用户标识；诊断不可用不改变原用例结果。下轮 CI 需将该日志与原浏览器时间线关联，区分数据请求的 HTTP 错误、CORS 拒绝或未完成；本轮尚未证实业务根因，不扩大超时或修改断言。
+
+## Run 42979688727 的诊断缺口
+
+核对 run `42979688727` / job `130394917719` / attempt `1` / HEAD `ed919151ea60d99d18e786f8d2583fda1f4042b5`。本轮唯一非预期失败为 SETTINGS-006 手机首次和 retry 1：空态数量一直为 0，15 秒后失败，附件仍显示加载指示器；桌面通过。SETTINGS-010 的失败符合原有 expectedStatus，不是本轮失败项。
+
+本轮两个 artifact（`functional-failure-report`、`web-diagnostics-functional-42979688727-1`）下载至带 run/job/attempt/HEAD 的全新临时目录。三次战绩专用 `game-record-network.jsonl` 都只有 collection.start，不能从中推断数据接口成功或失败。浏览器中版本查询返回 200，但部分 PUT 仍为未知接口并被 CORS 拒绝；代理日志没有覆盖这些战绩请求。桌面通过也有同类错误，加上前述历史手机重试通过的反例，CORS 本身不足以证明业务根因。
+
+继续核对本轮使用的 Release `web-staging-200003201-4f62107cdc2f`，构建包 SHA256 为 `1056ed87a4c4b3efd8981cd5a2574865be3788bc56f3282c36b564dab5ae0feb`，与仓库部署清单一致。包内模块 3799/3800/2364 显示旧版我的战绩加载链依次读取 game_records、房间/俱乐部、两种 settlement 及玩家资料；即使列表为空，两种 settlement 仍会执行，整个链完成前保留 spinner。原诊断仅观察统计和新版 recent，漏掉了旧版列表及两个 settlement，属于已确认的取证缺口；现有附件无法还原这些被隐藏路径的真实状态。
+
+只复用其他分支提交 `1a1d2da` 中三个相关路径登记，并把它们纳入已有 CDP 观察和隐私/状态离线测试；不复用私人房和截图等无关改动。下一轮 CI 对照三条接口的 start/response/failed/finished 与原浏览器时间线，检验旧版加载链是否在列表或 settlement 被拒绝；若均完成，再沿已登记的房间、俱乐部和资料请求调查。当前仅修复诊断覆盖缺口，业务根因仍待下一轮证据，不能声明 CI 已修复或无需修改；采样、断言、超时、重试和原有门禁保持不变。
