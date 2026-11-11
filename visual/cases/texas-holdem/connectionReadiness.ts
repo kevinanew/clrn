@@ -1,6 +1,42 @@
 /** 德州初始化期间持续检查完整就绪状态，并只通过应用重试入口恢复连接。 */
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page, type Request } from '@playwright/test';
 import { recordDiagnostic } from '../../src/support/connectionDiagnostics';
+
+const entries = new WeakMap<Page, { request?: Request; succeeded: boolean }>();
+
+/** 在导航前观察真实入房响应，避免房主控件提前出现时误判连接完成。
+ * @param page - 本轮独占牌桌页面。
+ */
+export function observeGameEntry(page: Page): void {
+  const state = { request: undefined as Request | undefined, succeeded: false };
+  entries.set(page, state);
+  page.on('request', /** 只跟踪当前浏览器发出的入房请求，不发起额外请求。
+   * @param request - 页面原始请求。 */ request => {
+    if (request.method() !== 'PUT' || !/^\/v10\/texas_holdem\/room\/[^/]+\/enter$/.test(new URL(request.url()).pathname)) return;
+    state.request = request;
+    state.succeeded = false;
+  });
+  page.on('response', /** 较早请求的迟到响应不能覆盖最新一次入房状态。
+   * @param response - 页面原始响应。 */ response => {
+    if (response.request() === state.request) state.succeeded = response.status() === 200;
+  });
+}
+
+/** 检查已安装的入房观察器；其他原有场景保持原就绪条件。
+ * @param page - 本轮牌桌页面。
+ * @param visible - 当前可见控件。
+ */
+function connectionReady(page: Page, visible: string[]): boolean {
+  const entry = entries.get(page);
+  return isReady(visible) && entrySucceeded(entry);
+}
+
+/** 没有观察器的场景保持原条件，已观察的入房必须成功。
+ * @param entry - 页面入房状态。
+ */
+function entrySucceeded(entry: { succeeded: boolean } | undefined): boolean {
+  return entry === undefined || entry.succeeded;
+}
 
 const required = ['countdown-text', 'texas-holdem-start-room-timer-button',
   'menu-button', 'texas-holdem-leaderboard-button'];
@@ -64,7 +100,7 @@ export async function waitForGameConnection(page: Page, timeout = 90_000): Promi
         attempts = await retryConnection(page, attempts, deadline);
         return false;
       }
-      return isReady(visible);
+      return connectionReady(page, visible);
     }, { timeout, intervals: [100, 250, 500, 1000], message: '德州牌桌应完整就绪，且无加载遮罩或错误弹窗' }).toBe(true);
     recordDiagnostic(page, '德州初始化完成', { attempt: attempts });
   } catch (error) {

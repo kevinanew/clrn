@@ -4,6 +4,7 @@ import { expect, type TexasProxy } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import type { RoomSession } from '../_shared/room';
 import { deleteTexasRoom } from './room';
+import { observeGameEntry } from './connectionReadiness';
 
 /**
  * 仅捕获当前新版牌谱场景、本轮房间的实际入场响应。
@@ -33,6 +34,7 @@ function isRoomEntry(response: Response, roomId: string): boolean {
  * @param proxy - 本轮独占代理。
  */
 export async function prepareScenarioContext(page: Page, scenario: VisualScenario, proxy: TexasProxy) {
+  if (['signed_in_texas_pre_game', 'signed_in_texas_optional_pre_game'].includes(scenario.pageLabel)) observeGameEntry(page);
   if (!['signed_in_texas_pre_game', 'signed_in_texas_optional_pre_game'].includes(scenario.pageLabel)) {
     await page.clock.install({ time: Date.now() });
   }

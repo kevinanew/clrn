@@ -10,6 +10,7 @@ import type { CaptureArea } from './captureTypes';
 import type { TimelineElement, TimelineOptions } from './timelineTypes';
 import { recordSlotBannerFrame } from './slotBannerDiagnostics';
 import { recordSeatGuideFailure } from './seatGuideDiagnostics';
+import { recordLaunchBackgroundFailure } from './launchBackgroundDiagnostics';
 
 /**
  * 计算普通截图中原有定位器遮罩以外的有效面积，不改变浏览器实际绘制的遮罩。
@@ -65,9 +66,21 @@ export async function captureFrame(page: Page, info: TestInfo, name: string, opt
   const captured = await captureOrdinaryFrame(page, options, snapshot);
   const errorsBefore = info.errors.length;
   await saveOrCompareFrame(captured.frame, info, snapshot, options, captured.comparedPixels);
+  await recordLaunchIfFailed(page, info, name, snapshot, errorsBefore);
   await recordSeatGuideIfFailed(page, info, name, snapshot, errorsBefore);
   await recordSlotBannerFrame(page, info, name, snapshot);
   return captured.frame;
+}
+
+/** 仅为启动画面的失败帧附加只读状态。
+ * @param page - 当前页面。
+ * @param info - 原报告。
+ * @param name - 原动画名称。
+ * @param snapshot - 已比较帧。
+ * @param errorsBefore - 比较前错误数。
+ */
+async function recordLaunchIfFailed(page: Page, info: TestInfo, name: string, snapshot: string, errorsBefore: number) {
+  if (name === 'launch-branding' && info.errors.length > errorsBefore) await recordLaunchBackgroundFailure(page, info, snapshot);
 }
 
 /**

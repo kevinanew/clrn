@@ -1,7 +1,8 @@
 /** 用真实 Chromium 验证德州倒计时后的连接恢复和截图就绪门禁，无需 staging 账号。 */
 import { readFile } from 'node:fs/promises';
-import { expect, test, type Page } from '@playwright/test';
-import { waitForGameConnection } from '../cases/texas-holdem/connectionReadiness';
+import { EventEmitter } from 'node:events';
+import { expect, test, type Page, type Request } from '@playwright/test';
+import { observeGameEntry, waitForGameConnection } from '../cases/texas-holdem/connectionReadiness';
 import { installConnectionDiagnostics } from '../src/support/connectionDiagnostics';
 
 /**
@@ -58,6 +59,38 @@ async function showControls(page: Page): Promise<void> {
      * @param element - 房主控件容器。
      */ element => { (element as HTMLElement).hidden = false; },
   );
+}
+
+for (const status of [200, 503]) {
+  test(`入房响应 ${status} 晚于全部控件出现时不能提前就绪`,
+    /** 重现本轮控件先于入房响应出现的竞态，不依赖 staging。
+     * @param fixtures - 隔离浏览器页面。 */ async ({ page }) => {
+      await renderTable(page);
+      await showControls(page);
+      observeGameEntry(page);
+      // 只驱动观察器的事件边界，不替换页面网络响应或访问远端服务。
+      const events = page as unknown as EventEmitter;
+      const request = {
+        /** 复现浏览器入房方法。 */ method: () => 'PUT',
+        /** 使用不含业务资料的固定路径。 */ url: () => 'https://entry.test/v10/texas_holdem/room/test-room/enter',
+      } as Request;
+      events.emit('request', request);
+      let completed = false;
+      const outcome = waitForGameConnection(page, 1500).then(
+        /** 记录门禁是否提前通过。 */ () => { completed = true; return 'ready'; },
+        /** 保留门禁失败作为待检查结果。 */ () => 'failed',
+      );
+      try {
+        await page.waitForTimeout(150);
+        expect(completed).toBe(false);
+      } finally {
+        events.emit('response', {
+          /** 关联本次入房请求。 */ request: () => request,
+          /** 复现成功或失败的原始状态。 */ status: () => status,
+        });
+      }
+      expect(await outcome).toBe(status === 200 ? 'ready' : 'failed');
+    });
 }
 
 for (const width of [375, 1440]) {
