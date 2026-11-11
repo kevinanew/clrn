@@ -81,6 +81,6 @@ export async function waitForGameConnection(page: Page, timeout = 90_000): Promi
     recordDiagnostic(page, '德州初始化完成', { attempt: attempts });
   } catch (error) {
     recordDiagnostic(page, '德州初始化失败', { attempt: attempts, limit: retryLimit, timeoutMs: timeout });
-    throw error;
+    throw new Error('德州牌桌应完整就绪，且无加载遮罩或错误弹窗', { cause: error });
   }
 }

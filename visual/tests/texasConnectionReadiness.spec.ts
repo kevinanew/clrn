@@ -209,7 +209,12 @@ test('重试按钮被遮挡时点击也必须受初始化总预算约束',
       },
     );
     const started = Date.now();
-    await expect(waitForGameConnection(page, 12_000)).rejects.toThrow('德州牌桌应完整就绪');
+    const connection = waitForGameConnection(page, 12_000);
+    await expect(connection).rejects.toThrow('德州牌桌应完整就绪');
+    const failure = await connection.catch(/** 读取保留的原始动作错误。
+     * @param error - 初始化失败。 */ error => error);
+    expect(failure.cause).toBeInstanceOf(Error);
+    expect(failure.cause.message).toMatch(/locator.click: Timeout|德州牌桌应完整就绪/);
     expect(Date.now() - started).toBeLessThan(14_000);
     await expect(page.locator('body')).toHaveAttribute('data-retries', '0');
     await expect(page.getByTestId('common-alert-container')).toBeVisible();

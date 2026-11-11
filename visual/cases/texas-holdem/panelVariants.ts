@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, type TexasProxy } from './proxy';
+import { expect, test, type TexasProxy } from './proxy';
 import type { VisualScenario } from '../../scenarioTypes';
 import { PANEL_VARIANT_STATES } from './scenarios';
 import { advance, click, closeMask, freezeClock, restore, selfId, visible } from './replay';
@@ -16,7 +16,9 @@ import { enableSetting, sequence, table, type Capture } from './variantSupport';
 export async function capturePanelVariants(page: Page, scenario: VisualScenario, proxy: TexasProxy,
   room: string, capture: Capture) {
   const self = await selfId(page);
+  await recordPanelClock(page, '暂停前');
   await freezeClock(page);
+  await recordPanelClock(page, '暂停后');
   await table(page, proxy, room, self);
   const { snapshot, done } = sequence(page, scenario, PANEL_VARIANT_STATES, capture);
   for (const mode of ['pending', 'resolved', 'more'] as const) {
@@ -29,6 +31,7 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
     await snapshot(`applications_${mode}`);
     await closeMask(page, 'buy-in-application-list');
   }
+  await recordPanelClock(page, '打开设置前');
   await enableSetting(page, 'player-voice');
   await proxy.replayTexas(room, { scene: 'panel-variants-room_message-audio' });
   await advance(page);
@@ -72,4 +75,17 @@ export async function capturePanelVariants(page: Page, scenario: VisualScenario,
   }[scenario.locale]);
   await snapshot('alert_authentication_failed');
   done();
+}
+
+/** 只观察时钟，不推进采样；采集失败不得改变原有用例结果。
+ * @param page - 本轮牌桌页面。
+ * @param phase - 固定阶段名，不包含页面正文。
+ */
+async function recordPanelClock(page: Page, phase: string): Promise<void> {
+  try {
+    const virtualTime = await page.evaluate(/** 读取应用所见时间。 */ () => Date.now());
+    await test.info().attach(`panel-clock-${phase}`, {
+      body: JSON.stringify({ virtualTime, realTime: Date.now() }), contentType: 'application/json',
+    });
+  } catch { /* 诊断失败不能改变原始测试结果。 */ }
 }
