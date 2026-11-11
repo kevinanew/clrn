@@ -62,13 +62,31 @@ function isReady(visible: string[]): boolean {
  * @param page - 当前页面。
  * @param attempts - 已重试次数。
  * @param deadline - 初始化截止时间。
+ * @param cache - 当前重试的健康缓存截止时间。
  */
-async function retryConnection(page: Page, attempts: number, deadline: number): Promise<number> {
-  if (attempts >= retryLimit || Date.now() >= deadline) return attempts;
+async function retryConnection(page: Page, attempts: number, deadline: number, cache: { retryAfter: number }): Promise<number> {
+  if (!retryAllowed(attempts, deadline)) return attempts;
+  // 复用动画入口的十秒缓存等待，避免立即点击耗尽重试却没有重新探测。
+  if (!cacheExpired(cache)) return attempts;
+  cache.retryAfter = 0;
   recordDiagnostic(page, '点击应用重试按钮', { attempt: ++attempts, limit: retryLimit });
   await page.locator('[data-testid="common-alert-button-retry"]:visible').last()
     .click({ timeout: Math.max(1, Math.min(5000, deadline - Date.now())) });
   return attempts;
+}
+
+/** 从弹窗出现后等待最后一批健康缓存过期。
+ * @param cache - 当前重试的缓存截止时间。 */
+function cacheExpired(cache: { retryAfter: number }): boolean {
+  cache.retryAfter ||= Date.now() + 10_000;
+  return Date.now() >= cache.retryAfter;
+}
+
+/** 保留重试次数和总预算限制。
+ * @param attempts - 已重试次数。
+ * @param deadline - 初始化截止时间。 */
+function retryAllowed(attempts: number, deadline: number): boolean {
+  return attempts < retryLimit && Date.now() < deadline;
 }
 
 /**
@@ -79,6 +97,7 @@ async function retryConnection(page: Page, attempts: number, deadline: number): 
 export async function waitForGameConnection(page: Page, timeout = 90_000): Promise<void> {
   const deadline = Date.now() + timeout;
   let attempts = 0;
+  const cache = { retryAfter: 0 };
   let previous: string | undefined;
   try {
     await expect.poll(/** 持续检查业务控件和阻塞弹层，直到完整就绪或预算耗尽。 */ async () => {
@@ -97,7 +116,7 @@ export async function waitForGameConnection(page: Page, timeout = 90_000): Promi
         previous = state;
       }
       if (visible.includes('common-alert-button-retry')) {
-        attempts = await retryConnection(page, attempts, deadline);
+        attempts = await retryConnection(page, attempts, deadline, cache);
         return false;
       }
       return connectionReady(page, visible);
