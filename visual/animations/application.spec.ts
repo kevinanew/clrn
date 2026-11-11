@@ -1,3 +1,5 @@
+import { observeMatchingReplies } from './matchingDiagnostics';
+import { installConnectionDiagnostics } from '../src/support/connectionDiagnostics';
 import { test, expect } from '../src/support/networkFixture';
 import { navigate, openApplication, visible, press, pressTarget } from './appSession';
 import { exercisePopup } from './popups';
@@ -87,16 +89,27 @@ test('club rooms empty state fades in', /** 验证俱乐部房间空态的淡入
 test('hall matching spinner modal enter and exit', /** 验证大厅匹配等待弹窗的进入与退出动画。
  * @param root0 - 当前调用提供的页面、账号或其他夹具。
  * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
-  await selectScenario(context, 'matching');
-  await openApplication(context, page, info);
-  await expect(page.getByTestId('match-game-bet-info').first()).toHaveText('1/2', { timeout: 60_000 });
-  const target = page.getByTestId('game-matching-loading-view').locator('img.rotating-image');
-  await exercisePopup(page, info, { name: 'hall-matching', target, exitAnimated: false,
-    clip: { x: Math.round(page.viewportSize()!.width / 2 - 171), y: Math.round(page.viewportSize()!.height / 2 - 160), width: 342, height: 320 },
-    open: /** 通过真实匹配入口显示旋转提示。 */ () => press(page, 'match-game-item-texas_holdem-tourists'),
-    close: /** 退出本地夹具中的等待状态。 */ async () => {
-      await press(page, 'quick-start-room-cancel');
-      await page.clock.runFor(0);
-    },
-  });
+  const replies = observeMatchingReplies(page);
+  const diagnostics = await installConnectionDiagnostics(context, page, info).catch(/** 可选诊断安装失败不影响用例。 */ () => undefined);
+  try {
+    await selectScenario(context, 'matching');
+    await openApplication(context, page, info);
+    await expect(page.getByTestId('match-game-bet-info').first()).toHaveText('1/2', { timeout: 60_000 });
+    const target = page.getByTestId('game-matching-loading-view').locator('img.rotating-image');
+    await exercisePopup(page, info, { name: 'hall-matching', target, exitAnimated: false,
+      clip: { x: Math.round(page.viewportSize()!.width / 2 - 171), y: Math.round(page.viewportSize()!.height / 2 - 160), width: 342, height: 320 },
+      open: /** 通过真实匹配入口显示旋转提示。 */ () => press(page, 'match-game-item-texas_holdem-tourists'),
+      close: /** 退出本地夹具中的等待状态。 */ async () => {
+        await press(page, 'quick-start-room-cancel');
+        await page.clock.runFor(0);
+      },
+    });
+  } catch (error) {
+    await diagnostics?.save(error).catch(/** 保留原始断言失败。 */ () => undefined);
+    throw error;
+  } finally {
+    // 保存失败现场；诊断异常不能覆盖原始断言或改变用例结果。
+    await info.attach('matching-rpc-diagnostics', { body: JSON.stringify(replies.snapshot()),
+      contentType: 'application/json' }).catch(/** 可选附件失败不影响结果。 */ () => undefined);
+  }
 });

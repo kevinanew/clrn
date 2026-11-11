@@ -135,3 +135,25 @@ def verified_identifier(flow):
     verified = all((re.fullmatch(r'[a-f0-9-]{36}', server_id),
                     re.fullmatch(re.escape(server_id) + r'-[1-9][0-9]*', identifier)))
     return identifier if verified else 'unverified'
+
+
+def error_family(value):
+    """只识别锁定代理版本的错误首部，区分协议故障与建连故障，不输出可变后缀。"""
+    if not isinstance(value, str) or not value:
+        return 'none'
+    return matching_error_family(value)
+
+
+def matching_error_family(value):
+    """将已验证的错误首部映射到固定分类。"""
+    prefixes = {
+        'HTTP/2 protocol error: ': 'http2-protocol',
+        'HTTP/2 connection closed: ': 'http2-closed',
+        'Cannot parse HTTP response: ': 'http1-response',
+        'Certificate verify failed: ': 'tls-certificate',
+        'OpenSSL ': 'tls-openssl',
+        'Multiple exceptions: ': 'connect-multiple-errors',
+        'Connection killed: ': 'connect-killed',
+    }
+    return next((family for prefix, family in prefixes.items() if value.startswith(prefix)),
+                'other')

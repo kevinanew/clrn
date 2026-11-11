@@ -147,3 +147,12 @@ function assertUnknownPath(path: string): void {
 function assertNoPaths(output: string, inputs: string[]): void {
   for (const input of inputs) assert.ok(!output.includes(input), '任意路径段不能进入附件或终端摘要');
 }
+
+test('复用的连接错误分类经过脱敏和合并仍保留，异常正文仍丢弃', /** 验证复用字段不会被白名单丢弃或携带正文。 */ () => {
+  const recorder = new DiagnosticRecorder();
+  recorder.merge([{ event: 'proxy.error', errorFamily: 'http2-protocol',
+    body: 'synthetic-secret', authorization: 'synthetic-secret' }]);
+  const output = JSON.stringify(recorder.snapshot());
+  assert.ok(output.includes('http2-protocol'));
+  assert.ok(!output.includes('synthetic-secret'));
+});

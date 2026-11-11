@@ -12,7 +12,7 @@ from urllib.parse import urlsplit
 from mitmproxy import http
 from diagnostic_release import (release_origin_match, release_upstream_match, release_peer_match,
                                 error_reason, release_server, request_operation, error_source,
-                                response_state, release_identifier)
+                                response_state, release_identifier, error_family)
 from diagnostic_socket import DiagnosticSocket
 from room_response_diagnostics import price_response_fields
 from account_connection_diagnostics import AccountConnections, RoomConnections, account_connection_fields, room_error_fields
@@ -108,6 +108,7 @@ class ConnectionDiagnostics(DiagnosticSocket):
         """记录已关联目标的脱敏连接事件。"""
         fields = connections.fields(data, node_name)
         if fields is not None:
+            fields['errorFamily'] = error_family(data.server.error)
             self.append_event({'event': event, 'observedAt': int(time.time() * 1000), **fields})
 
     def server_connect(self, data):
@@ -184,8 +185,9 @@ class ConnectionDiagnostics(DiagnosticSocket):
     def error(self, flow):
         """为业务请求记录安全错误原因，避免猜测未收到的响应状态。"""
         if flow.request.host not in CONTROL_HOSTS:
-            self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
-                        source=error_source(flow), **response_state(flow), **room_error_fields(flow))
+            self.record('proxy.error', flow, reason=getattr(flow.error, 'msg', 'unknown'),
+                        source=error_source(flow), errorFamily=error_family(getattr(flow.error, 'msg', None)),
+                        **response_state(flow), **room_error_fields(flow))
 
     def websocket_start(self, flow):
         """记录 WebSocket 建立事件及连接标识。"""

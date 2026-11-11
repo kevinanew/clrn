@@ -12,6 +12,35 @@ from test_network_faults import flow
 
 class DiagnosticTests(unittest.TestCase):
     """验证连接诊断的路径语义、来源关联、容量与脱敏边界。"""
+    def test_unknown_room_error_retains_only_fixed_family_and_original_failure(self):
+        """针对战绩预检失败取证：协议异常和复合建连异常可区分，后缀永不进入附件。"""
+        from diagnostic_release import error_family
+        messages = {
+            'HTTP/2 protocol error: synthetic-secret': 'http2-protocol',
+            'HTTP/2 connection closed: synthetic-secret': 'http2-closed',
+            'Cannot parse HTTP response: synthetic-secret': 'http1-response',
+            'Certificate verify failed: synthetic-secret': 'tls-certificate',
+            'OpenSSL synthetic-secret': 'tls-openssl',
+            'Multiple exceptions: synthetic-secret': 'connect-multiple-errors',
+            'Connection killed: synthetic-secret': 'connect-killed',
+            'synthetic-secret HTTP/2 protocol error: ': 'other',
+            'unknown\nHTTP/2 protocol error: synthetic-secret': 'other',
+        }
+        for message, family in messages.items():
+            diagnostics = ConnectionDiagnostics()
+            request = flow('https://fixture.invalid/v1/game_log/room/game_amount')
+            request.request.method = 'OPTIONS'
+            request.error = Error(message)
+            original = request.error
+            diagnostics.error(request)
+            event = diagnostics.events[-1]
+            self.assertEqual(event['errorFamily'], family)
+            self.assertEqual(event['response'], 'not-received')
+            self.assertIs(request.error, original)
+            self.assertEqual(request.error.msg, message)
+            self.assertNotIn('synthetic-secret', json.dumps(diagnostics.snapshot()))
+        self.assertEqual(error_family(None), 'none')
+
     def test_price_response_evidence_preserves_failure_and_contains_no_private_content(self):
         """502/CORS 分类不修改流，200 对照及取证异常也保留原始响应。"""
         diagnostics = ConnectionDiagnostics()

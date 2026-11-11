@@ -62,7 +62,7 @@ const allowedFields = new Set(['event', 'source', 'node', 'path', 'method', 'sta
   'excluded', 'before', 'after', 'phase', 'target', 'roomId', 'attempt', 'limit', 'count', 'remaining',
   'backendDelay', 'serverLoad', 'outcome', 'observedAt', 'messageType', 'commandId', 'channel', 'dropped',
   'priceCorsOrigin', 'priceServer', 'priceErrorBytes', 'priceErrorFingerprint', 'priceErrorPage',
-  'priceResponseDiagnostic', 'priceErrorBody']);
+  'priceResponseDiagnostic', 'priceErrorBody', 'errorFamily']);
 const nodeFields = new Set(['node', 'candidates', 'selected', 'excluded', 'before', 'after']);
 
 type SafeField = string | number | boolean | string[];
