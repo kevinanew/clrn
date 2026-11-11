@@ -1,6 +1,7 @@
 """验证代理记录不泄露认证数据，且能区分本地模拟与真实上游响应。"""
 import json
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 from mitmproxy import http
 from mitmproxy.flow import Error
@@ -11,6 +12,27 @@ from test_network_faults import flow
 
 class DiagnosticTests(unittest.TestCase):
     """验证连接诊断的路径语义、来源关联、容量与脱敏边界。"""
+    def test_table_hook_classifies_actual_connection_error_without_changing_it(self):
+        """真实连接钩子保留固定超时/拒绝分类，未知错误不泄露地址或凭据。"""
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://fixture.invalid/node/v1/status')
+        diagnostics.account_connections.observe(request)
+        server = SimpleNamespace(address=(request.request.host, request.request.port), id='real-server',
+                                 timestamp_start=1, timestamp_tcp_setup=None, timestamp_tls_setup=None, tls=True)
+        data = SimpleNamespace(client=request.client_conn, server=server)
+        for error, expected in (('Connection timed out', 'timeout'),
+                                ("[Errno 111] Connect call failed ('private.invalid', 443)", 'connection-failed'),
+                                ('synthetic-secret', 'detail-withheld')):
+            server.error = error
+            before = vars(server).copy()
+            diagnostics.server_connect_error(data)
+            event = diagnostics.events[-1]
+            self.assertEqual(event['phase'], 'table-hook-tcp-pending')
+            self.assertEqual(event['reason'], expected)
+            self.assertEqual(vars(server), before)
+            self.assertNotIn('private.invalid', json.dumps(event))
+            self.assertNotIn('synthetic-secret', json.dumps(event))
+
     def test_room_error_progress_is_read_only_and_failure_is_contained(self):
         """读取中断时区分响应头前后，诊断失败仍保留原始失败事件与错误。"""
         from account_connection_diagnostics import room_error_fields

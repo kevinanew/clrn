@@ -164,6 +164,8 @@ class ConnectionDiagnostics:
         """仅收集本任务 Release 目标的真实连接钩子，不记录其他目标或异常正文。"""
         account = self.account_connections.fields(data, node_name)
         if account is not None:
+            # 从真实钩子的错误分类，避免仅输出 connection-error 而丢失超时/拒绝证据。
+            account['reason'] = error_reason(data.server.error) if data.server.error else 'none'
             if len(self.events) == self.events.maxlen:
                 self.dropped += 1
             self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **account})
