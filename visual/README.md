@@ -167,7 +167,7 @@ e2e/.venv/bin/python -m unittest discover -s e2e/mitmproxy -v
 - 账号安全验证码输入、真正改密/注销提交：会改动 staging 账号（绑手机/邮箱/改密/注销仅截表单或提示首屏）
 - 俱乐部详情/成员：依赖俱乐部数据（测试账号为空；club API 已 mock 空列表）
 - 拼三张滑杆加注等无法通过 UI 到达的界面及本轮未覆盖范围见[拼三张覆盖清单](cases/zhajinhua/COVERAGE.md)
-- 德州 RTC、猜牌记录等当前无法通过 UI 到达的源码界面，原因见[德州覆盖清单](cases/texas-holdem/COVERAGE.md)
+- 德州猜牌记录等当前无法通过 UI 到达的源码界面，原因见[德州覆盖清单](cases/texas-holdem/COVERAGE.md)；RTC 实时音视频已下线，文本和语音消息覆盖继续保留
 - MatchTexasHoldem 独立匹配页：需浮动匹配态才能进入；大厅内嵌匹配区已覆盖
 - 意见反馈第三方列表内容：UserReport 远端会变，已由 Python 视觉环境夹具返回空白页，只回归导航壳与标题栏
 
@@ -357,6 +357,27 @@ CI 从 `CLRN_CI_TEST_ACCOUNTS_V3` Secret 为每个任务注入 `VISUAL_USERNAME`
 
 visual 专用的认证校验、mock、等待、重试、稳定化及截图判定逻辑必须保留在
 `visual/`，不得为视觉测试向应用业务代码增加测试状态、测试组件或视觉测试专用分支。
+
+### 实时音视频下线后的建房基准（#140）
+
+固定应用构建为 `4f62107cdc2f69b40223bb5c6406f587545601a7`，Release 为
+`web-staging-200003201-4f62107cdc2f`，构建包 SHA-256 为
+`1056ed87a4c4b3efd8981cd5a2574865be3788bc56f3282c36b564dab5ae0feb`。
+三语言的 `mobile-signed-in-create-room-advanced-texas.png` 和
+`mobile-signed-in-create-room-advanced-six-plus.png` 同步移除视频开关后的真实画面。
+下线使内容高度和滚动取景变化，审核范围包含高级设置标题、座位数、四个消息开关、
+回合时长滑杆和底部建房按钮；不恢复 RTC，也不改变像素容差。
+
+德州及短牌共用高级设置，六张旧基准均保留了视频行。牌桌静态、动画及网络夹具没有 RTC 操作预期，
+继续保留文本聊天、语音弹窗和语音消息历史覆盖。普通静态准备中的背景视频稳定化与 RTC 无关。
+`cases/private-room/advancedReadiness.ts` 在德州和短牌截图前验证完整取景及消息控件，
+`tests/advancedRoomReadiness.spec.ts` 覆盖正常画面、RTC 回归、消息控件缺失和滚动裁切的拒绝路径。
+繁体桌面 `signed_in_texas_controls` 的牌桌初始化超时是独立问题，本次不更新其基准。
+
+2026-11-11 在 Linux amd64 / Playwright 1.61.1 上重新采集并逐图审核上述六张基准，
+随后以禁止更新基准的方式比较，六项全部通过。相关回归仅运行英文移动端牌桌面板两项、
+移动端及桌面端社交动画两项、高级设置检查五项，以及场景注册和基准目录两项 Node 测试，均通过；
+未运行完整测试集，未改动牌桌或动画基准。修改文件的 ESLint 和 visual TypeScript 检查通过。
 
 ### 俱乐部分页与游客登录横幅
 
