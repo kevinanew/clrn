@@ -172,7 +172,7 @@ jobs:
         run: node --import tsx --test visual/animations/popups.browser.ts
       - name: 验证老虎机横幅起点与余额遮罩
         if: matrix.suite == 'app' && matrix.part == 'ui'
-        run: node --import tsx --test visual/animations/slotBannerPreparation.browser.ts visual/animations/walletMask.browser.ts
+        run: node --import tsx --test visual/animations/slotBannerPreparation.browser.ts visual/animations/walletMask.browser.ts visual/animations/slotSpin.test.ts
       - name: 验证拼三张空座引导循环起点
         if: matrix.suite == 'zhajinhua' && matrix.part == 'panels'
         run: node --import tsx --test visual/animations/seatGuideReadiness.browser.ts

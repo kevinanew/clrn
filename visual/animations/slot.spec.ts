@@ -1,4 +1,5 @@
 import { slotWalletMask } from './slotWallet';
+import { observeSlotSpinReplies } from './slotSpin';
 import { expect, test } from '../src/support/networkFixture';
 import { openApplication, navigate, press } from './appSession';
 import { captureTimeline, fixedArea, freeze } from './timeline';
@@ -8,6 +9,7 @@ test('老虎机滚轮和三种奖励动画', /** 验证老虎机滚轮和三种�
  * @param root0 - 当前调用提供的页面、账号或其他夹具。
  * @param info - 当前测试的运行与附件信息。 */ async ({ context, page }, info) => {
   test.setTimeout(600_000);
+  const replies = observeSlotSpinReplies(page);
   await selectScenario(context, 'slot');
   try {
     await openApplication(context, page, info);
@@ -35,6 +37,10 @@ test('老虎机滚轮和三种奖励动画', /** 验证老虎机滚轮和三种�
         await page.clock.runFor(0);
         return (await scenarioStatus(context)).spins;
       }, { message: '老虎机旋转请求必须由本轮夹具处理' }).toBe(index + 1);
+      await expect.poll(/** 保持虚拟时刻不变，直到浏览器收到本次旋转回复。 */ async () => {
+        await page.clock.runFor(0);
+        return replies.received();
+      }, { message: '浏览器必须收到本轮旋转的匹配回复' }).toBe(index + 1);
       await page.clock.runFor(16);
       await captureTimeline(page, info, `slot-${currency}`, panel,
         { clip, numericMask, times: [0, 160, 500, 1000, 1080, 1160, 1400, 2400] });
