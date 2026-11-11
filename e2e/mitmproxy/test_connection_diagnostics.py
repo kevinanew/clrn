@@ -33,6 +33,26 @@ class DiagnosticTests(unittest.TestCase):
             self.assertNotIn('private.invalid', json.dumps(event))
             self.assertNotIn('synthetic-secret', json.dumps(event))
 
+    def test_room_hook_reuses_error_classification_without_changing_connection(self):
+        """战绩预检的真实钩子保留错误分类，诊断不改变连接状态。"""
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://fixture.invalid/v1/game_log/room/game_amount')
+        diagnostics.room_connections.observe(request)
+        server = SimpleNamespace(address=(request.request.host, request.request.port), id='real-server',
+                                 timestamp_start=1, timestamp_tcp_setup=2, timestamp_tls_setup=None, tls=True)
+        data = SimpleNamespace(client=request.client_conn, server=server)
+        for error, expected in ((None, 'none'), ('Connection timed out', 'timeout'),
+                                ('Connection reset by peer', 'connection-failed'),
+                                ('synthetic-secret', 'detail-withheld')):
+            server.error = error
+            before = vars(server).copy()
+            diagnostics.server_disconnected(data)
+            event = diagnostics.events[-1]
+            self.assertEqual(event['phase'], 'room-hook-tls-pending')
+            self.assertEqual(event['reason'], expected)
+            self.assertEqual(vars(server), before)
+            self.assertNotIn('synthetic-secret', json.dumps(event))
+
     def test_room_error_progress_is_read_only_and_failure_is_contained(self):
         """读取中断时区分响应头前后，诊断失败仍保留原始失败事件与错误。"""
         from account_connection_diagnostics import room_error_fields

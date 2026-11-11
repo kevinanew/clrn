@@ -171,6 +171,7 @@ class ConnectionDiagnostics:
             self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **account})
         room = self.room_connections.fields(data, node_name)
         if room is not None:
+            room['reason'] = error_reason(data.server.error) if data.server.error else 'none'
             if len(self.events) == self.events.maxlen:
                 self.dropped += 1
             self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **room})

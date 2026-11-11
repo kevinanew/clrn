@@ -136,3 +136,15 @@ function assertUnknownPath(path: string): void {
 function assertNoPaths(output: string, inputs: string[]): void {
   for (const input of inputs) assert.ok(!output.includes(input), '任意路径段不能进入附件或终端摘要');
 }
+
+test('房间预检的阶段与协议诊断经过合并及重复脱敏后保留', /** 验证已有代理取证字段不会被白名单丢弃。 */ () => {
+  const progress = { requestBodyReceived: true, responseHeadersReceived: false, responseBodyReceived: false,
+    clientHttpVersion: 'HTTP/1.1', upstreamAlpn: 'h2' };
+  const recorder = new DiagnosticRecorder();
+  recorder.merge([{ event: 'proxy.error', path: '/v1/game_log/room/game_amount', method: 'OPTIONS',
+    reason: 'detail-withheld', ...progress, body: 'synthetic-secret', authorization: 'synthetic-secret' }]);
+  const event = diagnosticFields(recorder.snapshot().events[0]);
+  for (const [key, value] of Object.entries(progress)) assert.equal(event[key], value);
+  assert.deepEqual(diagnosticFields(event), event);
+  assert.ok(!JSON.stringify(event).includes('synthetic-secret'));
+});
