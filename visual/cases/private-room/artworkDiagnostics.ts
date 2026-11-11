@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import type { VisualScenario } from '../../scenarioTypes';
 
 /**
- * 保留原截图断言，仅在失败后附加德州高级建房页绘制诊断。
+ * 保留原截图断言，仅在失败后附加德州高级建房页或游客账号页绘制诊断。
  * @param page - 当前页面。
  * @param scenario - 原截图场景。
  */
@@ -16,11 +16,11 @@ export async function screenshotWithArtworkDiagnostics(page: Page, scenario: Vis
 
 /**
  * 失败后只读记录 SVG 绘制定义的重复数与可见性，不输出地址、标识或页面正文。
- * @param page - 发生缺图差异的高级建房页。
- * @param pageLabel - 仅为德州高级建房页保存诊断。
+ * @param page - 发生缺图差异的页面。
+ * @param pageLabel - 仅为德州高级建房页或游客账号页保存诊断。
  */
 async function attachArtworkDiagnostics(page: Page, pageLabel: string): Promise<void> {
-  if (pageLabel !== 'signed_in_create_room_advanced_texas') return;
+  if (pageLabel !== 'signed_in_create_room_advanced_texas' && pageLabel !== 'guest_me') return;
   try {
     const body = await page.evaluate(/** 只读取 SVG 几何及绘制定义的计数。 */ () =>
       ({ layout: ['base-create-room-screen', 'advanced-options-button', 'operation-duration-title-text'].map(/** 只读取固定标记及祖先的几何，不记录页面文本或属性。
@@ -51,6 +51,7 @@ async function attachArtworkDiagnostics(page: Page, pageLabel: string): Promise<
             stops: definition.querySelectorAll('stop').length,
           })),
       })) }));
-    await test.info().attach('private-room-artwork-diagnostics', { body: JSON.stringify(body), contentType: 'application/json' });
+    const name = pageLabel === 'guest_me' ? 'account-artwork-diagnostics' : 'private-room-artwork-diagnostics';
+    await test.info().attach(name, { body: JSON.stringify(body), contentType: 'application/json' });
   } catch { /* 诊断失败不得替换原始截图异常。 */ }
 }
