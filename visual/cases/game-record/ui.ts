@@ -2,6 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expect } from './proxy';
 import { ensureLocalImagesLoaded } from '../../src/support/pageStabilizers';
 import type { VisualScenario } from '../../scenarioTypes';
+import { attachSettlementArtworkDiagnostics } from './artworkDiagnostics';
 
 /**
  * 定位当前页面可见的测试元素，排除导航历史中的隐藏副本。
@@ -154,7 +155,14 @@ export function captureStates(page: Page, scenario: VisualScenario) {
       const dialog = ['delete_confirm', 'delete_blocked', 'delete_failure', 'list_failure', 'detail_failure'].includes(state);
       if (!dialog) await expect(visible(page, 'alert-message-text'), '普通状态不能被错误弹窗遮挡').toHaveCount(0);
       await ensureLocalImagesLoaded(page);
-      await expect(page).toHaveScreenshot(`${scenario.label}_${state}.png`, { timeout: 90_000 });
+      try {
+        await expect(page).toHaveScreenshot(`${scenario.label}_${state}.png`, { timeout: 90_000 });
+      } catch (error) {
+        if (state === 'private_settlement' || state === 'club_settlement') {
+          await attachSettlementArtworkDiagnostics(page);
+        }
+        throw error;
+      }
       if (!dialog) await expect(visible(page, 'alert-message-text')).toHaveCount(0);
     },
     /** 确认本场景要求的截图状态全部执行，防止覆盖清单遗漏。 */
