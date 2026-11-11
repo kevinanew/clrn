@@ -26,11 +26,13 @@ async function renderTable(page: Page, mode = 'recover'): Promise<void> {
     <script>
       document.body.dataset.retries = '0';
       document.body.dataset.mode = '${mode}';
+      const cachedUntil = Date.now() + 10_000;
       document.querySelector('[data-testid="common-alert-button-retry"]').onclick = () => {
         document.body.dataset.retries = String(Number(document.body.dataset.retries) + 1);
         if (document.body.dataset.mode === 'persistent') return;
+        if (document.body.dataset.mode === 'cached' && Date.now() < cachedUntil) return;
         document.querySelector('[data-testid="common-alert-container"]').hidden = true;
-        if (document.body.dataset.mode === 'recover') document.querySelector('#controls').hidden = false;
+        if (['recover', 'cached'].includes(document.body.dataset.mode)) document.querySelector('#controls').hidden = false;
       };
     </script>
   `);
@@ -80,7 +82,7 @@ for (const width of [375, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       const diagnostics = await installConnectionDiagnostics(context, page, test.info());
       await renderTable(page);
-      const pending = waitForGameConnection(page, 5000);
+      const pending = waitForGameConnection(page, 15_000);
       await expect.poll(/** 等待第一次就绪检查完成，避免依赖定时器碰运气。 */
         () => diagnostics.recorder.events.length).toBeGreaterThan(0);
       await showError(page);
@@ -104,7 +106,7 @@ test('控件已可见但错误弹窗仍在时必须重试，不能提前接受�
     await renderTable(page);
     await showControls(page);
     await showError(page);
-    await waitForGameConnection(page, 3000);
+    await waitForGameConnection(page, 15_000);
     await expect(page.locator('body')).toHaveAttribute('data-retries', '1');
   },
 );
@@ -155,7 +157,7 @@ test('错误消失但房主初始化未完成时仍失败',
    */ async ({ page }) => {
     await renderTable(page, 'incomplete');
     await showError(page);
-    await expect(waitForGameConnection(page, 750)).rejects.toThrow('德州牌桌应完整就绪');
+    await expect(waitForGameConnection(page, 12_000)).rejects.toThrow('德州牌桌应完整就绪');
     await expect(page.locator('body')).toHaveAttribute('data-retries', '1');
     await expect(page.getByTestId('common-alert-container')).toBeHidden();
   },
@@ -168,13 +170,13 @@ test('持续 Network Error 最多重试三次，超时保留失败时序与诊�
     const diagnostics = await installConnectionDiagnostics(context, page, test.info());
     await renderTable(page, 'persistent');
     await showError(page);
-    await expect(waitForGameConnection(page, 2500)).rejects.toThrow('德州牌桌应完整就绪');
+    await expect(waitForGameConnection(page, 35_000)).rejects.toThrow('德州牌桌应完整就绪');
     await expect(page.locator('body')).toHaveAttribute('data-retries', '3');
     await expect(page.getByTestId('common-alert-container')).toBeVisible();
     await diagnostics.save(new Error('德州初始化失败'));
     const saved = JSON.parse(await readFile(test.info().outputPath('connection-diagnostics.json'), 'utf8'));
     expect(saved.events).toContainEqual(expect.objectContaining({
-      phase: '德州初始化失败', attempt: 3, limit: 3, timeoutMs: 2500,
+      phase: '德州初始化失败', attempt: 3, limit: 3, timeoutMs: 35_000,
     }));
     expect(saved.events.at(-1)).toMatchObject({ event: 'test.failure' });
     expect(test.info().attachments.map(
@@ -205,5 +207,18 @@ test('重试按钮被遮挡时点击也必须受初始化总预算约束',
     expect(Date.now() - started).toBeLessThan(2500);
     await expect(page.locator('body')).toHaveAttribute('data-retries', '0');
     await expect(page.getByTestId('common-alert-container')).toBeVisible();
+  },
+);
+
+test('健康缓存过期后才重试，缓存命中不能耗尽三次恢复机会',
+  /** 重现本轮连续点击命中健康缓存、没有重新探测的失败。
+   * @param fixtures - 隔离的浏览器页面。
+   */ async ({ page }) => {
+    await renderTable(page, 'cached');
+    await showError(page);
+    await waitForGameConnection(page, 15_000);
+    await expect(page.locator('body')).toHaveAttribute('data-retries', '1');
+    await expect(page.getByTestId('texas-holdem-start-room-timer-button')).toBeVisible();
+    await expect(page.getByTestId('common-alert-container')).toBeHidden();
   },
 );

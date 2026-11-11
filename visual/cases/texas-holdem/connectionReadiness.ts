@@ -20,6 +20,7 @@ const retryLimit = 3;
 export async function waitForGameConnection(page: Page, timeout = 90_000): Promise<void> {
   const deadline = Date.now() + timeout;
   let attempts = 0;
+  let retryAfter = 0;
   let previous: string | undefined;
   try {
     await expect.poll(/** 持续检查业务控件和阻塞弹层，直到完整就绪或预算耗尽。 */ async () => {
@@ -39,6 +40,10 @@ export async function waitForGameConnection(page: Page, timeout = 90_000): Promi
       }
       if (visible.includes('common-alert-button-retry')) {
         if (attempts < retryLimit && Date.now() < deadline) {
+          // 复用 af7848d / 1fabc0a 的恢复节奏：健康缓存十秒内不会重新探测。
+          retryAfter ||= Date.now() + 10_000;
+          if (Date.now() < retryAfter) return false;
+          retryAfter = 0;
           recordDiagnostic(page, '点击应用重试按钮', { attempt: ++attempts, limit: retryLimit });
           await page.locator('[data-testid="common-alert-button-retry"]:visible').last()
             .click({ timeout: Math.max(1, Math.min(5000, deadline - Date.now())) });
