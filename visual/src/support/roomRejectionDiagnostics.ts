@@ -28,9 +28,11 @@ export async function attachRoomRejection(body: any, operation: 'room-create' | 
   bodyRead: 'json' | 'invalid-json' | 'body-read-failed' = 'json',
   wireBody?: { bytes: number; fingerprint: string; format: string }): Promise<void> {
   try {
+    const diagnostic = { ...roomDiagnostic(body), bodyRead, wireBody };
+    // 即使运行器附件不可用也保留同一份有限分类；不输出异常或原始正文。
+    console.log('ROOM REJECTION >', JSON.stringify({ operation, ...diagnostic }));
     // 共享请求辅助代码也由仅安装 e2e 依赖的任务加载；仅在房间诊断时加载 visual 的测试运行器。
     const { test } = await import('@playwright/test');
-    const diagnostic = { ...roomDiagnostic(body), bodyRead, wireBody };
     await test.info().attach(`${operation}-rejection`, { body: JSON.stringify(diagnostic), contentType: 'application/json' });
   } catch { /* 附件失败不能覆盖房间拒绝。 */ }
 }

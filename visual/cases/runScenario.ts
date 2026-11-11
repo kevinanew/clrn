@@ -50,7 +50,8 @@ export async function runVisualScenario(
     // 截图前再次确认就绪元素，避免菜单退场后记录空白截图。
     await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
     await assertScenarioContent(page, scenario);
-    await screenshotWithArtworkDiagnostics(page, scenario);
+    if (scenario.pageLabel === 'signed_in_create_room_advanced_texas') await screenshotWithArtworkDiagnostics(page, scenario);
+    else await screenshotWithArtworkDiagnostics(page, scenario);
     });
   } finally {
     await context.close();

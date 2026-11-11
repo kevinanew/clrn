@@ -9,6 +9,10 @@ def connection_scope(path):
     parts = urlsplit(path).path.split('/')
     if len(parts) == 5 and parts[1:3] == ['v11', 'user'] and parts[4] == 'account':
         return 'account'
+    if urlsplit(path).path in ('/v2/check_in/seven_day/rule', '/v2/check_in/seven_day/current'):
+        return 'check-in'
+    if len(parts) == 5 and parts[1:4] == ['v10', 'house', 'user']:
+        return 'house'
     if urlsplit(path).path in ('/node/v1/status', '/public/v12/metadata/servers',
                               '/public/v13/metadata/servers', '/v2/centrifugo/connection/websocket'):
         return 'table'

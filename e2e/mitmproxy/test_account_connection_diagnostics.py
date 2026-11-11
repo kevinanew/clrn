@@ -30,6 +30,9 @@ class AccountConnectionTests(unittest.TestCase):
         """本轮四项失败仅增加传输阶段，实体和查询参数不进入诊断。"""
         from account_connection_diagnostics import connection_scope
         for path, scope in (
+                ('/v2/check_in/seven_day/rule', 'check-in'),
+                ('/v2/check_in/seven_day/current', 'check-in'),
+                ('/v10/house/user/private-user', 'house'),
                 ('/v3/pay_action/batch/price', 'renewal'),
                 ('/v10/wallet/private-user', 'renewal'),
                 ('/v10/texas_holdem/room/private-room/profile', 'table'),

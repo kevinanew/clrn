@@ -24,7 +24,8 @@ async function accountValidationDiagnostics(scenario: VisualScenario, context: B
   page: Page, network: Mitmproxy): Promise<(error: unknown) => Promise<void>> {
   let diagnostics: Awaited<ReturnType<typeof installConnectionDiagnostics>> | undefined;
   try {
-    if (['signed_in_me', 'signed_in_update_nickname', 'signed_in_create_room_form_zhajinhua'].includes(scenario.pageLabel)) {
+    if (['signed_in_me', 'signed_in_update_nickname', 'signed_in_create_room_form_zhajinhua',
+      'signed_in_daily_bonus', 'signed_in_private_room'].includes(scenario.pageLabel)) {
       diagnostics = await installConnectionDiagnostics(context, page, test.info(), {
         /** 只读查询现有代理快照，不发起额外账户请求。 */
         diagnostics: () => network.command('diagnostics', undefined, 2000),

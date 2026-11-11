@@ -6,6 +6,13 @@ import { readRequestJson } from './requestJson';
 test('建房拒绝诊断隐藏自由文本，附件失败仍传播原始业务拒绝', /** 用合成凭据验证报告边界和失败优先级。
  * @param context - 当前测试的模拟范围。 */ async context => {
   const attachments: string[] = [];
+  const summaries: string[] = [];
+  context.mock.method(console, 'log', /** 收集附件不可用时仍可保留的脱敏摘要。
+   * @param prefix - 固定事件名。
+   * @param body - 有限诊断字段。 */ (prefix: string, body: string) => {
+    assert.equal(prefix, 'ROOM REJECTION >');
+    summaries.push(body);
+  });
   let failAttachment = false;
   context.mock.method(playwrightTest, 'info', /** 提供隔离的附件接收器。 */ () => ({
     /**
@@ -33,6 +40,9 @@ test('建房拒绝诊断隐藏自由文本，附件失败仍传播原始业务�
   assert.doesNotMatch(attachments[0], /private-token|example|synthetic-secret|password/);
   failAttachment = true;
   await assert.rejects(readRequestJson(response, 'room-create'), /status=200 .*reason=business-rejected/);
+  assert.equal(summaries.length, 2);
+  assert.equal(JSON.parse(summaries[1]).typeFingerprint, diagnostic.typeFingerprint);
+  assert.doesNotMatch(summaries.join(''), /private-token|example|synthetic-secret|password/);
 });
 
 for (const operation of ['room-create', 'room-delete'] as const) {

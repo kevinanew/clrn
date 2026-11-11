@@ -41,6 +41,7 @@
   "/v10/buy_in/auditor/{user}/applications/processed",
   "/v11/buy_in/{room}/applications",
   "/v1/room/{room}",
+  "/v10/texas_holdem/room/{room}/profile",
   "/v10/texas_holdem/room/{room}/enter",
   "/v10/texas_holdem/room/{room}/profile",
   "/v10/texas_holdem/room/{room}/enter_and_sit",

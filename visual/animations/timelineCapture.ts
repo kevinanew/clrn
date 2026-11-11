@@ -9,6 +9,7 @@ import { maskNumericFields } from './numericMask';
 import type { CaptureArea } from './captureTypes';
 import type { TimelineElement, TimelineOptions } from './timelineTypes';
 import { recordSlotBannerFrame } from './slotBannerDiagnostics';
+import { recordSeatGuideFailure } from './seatGuideDiagnostics';
 
 /**
  * 计算普通截图中原有定位器遮罩以外的有效面积，不改变浏览器实际绘制的遮罩。
@@ -62,9 +63,25 @@ export async function captureFrame(page: Page, info: TestInfo, name: string, opt
   if (hasPartialRegions(options)) return capturePartialFrame(page, info, name, options, snapshot, elements);
   // 截图、稳定性与资源失败仍立即中止；像素差异继续后续采样。
   const captured = await captureOrdinaryFrame(page, options, snapshot);
+  const errorsBefore = info.errors.length;
   await saveOrCompareFrame(captured.frame, info, snapshot, options, captured.comparedPixels);
+  await recordSeatGuideIfFailed(page, info, name, snapshot, errorsBefore);
   await recordSlotBannerFrame(page, info, name, snapshot);
   return captured.frame;
+}
+
+/**
+ * 在相关场景新增比较错误时记录座位引导诊断。
+ * @param page - 当前页面。
+ * @param info - 当前测试上下文。
+ * @param name - 动画名称。
+ * @param snapshot - 当前基准名称。
+ * @param errorsBefore - 比较前的错误数量。
+ */
+async function recordSeatGuideIfFailed(page: Page, info: TestInfo, name: string, snapshot: string, errorsBefore: number) {
+  if (name.startsWith('zhajinhua-renew-') && info.errors.length > errorsBefore) {
+    await recordSeatGuideFailure(page, info, snapshot);
+  }
 }
 
 /**
