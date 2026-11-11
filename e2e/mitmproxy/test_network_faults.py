@@ -58,6 +58,18 @@ class NetworkFaultTests(unittest.IsolatedAsyncioTestCase):
         await self.addon.request(malformed)
         self.assertEqual(malformed.response.status_code, 400)
 
+    async def test_连接诊断仅向认证控制请求提供且不切换场景(self):
+        """验证失败取证入口保留认证边界及原有故障状态。"""
+        await self.configure("hall-timeout")
+        for token, status in (("wrong", 403), ("test-token", 200)):
+            request = flow("http://test-mitmproxy.invalid/diagnostics", token=token)
+            await self.addon.request(request)
+            self.assertEqual(request.response.status_code, status)
+            if status == 200:
+                self.assertIn("events", request.response.json())
+                self.assertIn("dropped", request.response.json())
+            self.assertEqual(self.addon.scenario, "hall-timeout")
+
     async def test_大厅只延迟首次请求且关闭场景后恢复透传(self):
         """验证大厅只延迟首次请求且关闭场景后恢复透传。"""
         await self.configure("hall-timeout")

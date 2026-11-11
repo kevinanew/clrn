@@ -51,10 +51,21 @@ export const test = base.extend<{ interactionSetup: void }, { accountState: Stor
      * 每个场景安装接口边界和延迟登录提示处理器，覆盖所有导入本 fixture 的文件。
      * @param fixtures - Playwright 注入的页面和浏览器上下文。
      * @param use - 初始化完成后执行测试的回调。
-     */ async ({ context, page }, use) => {
+     * @param info - 当前测试结果和附件出口。
+     */ async ({ context, page, network }, use, info) => {
       await initializePage(context);
       await installSignInNoticeHandler(page);
-      await use();
+      try { await use(); }
+      finally {
+        if (info.status !== info.expectedStatus) {
+          try {
+            const snapshot = await network.command('diagnostics');
+            await info.attach('interaction-proxy-diagnostics', {
+              body: JSON.stringify(snapshot), contentType: 'application/json',
+            });
+          } catch { /* 诊断失败不能覆盖原始启动或交互失败。 */ }
+        }
+      }
     },
     // 共享模块内的 beforeEach 只注册到首次导入的测试文件；自动 fixture 会逐测试执行。
     { auto: true },

@@ -7,6 +7,9 @@ from urllib.parse import parse_qs, urlsplit
 
 from mitmproxy import http
 from response_overrides import is_staging as is_staging_api
+from connection_diagnostics import ConnectionDiagnostics
+
+diagnostics = ConnectionDiagnostics()
 
 CONTROL_HOST = "test-mitmproxy.invalid"
 FAULT_PATHS = {
@@ -61,6 +64,9 @@ class NetworkFaults:
             flow.response = http.Response.make(403, b"Forbidden")
             return
         path = urlsplit(flow.request.path).path
+        if flow.request.method == "GET" and path == "/diagnostics":
+            flow.response = json_response(flow, diagnostics.snapshot())
+            return
         if flow.request.method == "POST" and path == "/scenario":
             try:
                 scenario = json.loads(flow.request.content)["scenario"]
@@ -155,4 +161,4 @@ class NetworkFaults:
             flow.kill()
 
 
-addons = [NetworkFaults()]
+addons = [NetworkFaults(), diagnostics]
