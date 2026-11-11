@@ -354,7 +354,7 @@ class DiagnosticTests(unittest.TestCase):
             diagnostics.request(request)
             diagnostics.response(request)
             diagnostics.error(request)
-        self.assertEqual(diagnostics.snapshot(), {'events': [], 'dropped': 0},
+        self.assertEqual(diagnostics.snapshot(), {'events': [], 'dropped': 0, 'activeConnections': []},
                          '控制流量不能混入真实选线和健康探测的诊断')
 
     def test_来源分类与主机脱敏(self):
