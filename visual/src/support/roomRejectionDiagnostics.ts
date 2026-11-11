@@ -20,9 +20,9 @@ function roomDiagnostic(body: any) {
 /**
  * 为房间 HTTP 或业务拒绝保留有限分类、数字错误码和类型指纹，不输出正文、参数或自由文本。
  * @param body - 已读取的失败响应；不再次发送请求。
- * @param operation - 固定的删房操作，用于区分附件。
+ * @param operation - 固定的建房或删房操作，用于区分附件。
  */
-export async function attachRoomRejection(body: any, operation: 'room-delete'): Promise<void> {
+export async function attachRoomRejection(body: any, operation: 'room-delete' | 'room-create'): Promise<void> {
   try {
     // 共享请求辅助代码也由仅安装 e2e 依赖的任务加载；仅在房间诊断时加载 visual 的测试运行器。
     const { test } = await import('@playwright/test');
