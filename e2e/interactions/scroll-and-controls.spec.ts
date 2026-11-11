@@ -81,10 +81,11 @@ test('俱乐部请求失败后点击重试恢复列表并可打开菜单', /**
   const failedRequests = (await scenarioStatus(context)).requests;
   expect(failedRequests).toBeGreaterThan(0);
   await selectScenario(context, 'club-error', { phase: 'release' });
-  // 传输故障耗尽选线时会另弹错误确认；只处理本次注入对应的一次提示。
-  const offlineAlert = page.getByTestId('alert-message-text').filter({ hasText: /^server_load_offline$/ });
+  // 传输故障选线可能离线或健康探测超时；只确认本次注入对应的一次提示。
+  const offlineMessage = /^(?:server_load_offline|\d+\s+v1\/status\s+5004\s+request_timeout\s+timeout of 5000ms exceeded)$/;
+  const offlineAlert = page.getByTestId('alert-message-text').filter({ hasText: offlineMessage });
   await page.addLocatorHandler(offlineAlert, /** 确认已注入的网络故障，再操作列表重试。 */ async () => {
-    await expect(offlineAlert).toHaveText('server_load_offline');
+    await expect(offlineAlert).toHaveText(offlineMessage);
     const confirm = page.getByRole('dialog').getByTestId('alert-custom-button');
     await expect(confirm).toHaveText('好的');
     await confirm.click();
