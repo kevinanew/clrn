@@ -139,7 +139,7 @@ function assertNoPaths(output: string, inputs: string[]): void {
 
 test('房间预检的阶段与协议诊断经过合并及重复脱敏后保留', /** 验证已有代理取证字段不会被白名单丢弃。 */ () => {
   const progress = { requestBodyReceived: true, responseHeadersReceived: false, responseBodyReceived: false,
-    clientHttpVersion: 'HTTP/1.1', upstreamAlpn: 'h2' };
+    clientHttpVersion: 'HTTP/1.1', upstreamAlpn: 'h2', errorFamily: 'http2-protocol' };
   const recorder = new DiagnosticRecorder();
   recorder.merge([{ event: 'proxy.error', path: '/v1/game_log/room/game_amount', method: 'OPTIONS',
     reason: 'detail-withheld', ...progress, body: 'synthetic-secret', authorization: 'synthetic-secret' }]);

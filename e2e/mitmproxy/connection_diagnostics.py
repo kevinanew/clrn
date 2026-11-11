@@ -150,6 +150,23 @@ def error_reason(value):
     return 'detail-withheld'
 
 
+def error_family(value):
+    """只识别锁定代理版本的错误首部，区分协议故障与建连故障，不输出可变后缀。"""
+    if not isinstance(value, str) or not value:
+        return 'none'
+    prefixes = {
+        'HTTP/2 protocol error: ': 'http2-protocol',
+        'HTTP/2 connection closed: ': 'http2-closed',
+        'Cannot parse HTTP response: ': 'http1-response',
+        'Certificate verify failed: ': 'tls-certificate',
+        'OpenSSL ': 'tls-openssl',
+        'Multiple exceptions: ': 'connect-multiple-errors',
+        'Connection killed: ': 'connect-killed',
+    }
+    return next((family for prefix, family in prefixes.items() if value.startswith(prefix)),
+                'other')
+
+
 class ConnectionDiagnostics:
     """采集代理 HTTP、WebSocket 与上游连接的脱敏诊断时间线。"""
     def __init__(self):
@@ -166,12 +183,14 @@ class ConnectionDiagnostics:
         if account is not None:
             # 从真实钩子的错误分类，避免仅输出 connection-error 而丢失超时/拒绝证据。
             account['reason'] = error_reason(data.server.error) if data.server.error else 'none'
+            account['errorFamily'] = error_family(data.server.error)
             if len(self.events) == self.events.maxlen:
                 self.dropped += 1
             self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **account})
         room = self.room_connections.fields(data, node_name)
         if room is not None:
             room['reason'] = error_reason(data.server.error) if data.server.error else 'none'
+            room['errorFamily'] = error_family(data.server.error)
             if len(self.events) == self.events.maxlen:
                 self.dropped += 1
             self.events.append({'event': event, 'observedAt': int(time.time() * 1000), **room})
@@ -271,6 +290,7 @@ class ConnectionDiagnostics:
         """为业务请求记录安全错误原因，避免猜测未收到的响应状态。"""
         if flow.request.host not in CONTROL_HOSTS:
             self.record('proxy.error', flow, reason=flow.error.msg if flow.error else 'unknown',
+                        errorFamily=error_family(flow.error.msg if flow.error else None),
                         source='release-static' if release_origin_match(flow) == 'matched' else 'laiwan_proxy',
                         status=flow.response.status_code if flow.response else 'unavailable',
                         response='received' if flow.response else 'not-received', **room_error_fields(flow))
