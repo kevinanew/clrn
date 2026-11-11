@@ -22,11 +22,13 @@ function roomDiagnostic(body: any) {
  * @param body - 已读取的失败响应；不再次发送请求。
  * @param operation - 固定的建房、删房或排行榜操作，用于区分附件。
  * @param bodyRead - 正文读取结果，仅记录固定分类。
+ * @param wireBody - 原始正文的长度、指纹及固定格式分类，不包含正文。
  */
 export async function attachRoomRejection(body: any, operation: 'room-delete' | 'room-create' | 'leaderboard-statistics',
-  bodyRead: 'json' | 'invalid-json' | 'body-read-failed' = 'json'): Promise<void> {
+  bodyRead: 'json' | 'invalid-json' | 'body-read-failed' = 'json',
+  wireBody?: { bytes: number; fingerprint: string; format: string }): Promise<void> {
   try {
-    const diagnostic = { ...roomDiagnostic(body), bodyRead };
+    const diagnostic = { ...roomDiagnostic(body), bodyRead, wireBody };
     try {
       // 共享请求辅助代码也由仅安装 e2e 依赖的任务加载；仅在失败诊断时加载 visual 的测试运行器。
       const { test } = await import('@playwright/test');
