@@ -1,9 +1,41 @@
 /** 在读取响应的边界丢弃不可信诊断；实际 HTTP 状态在读取正文之前取得。 */
 import type { APIResponse } from '@playwright/test';
 import { requestFailure, requestErrorSummary } from './requestError';
+import { createHash } from 'node:crypto';
 import { attachRoomRejection } from './roomRejectionDiagnostics';
 
-type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'>;
+type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'> & Partial<Pick<APIResponse, 'text'>>;
+
+/**
+ * 仅允许本轮失败接口进入有限响应诊断。
+ * @param operation - 代码固定的逻辑操作。
+ */
+function needsRejectionDiagnostic(operation: string): operation is 'room-delete' | 'room-create' {
+  return ['room-delete', 'room-create'].includes(operation);
+}
+
+/**
+ * 读取失败响应的有限诊断信息。
+ * @param response - 已收到的真实响应。
+ * @param operation - 需要诊断的操作。
+ */
+async function diagnoseRejection(response: JsonResponse, operation: 'room-delete' | 'room-create') {
+  let body;
+  let bodyRead: 'json' | 'invalid-json' | 'body-read-failed' = 'json';
+  let wireBody;
+  try {
+    if (response.text) {
+      const text = await response.text();
+      // 不保留正文；仅关联重复的非 JSON 错误页，区分空响应、HTML 与其他内容。
+      wireBody = { bytes: Buffer.byteLength(text), fingerprint: createHash('sha256').update(text).digest('hex'),
+        format: !text.trim() ? 'empty' : /^\s*<(?:!doctype\s+html|html)\b/i.test(text) ? 'html' : 'other' };
+      body = JSON.parse(text);
+    } else body = await response.json();
+  } catch (error) {
+    bodyRead = error instanceof SyntaxError ? 'invalid-json' : 'body-read-failed';
+  }
+  await attachRoomRejection(body, operation, bodyRead, wireBody);
+}
 
 /**
  * 读取 HTTP 和业务均成功的 JSON，保留错误阶段与实际响应状态。
@@ -13,10 +45,7 @@ type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'>;
 export async function readRequestJson(response: JsonResponse, operation: string) {
   const status = response.status();
   if (!response.ok()) {
-    if (operation === 'room-delete' || operation === 'room-create') {
-      try { await attachRoomRejection(await response.json(), operation); }
-      catch { /* 非 JSON 或正文读取失败不能覆盖原始 HTTP 错误。 */ }
-    }
+    if (needsRejectionDiagnostic(operation)) await diagnoseRejection(response, operation);
     throw requestFailure(operation, 'http-error', status);
   }
   let body;
@@ -43,6 +72,7 @@ export async function fetchRequestJson(url: string, options: RequestInit, operat
     throw new Error(requestErrorSummary(error, operation));
   });
   const body = await readRequestJson({ status: /** 读取真实状态。 */ () => response.status, ok: /** 读取真实 HTTP 结果。 */ () => response.ok,
+    text: /** 读取失败响应的原始正文，仅用于脱敏摘要。 */ () => response.text(),
     json: /** 读取真实响应正文。 */ () => response.json() }, operation);
   return { body, status: response.status };
 }
