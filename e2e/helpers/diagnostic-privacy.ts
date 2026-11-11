@@ -60,7 +60,9 @@ export function diagnosticFullText(value: unknown): string {
 const allowedFields = new Set(['event', 'source', 'node', 'path', 'method', 'status', 'requestId',
   'connectionId', 'upstreamConnectionId', 'releaseRequestId', 'operation', 'response', 'originMatch', 'upstreamMatch', 'fixtureHit', 'reason', 'code', 'elapsedMs', 'timeoutMs', 'cacheAgeMs', 'candidates', 'selected',
   'excluded', 'before', 'after', 'phase', 'target', 'roomId', 'attempt', 'limit', 'count', 'remaining',
-  'backendDelay', 'serverLoad', 'outcome', 'observedAt', 'messageType', 'commandId', 'channel', 'dropped']);
+  'backendDelay', 'serverLoad', 'outcome', 'observedAt', 'messageType', 'commandId', 'channel', 'dropped',
+  'priceCorsOrigin', 'priceServer', 'priceErrorBytes', 'priceErrorFingerprint', 'priceErrorPage',
+  'priceResponseDiagnostic', 'priceErrorBody']);
 const nodeFields = new Set(['node', 'candidates', 'selected', 'excluded', 'before', 'after']);
 
 type SafeField = string | number | boolean | string[];
@@ -121,6 +123,27 @@ const fieldSanitizers: Record<string, (item: unknown) => SafeField> = {
    * @param item - 外部状态。 */
   upstreamMatch: item => matchStatus(item, upstreamMatches),
   reason: safeDiagnosticReason, event: eventName, path: diagnosticPath,
+  /** 只保留固定 CORS 来源匹配分类。
+   * @param item - 外部分类。 */
+  priceCorsOrigin: item => matchStatus(item, ['absent', 'mismatch', 'matched', 'wildcard']),
+  /** 只保留固定服务族。
+   * @param item - 外部分类。 */
+  priceServer: item => matchStatus(item, ['nginx', 'envoy', 'cloudflare', 'gunicorn', 'werkzeug', 'aiohttp', 'unknown']),
+  /** 只保留固定错误页分类。
+   * @param item - 外部分类。 */
+  priceErrorPage: item => matchStatus(item, ['bad-gateway', 'unknown']),
+  /** 只保留诊断缺失标记。
+   * @param item - 外部分类。 */
+  priceResponseDiagnostic: item => matchStatus(item, []),
+  /** 只保留正文缺失标记。
+   * @param item - 外部分类。 */
+  priceErrorBody: item => matchStatus(item, []),
+  /** 拒绝正文指纹字段中的任意自由文本。
+   * @param item - 外部指纹。 */
+  priceErrorFingerprint: item => typeof item === 'string' && /^[a-f0-9]{64}$/.test(item) ? item : 'unavailable',
+  /** 只允许非负整数字节数。
+   * @param item - 外部字节数。 */
+  priceErrorBytes: item => Number.isSafeInteger(item) && Number(item) >= 0 ? Number(item) : 'unavailable',
 };
 
 /**

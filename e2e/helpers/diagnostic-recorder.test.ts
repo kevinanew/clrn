@@ -2,6 +2,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { diagnosticFields, diagnosticNode, diagnosticText } from './diagnostic-privacy';
+
+test('价格响应诊断跨过报告边界后只保留固定分类和指纹', /** 验证诊断白名单不放行响应头或正文。 */ () => {
+  const evidence = { priceCorsOrigin: 'absent', priceServer: 'nginx', priceErrorPage: 'bad-gateway',
+    priceErrorBytes: 290, priceErrorFingerprint: 'a'.repeat(64), priceResponseDiagnostic: 'unavailable',
+    priceErrorBody: 'unavailable' };
+  assert.deepEqual(diagnosticFields(evidence), evidence);
+  const hostile = Object.fromEntries(Object.keys(evidence).map(/** 为每个字段注入不可公开的自由文本。
+   * @param key - 被验证的诊断字段。 */ key => [key, 'synthetic-secret']));
+  assert.deepEqual(Object.values(diagnosticFields(hostile)), Array(7).fill('unavailable'));
+  assert.deepEqual(diagnosticFields({ body: 'synthetic-secret', headers: { server: 'synthetic-secret' } }), {});
+});
 import { DiagnosticRecorder } from './diagnostic-recorder';
 import diagnosticPaths from '../mitmproxy/data/diagnostic-paths.json';
 

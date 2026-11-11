@@ -14,6 +14,7 @@ from diagnostic_release import (release_origin_match, release_upstream_match, re
                                 error_reason, release_server, request_operation, error_source,
                                 response_state, release_identifier)
 from diagnostic_socket import DiagnosticSocket
+from room_response_diagnostics import price_response_fields
 from account_connection_diagnostics import AccountConnections, RoomConnections, account_connection_fields, room_error_fields
 
 CONTROL_HOSTS = {'test-mitmproxy.invalid', 'fixtures-mitmproxy.invalid'}
@@ -176,7 +177,8 @@ class ConnectionDiagnostics(DiagnosticSocket):
             return
         self.record('proxy.response', flow, releaseRequestId=release_identifier(flow),
                     source=flow.metadata.get('diagnostic_source', 'unknown'), status=flow.response.status_code,
-                    elapsedMs=round((time.time() - flow.request.timestamp_start) * 1000))
+                    elapsedMs=round((time.time() - flow.request.timestamp_start) * 1000),
+                    **price_response_fields(flow))
         self.record_candidates(flow)
 
     def error(self, flow):

@@ -12,6 +12,56 @@ from test_network_faults import flow
 
 class DiagnosticTests(unittest.TestCase):
     """验证连接诊断的路径语义、来源关联、容量与脱敏边界。"""
+    def test_price_response_evidence_preserves_failure_and_contains_no_private_content(self):
+        """502/CORS 分类不修改流，200 对照及取证异常也保留原始响应。"""
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://api.fixture.invalid/v3/pay_action/batch/price?token=synthetic-secret')
+        request.request.headers['origin'] = 'https://private.fixture.invalid'
+        request.response = http.Response.make(502, b'<html><title>502 Bad Gateway</title>synthetic-secret</html>',
+                                              {'server': 'nginx/private-version'})
+        diagnostics.request(request)
+        before = request.get_state()
+        diagnostics.response(request)
+        self.assertEqual(request.get_state(), before)
+        event = diagnostics.events[-1]
+        self.assertEqual(event['status'], 502)
+        self.assertEqual(event['source'], 'fixture')
+        self.assertEqual(event['priceCorsOrigin'], 'absent')
+        self.assertEqual(event['priceServer'], 'nginx')
+        self.assertEqual(event['priceErrorPage'], 'bad-gateway')
+        self.assertRegex(event['priceErrorFingerprint'], r'^[a-f0-9]{64}$')
+        self.assertNotIn('synthetic-secret', json.dumps(event))
+        self.assertNotIn('private', json.dumps(event))
+        request.response.status_code = 200
+        request.response.headers['access-control-allow-origin'] = request.request.headers['origin']
+        diagnostics.response(request)
+        self.assertEqual(diagnostics.events[-1]['priceCorsOrigin'], 'matched')
+        self.assertNotIn('priceErrorFingerprint', diagnostics.events[-1])
+        request.response.status_code = 502
+        before = request.get_state()
+        with patch.object(http.Response, 'get_content', side_effect=RuntimeError('synthetic-secret')):
+            diagnostics.response(request)
+        self.assertEqual(request.get_state(), before)
+        self.assertEqual(diagnostics.events[-1]['status'], 502)
+        self.assertEqual(diagnostics.events[-1]['priceResponseDiagnostic'], 'unavailable')
+
+    def test_price_response_scope_and_cors_counterexamples(self):
+        """不把通配来源、缺少请求来源或未知服务错误归为匹配，且不采集无关接口。"""
+        from room_response_diagnostics import price_response_fields
+        request = flow('https://api.fixture.invalid/v3/pay_action/batch/price')
+        request.response = http.Response.make(502, b'synthetic-secret', {'server': 'private-server'})
+        fields = price_response_fields(request)
+        self.assertEqual(fields['priceServer'], 'unknown')
+        self.assertEqual(fields['priceErrorPage'], 'unknown')
+        request.response.headers['access-control-allow-origin'] = '*'
+        self.assertEqual(price_response_fields(request)['priceCorsOrigin'], 'wildcard')
+        request.response.headers['access-control-allow-origin'] = 'https://private.fixture.invalid'
+        self.assertEqual(price_response_fields(request)['priceCorsOrigin'], 'mismatch')
+        request.response.raw_content = None
+        self.assertEqual(price_response_fields(request)['priceErrorBody'], 'unavailable')
+        request.request.path = '/unrelated'
+        self.assertEqual(price_response_fields(request), {})
+
     def test_room_request_correlates_real_connection_without_changing_result(self):
         """建房接口登记后，连接错误钩子只附加脱敏阶段。"""
         diagnostics = ConnectionDiagnostics()

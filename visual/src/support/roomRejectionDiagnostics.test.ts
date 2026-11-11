@@ -91,8 +91,19 @@ test('非 JSON HTTP 错误只保留正文指纹与格式，读取失败仍保留
   assert.match(diagnostic.wireBody.fingerprint, /^[a-f0-9]{64}$/);
   assert.doesNotMatch(attachments[0], /synthetic-secret|<html>/);
   await assert.rejects(readRequestJson({ ...response,
+    text: /** 模拟标准错误页，私密正文不能输出。 */ async () => '<html><title>500 Internal Server Error</title>synthetic-secret</html>',
+    headers: /** 模拟含私密版本及其他头的服务标识。 */ () => ({ server: 'nginx/private-version', authorization: 'synthetic-secret' }),
+  }, 'room-create'), /status=500 .*reason=http-error/);
+  assert.equal(JSON.parse(attachments.at(-1)!).wireBody.errorPage, 'internal-server-error');
+  assert.equal(JSON.parse(attachments.at(-1)!).wireBody.server, 'nginx');
+  assert.doesNotMatch(attachments.at(-1)!, /private-version|authorization|synthetic-secret/);
+  await assert.rejects(readRequestJson({ ...response,
+    headers: /** 诊断读取异常不能改变正文诊断或原始失败。 */ () => { throw new Error('synthetic-secret'); },
+  }, 'room-delete'), /status=500 .*reason=http-error/);
+  assert.equal(JSON.parse(attachments.at(-1)!).wireBody.server, 'unknown');
+  await assert.rejects(readRequestJson({ ...response,
     text: /** 模拟正文读取失败。 */ async () => { throw new Error('synthetic-secret'); },
   }, 'room-create'), /status=500 .*reason=http-error/);
-  assert.equal(JSON.parse(attachments[1]).bodyRead, 'body-read-failed');
-  assert.doesNotMatch(attachments[1], /synthetic-secret/);
+  assert.equal(JSON.parse(attachments.at(-1)!).bodyRead, 'body-read-failed');
+  assert.doesNotMatch(attachments.at(-1)!, /synthetic-secret/);
 });

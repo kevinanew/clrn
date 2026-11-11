@@ -26,7 +26,7 @@ function roomDiagnostic(body: any) {
  */
 export async function attachRoomRejection(body: any, operation: 'room-delete' | 'room-create',
   bodyRead: 'json' | 'invalid-json' | 'body-read-failed' = 'json',
-  wireBody?: { bytes: number; fingerprint: string; format: string }): Promise<void> {
+  wireBody?: { bytes: number; fingerprint: string; format: string; errorPage?: string; server?: string }): Promise<void> {
   try {
     const diagnostic = { ...roomDiagnostic(body), bodyRead, wireBody };
     try {

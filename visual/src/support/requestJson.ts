@@ -4,7 +4,7 @@ import { requestFailure, requestErrorSummary } from './requestError';
 import { createHash } from 'node:crypto';
 import { attachRoomRejection } from './roomRejectionDiagnostics';
 
-type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'> & Partial<Pick<APIResponse, 'text'>>;
+type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'> & Partial<Pick<APIResponse, 'text' | 'headers'>>;
 
 /**
  * 仅允许本轮失败接口进入有限响应诊断。
@@ -12,6 +12,15 @@ type JsonResponse = Pick<APIResponse, 'ok' | 'status' | 'json'> & Partial<Pick<A
  */
 function needsRejectionDiagnostic(operation: string): operation is 'room-delete' | 'room-create' {
   return ['room-delete', 'room-create'].includes(operation);
+}
+
+/** 只输出固定服务族；可选响应头诊断失败不能影响正文读取。
+ * @param response - 已收到的响应，不发起新请求。 */
+function diagnosticServer(response: JsonResponse): string {
+  try {
+    const server = response.headers?.().server ?? '';
+    return /^(nginx|envoy|cloudflare|gunicorn|werkzeug|aiohttp)(?:[\s/]|$)/i.exec(server)?.[1].toLowerCase() ?? 'unknown';
+  } catch { return 'unknown'; }
 }
 
 /**
@@ -28,7 +37,10 @@ async function diagnoseRejection(response: JsonResponse, operation: 'room-delete
       const text = await response.text();
       // 不保留正文；仅关联重复的非 JSON 错误页，区分空响应、HTML 与其他内容。
       wireBody = { bytes: Buffer.byteLength(text), fingerprint: createHash('sha256').update(text).digest('hex'),
-        format: !text.trim() ? 'empty' : /^\s*<(?:!doctype\s+html|html)\b/i.test(text) ? 'html' : 'other' };
+        format: !text.trim() ? 'empty' : /^\s*<(?:!doctype\s+html|html)\b/i.test(text) ? 'html' : 'other',
+        errorPage: /<(?:title|h1)>\s*(?:500\s+)?Internal Server Error\s*<\//i.test(text) ? 'internal-server-error' : 'unknown',
+        server: 'unknown' };
+      wireBody.server = diagnosticServer(response);
       body = JSON.parse(text);
     } else body = await response.json();
   } catch (error) {
@@ -73,6 +85,7 @@ export async function fetchRequestJson(url: string, options: RequestInit, operat
   });
   const body = await readRequestJson({ status: /** 读取真实状态。 */ () => response.status, ok: /** 读取真实 HTTP 结果。 */ () => response.ok,
     text: /** 读取失败响应的原始正文，仅用于脱敏摘要。 */ () => response.text(),
+    headers: /** 仅供固定服务族诊断，不输出响应头。 */ () => ({ server: response.headers.get('server') ?? '' }),
     json: /** 读取真实响应正文。 */ () => response.json() }, operation);
   return { body, status: response.status };
 }
