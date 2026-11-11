@@ -10,14 +10,75 @@ import { observeReleaseConnection, observeReleaseResponse, releaseDiagnosticWrit
 import { startReleaseWebServer } from './release-web-server.mjs';
 
 const secret = 'https://release.invalid:9443/private?token=synthetic-token Bearer synthetic-secret';
+const privacyServerId = '00009443-0000-4000-8000-000000000000';
+const uuidPattern = '[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}';
+const privacyFields = {
+  event: /^release\.[a-z-]+$/, source: /^release-static$/,
+  serverId: new RegExp(`^${uuidPattern}$`), requestId: new RegExp(`^${uuidPattern}-[1-9][0-9]*$`),
+  connectionId: /^connection-[1-9][0-9]*$/, observedAt: /^[0-9]+$/, elapsedMs: /^[0-9]+$/,
+  operation: /^release-static-(connect|read)$/, outcome: /^(observed|error|closed)$/,
+  method: /^(GET|HEAD|POST|PUT|DELETE|OPTIONS|OTHER)$/, status: /^([1-5][0-9]{2}|unavailable)$/,
+  response: /^(sent|not-sent)$/, keepAliveTimeoutMs: /^[0-9]+$/, keepAliveTimeoutBufferMs: /^([0-9]+|unavailable)$/,
+};
+const numericPrivacyFields = new Set(['observedAt', 'elapsedMs', 'status', 'keepAliveTimeoutMs', 'keepAliveTimeoutBufferMs']);
 
 /**
- * 所有输出只包含生命周期、逻辑操作、方法、状态及本地随机关联编号。
- * @param output - 持久化内容。
+ * 每类事件仅允许自己的固定字段，地址、端口、路径与原始异常字段均不能进入日志。
+ * @param eventName - 生命周期事件名。
+ * @returns 该事件在公共字段之外允许的字段。
  */
-function verifyPrivacy(output) {
-  for (const value of ['release.invalid', '9443', '/private', 'synthetic-', '127.0.0.1']) assert.ok(!output.includes(value), value);
+function specificPrivacyFields(eventName) {
+  if (eventName === 'release.listen') return ['keepAliveTimeoutMs', 'keepAliveTimeoutBufferMs'];
+  if (['release.tcp-open', 'release.tcp-end', 'release.tcp-timeout', 'release.tcp-error', 'release.tcp-close'].includes(eventName)) {
+    return ['connectionId', 'operation', 'elapsedMs', 'outcome'];
+  }
+  assert.ok(['release.request', 'release.finish', 'release.close', 'release.interrupted', 'release.response-error',
+    'release.stream-open', 'release.stream-end', 'release.stream-error', 'release.stream-close', 'release.file-unavailable'].includes(eventName));
+  return ['requestId', 'connectionId', 'operation', 'elapsedMs', 'method', 'status', 'response'];
 }
+
+/**
+ * 按字段校验日志结构与值；合法编号和时间包含端口数字时不构成泄露。
+ * @param events - 内存或持久化后读取的生命周期事件。
+ */
+function verifyPrivacy(events) {
+  for (const event of events) {
+    const fields = ['event', 'observedAt', 'source', 'serverId', ...specificPrivacyFields(event.event)];
+    assert.deepEqual(Object.keys(event).sort(), fields.sort());
+    for (const [field, value] of Object.entries(event)) {
+      const expectedType = numericPrivacyFields.has(field) && value !== 'unavailable' ? 'number' : 'string';
+      assert.equal(typeof value, expectedType, field);
+      assert.match(String(value), privacyFields[field], field);
+    }
+  }
+  const output = JSON.stringify(events);
+  for (const value of ['release.invalid', '/private', 'synthetic-', '127.0.0.1']) assert.ok(!output.includes(value), value);
+}
+
+const privacyEvent = {
+  event: 'release.request', observedAt: 1794179249443, source: 'release-static', serverId: privacyServerId,
+  requestId: `${privacyServerId}-1`, connectionId: 'connection-9443', elapsedMs: 9443,
+  operation: 'release-static-read', method: 'GET', status: 200, response: 'sent',
+};
+
+test('脱敏检查允许 UUID、关联编号、时间和耗时中恰好包含端口数字', /** 固定覆盖原先会随机触发的 9443 子串碰撞。 */ () => {
+  verifyPrivacy([privacyEvent]);
+  verifyPrivacy([{ event: 'release.listen', observedAt: 1794179249443, source: 'release-static', serverId: privacyServerId,
+    keepAliveTimeoutMs: 9443, keepAliveTimeoutBufferMs: 'unavailable' }]);
+});
+
+test('脱敏检查仍拒绝端口、地址、路径、原始异常及合法字段中的敏感内容', /** 覆盖未知字段、嵌套泄露与允许字段被污染的情况。 */ () => {
+  for (const leaked of [
+    { remotePort: 9443 }, { remotePort: '9443' }, { remoteAddress: '127.0.0.1' }, { url: secret },
+    { path: '/private' }, { message: secret }, { error: { cause: { message: secret } } },
+    { serverId: secret }, { requestId: secret }, { connectionId: '9443' }, { elapsedMs: '9443' },
+    { observedAt: secret }, { status: '200' }, { method: secret }, { source: secret }, { response: secret },
+    { event: 'release.unknown' },
+  ]) {
+    assert.throws(/** 验证同一事件被敏感或非法字段污染后必定失败。 */ () => verifyPrivacy([{ ...privacyEvent, ...leaked }]),
+      { code: 'ERR_ASSERTION' });
+  }
+});
 
 test('连接事件模拟与请求使用同一编号，关闭原因未知不猜测且持久化不含连接值', /** 验证连接事件模拟与请求使用同一编号，关闭原因未知不猜测且持久化不含连接值。
  * @param context - 当前浏览器或测试上下文。 */ async context => {
@@ -25,20 +86,20 @@ test('连接事件模拟与请求使用同一编号，关闭原因未知不猜�
   context.after(/** 发布诊断测试结束后删除临时目录。 */ () => rm(directory, { force: true, recursive: true }));
   const record = releaseDiagnosticWriter(directory);
   const socket = Object.assign(new EventEmitter(), { remoteAddress: secret, remotePort: 9443 });
-  observeReleaseConnection(socket, { connectionId: 'connection-1', serverId: 'server-1' }, record);
+  observeReleaseConnection(socket, { connectionId: 'connection-1', serverId: privacyServerId }, record);
   const response = Object.assign(new EventEmitter(), { headersSent: true, statusCode: 200, writableFinished: true });
-  for (const requestId of ['request-1', 'request-2']) {
+  for (const requestId of [`${privacyServerId}-1`, `${privacyServerId}-2`]) {
     observeReleaseResponse({ method: 'GET', url: secret }, response,
-      { connectionId: 'connection-1', serverId: 'server-1', requestId }, record);
+      { connectionId: 'connection-1', serverId: privacyServerId, requestId }, record);
   }
   socket.emit('timeout');
   socket.emit('error', new Error(secret, { cause: new Error(secret) }));
   socket.emit('end');
   socket.emit('close', true);
   const output = await readFile(path.join(directory, 'release-server-events.jsonl'), 'utf8');
-  verifyPrivacy(output);
   const events = output.trim().split('\n').map(/** 将当前条目映射为`JSON.parse(line)`。
  * @param line - 当前操作使用的 line。 */ line => JSON.parse(line));
+  verifyPrivacy(events);
   assert.deepEqual(events.map(/** 将当前条目映射为`event.event`。
  * @param event - 当前触发的事件。 */ event => event.event), ['release.tcp-open', 'release.request', 'release.request',
     'release.tcp-timeout', 'release.tcp-error', 'release.tcp-end', 'release.tcp-close']);
@@ -58,7 +119,7 @@ test('无响应头的读取失败不能记为默认200，已发200后的中断�
   for (const sent of [false, true]) {
     const response = Object.assign(new EventEmitter(), { headersSent: sent, statusCode: 200, writableFinished: false });
     const lifecycle = observeReleaseResponse({ method: 'GET', url: secret }, response,
-      { requestId: `request-${sent}`, connectionId: 'connection-1' }, record);
+      { requestId: `${privacyServerId}-${sent ? 1 : 2}`, connectionId: 'connection-1', serverId: privacyServerId }, record);
     const stream = new EventEmitter();
     lifecycle.stream(stream);
     stream.emit('error', new Error(secret, { cause: new Error(secret) }));
@@ -66,15 +127,15 @@ test('无响应头的读取失败不能记为默认200，已发200后的中断�
     response.emit('close');
   }
   const output = await readFile(path.join(directory, 'release-server-events.jsonl'), 'utf8');
-  verifyPrivacy(output);
   const events = output.trim().split('\n').map(/** 将当前条目映射为`JSON.parse(line)`。
  * @param line - 当前操作使用的 line。 */ line => JSON.parse(line));
+  verifyPrivacy(events);
   assert.equal(events.length, 10);
   for (const event of events) {
     assert.equal(event.source, 'release-static');
     assert.equal(event.operation, 'release-static-read');
     assert.equal(event.method, 'GET');
-    assert.equal(event.status, event.requestId === 'request-true' ? 200 : 'unavailable');
+    assert.equal(event.status, event.requestId === `${privacyServerId}-1` ? 200 : 'unavailable');
   }
   assert.equal(events.filter(/** 仅保留满足以下条件的条目：`event.event === 'release.interrupted'`。
  * @param event - 当前触发的事件。 */ event => event.event === 'release.interrupted').length, 2);
@@ -120,7 +181,7 @@ test('实际静态服务成功、404和文件流失败仍保持原传输结果�
  * @param event - 当前触发的事件。 */ event => event.event === 'release.listen');
   assert.equal(configuration.keepAliveTimeoutMs, server.keepAliveTimeout);
   assert.equal(configuration.keepAliveTimeoutBufferMs, server.keepAliveTimeoutBuffer);
-  verifyPrivacy(JSON.stringify(events));
+  verifyPrivacy(events);
 });
 
 

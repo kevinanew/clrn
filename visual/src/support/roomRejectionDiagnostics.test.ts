@@ -111,3 +111,25 @@ test(`${operation} 非 JSON HTTP 错误只保留正文指纹与格式，读取�
   assert.doesNotMatch(attachments[1], /synthetic-secret/);
 });
 }
+
+test('未知建房拒绝只记录固定消息分类及指纹，仍抛出业务拒绝', /** 验证本轮未分类拒绝的诊断边界。
+ * @param context - 当前测试的模拟范围。 */ async context => {
+  let attachment = '';
+  context.mock.method(playwrightTest, 'info', /** 提供脱敏附件接收器。 */ () => ({
+    /** 收集有限诊断。
+     * @param name - 固定附件名称。
+     * @param options - 脱敏诊断正文。 */
+    async attach(name: string, options: { body: string }) { attachment = options.body; },
+  }));
+  for (const [message, expected] of [['upstream timed out synthetic-secret', 'timeout'],
+    ['鑽石不足 synthetic-secret', 'balance'], ['private-token@example.invalid', 'unclassified']]) {
+    await assert.rejects(readRequestJson({ status: /** 保留真实业务拒绝的 HTTP 状态。 */ () => 200,
+      ok: /** HTTP 成功不能掩盖业务失败。 */ () => true,
+      json: /** 模拟未知类型的业务拒绝。 */ async () => ({ ok: false,
+        error_type: 'synthetic-secret', error_message: message }),
+    }, 'room-create'), /status=200 .*reason=business-rejected/);
+    assert.equal(JSON.parse(attachment).messageCategory, expected);
+    assert.match(JSON.parse(attachment).messageFingerprint, /^[a-f0-9]{64}$/);
+    assert.doesNotMatch(attachment, /synthetic-secret|private-token|example|鑽石/);
+  }
+});
