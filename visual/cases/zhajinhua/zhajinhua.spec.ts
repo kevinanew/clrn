@@ -12,6 +12,7 @@ import { createPrivateGameRoom, deletePrivateGameRoom, type RoomSession } from '
 import { visible } from './capture';
 import { capturePreGame } from './preGame';
 import { captureGameplay } from './gameplay';
+import { waitForTableConnection } from '../../animations/tableSession';
 
 for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件的条目：`item.group === 'zhajinhua'`。
  * @param item - 当前遍历的条目。 */ item => item.group === 'zhajinhua')) {
@@ -48,12 +49,8 @@ for (const scenario of buildScenarios().filter(/** 仅保留满足以下条件�
       }, 'zhajinhua');
       console.log('ZHAJINHUA > 本次私人房创建成功');
       await expect(visible(page, 'run-game-view')).toBeVisible({ timeout: 60_000 });
-      await expect.poll(/** 等待炸金花开局入口，连接失败时点击应用重试按钮。 */ async () => {
-        if (await visible(page, 'zhajinhua-start-room-timer-button').isVisible()) return true;
-        const retry = visible(page, 'common-alert-button-retry');
-        if (await retry.isVisible()) { recordDiagnostic(page, '点击应用重试按钮'); await retry.click(); }
-        return false;
-      }, { timeout: 90_000, message: '拼三张应完成房间订阅和等待牌桌加载' }).toBe(true);
+      // 连接超时使用自定义 Alert；复用已有的本地化按钮识别及有限重试。
+      await waitForTableConnection(page, 'zhajinhua', 'zhajinhua');
       await expect(visible(page, 'game-splash-screen-bg')).toBeHidden({ timeout: 90_000 });
       await expect(visible(page, 'zhajinhua-text-room-name')).toHaveText('TestRoom');
       await expect(visible(page, 'menu-button')).toBeVisible();

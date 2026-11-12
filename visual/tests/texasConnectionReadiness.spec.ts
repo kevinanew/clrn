@@ -25,9 +25,15 @@ async function renderTable(page: Page, mode = 'recover'): Promise<void> {
     </div>
     <script>
       document.body.dataset.retries = '0';
+      document.body.dataset.probes = '0';
+      let cachedUntil = Date.now() + 10_000;
       document.body.dataset.mode = '${mode}';
       document.querySelector('[data-testid="common-alert-button-retry"]').onclick = () => {
         document.body.dataset.retries = String(Number(document.body.dataset.retries) + 1);
+        // 重现 Release 十秒失败缓存：过早点击既不探测，也不能完成初始化。
+        if (Date.now() < cachedUntil) return;
+        document.body.dataset.probes = String(Number(document.body.dataset.probes) + 1);
+        cachedUntil = Date.now() + 10_000;
         if (document.body.dataset.mode === 'persistent') return;
         document.querySelector('[data-testid="common-alert-container"]').hidden = true;
         if (document.body.dataset.mode === 'recover') document.querySelector('#controls').hidden = false;
@@ -80,12 +86,13 @@ for (const width of [375, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       const diagnostics = await installConnectionDiagnostics(context, page, test.info());
       await renderTable(page);
-      const pending = waitForGameConnection(page, 5000);
+      const pending = waitForGameConnection(page, 15_000);
       await expect.poll(/** 等待第一次就绪检查完成，避免依赖定时器碰运气。 */
         () => diagnostics.recorder.events.length).toBeGreaterThan(0);
       await showError(page);
       await pending;
       await expect(page.locator('body')).toHaveAttribute('data-retries', '1');
+      await expect(page.locator('body')).toHaveAttribute('data-probes', '1');
       await expect(page.getByTestId('texas-holdem-start-room-timer-button')).toBeVisible();
       await expect(page.getByTestId('common-alert-container')).toBeHidden();
       expect(diagnostics.recorder.events.map(
@@ -104,7 +111,7 @@ test('控件已可见但错误弹窗仍在时必须重试，不能提前接受�
     await renderTable(page);
     await showControls(page);
     await showError(page);
-    await waitForGameConnection(page, 3000);
+    await waitForGameConnection(page, 15_000);
     await expect(page.locator('body')).toHaveAttribute('data-retries', '1');
   },
 );
@@ -155,7 +162,7 @@ test('错误消失但房主初始化未完成时仍失败',
    */ async ({ page }) => {
     await renderTable(page, 'incomplete');
     await showError(page);
-    await expect(waitForGameConnection(page, 750)).rejects.toThrow('德州牌桌应完整就绪');
+    await expect(waitForGameConnection(page, 12_000)).rejects.toThrow('德州牌桌应完整就绪');
     await expect(page.locator('body')).toHaveAttribute('data-retries', '1');
     await expect(page.getByTestId('common-alert-container')).toBeHidden();
   },
@@ -168,13 +175,14 @@ test('持续 Network Error 最多重试三次，超时保留失败时序与诊�
     const diagnostics = await installConnectionDiagnostics(context, page, test.info());
     await renderTable(page, 'persistent');
     await showError(page);
-    await expect(waitForGameConnection(page, 2500)).rejects.toThrow('德州牌桌应完整就绪');
+    await expect(waitForGameConnection(page, 35_000)).rejects.toThrow('德州牌桌应完整就绪');
     await expect(page.locator('body')).toHaveAttribute('data-retries', '3');
+    await expect(page.locator('body')).toHaveAttribute('data-probes', '3');
     await expect(page.getByTestId('common-alert-container')).toBeVisible();
     await diagnostics.save(new Error('德州初始化失败'));
     const saved = JSON.parse(await readFile(test.info().outputPath('connection-diagnostics.json'), 'utf8'));
     expect(saved.events).toContainEqual(expect.objectContaining({
-      phase: '德州初始化失败', attempt: 3, limit: 3, timeoutMs: 2500,
+      phase: '德州初始化失败', attempt: 3, limit: 3, timeoutMs: 35_000,
     }));
     expect(saved.events.at(-1)).toMatchObject({ event: 'test.failure' });
     expect(test.info().attachments.map(
@@ -201,8 +209,13 @@ test('重试按钮被遮挡时点击也必须受初始化总预算约束',
       },
     );
     const started = Date.now();
-    await expect(waitForGameConnection(page, 750)).rejects.toThrow('德州牌桌应完整就绪');
-    expect(Date.now() - started).toBeLessThan(2500);
+    const connection = waitForGameConnection(page, 12_000);
+    await expect(connection).rejects.toThrow('德州牌桌应完整就绪');
+    const failure = await connection.catch(/** 读取保留的原始动作错误。
+     * @param error - 初始化失败。 */ error => error);
+    expect(failure.cause).toBeInstanceOf(Error);
+    expect(failure.cause.message).toMatch(/locator.click: Timeout|德州牌桌应完整就绪/);
+    expect(Date.now() - started).toBeLessThan(14_000);
     await expect(page.locator('body')).toHaveAttribute('data-retries', '0');
     await expect(page.getByTestId('common-alert-container')).toBeVisible();
   },

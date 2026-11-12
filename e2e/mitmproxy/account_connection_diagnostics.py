@@ -130,7 +130,7 @@ class RoomConnections:
 def is_room_path(value):
     """限定已发生失败的房间接口，忽略查询参数且不输出房间 ID。"""
     path = urlsplit(value).path
-    return path in ('/v3/pay_action/batch/price', '/v1/game_log/room/game_amount') or bool(re.fullmatch(
+    return path in ('/v3/pay_action/do', '/v3/pay_action/batch/price', '/v1/game_log/room/game_amount') or bool(re.fullmatch(
         r'/v10/texas_holdem/room/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}/user_settings', path))
 
 

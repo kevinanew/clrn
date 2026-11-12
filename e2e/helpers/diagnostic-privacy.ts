@@ -60,7 +60,7 @@ export function diagnosticFullText(value: unknown): string {
 const allowedFields = new Set(['event', 'source', 'node', 'path', 'method', 'status', 'requestId',
   'connectionId', 'upstreamConnectionId', 'releaseRequestId', 'operation', 'response', 'originMatch', 'upstreamMatch', 'fixtureHit', 'reason', 'code', 'elapsedMs', 'timeoutMs', 'cacheAgeMs', 'candidates', 'selected',
   'excluded', 'before', 'after', 'phase', 'target', 'roomId', 'attempt', 'limit', 'count', 'remaining',
-  'backendDelay', 'serverLoad', 'outcome', 'observedAt', 'messageType', 'commandId', 'channel', 'dropped']);
+  'errorFamily', 'backendDelay', 'serverLoad', 'outcome', 'observedAt', 'messageType', 'commandId', 'channel', 'dropped']);
 const nodeFields = new Set(['node', 'candidates', 'selected', 'excluded', 'before', 'after']);
 
 type SafeField = string | number | boolean | string[];
@@ -120,6 +120,10 @@ const fieldSanitizers: Record<string, (item: unknown) => SafeField> = {
   /** 清理上游匹配状态。
    * @param item - 外部状态。 */
   upstreamMatch: item => matchStatus(item, upstreamMatches),
+  /** 仅保留代理固定分类，不接受异常自由文本。
+   * @param item - 代理错误分类。 */
+  errorFamily: item => matchStatus(item, ['none', 'http2-protocol', 'http2-closed', 'http1-response',
+    'tls-certificate', 'tls-openssl', 'connect-multiple-errors', 'connect-killed', 'other']),
   reason: safeDiagnosticReason, event: eventName, path: diagnosticPath,
 };
 

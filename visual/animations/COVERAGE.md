@@ -60,7 +60,8 @@
   测试不得改写 `Device.isWeb` 强行打开；保留 H5 实际效果与静态断言。
 - `TreasureBox` 在当前源码仅有导出，没有实际消费入口；不能以直接挂载测试组件冒充正常页面覆盖。
 - 独立 `MatchTexasHoldem` 热气球页面依赖浮窗匹配状态，现有 H5 场景不可达。
-- RTC、下一手下注记录、重新匹配、拼三张独立加注滑杆的入口限制沿用各牌桌已有 `COVERAGE.md`。
+- 下一手下注记录、重新匹配、拼三张独立加注滑杆的入口限制沿用各牌桌已有 `COVERAGE.md`。
+- RTC 实时音视频已下线，不再列为待补动画；`texasSocial.ts` 的文本消息、语音消息动画继续保留。
 - 俱乐部房间骨架仅用于旧引擎房间缺失信息的分支。当前 React Native 引擎响应在构造时即设置
   `isAllInformationLoaded=true`，旧版德州已下线。
 - React Navigation 的 Stack 在 Web 平台默认使用 `animation: none`。实际账号安全页入栈采样也没有位移或渐变，

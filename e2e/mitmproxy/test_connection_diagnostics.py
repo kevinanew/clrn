@@ -11,11 +11,40 @@ from test_network_faults import flow
 
 class DiagnosticTests(unittest.TestCase):
     """验证连接诊断的路径语义、来源关联、容量与脱敏边界。"""
+    def test_unknown_room_error_retains_only_fixed_family_and_original_failure(self):
+        """针对建房请求中止取证：协议异常和复合建连异常可区分，后缀永不进入附件。"""
+        from connection_diagnostics import error_family
+        messages = {
+            'HTTP/2 protocol error: synthetic-secret': 'http2-protocol',
+            'HTTP/2 connection closed: synthetic-secret': 'http2-closed',
+            'Cannot parse HTTP response: synthetic-secret': 'http1-response',
+            'Certificate verify failed: synthetic-secret': 'tls-certificate',
+            'OpenSSL synthetic-secret': 'tls-openssl',
+            'Multiple exceptions: synthetic-secret': 'connect-multiple-errors',
+            'Connection killed: synthetic-secret': 'connect-killed',
+            'synthetic-secret HTTP/2 protocol error: ': 'other',
+            'unknown\nHTTP/2 protocol error: synthetic-secret': 'other',
+        }
+        for message, family in messages.items():
+            diagnostics = ConnectionDiagnostics()
+            request = flow('https://fixture.invalid/v3/pay_action/do')
+            request.request.method = 'POST'
+            request.error = Error(message)
+            original = request.error
+            diagnostics.error(request)
+            event = diagnostics.events[-1]
+            self.assertEqual(event['errorFamily'], family)
+            self.assertEqual(event['response'], 'not-received')
+            self.assertIs(request.error, original)
+            self.assertEqual(request.error.msg, message)
+            self.assertNotIn('synthetic-secret', json.dumps(diagnostics.snapshot()))
+        self.assertEqual(error_family(None), 'none')
+
     def test_room_error_progress_is_read_only_and_failure_is_contained(self):
         """读取中断时区分响应头前后，诊断失败仍保留原始失败事件与错误。"""
         from account_connection_diagnostics import room_error_fields
         diagnostics = ConnectionDiagnostics()
-        request = flow('https://fixture.invalid/v3/pay_action/batch/price?token=synthetic-secret')
+        request = flow('https://fixture.invalid/v3/pay_action/do?token=synthetic-secret')
         original = Error('stream reset by client (CANCEL)')
         request.error = original
         request.request.timestamp_end = None
@@ -327,6 +356,34 @@ class DiagnosticTests(unittest.TestCase):
         diagnostics.websocket_end(request)
         self.assertEqual(diagnostics.events[-1]['code'], 1001)
         self.assertNotIn(request.id, diagnostics.pending_commands)
+
+    def test_rpc_paths_are_correlated_without_mutating_frames(self):
+        """RPC 路径关联到回复，隐藏房号、查询及认证，保持原消息不变。"""
+        diagnostics = ConnectionDiagnostics()
+        request = flow('https://node-12.service.invalid/socket')
+        request.websocket = WebSocketData()
+        frames = [(True, {'id': 7, 'method': 9, 'params': {'data': {
+            'method': 'PUT', 'path': '/v10/texas_holdem/room/private-room/enter?token=secret',
+            'authorization': 'secret', 'body': {'token': 'secret'}}}}),
+                  (False, {'id': 7, 'error': {'code': 100, 'message': 'secret'}})]
+        for from_client, frame in frames:
+            message = WebSocketMessage(1, from_client, json.dumps(frame).encode())
+            request.websocket.messages.append(message)
+            before = message.content
+            diagnostics.websocket_message(request)
+            self.assertEqual(message.content, before)
+        events = list(diagnostics.events)
+        self.assertEqual(len(events), 3)
+        for event in events[:2]:
+            self.assertEqual(event['path'], '/v10/texas_holdem/room/{room}/enter')
+            self.assertEqual(event['method'], 'PUT')
+            self.assertEqual(event['messageType'], 'rpc')
+            self.assertEqual(event['commandId'], 7)
+        self.assertEqual(events[1]['source'], 'upstream')
+        self.assertEqual(events[1]['outcome'], 'error')
+        self.assertEqual(events[-1]['code'], 100)
+        self.assertNotIn('secret', json.dumps(events))
+        self.assertNotIn('private-room', json.dumps(events))
 
     def test_容量边界与错误脱敏(self):
         """验证容量边界与错误脱敏。"""

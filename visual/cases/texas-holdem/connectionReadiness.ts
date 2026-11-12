@@ -12,6 +12,37 @@ const selector = [...required, ...blockers].map(
 ).join(',');
 const retryLimit = 3;
 
+/** 在预算内点击重试按钮。
+ * @param page - 当前页面。
+ * @param attempts - 已重试次数。
+ * @param deadline - 初始化截止时间。
+ * @param cache - 当前重试的健康缓存截止时间。
+ */
+async function retryConnection(page: Page, attempts: number, deadline: number, cache: { retryAfter: number }): Promise<number> {
+  if (!retryAllowed(attempts, deadline)) return attempts;
+  // 复用动画入口的十秒缓存等待，避免立即点击耗尽重试却没有重新探测。
+  if (!cacheExpired(cache)) return attempts;
+  cache.retryAfter = 0;
+  recordDiagnostic(page, '点击应用重试按钮', { attempt: ++attempts, limit: retryLimit });
+  await page.locator('[data-testid="common-alert-button-retry"]:visible').last()
+    .click({ timeout: Math.max(1, Math.min(5000, deadline - Date.now())) });
+  return attempts;
+}
+
+/** 从弹窗出现后等待最后一批健康缓存过期。
+ * @param cache - 当前重试的缓存截止时间。 */
+function cacheExpired(cache: { retryAfter: number }): boolean {
+  cache.retryAfter ||= Date.now() + 10_000;
+  return Date.now() >= cache.retryAfter;
+}
+
+/** 保留重试次数和总预算限制。
+ * @param attempts - 已重试次数。
+ * @param deadline - 初始化截止时间。 */
+function retryAllowed(attempts: number, deadline: number): boolean {
+  return attempts < retryLimit && Date.now() < deadline;
+}
+
 /**
  * 在同一时间预算内等待倒计时、房主开始按钮和工具栏，期间处理晚到的重试弹窗。
  * @param page - 执行操作的 Playwright 页面。
@@ -20,6 +51,7 @@ const retryLimit = 3;
 export async function waitForGameConnection(page: Page, timeout = 90_000): Promise<void> {
   const deadline = Date.now() + timeout;
   let attempts = 0;
+  const cache = { retryAfter: 0 };
   let previous: string | undefined;
   try {
     await expect.poll(/** 持续检查业务控件和阻塞弹层，直到完整就绪或预算耗尽。 */ async () => {
@@ -38,11 +70,7 @@ export async function waitForGameConnection(page: Page, timeout = 90_000): Promi
         previous = state;
       }
       if (visible.includes('common-alert-button-retry')) {
-        if (attempts < retryLimit && Date.now() < deadline) {
-          recordDiagnostic(page, '点击应用重试按钮', { attempt: ++attempts, limit: retryLimit });
-          await page.locator('[data-testid="common-alert-button-retry"]:visible').last()
-            .click({ timeout: Math.max(1, Math.min(5000, deadline - Date.now())) });
-        }
+        attempts = await retryConnection(page, attempts, deadline, cache);
         return false;
       }
       return required.every(/** 所有业务就绪标记必须同时可见。
@@ -53,6 +81,6 @@ export async function waitForGameConnection(page: Page, timeout = 90_000): Promi
     recordDiagnostic(page, '德州初始化完成', { attempt: attempts });
   } catch (error) {
     recordDiagnostic(page, '德州初始化失败', { attempt: attempts, limit: retryLimit, timeoutMs: timeout });
-    throw error;
+    throw new Error('德州牌桌应完整就绪，且无加载遮罩或错误弹窗', { cause: error });
   }
 }

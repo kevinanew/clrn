@@ -7,6 +7,7 @@ import type { VisualScenario } from '../scenarioTypes';
 import { buildStorageStateForScenario, setupContextForScenario } from '../src/support/pageSetup';
 import { preparePage } from '../src/support/preparePage';
 import { assertGuestClubReady } from './club/guestReadiness';
+import { assertAdvancedRoomReady } from './private-room/advancedReadiness';
 import { withAccountValidationDiagnostics } from './accountValidationDiagnostics';
 
 import { visualBaseUrl as baseUrl } from '../target';
@@ -57,6 +58,9 @@ export async function runVisualScenario(
     // preparePage 内的稳定化步骤可能耗时较长。截图前再次断言就绪元素仍可见，
     // 避免「更多」菜单等短暂出现后又消失时，被空白页面静默写入视觉基准图。
     await expect(page.locator(`${scenario.visualReadySelector}:visible`).last()).toBeVisible();
+    if (['signed_in_create_room_advanced_texas', 'signed_in_create_room_advanced_six_plus'].includes(scenario.pageLabel)) {
+      await assertAdvancedRoomReady(page);
+    }
     if (scenario.pageLabel === 'guest_club') {
       await assertGuestClubReady(page);
     }

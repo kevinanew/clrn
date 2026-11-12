@@ -56,3 +56,32 @@ test('大厅使用自动补码入口判定就绪', /** 验证大厅使用自动�
     assert.equal(await page.locator('[data-testid="texas-holdem-start-room-timer-button"]').count(), 0);
   } finally { await browser.close(); }
 });
+
+for (const persistent of [false, true]) {
+test(`拼三张自定义重试弹窗 persistent=${persistent} 恢复后才就绪，持续失败仍拒绝`, /** 验证本轮中文自定义弹窗及拼三张就绪标记。 */ async () => {
+  const browser = await launchAnimationBrowser();
+  try {
+    const page = await browser.newPage();
+    await page.setContent(`<div data-testid="common-alert-container">
+      <button data-testid="alert-custom-button">退出</button>
+      <button id="retry" data-testid="alert-custom-button">重试</button></div><output>0</output>`);
+    await page.evaluate(/** 仅真实重试按钮可以恢复，持续错误不得被判定为就绪。
+     * @param persistent - 是否保持连接失败。 */ persistent => {
+      document.querySelector('#retry')!.addEventListener('click', /** 记录重试并按场景提供就绪控件。 */ () => {
+        const output = document.querySelector('output')!;
+        output.textContent = String(Number(output.textContent) + 1);
+        if (persistent) return;
+        document.querySelector('div')!.remove();
+        const ready = document.createElement('button');
+        ready.dataset.testid = 'zhajinhua-start-room-timer-button';
+        document.body.append(ready);
+      });
+    }, persistent);
+    const pending = waitForTableConnection(page, 'zhajinhua', 'zhajinhua');
+    if (persistent) await assert.rejects(pending, /牌桌未就绪/);
+    else await pending;
+    assert.equal(await page.locator('output').textContent(), persistent ? '3' : '1');
+    await page.close();
+  } finally { await browser.close(); }
+});
+}
