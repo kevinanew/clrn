@@ -6,6 +6,7 @@ import { canTopUpVisualAccount } from '../../test-account';
 import { readRequestJson, fetchRequestJson } from '../../src/support/requestJson';
 import { requestFailure, requestErrorSummary } from '../../src/support/requestError';
 import { recordDiagnostic } from '../../src/support/connectionDiagnostics';
+import { readRoomCreationResponse } from '../../src/support/roomCreationFailure';
 
 export type RoomSession = { roomId: string; apiOrigin: string; authorization: string };
 export type Account = { userId: string; username: string; authorization: string };
@@ -128,7 +129,7 @@ export async function createPrivateGameRoom(
   const result = await responsePromise;
   if ('error' in result) throw new Error(requestErrorSummary(result.error, 'room-create'));
   const response = result.response;
-  const body = await readRequestJson(response, 'room-create');
+  const body = await readRoomCreationResponse(page, response);
   const roomId = body?.result?.room_id;
   if (!ROOM_ID_PATTERN.test(roomId || '')) {
     throw requestFailure('room-create', 'invalid-response', response.status());
