@@ -182,7 +182,8 @@ class GameRecordProxy:
         if path == '/v10/profile/users':
             self.stabilized += patch_profiles(flow, self.user_id, {
                 player: {'user_id': player, 'nickname': 'Opponent', 'avatarPath': ''}
-                for player in (PLAYER, HOUSE)})
+                for player in (PLAYER, HOUSE)},
+                self_nickname='Visual Player' if self.version == 'legacy' else None)
         if flow.request.method == 'GET' and path == '/public/v11/game_log/available.json':
             self.stabilized += patch_version(flow, 'v11' if self.version == 'v2' else 'v1')
 

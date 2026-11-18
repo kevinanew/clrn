@@ -2,6 +2,32 @@ import type { Page } from '@playwright/test';
 import { expect } from './proxy';
 import { back, click, reopen, row, scrollList, visible } from './ui';
 import type { RecordProxy } from './proxy';
+import { waitForLegacyPrivateHands } from './legacyHands';
+
+/**
+ * 截取回放详情的动作与结算标签。
+ * @param page - 当前战绩页面。
+ * @param version - 战绩页面版本。
+ * @param prefix - 私人房或俱乐部截图前缀。
+ * @param snapshot - 按状态名截图的回调。
+ */
+async function captureReplayDetails(page: Page, version: 'legacy' | 'v2', prefix: 'private' | 'club',
+  snapshot: (state: string) => Promise<void>): Promise<void> {
+  const legacy = version === 'legacy';
+  const checkHands = legacy && prefix === 'private';
+  await click(page, 'detail-button');
+  const actions = visible(page, legacy ? 'game-action-list-container' : 'review-board-action-list');
+  await expect(actions).toBeVisible();
+  if (checkHands) await waitForLegacyPrivateHands(actions, 'actions');
+  await snapshot(`${prefix}_actions`);
+  const tabs = page.getByTestId(/^(Game settlements|Settlement|牌局结算|牌局結算)$/i).filter({ visible: true });
+  await expect(tabs).toHaveCount(1);
+  await tabs.click({ noWaitAfter: true });
+  const settlement = visible(page, legacy ? 'game-settlement-list' : 'review-board-settlement-list');
+  await expect(settlement).toBeVisible();
+  if (checkHands) await waitForLegacyPrivateHands(settlement, 'settlement');
+  await snapshot(`${prefix}_settlement`);
+}
 
 /**
  * 依次截取私人房与俱乐部战绩的概览、玩家信息和回放详情。
@@ -34,14 +60,7 @@ export async function captureDetails(page: Page, version: 'legacy' | 'v2',
       await visible(page, 'game-record-player-item').last().click({ noWaitAfter: true });
       await expect(relationship).toHaveCount(0);
     }
-    await click(page, 'detail-button');
-    await expect(visible(page, version === 'legacy' ? 'game-action-list-container' : 'review-board-action-list')).toBeVisible();
-    await snapshot(`${prefix}_actions`);
-    const tabs = page.getByTestId(/^(Game settlements|Settlement|牌局结算|牌局結算)$/i).filter({ visible: true });
-    await expect(tabs).toHaveCount(1);
-    await tabs.click({ noWaitAfter: true });
-    await expect(visible(page, version === 'legacy' ? 'game-settlement-list' : 'review-board-settlement-list')).toBeVisible();
-    await snapshot(`${prefix}_settlement`);
+    await captureReplayDetails(page, version, prefix, snapshot);
     await back(page, true);
     if (prefix === 'private') {
       await replayTab().click({ noWaitAfter: true });

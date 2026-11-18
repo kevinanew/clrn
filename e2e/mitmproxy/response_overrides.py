@@ -69,8 +69,8 @@ def prepare_profiles(flow, self_id, virtual_ids):
         return False
 
 
-def patch_profiles(flow, self_id, profiles):
-    """混合批次从真实接口取得本人资料，仅补入回放虚拟玩家；其他账号批次透传。"""
+def patch_profiles(flow, self_id, profiles, *, self_nickname=None):
+    """保留真实本人资料，按场景选择是否固定昵称，并补入回放虚拟玩家。"""
     if (not isinstance(self_id, str) or not self_id or flow.request.method != 'PUT'
             or urlsplit(flow.request.path).path != '/v10/profile/users'):
         return False
@@ -81,14 +81,18 @@ def patch_profiles(flow, self_id, profiles):
     except (ValueError, TypeError, AttributeError):
         return False
     selected = {user: profile for user, profile in profiles.items() if user in users}
-    if not selected:
+    if not selected and self_nickname is None:
         return False
 
     def change(result):
-        # 本人资料缺失也不伪造；让客户端看到真实接口变化。
-        """保留本人真实资料，仅补充选定虚拟对手的资料。"""
-        if not isinstance(result.get(self_id), dict):
+        """在成功响应中仅覆盖请求中选定的展示字段。"""
+        own_profile = result.get(self_id)
+        if not isinstance(own_profile, dict):
             raise ValueError('Missing current user profile')
+        if self_nickname is not None:
+            if not isinstance(own_profile.get('nickname'), str):
+                raise ValueError('Missing current user nickname')
+            own_profile['nickname'] = self_nickname
         for user, profile in selected.items():
             result[user] = {**(result.get(user) or {}), **profile}
         return True
