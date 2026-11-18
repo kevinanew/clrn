@@ -167,6 +167,7 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_当前资料与版本保留真实字段及错误(self):
         """验证当前资料与版本保留真实字段及错误。"""
+        self.proxy.version = 'v2'
         request = await self.request('/v10/profile/users', 'PUT', {'users': [SELF, PLAYER]})
         self.assertIsNone(request.response)
         self.assertEqual(request.request.json()['users'], [SELF])
@@ -188,6 +189,36 @@ class RecordProxyTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(request.response.content, b'{"ok":false,"error":"real outage"}')
         preflight = await self.request('/unrelated/protected/api', 'OPTIONS')
         self.assertIsNone(preflight.response)
+
+    async def test_旧版回放只固定当前用户的批量资料昵称(self):
+        """覆盖本人单独或与对手同时被查询的两种路径。"""
+        real = {'nickname': 'Real name', 'avatar_path': 'real-avatar', 'new_field': 42}
+        for users in ([SELF], [SELF, PLAYER]):
+            with self.subTest(users=users):
+                request = await self.request('/v10/profile/users', 'PUT', {'users': users})
+                self.assertIsNone(request.response)
+                self.assertEqual(request.request.json()['users'], [SELF])
+                request.response = http.Response.make(200,
+                    json.dumps({'ok': True, 'result': {SELF: real}}).encode())
+                self.proxy.response(request)
+                result = request.response.json()['result']
+                self.assertEqual(result[SELF], {**real, 'nickname': 'Visual Player'})
+                self.assertEqual(set(result), set(users))
+
+    async def test_旧版回放昵称保留其他账号批次和真实错误(self):
+        """限定本人的批量查询，保留真实错误及资料契约变化。"""
+        cases = [
+            ([SELF, 'other'], 200, {'ok': True, 'result': {SELF: {'nickname': 'Real name'}}}),
+            ([SELF], 503, {'ok': False, 'error': 'real outage'}),
+            ([SELF, PLAYER], 200, {'ok': True, 'result': {SELF: {'avatar_path': 'real-avatar'}}}),
+        ]
+        for users, status, body in cases:
+            with self.subTest(users=users, status=status):
+                request = await self.request('/v10/profile/users', 'PUT', {'users': users})
+                original = json.dumps(body).encode()
+                request.response = http.Response.make(status, original)
+                self.proxy.response(request)
+                self.assertEqual(request.response.content, original)
 
 
 class RecordDiagnosticTests(unittest.IsolatedAsyncioTestCase):
