@@ -50,10 +50,15 @@ export function visualAccountMatrix(runId, suite = 'all', full = false) {
 /**
  * 动画使用 12–18 号槽位，与全量静态视觉及三组功能回归互不冲突。
  * @param runId - 当前 GitHub Actions 运行 ID。
- * @param suite - all、app、texas 或 zhajinhua，筛选时保留原账号槽位。
+ * @param suite - 动画套件或 texas-panels-mobile 定向验证，筛选时保留原账号槽位。
  * @returns 七个动画分片的独占账号矩阵。
  */
 export function animationAccountMatrix(runId, suite = 'all') {
+  if (suite === 'texas-panels-mobile') {
+    const table = animationAccountMatrix(runId, 'texas').include.find(/** 沿用德州牌桌的独占账号槽位。
+     * @param item - 德州动画分片。 */ item => item.part === 'table');
+    return { include: [{ ...table, part: 'table-mobile' }] };
+  }
   const suites = ['app', 'texas', 'zhajinhua'];
   if (suite !== 'all' && !suites.includes(suite)) throw new Error('不支持的动画套件。');
   const parts = {

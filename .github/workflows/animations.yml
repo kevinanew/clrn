@@ -61,7 +61,7 @@ on:
       suite:
         description: 需要验证的动画套件
         type: choice
-        options: [all, app, texas, zhajinhua]
+        options: [all, app, texas, zhajinhua, texas-panels-mobile]
         default: all
       update_snapshots:
         description: 生成候选基准并连续比较三次（只上传测试产物，不自动提交）
@@ -180,7 +180,7 @@ jobs:
         if: matrix.suite == 'texas' && matrix.part == 'gameplay'
         run: node --import tsx --test visual/animations/timeline.browser.ts visual/animations/timelineClock.browser.ts visual/animations/cardSpriteReadiness.browser.ts visual/animations/cardSpriteDiagnostics.browser.ts visual/animations/cardSpriteClock.browser.ts visual/animations/cardSpriteLoader.browser.ts visual/animations/cardSpriteHistory.browser.ts visual/animations/playerAnimationAsset.browser.ts visual/animations/renewReadiness.browser.ts visual/animations/leaderboardReadiness.browser.ts visual/animations/playerProfileReadiness.browser.ts visual/animations/tableConnection.browser.ts
       - name: 验证删房失败诊断的脱敏和原始错误保留
-        if: matrix.suite == 'texas' && matrix.part == 'table'
+        if: matrix.suite == 'texas' && (matrix.part == 'table' || matrix.part == 'table-mobile')
         run: node --import tsx --test visual/src/support/roomRejectionDiagnostics.test.ts
       - name: 准备本轮 Release 构建包
         id: release
@@ -210,7 +210,7 @@ jobs:
           retention-days: 14
           if-no-files-found: error
           path: visual/test-results/animation-candidates/${{ matrix.suite }}-${{ matrix.part }}.tar.gz
-      - name: 连续三次比较手机和桌面动画关键帧
+      - name: 连续三次比较所选动画关键帧
         working-directory: visual
         run: node ../scripts/with-release-web-server.mjs pnpm run test:animations:ci --repeat-each=3
       - name: 独立新牌局图集时钟对照（不替代动画比较）
