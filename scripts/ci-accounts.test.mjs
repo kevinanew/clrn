@@ -98,16 +98,25 @@ test('动画单套件筛选保留账号槽位，调度入口支持选择且拒�
 test('定向德州手机面板只调度一个分片并沿用原账号锁', /** 核对定向工作流的账号规划输出。 */ () => {
   const directory = mkdtempSync(join(tmpdir(), 'clrn-mobile-table-account-'));
   try {
-    const output = join(directory, 'matrix');
+    const matrixOutput = join(directory, 'matrix');
+    const runId = '99';
     const result = spawnSync(process.execPath, ['scripts/plan-ci-accounts.mjs', 'animations'], {
-      encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: output, GITHUB_RUN_ID: '99',
-        CI_ANIMATION_SUITE: 'texas-panels-mobile' },
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        GITHUB_OUTPUT: matrixOutput,
+        GITHUB_RUN_ID: runId,
+        CI_ANIMATION_SUITE: 'texas-panels-mobile',
+      },
     });
     assert.equal(result.status, 0, result.stderr);
-    assert.deepEqual(JSON.parse(readFileSync(output, 'utf8').slice('matrix='.length)), {
-      include: [{ suite: 'texas', part: 'table-mobile', account: allocateCiAccount('99', 14) }],
+    const matrix = JSON.parse(readFileSync(matrixOutput, 'utf8').slice('matrix='.length));
+    assert.deepEqual(matrix, {
+      include: [{ suite: 'texas', part: 'table-mobile', account: allocateCiAccount(runId, 14) }],
     });
-  } finally { rmSync(directory, { recursive: true, force: true }); }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test('凭据按公开账号名读取，不依赖 Secret 排序，错误不包含密码', /** 验证凭据按公开账号名读取，不依赖 Secret 排序，错误不包含密码。 */ () => {
