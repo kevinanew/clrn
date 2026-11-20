@@ -50,24 +50,36 @@ export function visualAccountMatrix(runId, suite = 'all', full = false) {
 /**
  * 动画使用 12–18 号槽位，与全量静态视觉及三组功能回归互不冲突。
  * @param runId - 当前 GitHub Actions 运行 ID。
- * @param suite - all、app、texas 或 zhajinhua，筛选时保留原账号槽位。
- * @returns 七个动画分片的独占账号矩阵。
+ * @param suite - 动画套件或 texas-panels-mobile 定向验证，筛选时保留原账号槽位。
+ * @returns 所选动画分片及其独占账号。
  */
 export function animationAccountMatrix(runId, suite = 'all') {
+  const isTexasPanelsMobile = suite === 'texas-panels-mobile';
   const suites = ['app', 'texas', 'zhajinhua'];
-  if (suite !== 'all' && !suites.includes(suite)) throw new Error('不支持的动画套件。');
+  if (suite !== 'all' && !isTexasPanelsMobile && !suites.includes(suite)) {
+    throw new Error('不支持的动画套件。');
+  }
   const parts = {
     app: ['application', 'ui'],
     texas: ['table', 'gameplay', 'social'],
     zhajinhua: ['panels', 'gameplay'],
   };
   let offset = 12;
-  return { include: suites.flatMap(/** 展开当前条目对应的`parts[item].map(part => ({ suite: item, part, account: allocateCiAccount(runId, offset++), }))`。
- * @param item - 当前遍历的条目。 */ item => parts[item].map(/** 将当前条目映射为`{ suite: item, part, account: allocateCiAccount(runId, offset++), }`。
- * @param part - 当前操作使用的 part。 */ part => ({
-    suite: item, part, account: allocateCiAccount(runId, offset++),
-  }))).filter(/** 仅保留满足以下条件的条目：`suite === 'all' || item.suite === suite`。
- * @param item - 当前遍历的条目。 */ item => suite === 'all' || item.suite === suite) };
+  const shards = [];
+  // 先按全量顺序分配槽位，确保筛选时仍使用同一账号锁。
+  for (const animationSuite of suites) {
+    for (const part of parts[animationSuite]) {
+      shards.push({ suite: animationSuite, part, account: allocateCiAccount(runId, offset++) });
+    }
+  }
+  if (isTexasPanelsMobile) {
+    const table = shards.find(/** 查找手机面板分片共用的德州牌桌账号。
+     * @param shard - 已分配账号的动画分片。 */ shard => shard.suite === 'texas' && shard.part === 'table');
+    return { include: [{ ...table, part: 'table-mobile' }] };
+  }
+  if (suite === 'all') return { include: shards };
+  return { include: shards.filter(/** 筛选指定动画套件的分片。
+   * @param shard - 已分配账号的动画分片。 */ shard => shard.suite === suite) };
 }
 
 /**
